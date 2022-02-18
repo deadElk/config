@@ -150,11 +150,11 @@ type sDB_VI_Peer struct {
 	Description   string      `xml:"description,attr"`
 }
 
-type pDB_host struct {
+type pDB_peer struct {
 	ASN          _ASN
 	ASN_PName    _ASN_PName
 	Router_ID    netip.Addr
-	RI           map[_RI_Name]pDB_Host_RI
+	RI           map[_RI_Name]pDB_Peer_RI
 	IF_RI        map[_IF_Name]_RI_Name
 	Hostname     string
 	Version      string
@@ -167,22 +167,22 @@ type pDB_host struct {
 	Root         string
 	Reserved     bool
 	Description  string
-	VI           map[_VI_ID]pDB_Host_VI
+	VI           map[_VI_ID]pDB_Peer_VI
 	RM_ID        *_RM_ID
 	AB           *_AB
 }
-type pDB_Host_RI struct {
-	RT          map[netip.Prefix]pDB_Host_RI_RT
-	IF          map[_IF_Name]pDB_Host_RI_IF
+type pDB_Peer_RI struct {
+	RT          map[netip.Prefix]pDB_Peer_RI_RT
+	IF          map[_IF_Name]pDB_Peer_RI_IF
 	Reserved    bool
 	Description string
 }
-type pDB_Host_RI_RT struct {
-	GW          map[_GW_Name]pDB_Host_RI_RT_GW
+type pDB_Peer_RI_RT struct {
+	GW          map[_GW_Name]pDB_Peer_RI_RT_GW
 	Reserved    bool
 	Description string
 }
-type pDB_Host_RI_RT_GW struct {
+type pDB_Peer_RI_RT_GW struct {
 	IP          netip.Addr // name candidate priority 1
 	IF          _IF_Name   // name candidate priority 2
 	Table       string     // name candidate priority 3
@@ -192,16 +192,16 @@ type pDB_Host_RI_RT_GW struct {
 	Reserved    bool
 	Description string
 }
-type pDB_Host_RI_IF struct {
+type pDB_Peer_RI_IF struct {
 	ID            _IF_ID
 	Communication _IF_Communication
-	IP            map[netip.Addr]pDB_Host_RI_IF_IP
-	PARP          map[netip.Addr]pDB_Host_RI_IF_PARP
+	IP            map[netip.Addr]pDB_Peer_RI_IF_IP
+	PARP          map[netip.Addr]pDB_Peer_RI_IF_PARP
 	Disable       bool
 	Reserved      bool
 	Description   string
 }
-type pDB_Host_RI_IF_IP struct {
+type pDB_Peer_RI_IF_IP struct {
 	ID          _IP_ID
 	IPPrefix    netip.Prefix
 	NAT         netip.Addr
@@ -209,37 +209,70 @@ type pDB_Host_RI_IF_IP struct {
 	Reserved    bool
 	Description string
 }
-type pDB_Host_RI_IF_PARP struct {
+type pDB_Peer_RI_IF_PARP struct {
 	IPPrefix    netip.Prefix
 	NAT         netip.Addr
 	Reserved    bool
 	Description string
 }
-type pDB_Host_VI struct {
-	VI_ID_PName _VI_ID_PName
-	// ID         uint
-	Type          _VI_Type
-	Communication _IF_Communication
-	PSK           string
-	Route_Metric  uint
-	// Peer          map[_VI_Peer_ID]*wDB_VI_Peer // VI_Peer_ID
-	Peer_AS_ID  map[_VI_Peer_ID]_ASN
-	IPPrefix    netip.Prefix
-	Reserved    bool
-	Description string
+type pDB_Peer_VI struct {
+	VI_ID_PName          _VI_ID_PName
+	Type                 _VI_Type
+	Communication        _IF_Communication
+	PSK                  string
+	Route_Metric         uint
+	IPPrefix             netip.Prefix
+	No_NAT               bool
+	Left_ASN             _ASN
+	Left_RI              _RI_Name
+	Left_IF              _IF_Name
+	Left_IP              netip.Addr
+	Left_NAT             netip.Addr
+	Left_Local_Address   bool
+	Left_Dynamic         bool
+	Left_Hub             bool
+	Left_Inner_RI        _RI_Name
+	Left_Inner_IPPrefix  netip.Prefix
+	Right_ASN            _ASN
+	Right_RI             _RI_Name
+	Right_IF             _IF_Name
+	Right_IP             netip.Addr
+	Right_NAT            netip.Addr
+	Right_Local_Address  bool
+	Right_Dynamic        bool
+	Right_Hub            bool
+	Right_Inner_RI       _RI_Name
+	Right_Inner_IPPrefix netip.Prefix
+	Reserved             bool
+	Description          string
 }
 type pDB_VI struct {
-	VI_ID_PName _VI_ID_PName
-	// ID         uint
+	VI_ID_PName   _VI_ID_PName
 	Type          _VI_Type
 	Communication _IF_Communication
 	PSK           string
 	Route_Metric  uint
-	// Peer          map[_VI_Peer_ID]*wDB_VI_Peer // VI_Peer_ID
-	Peer_AS_ID  map[_VI_Peer_ID]_ASN
-	IPPrefix    netip.Prefix
-	Reserved    bool
-	Description string
+	Peer          map[_VI_Peer_ID]pDB_VI_Peer
+	Peer_AS_ID    map[_VI_Peer_ID]_ASN
+	IPPrefix      netip.Prefix
+	No_NAT        bool
+	Reserved      bool
+	Description   string
+}
+type pDB_VI_Peer struct {
+	ID             _VI_Peer_ID
+	ASN            _ASN
+	RI             _RI_Name
+	IF             _IF_Name
+	IP             netip.Addr
+	NAT            netip.Addr
+	Local_Address  bool
+	Dynamic        bool
+	Hub            bool
+	Inner_RI       _RI_Name
+	Inner_IPPrefix netip.Prefix
+	Reserved       bool
+	Description    string
 }
 
 type wDB_Host struct {
