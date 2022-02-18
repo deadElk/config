@@ -28,7 +28,7 @@ import (
 // TODO: implement Junos $1$ (md5? user passwords), $9$ (sha? user passwords and PSKs) and other encryption methods
 // TODO: implement DB validation and maximum possible autofill
 // TODO: implement template list customization
-// TODO: this program is just adapter written on golang for gotemplate defined in config
+// TODO: this program is just an adapter written in golang for the gotemplate defined in the config
 
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
 
@@ -153,6 +153,7 @@ type sDB_VI_Peer struct {
 type pDB_host struct {
 	ASN          _ASN
 	ASN_PName    _ASN_PName
+	Router_ID    netip.Addr
 	RI           map[_RI_Name]pDB_Host_RI
 	IF_RI        map[_IF_Name]_RI_Name
 	Hostname     string
@@ -166,14 +167,13 @@ type pDB_host struct {
 	Root         string
 	Reserved     bool
 	Description  string
-	VI           map[_VI_ID]pDB_VI
+	VI           map[_VI_ID]pDB_Host_VI
 	RM_ID        *_RM_ID
 	AB           *_AB
 }
 type pDB_Host_RI struct {
 	RT          map[netip.Prefix]pDB_Host_RI_RT
 	IF          map[_IF_Name]pDB_Host_RI_IF
-	IF_ID       map[_IF_ID]_IF_Name
 	Reserved    bool
 	Description string
 }
@@ -213,6 +213,19 @@ type pDB_Host_RI_IF_Address struct {
 type pDB_Host_RI_IF_Proxy_ARP struct {
 	IPPrefix    netip.Prefix
 	NAT         netip.Addr
+	Reserved    bool
+	Description string
+}
+type pDB_Host_VI struct {
+	VI_ID_PName _VI_ID_PName
+	// Index         uint
+	Type          _VI_Type
+	Communication _IF_Communication
+	PSK           string
+	Route_Metric  uint
+	// Peer          map[_VI_Peer_ID]*wDB_VI_Peer // VI_Peer_ID
+	Peer_AS_ID  map[_VI_Peer_ID]_ASN
+	IPPrefix    netip.Prefix
 	Reserved    bool
 	Description string
 }
