@@ -274,6 +274,11 @@ type pDB_VI_Peer struct {
 	Reserved       bool
 	Description    string
 }
+type pDB_GT struct {
+	Content     string
+	Reserved    bool
+	Description string
+}
 
 type wDB_Host struct {
 	AS_PName     string
@@ -425,7 +430,7 @@ var (
 	re_caps          = regexp.MustCompile(`[A-Z]`)
 	template_FuncMap = template.FuncMap{"sum_uint32": sum_uint32_template_FuncMap}
 	_loglevel        = _default_loglevel
-	rm_index         = func() (outbound _RM_ID) {
+	rm_id            = func() (outbound _RM_ID) {
 		for shift, interim := 0, 0; interim <= int(_rm_max); interim, shift = interim+1, shift+int(_rm_bits) {
 			outbound[interim] = 1 << shift
 		}
@@ -434,6 +439,8 @@ var (
 	ab            = make(_AB)
 	vi_ipprefix   netip.Prefix
 	vi_ip_shift   _VI_ID
+	pdb_peer      = make(map[_ASN]pDB_peer)
+	pdb_gt        = make(map[_ASN]pDB_GT)
 	i_db_host     = make(map[_ASN]*wDB_Host)                      // Peer_ASN
 	i_db_vi       = make(map[_VI_ID]*wDB_VI)                      // VI_ID
 	i_db_vi_peer  = make(map[_VI_ID]map[_VI_Peer_ID]*wDB_VI_Peer) // VI_Peer_ID
@@ -912,7 +919,7 @@ func parse_db(xml_db *sDB) (err error) {
 				Reserved:    i_db_host_v.Reserved,
 				Description: i_db_host_v.Description,
 				AB:          &ab,
-				RM_ID:       &rm_index,
+				RM_ID:       &rm_id,
 				VI:          map[_VI_ID]*wDB_VI{},
 				VI_Left:     map[_VI_ID]*wDB_VI_Peer{},
 				VI_Right:    map[_VI_ID]*wDB_VI_Peer{},
