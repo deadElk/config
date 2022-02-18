@@ -22,6 +22,9 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+// TODO: implement Junos $9$ and other encryption methods.
+// TODO: implement DB validation and maximum possible autofill.
+
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
 type _AS_Number uint32
 type _Address_Book map[string]map[netip.Prefix]bool
@@ -138,12 +141,6 @@ type sDB_VI_Peer struct {
 	Reserved      bool           `xml:"reserved,attr"`
 	Description   string         `xml:"description,attr"`
 }
-
-type wDB_Template struct { // Name        _Template_Name
-	Content     string
-	Reserved    bool
-	Description string
-}
 type wDB_Host struct {
 	AS_Padded_Name string
 	RI             map[_RI_Name]wDB_Host_RI // Peer_RI_Name
@@ -245,6 +242,11 @@ type wDB_VI_Peer struct {
 	Reserved       bool
 	Description    string
 }
+type wDB_Template struct { // Name        _Template_Name
+	Content     string
+	Reserved    bool
+	Description string
+}
 
 const (
 	// _juniper_mgmt_RI _RI_Name = "mgmt_junos"
@@ -255,7 +257,11 @@ const (
 	_SERVICE             string            = "CONFIG"
 	_SERVICED                              = _SERVICE /*+ "D"*/
 	_hash_Size           int               = 512 / 8
-	_passwd              string            = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "abcdefghijklmnopqrstuvwxyz" + "0123456789"
+	_passwd_Z            string            = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	_passwd_z            string            = "abcdefghijklmnopqrstuvwxyz"
+	_passwd_0            string            = "0123456789"
+	_passwd_oops         string            = "_" // carefully with special symbols
+	_passwd                                = _passwd_Z + _passwd_z + _passwd_0 + _passwd_oops
 	_default_vi_ipprefix string            = "10.90.0.0/16"
 	_juniper_default_RI  _RI_Name          = "master"
 	_juniper_mgmt_RI     _RI_Name          = "master"
