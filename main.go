@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"encoding/xml"
 	"errors"
-	"fmt"
 	"io"
 	"math/big"
 	"net/netip"
@@ -280,113 +279,6 @@ type pDB_GT struct {
 	Description string
 }
 
-type wDB_Host struct {
-	AS_PName     string
-	RI           map[_RI_Name]wDB_Host_RI // Peer_RI_Name
-	IF_RI        map[_IF_Name]_RI_Name    // interface name to RI mapping
-	Hostname     string
-	Version      string
-	Major        float64
-	IKE_GCM      bool
-	Manufacturer string
-	Model        string
-	Serial       string
-	Config_Patch string
-	Root         string
-	Reserved     bool
-	Description  string
-
-	ASN      _ASN
-	RM_ID    *_RM_ID
-	AB       *_AB
-	VI       map[_VI_ID]*wDB_VI
-	VI_Left  map[_VI_ID]*wDB_VI_Peer
-	VI_Right map[_VI_ID]*wDB_VI_Peer
-}
-type wDB_Host_RI struct {
-	// Name        string
-	RT          map[netip.Prefix]wDB_Host_RI_RT // Peer_RI_RT_Identifier
-	IF          map[_IF_Name]wDB_Host_RI_IF     // Peer_RI_IF_Name
-	IF_ID       map[_IF_ID]_IF_Name             // interface index to name mapping
-	Reserved    bool
-	Description string
-}
-type wDB_Host_RI_IF struct {
-	// Name        string
-	ID            _IF_ID
-	Communication _IF_Communication
-	Address       map[netip.Addr]wDB_Host_RI_IF_Address // Peer_RI_IF_Address_IPPrefix
-	PARP          map[netip.Addr]wDB_Host_RI_IF_PARP    // Peer_RI_IF_PARP_IPPrefix
-	Address_ID    map[_IP_ID]netip.Addr                 // interface's address index
-	Disable       bool
-	Reserved      bool
-	Description   string
-}
-type wDB_Host_RI_IF_Address struct {
-	ID          _IP_ID
-	IPPrefix    netip.Prefix
-	NAT         netip.Addr
-	DHCP        bool
-	Reserved    bool
-	Description string
-}
-type wDB_Host_RI_IF_PARP struct {
-	IPPrefix    netip.Prefix
-	NAT         netip.Addr
-	Reserved    bool
-	Description string
-}
-type wDB_Host_RI_RT struct {
-	// Identifier  netip.Prefix
-	GW          map[_GW_Name]wDB_Host_RI_RT_GW // Peer_RI_RT_GW (use IP/Interface/Table/Discard as string ID)
-	Reserved    bool
-	Description string
-}
-type wDB_Host_RI_RT_GW struct {
-	IP          netip.Addr // name candidate priority 1
-	IF          _IF_Name   // name candidate priority 2
-	Table       string     // name candidate priority 3
-	Discard     bool       // name candidate priority 0
-	Type        _GW_Type   // fill type appropriately
-	Reserved    bool
-	Description string
-}
-type wDB_VI struct {
-	VI_ID_PName _VI_ID_PName
-	// ID         uint
-	Type          _VI_Type
-	Communication _IF_Communication
-	PSK           string
-	Route_Metric  uint
-	// Peer          map[_VI_Peer_ID]*wDB_VI_Peer // VI_Peer_ID
-	Peer_AS_ID  map[_VI_Peer_ID]_ASN
-	IPPrefix    netip.Prefix
-	Reserved    bool
-	Description string
-}
-type wDB_VI_Peer struct {
-	ID             _VI_Peer_ID
-	ASN            _ASN
-	RI             _RI_Name
-	IF             _IF_Name
-	IP             netip.Addr
-	NAT            netip.Addr
-	Use_NAT        bool
-	Local_Address  bool
-	Dynamic        bool
-	No_NAT         bool
-	Hub            bool
-	Inner_RI       _RI_Name
-	Inner_IPPrefix netip.Prefix
-	Reserved       bool
-	Description    string
-}
-type wDB_GT struct { // Name        _GT_Name
-	Content     string
-	Reserved    bool
-	Description string
-}
-
 const (
 	// _juniper_mgmt_RI _RI_Name = "mgmt_junos"
 	// _juniper_mgmt_IF string = "fxp0.0"
@@ -426,35 +318,36 @@ const (
 )
 
 var (
-	hash_cache       sync.Map
-	re_caps          = regexp.MustCompile(`[A-Z]`)
-	template_FuncMap = template.FuncMap{"sum_uint32": sum_uint32_template_FuncMap}
-	_loglevel        = _default_loglevel
-	rm_id            = func() (outbound _RM_ID) {
+	hash_cache sync.Map
+	re_caps    = regexp.MustCompile(`[A-Z]`)
+	gt_fm      = template.FuncMap{"sum_uint32": sum_uint32_gt_fm}
+	_loglevel  = _default_loglevel
+	rm_id      = func() (outbound _RM_ID) {
 		for shift, interim := 0, 0; interim <= int(_rm_max); interim, shift = interim+1, shift+int(_rm_bits) {
 			outbound[interim] = 1 << shift
 		}
 		return
 	}()
-	ab            = make(_AB)
-	vi_ipprefix   netip.Prefix
-	vi_ip_shift   _VI_ID
-	pdb_peer      = make(map[_ASN]pDB_peer)
-	pdb_gt        = make(map[_ASN]pDB_GT)
-	i_db_host     = make(map[_ASN]*wDB_Host)                      // Peer_ASN
-	i_db_vi       = make(map[_VI_ID]*wDB_VI)                      // VI_ID
-	i_db_vi_peer  = make(map[_VI_ID]map[_VI_Peer_ID]*wDB_VI_Peer) // VI_Peer_ID
-	i_db_template = make(map[_GT_Name]*wDB_GT)                    // GT_Name
-	config        = make(map[_ASN]bytes.Buffer)                   // resulting configs
+	ab          = make(_AB)
+	vi_ipprefix netip.Prefix
+	vi_ip_shift _VI_ID
+	pdb_peer    = make(map[_ASN]pDB_peer)
+	pdb_vi      = make(map[_VI_ID]pDB_VI)
+	pdb_gt      = make(map[_GT_Name]pDB_GT)
+	config      = make(map[_ASN]bytes.Buffer) // resulting configs
+	// i_db_host     = make(map[_ASN]*wDB_Host)                      // Peer_ASN
+	// i_db_vi       = make(map[_VI_ID]*wDB_VI)                      // VI_ID
+	// i_db_vi_peer  = make(map[_VI_ID]map[_VI_Peer_ID]*wDB_VI_Peer) // VI_Peer_ID
+	// i_db_template = make(map[_GT_Name]*wDB_GT)                    // GT_Name
 )
 
 func (inbound _ASN) String() (outbound string) {
 	outbound = "0000000000" + strconv.FormatUint(uint64(inbound), 10)
-	return string(outbound[len(outbound)-10:])
+	return outbound[len(outbound)-10:]
 }
 func (inbound _VI_ID) String() (outbound string) {
 	outbound = "00000" + strconv.FormatUint(uint64(inbound), 10)
-	return string(outbound[len(outbound)-5:])
+	return outbound[len(outbound)-5:]
 }
 func get_vi_ipprefix(vi_shift _VI_ID, peer_shift _VI_Peer_ID) (outbound netip.Prefix) {
 	var (
@@ -477,7 +370,7 @@ func set_vi_ipprefix(inbound netip.Prefix) {
 	}
 	vi_ip_shift = _VI_ID(binary.BigEndian.Uint32(vi_ipprefix.Addr().AsSlice()))
 }
-func sum_uint32_template_FuncMap(inbound ...uint32) (outbound uint32) {
+func sum_uint32_gt_fm(inbound ...uint32) (outbound uint32) {
 	switch len(inbound) {
 	case 0:
 		return 0
@@ -636,6 +529,18 @@ func init() {
 	})
 	log.SetReportCaller(true)
 }
+func main() {
+	switch err := read_db(); err != nil {
+	case true:
+		log.Fatalf("DB read error: '%v'", err)
+		return
+	}
+	switch err := use_db(); err != nil {
+	case true:
+		log.Fatalf("DB use error: '%v'", err)
+		return
+	}
+}
 func read_file(inbound *string, outbound *[]byte) (err error) {
 	var (
 		inbound_link *os.File
@@ -699,494 +604,48 @@ func read_db() (err error) {
 func parse_db(xml_db *sDB) (err error) {
 	log_setlevel(&xml_db.Verbosity)
 	set_vi_ipprefix(xml_db.VI_IPPrefix)
-	for _, i_db_host_v := range xml_db.Peer {
-		switch i_db_host_v.Reserved {
-		case false:
-			var (
-				i_db_host_if_ri_v    = make(map[_IF_Name]_RI_Name)
-				i_db_host_as_name_v  = i_db_host_v.ASN.String()
-				i_db_host_version_i  = re_caps.Split(i_db_host_v.Version, -1)
-				i_db_host_major_v, _ = strconv.ParseFloat(i_db_host_version_i[0], 64)
-				i_db_host_ike_gcm_v  = i_db_host_major_v >= 12.3
-			)
-			i_db_host[i_db_host_v.ASN] = &wDB_Host{
-				ASN:      i_db_host_v.ASN,
-				AS_PName: fmt.Sprintf("%10d", i_db_host_as_name_v),
-				RI: func() (i_db_host_ri_o map[_RI_Name]wDB_Host_RI) {
-					i_db_host_ri_o = make(map[_RI_Name]wDB_Host_RI)
-					for _, i_db_host_ri_v := range i_db_host_v.RI {
-						switch i_db_host_ri_v.Reserved {
-						case false:
-							var (
-								i_db_host_ri_if_index_v = make(map[_IF_ID]_IF_Name)
-							)
-							i_db_host_ri_o[i_db_host_ri_v.Name] = wDB_Host_RI{
-								RT: func() (i_db_host_ri_rt_o map[netip.Prefix]wDB_Host_RI_RT) {
-									i_db_host_ri_rt_o = make(map[netip.Prefix]wDB_Host_RI_RT)
-									for _, i_db_host_ri_rt_v := range i_db_host_ri_v.RT {
-										switch i_db_host_ri_rt_v.Reserved {
-										case false:
-											i_db_host_ri_rt_o[i_db_host_ri_rt_v.Identifier] = wDB_Host_RI_RT{
-												GW: func() (i_db_host_ri_rt_gw_o map[_GW_Name]wDB_Host_RI_RT_GW) {
-													i_db_host_ri_rt_gw_o = make(map[_GW_Name]wDB_Host_RI_RT_GW)
-													for _, i_db_host_ri_rt_gw_v := range i_db_host_ri_rt_v.GW {
-														switch i_db_host_ri_rt_gw_v.Reserved {
-														case false:
-															var (
-																gw_i string
-															)
-															switch {
-															case i_db_host_ri_rt_gw_v.Type == _gw_discard:
-																gw_i = string(_gw_discard)
-															case i_db_host_ri_rt_gw_v.Type == _gw_hop && i_db_host_ri_rt_gw_v.IP.IsValid():
-																gw_i = i_db_host_ri_rt_gw_v.IP.String()
-															case i_db_host_ri_rt_gw_v.Type == _gw_interface && len(i_db_host_ri_rt_gw_v.IF) != 0:
-																gw_i = string(i_db_host_ri_rt_gw_v.IF)
-															case i_db_host_ri_rt_gw_v.Type == _gw_table && len(i_db_host_ri_rt_gw_v.Table) != 0:
-																gw_i = i_db_host_ri_rt_gw_v.Table
-															case len(i_db_host_ri_rt_gw_v.Type) == 0:
-																switch {
-																case i_db_host_ri_rt_gw_v.Discard:
-																	gw_i = string(_gw_discard)
-																	i_db_host_ri_rt_gw_v.Type = _gw_discard
-																case i_db_host_ri_rt_gw_v.IP.IsValid():
-																	gw_i = i_db_host_ri_rt_gw_v.IP.String()
-																	i_db_host_ri_rt_gw_v.Type = _gw_hop
-																case len(i_db_host_ri_rt_gw_v.IF) != 0:
-																	gw_i = string(i_db_host_ri_rt_gw_v.IF)
-																	i_db_host_ri_rt_gw_v.Type = _gw_interface
-																case len(i_db_host_ri_rt_gw_v.Table) != 0:
-																	gw_i = i_db_host_ri_rt_gw_v.Table
-																	i_db_host_ri_rt_gw_v.Type = _gw_table
-																default:
-																	continue
-																}
-															default:
-																continue
-															}
-															i_db_host_ri_rt_gw_o[_GW_Name(gw_i)] = wDB_Host_RI_RT_GW{
-																IP:          i_db_host_ri_rt_gw_v.IP,
-																IF:          i_db_host_ri_rt_gw_v.IF,
-																Table:       i_db_host_ri_rt_gw_v.Table,
-																Discard:     i_db_host_ri_rt_gw_v.Discard,
-																Type:        i_db_host_ri_rt_gw_v.Type,
-																Reserved:    i_db_host_ri_rt_gw_v.Reserved,
-																Description: i_db_host_ri_rt_gw_v.Description,
-															}
-														default:
-														}
-													}
-													return
-												}(),
-											}
-										default:
-										}
-									}
-									return
-								}(),
-								IF: func() (i_db_host_ri_if_o map[_IF_Name]wDB_Host_RI_IF) {
-									i_db_host_ri_if_o = make(map[_IF_Name]wDB_Host_RI_IF)
-									for _, i_db_host_ri_if_v := range i_db_host_ri_v.IF {
-										switch i_db_host_ri_if_v.Reserved {
-										case false:
-											switch i_db_host_ri_if_ri, flag := i_db_host_if_ri_v[i_db_host_ri_if_v.Name]; flag {
-											case true:
-												log.Warnf("peer: '%v', RI: '%v', IF: '%v', already defind in RI: '%v'; ACTION: overwrite.", i_db_host_v.ASN, i_db_host_ri_v.Name, i_db_host_ri_if_v.Name, i_db_host_ri_if_ri)
-												delete(i_db_host_ri_if_index_v, i_db_host_ri_if_v.ID)
-											}
-											i_db_host_ri_if_index_v[func() (i_db_host_ri_if_index_o _IF_ID) {
-												switch _, flag := i_db_host_ri_if_index_v[i_db_host_ri_if_v.ID]; flag {
-												case false:
-													i_db_host_ri_if_index_v[i_db_host_ri_if_v.ID] = i_db_host_ri_if_v.Name
-													return i_db_host_ri_if_v.ID
-												}
-												for {
-													switch _, flag := i_db_host_ri_if_index_v[i_db_host_ri_if_index_o]; flag {
-													case false:
-														i_db_host_ri_if_index_v[i_db_host_ri_if_index_o] = i_db_host_ri_if_v.Name
-														return
-													}
-													i_db_host_ri_if_index_o++
-												}
-											}()] = i_db_host_ri_if_v.Name
-											switch i_db_host_ri_if_v.Communication {
-											case _if_comm_ptp, _if_comm_ptmp:
-											case "":
-												i_db_host_ri_if_v.Communication = _default_if_comm
-											default:
-												continue
-											}
-											var (
-												i_db_host_ri_if_address_index_v = make(map[_IP_ID]netip.Addr)
-											)
-											i_db_host_ri_if_o[i_db_host_ri_if_v.Name] = wDB_Host_RI_IF{
-												ID:            i_db_host_ri_if_v.ID,
-												Communication: i_db_host_ri_if_v.Communication,
-												Address: func() (i_db_host_ri_if_address_o map[netip.Addr]wDB_Host_RI_IF_Address) {
-													i_db_host_ri_if_address_o = make(map[netip.Addr]wDB_Host_RI_IF_Address)
-													for _, i_db_host_ri_if_address_v := range i_db_host_ri_if_v.IP {
-														switch i_db_host_ri_if_address_v.Reserved {
-														case false:
-															i_db_host_ri_if_address_o[i_db_host_ri_if_address_v.IPPrefix.Addr()] = wDB_Host_RI_IF_Address{
-																IPPrefix: i_db_host_ri_if_address_v.IPPrefix,
-																ID: func() (i_db_host_ri_if_address_index_o _IP_ID) {
-																	switch _, flag := i_db_host_ri_if_address_index_v[i_db_host_ri_if_address_v.ID]; flag {
-																	case false:
-																		i_db_host_ri_if_address_index_v[i_db_host_ri_if_address_v.ID] = i_db_host_ri_if_address_v.IPPrefix.Addr()
-																		return i_db_host_ri_if_address_v.ID
-																	}
-																	for {
-																		switch _, flag := i_db_host_ri_if_address_index_v[i_db_host_ri_if_address_index_o]; flag {
-																		case false:
-																			i_db_host_ri_if_address_index_v[i_db_host_ri_if_address_index_o] = i_db_host_ri_if_address_v.IPPrefix.Addr()
-																			return
-																		}
-																		i_db_host_ri_if_address_index_o++
-																	}
-																}(),
-																NAT:         i_db_host_ri_if_address_v.NAT,
-																DHCP:        i_db_host_ri_if_address_v.DHCP,
-																Reserved:    i_db_host_ri_if_address_v.Reserved,
-																Description: i_db_host_ri_if_address_v.Description,
-															}
-															add_to_ab_ipset(true, false, "OUTTER_LIST", i_db_host_ri_if_address_v.IPPrefix.Addr(), i_db_host_ri_if_address_v.NAT)
-														default:
-														}
-													}
-													return
-												}(),
-												PARP: func() (i_db_host_ri_if_parp_o map[netip.Addr]wDB_Host_RI_IF_PARP) {
-													i_db_host_ri_if_parp_o = make(map[netip.Addr]wDB_Host_RI_IF_PARP)
-													for _, i_db_host_ri_if_parp_v := range i_db_host_ri_if_v.PARP {
-														switch i_db_host_ri_if_parp_v.Reserved {
-														case false:
-															i_db_host_ri_if_parp_o[i_db_host_ri_if_parp_v.IPPrefix.Addr()] = wDB_Host_RI_IF_PARP{
-																IPPrefix:    i_db_host_ri_if_parp_v.IPPrefix,
-																NAT:         i_db_host_ri_if_parp_v.NAT,
-																Reserved:    i_db_host_ri_if_parp_v.Reserved,
-																Description: i_db_host_ri_if_parp_v.Description,
-															}
-															add_to_ab_ipset(true, false, "OUTTER_LIST", i_db_host_ri_if_parp_v.IPPrefix.Addr(), i_db_host_ri_if_parp_v.NAT)
-														default:
-														}
-													}
-													return
-												}(),
-												Address_ID:  i_db_host_ri_if_address_index_v,
-												Disable:     i_db_host_ri_if_v.Disable,
-												Reserved:    i_db_host_ri_if_v.Reserved,
-												Description: i_db_host_ri_if_v.Description,
-											}
-											i_db_host_if_ri_v[i_db_host_ri_if_v.Name] = i_db_host_ri_v.Name
-										default:
-										}
-									}
-									return
-								}(),
-								IF_ID:       i_db_host_ri_if_index_v,
-								Reserved:    i_db_host_ri_v.Reserved,
-								Description: i_db_host_ri_v.Description,
-							}
-						default:
-						}
-					}
-					return
-				}(),
-				IF_RI: i_db_host_if_ri_v,
-				Hostname: func() string {
-					switch len(i_db_host_v.Hostname) == 0 {
-					case true:
-						return "as" + i_db_host_as_name_v
-					}
-					return i_db_host_v.Hostname
-				}(),
-				Version:      i_db_host_v.Version,
-				Major:        i_db_host_major_v,
-				IKE_GCM:      i_db_host_ike_gcm_v,
-				Manufacturer: i_db_host_v.Manufacturer,
-				Model:        i_db_host_v.Model,
-				Serial:       i_db_host_v.Serial,
-				Config_Patch: sanitize_string(&i_db_host_v.Config_Patch),
-				Root: func() (i_db_host_root_o string) {
-					switch len(i_db_host_v.Root) < 16 {
-					case true:
-						i_db_host_root_o = generate_passwd(16)
-						log.Warnf("peer: '%v', root cleartext password: '%v'", i_db_host_v.ASN, i_db_host_root_o)
-						return
-					}
-					return i_db_host_v.Root
-				}(),
-				Reserved:    i_db_host_v.Reserved,
-				Description: i_db_host_v.Description,
-				AB:          &ab,
-				RM_ID:       &rm_id,
-				VI:          map[_VI_ID]*wDB_VI{},
-				VI_Left:     map[_VI_ID]*wDB_VI_Peer{},
-				VI_Right:    map[_VI_ID]*wDB_VI_Peer{},
-			}
-		default:
-		}
+
+	for _, value := range xml_db.Peer {
+
 	}
-	for _, i_db_vi_v := range xml_db.VI {
-		switch i_db_vi_v.Reserved {
+	for _, value := range xml_db.GT {
+		switch value.Reserved {
 		case false:
-			switch i_db_vi_v.Type {
-			case _vi_ti, _vi_gr, _vi_lt:
-			case "":
-				i_db_vi_v.Type = _default_vi
-			default:
-				continue
-			}
-			switch i_db_vi_v.Communication {
-			case _if_comm_ptp, _if_comm_ptmp:
-			case "":
-				i_db_vi_v.Communication = _default_vi_comm
-			default:
-				continue
-			}
-			i_db_vi[i_db_vi_v.ID] = &wDB_VI{
-				VI_ID_PName:   _VI_ID_PName(fmt.Sprintf("%05d", i_db_vi_v.ID)),
-				Type:          i_db_vi_v.Type,
-				Communication: i_db_vi_v.Communication,
-				Route_Metric: func() uint {
-					switch i_db_vi_v.Route_Metric > _rm_max {
-					case true:
-						return 0
-					}
-					return _rm_max - i_db_vi_v.Route_Metric
-				}(),
-				PSK: func() string {
-					switch len(i_db_vi_v.PSK) < 48 {
-					case true:
-						return generate_passwd(64)
-					}
-					return i_db_vi_v.PSK
-				}(),
-				// Peer: func() (i_db_vi_peer_o map[_VI_Peer_ID]*wDB_VI_Peer) {
-				// 	i_db_vi_peer_o = make(map[_VI_Peer_ID]*wDB_VI_Peer)
-				// 	for _, i_db_vi_peer_v := range i_db_vi_v.Peer {
-				// 		switch i_db_vi_peer_v.Reserved {
-				// 		case false:
-				// 			switch _, flag := i_db_host[i_db_vi_peer_v.ASN]; flag {
-				// 			case true:
-				// 				i_db_vi_peer_v.RI = parse_RI(&i_db_vi_peer_v.RI)
-				// 				switch _, flag := i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI]; flag {
-				// 				case false:
-				// 					continue
-				// 				}
-				// 				i_db_vi_peer_v.Inner_RI = parse_RI(&i_db_vi_peer_v.Inner_RI)
-				// 				switch _, flag := i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.Inner_RI]; flag {
-				// 				case false:
-				// 					continue
-				// 				}
-				// 				switch i_db_vi_peer_v.IP.IsValid() {
-				// 				case true:
-				// 					switch _, flag := i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address[i_db_vi_peer_v.IP]; flag {
-				// 					case false:
-				// 						continue
-				// 					}
-				// 				case false:
-				// 					switch len(i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address) != 0 {
-				// 					case true:
-				// 						var (
-				// 							index _IP_ID = 1 >> 1
-				// 						)
-				// 						for address_index := range i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address_ID {
-				// 							switch index > address_index {
-				// 							case true:
-				// 								index = address_index
-				// 							}
-				// 						}
-				// 						i_db_vi_peer_v.IP = i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address_ID[index]
-				// 					}
-				// 				}
-				// 				switch len(i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address) > 1 {
-				// 				case true:
-				// 					i_db_vi_peer_v.Local_Address = true
-				// 				}
-				// 				i_db_vi_peer_o[i_db_vi_peer_v.ID] = &wDB_VI_Peer{
-				// 					ID:         i_db_vi_peer_v.ID,
-				// 					ASN:           i_db_vi_peer_v.ASN,
-				// 					RI:            i_db_vi_peer_v.RI,
-				// 					IF:            i_db_vi_peer_v.IF,
-				// 					IP:            i_db_vi_peer_v.IP,
-				// 					Local_Address: i_db_vi_peer_v.Local_Address,
-				// 					Dynamic:       i_db_vi_peer_v.Dynamic,
-				// 					Hub:           i_db_vi_peer_v.Hub,
-				// 					Inner_RI:      i_db_vi_peer_v.Inner_RI,
-				// 					Reserved:      i_db_vi_peer_v.Reserved,
-				// 					Description:   i_db_vi_peer_v.Description,
-				// 					Verbosity:     i_db_vi_peer_v.Verbosity,
-				// 				}
-				// 			default:
-				// 				continue
-				// 			}
-				// 		default:
-				// 		}
-				// 	}
-				// 	return
-				// }(),
-				Peer_AS_ID:  map[_VI_Peer_ID]_ASN{},
-				IPPrefix:    get_vi_ipprefix(i_db_vi_v.ID, 0),
-				Reserved:    i_db_vi_v.Reserved,
-				Description: i_db_vi_v.Description,
-			}
-			i_db_vi_peer[i_db_vi_v.ID] = func() (i_db_vi_peer_o map[_VI_Peer_ID]*wDB_VI_Peer) {
-				i_db_vi_peer_o = make(map[_VI_Peer_ID]*wDB_VI_Peer)
-				for _, i_db_vi_peer_v := range i_db_vi_v.Peer {
-					switch i_db_vi_peer_v.Reserved {
-					case false:
-						switch _, flag := i_db_host[i_db_vi_peer_v.ASN]; flag {
-						case true:
-							i_db_vi_peer_v.RI = parse_RI(&i_db_vi_peer_v.RI)
-							switch _, flag := i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI]; flag {
-							case false:
-								continue
-							}
-							i_db_vi_peer_v.Inner_RI = parse_RI(&i_db_vi_peer_v.Inner_RI)
-							switch _, flag := i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.Inner_RI]; flag {
-							case false:
-								continue
-							}
-							switch i_db_vi_peer_v.IP.IsValid() {
-							case true:
-								switch _, flag := i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address[i_db_vi_peer_v.IP]; flag {
-								case false:
-									continue
-								}
-							case false:
-								switch len(i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address) != 0 {
-								case true:
-									var (
-										index _IP_ID = 1 >> 1
-									)
-									for address_index := range i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address_ID {
-										switch index > address_index {
-										case true:
-											index = address_index
-										}
-									}
-									i_db_vi_peer_v.IP = i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address_ID[index]
-								}
-							}
-							switch len(i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address) > 1 {
-							case true:
-								i_db_vi_peer_v.Local_Address = true
-							}
-							var (
-								i_db_vi_peer_nat_v     netip.Addr
-								i_db_vi_peer_use_nat_v bool
-							)
-							switch i_db_vi_peer_nat_i := i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address[i_db_vi_peer_v.IP].NAT; i_db_vi_peer_nat_i.IsValid() {
-							case true:
-								i_db_vi_peer_nat_v = i_db_vi_peer_nat_i
-								i_db_vi_peer_use_nat_v = true
-							}
-							i_db_vi_peer_o[i_db_vi_peer_v.ID] = &wDB_VI_Peer{
-								ID:             i_db_vi_peer_v.ID,
-								ASN:            i_db_vi_peer_v.ASN,
-								RI:             i_db_vi_peer_v.RI,
-								IF:             i_db_vi_peer_v.IF,
-								IP:             i_db_vi_peer_v.IP,
-								NAT:            i_db_vi_peer_nat_v,
-								Use_NAT:        i_db_vi_peer_use_nat_v,
-								Local_Address:  i_db_vi_peer_v.Local_Address,
-								Dynamic:        i_db_vi_peer_v.Dynamic,
-								No_NAT:         true,
-								Hub:            i_db_vi_peer_v.Hub,
-								Inner_RI:       i_db_vi_peer_v.Inner_RI,
-								Inner_IPPrefix: get_vi_ipprefix(i_db_vi_v.ID, 1+i_db_vi_peer_v.ID),
-								Reserved:       i_db_vi_peer_v.Reserved,
-								Description:    i_db_vi_peer_v.Description,
-							}
-							i_db_vi[i_db_vi_v.ID].Peer_AS_ID[i_db_vi_peer_v.ID] = i_db_vi_peer_v.ASN
-						default:
-							continue
-						}
-					default:
-					}
-				}
-				return
-			}()
-		default:
-		}
-	}
-	for i_db_vi_i, i_db_vi_peers_v := range i_db_vi_peer {
-		for i_db_vi_peer_i, i_db_vi_peer_v := range i_db_vi_peers_v {
-			i_db_host[i_db_vi_peer_v.ASN].VI[i_db_vi_i] = i_db_vi[i_db_vi_i]
-			i_db_host[i_db_vi_peer_v.ASN].VI_Left[i_db_vi_i] = i_db_vi_peer_v
-			for index, value := range i_db_vi[i_db_vi_i].Peer_AS_ID {
-				switch i_db_vi_peer_i != index {
-				case true:
-					i_db_host[value].VI_Right[i_db_vi_i] = i_db_vi_peer_v
-				}
-			}
-		}
-	}
-	for _, i_db_template_v := range xml_db.GT {
-		switch i_db_template_v.Reserved {
-		case false:
-			switch _, flag := i_db_template[i_db_template_v.Name]; flag {
+			switch _, flag := pdb_gt[value.Name]; flag {
 			case false:
-				i_db_template[i_db_template_v.Name] = &wDB_GT{
-					Content:     sanitize_string(&i_db_template_v.Content),
-					Reserved:    i_db_template_v.Reserved,
-					Description: i_db_template_v.Description,
+				pdb_gt[value.Name] = pDB_GT{
+					Content:     sanitize_string(&value.Content),
+					Reserved:    value.Reserved,
+					Description: value.Description,
 				}
 			default:
-				log.Warnf("template '%v' already exist; ACTION: skip.", i_db_template_v.Name)
+				log.Warnf("template '%v' already exist; ACTION: skip.", value.Name)
 			}
 		default:
 		}
 	}
-	log.Infof("'%+v'", i_db_host)
+	log.Infof("'%+v'", pdb_gt)
 	return
 }
-func main() {
-	switch err := read_db(); err != nil {
-	case true:
-		log.Fatalf("DB read error: '%v'", err)
-		return
-	}
-	switch err := use_db(); err != nil {
-	case true:
-		log.Fatalf("DB use error: '%v'", err)
-		return
-	}
-	// log.Infof("'%+v''%+v''%+v'", i_db_template, i_db_host, i_db_vi)
-	// log.Infof("'%+v'", i_db_template)
-	// log.Infof("'%+v'", i_db_host)
-	// log.Infof("'%+v'", i_db_vi)
-	// log.Infof("'%+v'", generate_passwd(16))
-	// log.Infof("'%+v'", hpow7)
-	log.Infof("'%s'", config[4200240063])
-	// log.Infof("'%+v'", ab_ipset["OUTTER_LIST"].Prefixes())
-	// a := ab_ipset["OUTTER_LIST"].Prefixes()
-	// log.Infof("'%+v'", i_db_vi_peer[63][0])
-	// log.Infof("'%+v'", i_db_vi_peer[63][1])
-	// log.Infof("'%+v'", i_db_host[4200240063].VI[197])
-	// log.Infof("'%+v'", i_db_host[4200240063].VI_Left[197])
-	// log.Infof("'%+v'", i_db_host[4200240063].VI_Right[197])
-	// log.Infof("'%+v'", i_db_host[4200240005].VI[69])
-	// log.Infof("'%+v'", i_db_host[4200240005].VI_Left[69])
-	// log.Infof("'%+v'", i_db_host[4200240005].VI_Right[69])
-}
 func use_db() (err error) {
-	for key, value := range i_db_host {
-		var (
-			i_template *template.Template
-			buf        bytes.Buffer
-		)
-		switch i_template, err = template.New("asXXXXXXXXXX").Funcs(template_FuncMap).Parse(i_db_template["asXXXXXXXXXX"].Content); err == nil && i_template != nil {
-		case true:
-			switch err = i_template.Execute(&buf, value); err == nil && i_template != nil {
+	for key, value := range pdb_peer {
+		switch value.Reserved {
+		case false:
+			var (
+				gt  *template.Template
+				buf bytes.Buffer
+			)
+			switch gt, err = template.New("asXXXXXXXXXX").Funcs(gt_fm).Parse(pdb_gt["asXXXXXXXXXX"].Content); err == nil && gt != nil {
 			case true:
-				config[key] = buf
+				switch err = gt.Execute(&buf, value); err == nil && gt != nil {
+				case true:
+					config[key] = buf
+				default:
+					return
+				}
 			default:
 				return
 			}
-		default:
-			return
 		}
 	}
 	return
