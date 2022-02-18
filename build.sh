@@ -3,4 +3,4 @@
 #_name=$(< ./.git/description)
 _name="config"
 
-~/go/go1.18beta2/bin/go build -ldflags="-s -w" -trimpath -o "${_name}" ./main.go || exit 1
+~/go/go1.18rc1/bin/go build -ldflags="-s -w" -trimpath -o "${_name}" ./main.go || exit 1
