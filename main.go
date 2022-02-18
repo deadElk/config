@@ -32,7 +32,7 @@ import (
 
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
 type _AS_Number uint32
-type _Address_Book map[string]map[netip.Prefix]bool
+type _AB map[string]map[netip.Prefix]bool
 type _RM_Index [_rm_max + 1]uint32
 type _Template_Name string
 type _Template_Content string
@@ -41,7 +41,7 @@ type _IF_Name string
 type _IF_Index uint
 type _IP_Address_Index uint
 type _VI_Index uint
-type _VI_Index_Padded_Name string
+type _VI_Index_PName string
 type _VI_Peer_Index uint
 type _IF_Communication string
 type _VI_Type string
@@ -149,27 +149,27 @@ type sDB_VI_Peer struct {
 }
 
 type wDB_Host struct {
-	AS_Padded_Name string
-	RI             map[_RI_Name]wDB_Host_RI // Peer_RI_Name
-	IF_RI          map[_IF_Name]_RI_Name    // interface name to RI mapping
-	Hostname       string
-	Version        string
-	Major          float64
-	IKE_GCM        bool
-	Manufacturer   string
-	Model          string
-	Serial         string
-	Config_Patch   string
-	Root           string
-	Reserved       bool
-	Description    string
+	AS_PName     string
+	RI           map[_RI_Name]wDB_Host_RI // Peer_RI_Name
+	IF_RI        map[_IF_Name]_RI_Name    // interface name to RI mapping
+	Hostname     string
+	Version      string
+	Major        float64
+	IKE_GCM      bool
+	Manufacturer string
+	Model        string
+	Serial       string
+	Config_Patch string
+	Root         string
+	Reserved     bool
+	Description  string
 
-	ASN          _AS_Number
-	RM_Index     *_RM_Index
-	Address_Book *_Address_Book
-	VI           map[_VI_Index]*wDB_VI
-	VI_Left      map[_VI_Index]*wDB_VI_Peer
-	VI_Right     map[_VI_Index]*wDB_VI_Peer
+	ASN      _AS_Number
+	RM_Index *_RM_Index
+	AB       *_AB
+	VI       map[_VI_Index]*wDB_VI
+	VI_Left  map[_VI_Index]*wDB_VI_Peer
+	VI_Right map[_VI_Index]*wDB_VI_Peer
 }
 type wDB_Host_RI struct {
 	// Name        string
@@ -220,7 +220,7 @@ type wDB_Host_RI_RT_GW struct {
 	Description string
 }
 type wDB_VI struct {
-	VI_Index_Padded_Name _VI_Index_Padded_Name
+	VI_Index_PName _VI_Index_PName
 	// Index         uint
 	Type          _VI_Type
 	Communication _IF_Communication
@@ -304,7 +304,7 @@ var (
 		}
 		return
 	}()
-	address_book  = make(_Address_Book)
+	ab            = make(_AB)
 	vi_ipprefix   netip.Prefix
 	vi_ip_shift   _VI_Index
 	i_db_host     = make(map[_AS_Number]*wDB_Host)                      // Peer_ASN
@@ -356,7 +356,7 @@ func sanitize_string(inbound *string) (outbound string) {
 	}
 	return
 }
-func add_to_address_book_ipset(public, private bool, ab_name string, ip ...interface{}) {
+func add_to_ab_ipset(public, private bool, ab_name string, ip ...interface{}) {
 	for _, address := range ip {
 		var (
 			interim netip.Prefix
@@ -384,17 +384,17 @@ func add_to_address_book_ipset(public, private bool, ab_name string, ip ...inter
 		default:
 			continue
 		}
-		switch _, flag := address_book[ab_name]; flag {
+		switch _, flag := ab[ab_name]; flag {
 		case false:
-			// address_book[ab_name] = make(map[netip.Prefix]bool)
-			address_book[ab_name] = map[netip.Prefix]bool{
+			// ab[ab_name] = make(map[netip.Prefix]bool)
+			ab[ab_name] = map[netip.Prefix]bool{
 				interim: true,
 			}
 			continue
 		}
-		switch _, flag := address_book[ab_name][interim]; flag {
+		switch _, flag := ab[ab_name][interim]; flag {
 		case false:
-			address_book[ab_name][interim] = true
+			ab[ab_name][interim] = true
 		}
 	}
 }
@@ -571,8 +571,8 @@ func parse_db(xml_db *sDB) (err error) {
 				i_db_host_ike_gcm_v  = i_db_host_major_v >= 12.3
 			)
 			i_db_host[i_db_host_v.ASN] = &wDB_Host{
-				ASN:            i_db_host_v.ASN,
-				AS_Padded_Name: fmt.Sprintf("%10d", i_db_host_as_name_v),
+				ASN:      i_db_host_v.ASN,
+				AS_PName: fmt.Sprintf("%10d", i_db_host_as_name_v),
 				RI: func() (i_db_host_ri_o map[_RI_Name]wDB_Host_RI) {
 					i_db_host_ri_o = make(map[_RI_Name]wDB_Host_RI)
 					for _, i_db_host_ri_v := range i_db_host_v.RI {
@@ -710,7 +710,7 @@ func parse_db(xml_db *sDB) (err error) {
 																Reserved:    i_db_host_ri_if_address_v.Reserved,
 																Description: i_db_host_ri_if_address_v.Description,
 															}
-															add_to_address_book_ipset(true, false, "OUTTER_LIST", i_db_host_ri_if_address_v.IPPrefix.Addr(), i_db_host_ri_if_address_v.NAT)
+															add_to_ab_ipset(true, false, "OUTTER_LIST", i_db_host_ri_if_address_v.IPPrefix.Addr(), i_db_host_ri_if_address_v.NAT)
 														default:
 														}
 													}
@@ -727,7 +727,7 @@ func parse_db(xml_db *sDB) (err error) {
 																Reserved:    i_db_host_ri_if_proxy_arp_v.Reserved,
 																Description: i_db_host_ri_if_proxy_arp_v.Description,
 															}
-															add_to_address_book_ipset(true, false, "OUTTER_LIST", i_db_host_ri_if_proxy_arp_v.IPPrefix.Addr(), i_db_host_ri_if_proxy_arp_v.NAT)
+															add_to_ab_ipset(true, false, "OUTTER_LIST", i_db_host_ri_if_proxy_arp_v.IPPrefix.Addr(), i_db_host_ri_if_proxy_arp_v.NAT)
 														default:
 														}
 													}
@@ -777,13 +777,13 @@ func parse_db(xml_db *sDB) (err error) {
 					}
 					return i_db_host_v.Root
 				}(),
-				Reserved:     i_db_host_v.Reserved,
-				Description:  i_db_host_v.Description,
-				Address_Book: &address_book,
-				RM_Index:     &rm_index,
-				VI:           map[_VI_Index]*wDB_VI{},
-				VI_Left:      map[_VI_Index]*wDB_VI_Peer{},
-				VI_Right:     map[_VI_Index]*wDB_VI_Peer{},
+				Reserved:    i_db_host_v.Reserved,
+				Description: i_db_host_v.Description,
+				AB:          &ab,
+				RM_Index:    &rm_index,
+				VI:          map[_VI_Index]*wDB_VI{},
+				VI_Left:     map[_VI_Index]*wDB_VI_Peer{},
+				VI_Right:    map[_VI_Index]*wDB_VI_Peer{},
 			}
 		default:
 		}
@@ -806,9 +806,9 @@ func parse_db(xml_db *sDB) (err error) {
 				continue
 			}
 			i_db_vi[i_db_vi_v.Index] = &wDB_VI{
-				VI_Index_Padded_Name: _VI_Index_Padded_Name(fmt.Sprintf("%05d", i_db_vi_v.Index)),
-				Type:                 i_db_vi_v.Type,
-				Communication:        i_db_vi_v.Communication,
+				VI_Index_PName: _VI_Index_PName(fmt.Sprintf("%05d", i_db_vi_v.Index)),
+				Type:           i_db_vi_v.Type,
+				Communication:  i_db_vi_v.Communication,
 				Route_Metric: func() uint {
 					switch i_db_vi_v.Route_Metric > _rm_max {
 					case true:
@@ -1021,8 +1021,8 @@ func main() {
 	// log.Infof("'%+v'", generate_passwd(16))
 	// log.Infof("'%+v'", hpow7)
 	log.Infof("'%s'", config[4200240063])
-	// log.Infof("'%+v'", address_book_ipset["OUTTER_LIST"].Prefixes())
-	// a := address_book_ipset["OUTTER_LIST"].Prefixes()
+	// log.Infof("'%+v'", ab_ipset["OUTTER_LIST"].Prefixes())
+	// a := ab_ipset["OUTTER_LIST"].Prefixes()
 	// log.Infof("'%+v'", i_db_vi_peer[63][0])
 	// log.Infof("'%+v'", i_db_vi_peer[63][1])
 	// log.Infof("'%+v'", i_db_host[4200240063].VI[197])
