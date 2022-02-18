@@ -39,8 +39,6 @@ type _VI_Type string
 type _GW_Type string
 type _GW_Name string
 
-// type Template_Content string
-
 type sDB struct {
 	XMLName     xml.Name       `xml:"AS4200240XXX"`
 	Peer        []sDB_Peer     `xml:"peer_list>peer"`
