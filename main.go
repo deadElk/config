@@ -28,13 +28,14 @@ import (
 // TODO: implement Junos $1$ (md5? user passwords), $9$ (sha? user passwords and PSKs) and other encryption methods
 // TODO: implement DB validation and maximum possible autofill
 // TODO: implement template list customization
-// TODO: this program is just adapter written on golang to gotemplate defined in config
+// TODO: this program is just adapter written on golang for gotemplate defined in config
 
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
 type _AS_Number uint32
 type _Address_Book map[string]map[netip.Prefix]bool
 type _RM_Index [_rm_max + 1]uint32
 type _Template_Name string
+type _Template_Content string
 type _RI_Name string
 type _IF_Name string
 type _IF_Index uint
@@ -146,6 +147,7 @@ type sDB_VI_Peer struct {
 	Reserved      bool           `xml:"reserved,attr"`
 	Description   string         `xml:"description,attr"`
 }
+
 type wDB_Host struct {
 	AS_Padded_Name string
 	RI             map[_RI_Name]wDB_Host_RI // Peer_RI_Name
@@ -270,7 +272,7 @@ const (
 	_default_vi_ipprefix string            = "10.90.0.0/16"
 	_juniper_default_RI  _RI_Name          = "master"
 	_juniper_mgmt_RI     _RI_Name          = "master"
-	_juniper_mgmt_IF     string            = "lo0.0"
+	_juniper_mgmt_IF     _IF_Name          = "lo0.0"
 	_gw_hop              _GW_Type          = "hop"
 	_gw_interface        _GW_Type          = "interface"
 	_gw_table            _GW_Type          = "table"
