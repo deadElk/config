@@ -31,22 +31,24 @@ import (
 // TODO: this program is just adapter written on golang for gotemplate defined in config
 
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
-type _AS_Number uint32
+
 type _AB map[string]map[netip.Prefix]bool
-type _RM_Index [_rm_max + 1]uint32
-type _Template_Name string
-type _Template_Content string
-type _RI_Name string
-type _IF_Name string
-type _IF_Index uint
-type _IP_Address_Index uint
-type _VI_Index uint
-type _VI_Index_PName string
-type _VI_Peer_Index uint
-type _IF_Communication string
-type _VI_Type string
-type _GW_Type string
+type _ASN uint32
+type _ASN_PName uint32
 type _GW_Name string
+type _GW_Type string
+type _IF_Communication string
+type _IF_ID uint
+type _IF_Name string
+type _IP_Address_ID uint
+type _RI_Name string
+type _RM_ID [_rm_max + 1]uint32
+type _Template_Content string
+type _Template_Name string
+type _VI_ID uint
+type _VI_ID_PName string
+type _VI_Peer_ID uint
+type _VI_Type string
 
 type sDB struct {
 	XMLName     xml.Name       `xml:"AS4200240XXX"`
@@ -65,7 +67,7 @@ type sDB_Template struct {
 	Description string         `xml:"description,attr"`
 }
 type sDB_Peer struct {
-	ASN          _AS_Number    `xml:"ASN,attr"`
+	ASN          _ASN          `xml:"ASN,attr"`
 	RI           []sDB_Peer_RI `xml:"RI"`
 	Hostname     string        `xml:"hostname,attr"`
 	Version      string        `xml:"version,attr"`
@@ -86,7 +88,7 @@ type sDB_Peer_RI struct {
 }
 type sDB_Peer_RI_IF struct {
 	Name          _IF_Name                   `xml:"name,attr"`
-	Index         _IF_Index                  `xml:"index,attr"`
+	Index         _IF_ID                     `xml:"index,attr"`
 	Communication _IF_Communication          `xml:"communication,attr"`
 	Address       []sDB_Peer_RI_IF_Address   `xml:"address"`
 	Proxy_ARP     []sDB_Peer_RI_IF_Proxy_ARP `xml:"proxy_arp"`
@@ -95,12 +97,12 @@ type sDB_Peer_RI_IF struct {
 	Description   string                     `xml:"description,attr"`
 }
 type sDB_Peer_RI_IF_Address struct {
-	Index       _IP_Address_Index `xml:"index,attr"`
-	IPPrefix    netip.Prefix      `xml:"ipprefix,attr"`
-	NAT         netip.Addr        `xml:"NAT,attr"`
-	DHCP        bool              `xml:"dhcp,attr"`
-	Reserved    bool              `xml:"reserved,attr"`
-	Description string            `xml:"description,attr"`
+	Index       _IP_Address_ID `xml:"index,attr"`
+	IPPrefix    netip.Prefix   `xml:"ipprefix,attr"`
+	NAT         netip.Addr     `xml:"NAT,attr"`
+	DHCP        bool           `xml:"dhcp,attr"`
+	Reserved    bool           `xml:"reserved,attr"`
+	Description string         `xml:"description,attr"`
 }
 type sDB_Peer_RI_IF_Proxy_ARP struct {
 	IPPrefix    netip.Prefix `xml:"ipprefix,attr"`
@@ -124,7 +126,7 @@ type sDB_Peer_RI_RT_GW struct {
 	Description string     `xml:"description,attr"`
 }
 type sDB_VI struct {
-	Index         _VI_Index         `xml:"index,attr"`
+	Index         _VI_ID            `xml:"index,attr"`
 	Type          _VI_Type          `xml:"type,attr"`
 	Communication _IF_Communication `xml:"communication,attr"`
 	Route_Metric  uint              `xml:"route_metric,attr"`
@@ -134,18 +136,98 @@ type sDB_VI struct {
 	Description   string            `xml:"description,attr"`
 }
 type sDB_VI_Peer struct {
-	Index         _VI_Peer_Index `xml:"index,attr"`
-	ASN           _AS_Number     `xml:"ASN,attr"`
-	RI            _RI_Name       `xml:"RI,attr"`
-	IF            _IF_Name       `xml:"IF,attr"`
-	IP            netip.Addr     `xml:"IP,attr"`
-	Local_Address bool           `xml:"local_address,attr"`
-	Dynamic       bool           `xml:"dynamic,attr"`
-	No_NAT        bool           `xml:"no_nat,attr"`
-	Hub           bool           `xml:"hub,attr"`
-	Inner_RI      _RI_Name       `xml:"inner_RI,attr"`
-	Reserved      bool           `xml:"reserved,attr"`
-	Description   string         `xml:"description,attr"`
+	Index         _VI_Peer_ID `xml:"index,attr"`
+	ASN           _ASN        `xml:"ASN,attr"`
+	RI            _RI_Name    `xml:"RI,attr"`
+	IF            _IF_Name    `xml:"IF,attr"`
+	IP            netip.Addr  `xml:"IP,attr"`
+	Local_Address bool        `xml:"local_address,attr"`
+	Dynamic       bool        `xml:"dynamic,attr"`
+	No_NAT        bool        `xml:"no_nat,attr"`
+	Hub           bool        `xml:"hub,attr"`
+	Inner_RI      _RI_Name    `xml:"inner_RI,attr"`
+	Reserved      bool        `xml:"reserved,attr"`
+	Description   string      `xml:"description,attr"`
+}
+
+type pDB_host struct {
+	ASN          _ASN
+	ASN_PName    _ASN_PName
+	RI           map[_RI_Name]pDB_Host_RI
+	IF_RI        map[_IF_Name]_RI_Name
+	Hostname     string
+	Version      string
+	Major        float64
+	IKE_GCM      bool
+	Manufacturer string
+	Model        string
+	Serial       string
+	Config_Patch string
+	Root         string
+	Reserved     bool
+	Description  string
+	VI           map[_VI_ID]pDB_VI
+	RM_ID        *_RM_ID
+	AB           *_AB
+}
+type pDB_Host_RI struct {
+	RT          map[netip.Prefix]pDB_Host_RI_RT
+	IF          map[_IF_Name]pDB_Host_RI_IF
+	IF_ID       map[_IF_ID]_IF_Name
+	Reserved    bool
+	Description string
+}
+type pDB_Host_RI_RT struct {
+	GW          map[_GW_Name]pDB_Host_RI_RT_GW
+	Reserved    bool
+	Description string
+}
+type pDB_Host_RI_RT_GW struct {
+	IP          netip.Addr // name candidate priority 1
+	IF          _IF_Name   // name candidate priority 2
+	Table       string     // name candidate priority 3
+	Discard     bool       // name candidate priority 0
+	Type        _GW_Type   // fill type appropriately
+	Metric      uint
+	Reserved    bool
+	Description string
+}
+type pDB_Host_RI_IF struct {
+	Index         _IF_ID
+	Communication _IF_Communication
+	Address       map[netip.Addr]pDB_Host_RI_IF_Address
+	Proxy_ARP     map[netip.Addr]pDB_Host_RI_IF_Proxy_ARP
+	Address_ID    map[_IP_Address_ID]netip.Addr
+	Disable       bool
+	Reserved      bool
+	Description   string
+}
+type pDB_Host_RI_IF_Address struct {
+	Index       _IP_Address_ID
+	IPPrefix    netip.Prefix
+	NAT         netip.Addr
+	DHCP        bool
+	Reserved    bool
+	Description string
+}
+type pDB_Host_RI_IF_Proxy_ARP struct {
+	IPPrefix    netip.Prefix
+	NAT         netip.Addr
+	Reserved    bool
+	Description string
+}
+type pDB_VI struct {
+	VI_ID_PName _VI_ID_PName
+	// Index         uint
+	Type          _VI_Type
+	Communication _IF_Communication
+	PSK           string
+	Route_Metric  uint
+	// Peer          map[_VI_Peer_ID]*wDB_VI_Peer // VI_Peer_ID
+	Peer_AS_ID  map[_VI_Peer_ID]_ASN
+	IPPrefix    netip.Prefix
+	Reserved    bool
+	Description string
 }
 
 type wDB_Host struct {
@@ -164,34 +246,34 @@ type wDB_Host struct {
 	Reserved     bool
 	Description  string
 
-	ASN      _AS_Number
-	RM_Index *_RM_Index
+	ASN      _ASN
+	RM_ID    *_RM_ID
 	AB       *_AB
-	VI       map[_VI_Index]*wDB_VI
-	VI_Left  map[_VI_Index]*wDB_VI_Peer
-	VI_Right map[_VI_Index]*wDB_VI_Peer
+	VI       map[_VI_ID]*wDB_VI
+	VI_Left  map[_VI_ID]*wDB_VI_Peer
+	VI_Right map[_VI_ID]*wDB_VI_Peer
 }
 type wDB_Host_RI struct {
 	// Name        string
 	RT          map[netip.Prefix]wDB_Host_RI_RT // Peer_RI_RT_Identifier
 	IF          map[_IF_Name]wDB_Host_RI_IF     // Peer_RI_IF_Name
-	IF_Index    map[_IF_Index]_IF_Name          // interface index to name mapping
+	IF_ID       map[_IF_ID]_IF_Name             // interface index to name mapping
 	Reserved    bool
 	Description string
 }
 type wDB_Host_RI_IF struct {
 	// Name        string
-	Index         _IF_Index
+	Index         _IF_ID
 	Communication _IF_Communication
 	Address       map[netip.Addr]wDB_Host_RI_IF_Address   // Peer_RI_IF_Address_IPPrefix
 	Proxy_ARP     map[netip.Addr]wDB_Host_RI_IF_Proxy_ARP // Peer_RI_IF_Proxy_ARP_IPPrefix
-	Address_Index map[_IP_Address_Index]netip.Addr        // interface's address index
+	Address_ID    map[_IP_Address_ID]netip.Addr           // interface's address index
 	Disable       bool
 	Reserved      bool
 	Description   string
 }
 type wDB_Host_RI_IF_Address struct {
-	Index       _IP_Address_Index
+	Index       _IP_Address_ID
 	IPPrefix    netip.Prefix
 	NAT         netip.Addr
 	DHCP        bool
@@ -220,21 +302,21 @@ type wDB_Host_RI_RT_GW struct {
 	Description string
 }
 type wDB_VI struct {
-	VI_Index_PName _VI_Index_PName
+	VI_ID_PName _VI_ID_PName
 	// Index         uint
 	Type          _VI_Type
 	Communication _IF_Communication
 	PSK           string
 	Route_Metric  uint
-	// Peer          map[_VI_Peer_Index]*wDB_VI_Peer // VI_Peer_Index
-	Peer_AS_Index map[_VI_Peer_Index]_AS_Number
-	IPPrefix      netip.Prefix
-	Reserved      bool
-	Description   string
+	// Peer          map[_VI_Peer_ID]*wDB_VI_Peer // VI_Peer_ID
+	Peer_AS_ID  map[_VI_Peer_ID]_ASN
+	IPPrefix    netip.Prefix
+	Reserved    bool
+	Description string
 }
 type wDB_VI_Peer struct {
-	Index          _VI_Peer_Index
-	ASN            _AS_Number
+	Index          _VI_Peer_ID
+	ASN            _ASN
 	RI             _RI_Name
 	IF             _IF_Name
 	IP             netip.Addr
@@ -298,7 +380,7 @@ var (
 	re_caps          = regexp.MustCompile(`[A-Z]`)
 	template_FuncMap = template.FuncMap{"sum_uint32": sum_uint32_template_FuncMap}
 	_loglevel        = _default_loglevel
-	rm_index         = func() (outbound _RM_Index) {
+	rm_index         = func() (outbound _RM_ID) {
 		for shift, interim := 0, 0; interim <= int(_rm_max); interim, shift = interim+1, shift+int(_rm_bits) {
 			outbound[interim] = 1 << shift
 		}
@@ -306,18 +388,23 @@ var (
 	}()
 	ab            = make(_AB)
 	vi_ipprefix   netip.Prefix
-	vi_ip_shift   _VI_Index
-	i_db_host     = make(map[_AS_Number]*wDB_Host)                      // Peer_ASN
-	i_db_vi       = make(map[_VI_Index]*wDB_VI)                         // VI_Index
-	i_db_vi_peer  = make(map[_VI_Index]map[_VI_Peer_Index]*wDB_VI_Peer) // VI_Peer_Index
-	i_db_template = make(map[_Template_Name]*wDB_Template)              // Template_Name
-	config        = make(map[_AS_Number]bytes.Buffer)                   // resulting configs
+	vi_ip_shift   _VI_ID
+	i_db_host     = make(map[_ASN]*wDB_Host)                      // Peer_ASN
+	i_db_vi       = make(map[_VI_ID]*wDB_VI)                      // VI_ID
+	i_db_vi_peer  = make(map[_VI_ID]map[_VI_Peer_ID]*wDB_VI_Peer) // VI_Peer_ID
+	i_db_template = make(map[_Template_Name]*wDB_Template)        // Template_Name
+	config        = make(map[_ASN]bytes.Buffer)                   // resulting configs
 )
 
-func (inbound _AS_Number) String() string {
-	return strconv.FormatUint(uint64(inbound), 10)
+func (inbound _ASN) String() (outbound string) {
+	outbound = "0000000000" + strconv.FormatUint(uint64(inbound), 10)
+	return string(outbound[len(outbound)-10:])
 }
-func get_vi_ipprefix(vi_shift _VI_Index, peer_shift _VI_Peer_Index) (outbound netip.Prefix) {
+func (inbound _VI_ID) String() (outbound string) {
+	outbound = "00000" + strconv.FormatUint(uint64(inbound), 10)
+	return string(outbound[len(outbound)-5:])
+}
+func get_vi_ipprefix(vi_shift _VI_ID, peer_shift _VI_Peer_ID) (outbound netip.Prefix) {
 	var (
 		b = make([]byte, 4)
 	)
@@ -336,7 +423,7 @@ func set_vi_ipprefix(inbound netip.Prefix) {
 			return
 		}
 	}
-	vi_ip_shift = _VI_Index(binary.BigEndian.Uint32(vi_ipprefix.Addr().AsSlice()))
+	vi_ip_shift = _VI_ID(binary.BigEndian.Uint32(vi_ipprefix.Addr().AsSlice()))
 }
 func sum_uint32_template_FuncMap(inbound ...uint32) (outbound uint32) {
 	switch len(inbound) {
@@ -579,7 +666,7 @@ func parse_db(xml_db *sDB) (err error) {
 						switch i_db_host_ri_v.Reserved {
 						case false:
 							var (
-								i_db_host_ri_if_index_v = make(map[_IF_Index]_IF_Name)
+								i_db_host_ri_if_index_v = make(map[_IF_ID]_IF_Name)
 							)
 							i_db_host_ri_o[i_db_host_ri_v.Name] = wDB_Host_RI{
 								RT: func() (i_db_host_ri_rt_o map[netip.Prefix]wDB_Host_RI_RT) {
@@ -655,7 +742,7 @@ func parse_db(xml_db *sDB) (err error) {
 												log.Warnf("peer: '%v', RI: '%v', IF: '%v', already defind in RI: '%v'; ACTION: overwrite.", i_db_host_v.ASN, i_db_host_ri_v.Name, i_db_host_ri_if_v.Name, i_db_host_ri_if_ri)
 												delete(i_db_host_ri_if_index_v, i_db_host_ri_if_v.Index)
 											}
-											i_db_host_ri_if_index_v[func() (i_db_host_ri_if_index_o _IF_Index) {
+											i_db_host_ri_if_index_v[func() (i_db_host_ri_if_index_o _IF_ID) {
 												switch _, flag := i_db_host_ri_if_index_v[i_db_host_ri_if_v.Index]; flag {
 												case false:
 													i_db_host_ri_if_index_v[i_db_host_ri_if_v.Index] = i_db_host_ri_if_v.Name
@@ -678,7 +765,7 @@ func parse_db(xml_db *sDB) (err error) {
 												continue
 											}
 											var (
-												i_db_host_ri_if_address_index_v = make(map[_IP_Address_Index]netip.Addr)
+												i_db_host_ri_if_address_index_v = make(map[_IP_Address_ID]netip.Addr)
 											)
 											i_db_host_ri_if_o[i_db_host_ri_if_v.Name] = wDB_Host_RI_IF{
 												Index:         i_db_host_ri_if_v.Index,
@@ -690,7 +777,7 @@ func parse_db(xml_db *sDB) (err error) {
 														case false:
 															i_db_host_ri_if_address_o[i_db_host_ri_if_address_v.IPPrefix.Addr()] = wDB_Host_RI_IF_Address{
 																IPPrefix: i_db_host_ri_if_address_v.IPPrefix,
-																Index: func() (i_db_host_ri_if_address_index_o _IP_Address_Index) {
+																Index: func() (i_db_host_ri_if_address_index_o _IP_Address_ID) {
 																	switch _, flag := i_db_host_ri_if_address_index_v[i_db_host_ri_if_address_v.Index]; flag {
 																	case false:
 																		i_db_host_ri_if_address_index_v[i_db_host_ri_if_address_v.Index] = i_db_host_ri_if_address_v.IPPrefix.Addr()
@@ -733,10 +820,10 @@ func parse_db(xml_db *sDB) (err error) {
 													}
 													return
 												}(),
-												Address_Index: i_db_host_ri_if_address_index_v,
-												Disable:       i_db_host_ri_if_v.Disable,
-												Reserved:      i_db_host_ri_if_v.Reserved,
-												Description:   i_db_host_ri_if_v.Description,
+												Address_ID:  i_db_host_ri_if_address_index_v,
+												Disable:     i_db_host_ri_if_v.Disable,
+												Reserved:    i_db_host_ri_if_v.Reserved,
+												Description: i_db_host_ri_if_v.Description,
 											}
 											i_db_host_if_ri_v[i_db_host_ri_if_v.Name] = i_db_host_ri_v.Name
 										default:
@@ -744,7 +831,7 @@ func parse_db(xml_db *sDB) (err error) {
 									}
 									return
 								}(),
-								IF_Index:    i_db_host_ri_if_index_v,
+								IF_ID:       i_db_host_ri_if_index_v,
 								Reserved:    i_db_host_ri_v.Reserved,
 								Description: i_db_host_ri_v.Description,
 							}
@@ -780,10 +867,10 @@ func parse_db(xml_db *sDB) (err error) {
 				Reserved:    i_db_host_v.Reserved,
 				Description: i_db_host_v.Description,
 				AB:          &ab,
-				RM_Index:    &rm_index,
-				VI:          map[_VI_Index]*wDB_VI{},
-				VI_Left:     map[_VI_Index]*wDB_VI_Peer{},
-				VI_Right:    map[_VI_Index]*wDB_VI_Peer{},
+				RM_ID:       &rm_index,
+				VI:          map[_VI_ID]*wDB_VI{},
+				VI_Left:     map[_VI_ID]*wDB_VI_Peer{},
+				VI_Right:    map[_VI_ID]*wDB_VI_Peer{},
 			}
 		default:
 		}
@@ -806,9 +893,9 @@ func parse_db(xml_db *sDB) (err error) {
 				continue
 			}
 			i_db_vi[i_db_vi_v.Index] = &wDB_VI{
-				VI_Index_PName: _VI_Index_PName(fmt.Sprintf("%05d", i_db_vi_v.Index)),
-				Type:           i_db_vi_v.Type,
-				Communication:  i_db_vi_v.Communication,
+				VI_ID_PName:   _VI_ID_PName(fmt.Sprintf("%05d", i_db_vi_v.Index)),
+				Type:          i_db_vi_v.Type,
+				Communication: i_db_vi_v.Communication,
 				Route_Metric: func() uint {
 					switch i_db_vi_v.Route_Metric > _rm_max {
 					case true:
@@ -823,8 +910,8 @@ func parse_db(xml_db *sDB) (err error) {
 					}
 					return i_db_vi_v.PSK
 				}(),
-				// Peer: func() (i_db_vi_peer_o map[_VI_Peer_Index]*wDB_VI_Peer) {
-				// 	i_db_vi_peer_o = make(map[_VI_Peer_Index]*wDB_VI_Peer)
+				// Peer: func() (i_db_vi_peer_o map[_VI_Peer_ID]*wDB_VI_Peer) {
+				// 	i_db_vi_peer_o = make(map[_VI_Peer_ID]*wDB_VI_Peer)
 				// 	for _, i_db_vi_peer_v := range i_db_vi_v.Peer {
 				// 		switch i_db_vi_peer_v.Reserved {
 				// 		case false:
@@ -850,15 +937,15 @@ func parse_db(xml_db *sDB) (err error) {
 				// 					switch len(i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address) != 0 {
 				// 					case true:
 				// 						var (
-				// 							index _IP_Address_Index = 1 >> 1
+				// 							index _IP_Address_ID = 1 >> 1
 				// 						)
-				// 						for address_index := range i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address_Index {
+				// 						for address_index := range i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address_ID {
 				// 							switch index > address_index {
 				// 							case true:
 				// 								index = address_index
 				// 							}
 				// 						}
-				// 						i_db_vi_peer_v.IP = i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address_Index[index]
+				// 						i_db_vi_peer_v.IP = i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address_ID[index]
 				// 					}
 				// 				}
 				// 				switch len(i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address) > 1 {
@@ -887,13 +974,13 @@ func parse_db(xml_db *sDB) (err error) {
 				// 	}
 				// 	return
 				// }(),
-				Peer_AS_Index: map[_VI_Peer_Index]_AS_Number{},
-				IPPrefix:      get_vi_ipprefix(i_db_vi_v.Index, 0),
-				Reserved:      i_db_vi_v.Reserved,
-				Description:   i_db_vi_v.Description,
+				Peer_AS_ID:  map[_VI_Peer_ID]_ASN{},
+				IPPrefix:    get_vi_ipprefix(i_db_vi_v.Index, 0),
+				Reserved:    i_db_vi_v.Reserved,
+				Description: i_db_vi_v.Description,
 			}
-			i_db_vi_peer[i_db_vi_v.Index] = func() (i_db_vi_peer_o map[_VI_Peer_Index]*wDB_VI_Peer) {
-				i_db_vi_peer_o = make(map[_VI_Peer_Index]*wDB_VI_Peer)
+			i_db_vi_peer[i_db_vi_v.Index] = func() (i_db_vi_peer_o map[_VI_Peer_ID]*wDB_VI_Peer) {
+				i_db_vi_peer_o = make(map[_VI_Peer_ID]*wDB_VI_Peer)
 				for _, i_db_vi_peer_v := range i_db_vi_v.Peer {
 					switch i_db_vi_peer_v.Reserved {
 					case false:
@@ -919,15 +1006,15 @@ func parse_db(xml_db *sDB) (err error) {
 								switch len(i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address) != 0 {
 								case true:
 									var (
-										index _IP_Address_Index = 1 >> 1
+										index _IP_Address_ID = 1 >> 1
 									)
-									for address_index := range i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address_Index {
+									for address_index := range i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address_ID {
 										switch index > address_index {
 										case true:
 											index = address_index
 										}
 									}
-									i_db_vi_peer_v.IP = i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address_Index[index]
+									i_db_vi_peer_v.IP = i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address_ID[index]
 								}
 							}
 							switch len(i_db_host[i_db_vi_peer_v.ASN].RI[i_db_vi_peer_v.RI].IF[i_db_vi_peer_v.IF].Address) > 1 {
@@ -960,7 +1047,7 @@ func parse_db(xml_db *sDB) (err error) {
 								Reserved:       i_db_vi_peer_v.Reserved,
 								Description:    i_db_vi_peer_v.Description,
 							}
-							i_db_vi[i_db_vi_v.Index].Peer_AS_Index[i_db_vi_peer_v.Index] = i_db_vi_peer_v.ASN
+							i_db_vi[i_db_vi_v.Index].Peer_AS_ID[i_db_vi_peer_v.Index] = i_db_vi_peer_v.ASN
 						default:
 							continue
 						}
@@ -976,7 +1063,7 @@ func parse_db(xml_db *sDB) (err error) {
 		for i_db_vi_peer_i, i_db_vi_peer_v := range i_db_vi_peers_v {
 			i_db_host[i_db_vi_peer_v.ASN].VI[i_db_vi_i] = i_db_vi[i_db_vi_i]
 			i_db_host[i_db_vi_peer_v.ASN].VI_Left[i_db_vi_i] = i_db_vi_peer_v
-			for index, value := range i_db_vi[i_db_vi_i].Peer_AS_Index {
+			for index, value := range i_db_vi[i_db_vi_i].Peer_AS_ID {
 				switch i_db_vi_peer_i != index {
 				case true:
 					i_db_host[value].VI_Right[i_db_vi_i] = i_db_vi_peer_v
