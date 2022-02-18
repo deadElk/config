@@ -41,53 +41,53 @@ type _GW_Name string
 
 // type Template_Content string
 
-type _XML_DB struct {
-	XMLName     xml.Name           `xml:"AS4200240XXX"`
-	Peer        []_XML_DB_Peer     `xml:"peer_list>peer"`
-	VI          []_XML_DB_VI       `xml:"VI_list>VI"`
-	Template    []_XML_DB_Template `xml:"template_list>template"`
-	VI_IPPrefix netip.Prefix       `xml:"VI_IPPrefix,attr"`
-	Reserved    bool               `xml:"reserved,attr"`
-	Description string             `xml:"description,attr"`
-	Verbosity   string             `xml:"verbosity,attr"`
+type sDB struct {
+	XMLName     xml.Name       `xml:"AS4200240XXX"`
+	Peer        []sDB_Peer     `xml:"peer_list>peer"`
+	VI          []sDB_VI       `xml:"VI_list>VI"`
+	Template    []sDB_Template `xml:"template_list>template"`
+	VI_IPPrefix netip.Prefix   `xml:"VI_IPPrefix,attr"`
+	Reserved    bool           `xml:"reserved,attr"`
+	Description string         `xml:"description,attr"`
+	Verbosity   string         `xml:"verbosity,attr"`
 }
-type _XML_DB_Template struct {
+type sDB_Template struct {
 	Name        _Template_Name `xml:"name,attr"`
 	Content     string         `xml:",chardata"`
 	Reserved    bool           `xml:"reserved,attr"`
 	Description string         `xml:"description,attr"`
 }
-type _XML_DB_Peer struct {
-	ASN          _AS_Number        `xml:"ASN,attr"`
-	RI           []_XML_DB_Peer_RI `xml:"RI"`
-	Hostname     string            `xml:"hostname,attr"`
-	Version      string            `xml:"version,attr"`
-	Manufacturer string            `xml:"manufacturer,attr"`
-	Model        string            `xml:"model,attr"`
-	Serial       string            `xml:"serial,attr"`
-	Config_Patch string            `xml:"config_patch"`
-	Root         string            `xml:"root,attr"`
-	Reserved     bool              `xml:"reserved,attr"`
-	Description  string            `xml:"description,attr"`
+type sDB_Peer struct {
+	ASN          _AS_Number    `xml:"ASN,attr"`
+	RI           []sDB_Peer_RI `xml:"RI"`
+	Hostname     string        `xml:"hostname,attr"`
+	Version      string        `xml:"version,attr"`
+	Manufacturer string        `xml:"manufacturer,attr"`
+	Model        string        `xml:"model,attr"`
+	Serial       string        `xml:"serial,attr"`
+	Config_Patch string        `xml:"config_patch"`
+	Root         string        `xml:"root,attr"`
+	Reserved     bool          `xml:"reserved,attr"`
+	Description  string        `xml:"description,attr"`
 }
-type _XML_DB_Peer_RI struct {
-	Name        _RI_Name             `xml:"name,attr"`
-	RT          []_XML_DB_Peer_RI_RT `xml:"RT"`
-	IF          []_XML_DB_Peer_RI_IF `xml:"IF"`
-	Reserved    bool                 `xml:"reserved,attr"`
-	Description string               `xml:"description,attr"`
+type sDB_Peer_RI struct {
+	Name        _RI_Name         `xml:"name,attr"`
+	RT          []sDB_Peer_RI_RT `xml:"RT"`
+	IF          []sDB_Peer_RI_IF `xml:"IF"`
+	Reserved    bool             `xml:"reserved,attr"`
+	Description string           `xml:"description,attr"`
 }
-type _XML_DB_Peer_RI_IF struct {
-	Name          _IF_Name                       `xml:"name,attr"`
-	Index         _IF_Index                      `xml:"index,attr"`
-	Communication _IF_Communication              `xml:"communication,attr"`
-	Address       []_XML_DB_Peer_RI_IF_Address   `xml:"address"`
-	Proxy_ARP     []_XML_DB_Peer_RI_IF_Proxy_ARP `xml:"proxy_arp"`
-	Disable       bool                           `xml:"disable,attr"`
-	Reserved      bool                           `xml:"reserved,attr"`
-	Description   string                         `xml:"description,attr"`
+type sDB_Peer_RI_IF struct {
+	Name          _IF_Name                   `xml:"name,attr"`
+	Index         _IF_Index                  `xml:"index,attr"`
+	Communication _IF_Communication          `xml:"communication,attr"`
+	Address       []sDB_Peer_RI_IF_Address   `xml:"address"`
+	Proxy_ARP     []sDB_Peer_RI_IF_Proxy_ARP `xml:"proxy_arp"`
+	Disable       bool                       `xml:"disable,attr"`
+	Reserved      bool                       `xml:"reserved,attr"`
+	Description   string                     `xml:"description,attr"`
 }
-type _XML_DB_Peer_RI_IF_Address struct {
+type sDB_Peer_RI_IF_Address struct {
 	Index       _IP_Address_Index `xml:"index,attr"`
 	IPPrefix    netip.Prefix      `xml:"ipprefix,attr"`
 	NAT         netip.Addr        `xml:"NAT,attr"`
@@ -95,19 +95,19 @@ type _XML_DB_Peer_RI_IF_Address struct {
 	Reserved    bool              `xml:"reserved,attr"`
 	Description string            `xml:"description,attr"`
 }
-type _XML_DB_Peer_RI_IF_Proxy_ARP struct {
+type sDB_Peer_RI_IF_Proxy_ARP struct {
 	IPPrefix    netip.Prefix `xml:"ipprefix,attr"`
 	NAT         netip.Addr   `xml:"NAT,attr"`
 	Reserved    bool         `xml:"reserved,attr"`
 	Description string       `xml:"description,attr"`
 }
-type _XML_DB_Peer_RI_RT struct {
-	Identifier  netip.Prefix            `xml:"identifier,attr"`
-	GW          []_XML_DB_Peer_RI_RT_GW `xml:"GW"`
-	Reserved    bool                    `xml:"reserved,attr"`
-	Description string                  `xml:"description,attr"`
+type sDB_Peer_RI_RT struct {
+	Identifier  netip.Prefix        `xml:"identifier,attr"`
+	GW          []sDB_Peer_RI_RT_GW `xml:"GW"`
+	Reserved    bool                `xml:"reserved,attr"`
+	Description string              `xml:"description,attr"`
 }
-type _XML_DB_Peer_RI_RT_GW struct {
+type sDB_Peer_RI_RT_GW struct {
 	IP          netip.Addr `xml:"ip,attr"`
 	IF          _IF_Name   `xml:"IF,attr"`
 	Table       string     `xml:"table,attr"`
@@ -116,17 +116,17 @@ type _XML_DB_Peer_RI_RT_GW struct {
 	Reserved    bool       `xml:"reserved,attr"`
 	Description string     `xml:"description,attr"`
 }
-type _XML_DB_VI struct {
+type sDB_VI struct {
 	Index         _VI_Index         `xml:"index,attr"`
 	Type          _VI_Type          `xml:"type,attr"`
 	Communication _IF_Communication `xml:"communication,attr"`
 	Route_Metric  uint              `xml:"route_metric,attr"`
-	Peer          []_XML_DB_VI_Peer `xml:"peer"`
+	Peer          []sDB_VI_Peer     `xml:"peer"`
 	PSK           string            `xml:"PSK,attr"`
 	Reserved      bool              `xml:"reserved,attr"`
 	Description   string            `xml:"description,attr"`
 }
-type _XML_DB_VI_Peer struct {
+type sDB_VI_Peer struct {
 	Index         _VI_Peer_Index `xml:"index,attr"`
 	ASN           _AS_Number     `xml:"ASN,attr"`
 	RI            _RI_Name       `xml:"RI,attr"`
@@ -141,15 +141,15 @@ type _XML_DB_VI_Peer struct {
 	Description   string         `xml:"description,attr"`
 }
 
-type _I_DB_Template struct { // Name        _Template_Name
+type wDB_Template struct { // Name        _Template_Name
 	Content     string
 	Reserved    bool
 	Description string
 }
-type _I_DB_Host struct {
+type wDB_Host struct {
 	AS_Padded_Name string
-	RI             map[_RI_Name]_I_DB_Host_RI // Peer_RI_Name
-	IF_RI          map[_IF_Name]_RI_Name      // interface name to RI mapping
+	RI             map[_RI_Name]wDB_Host_RI // Peer_RI_Name
+	IF_RI          map[_IF_Name]_RI_Name    // interface name to RI mapping
 	Hostname       string
 	Version        string
 	Major          float64
@@ -165,30 +165,30 @@ type _I_DB_Host struct {
 	ASN          _AS_Number
 	RM_Index     *_RM_Index
 	Address_Book *_Address_Book
-	VI           map[_VI_Index]*_I_DB_VI
-	VI_Left      map[_VI_Index]*_I_DB_VI_Peer
-	VI_Right     map[_VI_Index]*_I_DB_VI_Peer
+	VI           map[_VI_Index]*wDB_VI
+	VI_Left      map[_VI_Index]*wDB_VI_Peer
+	VI_Right     map[_VI_Index]*wDB_VI_Peer
 }
-type _I_DB_Host_RI struct {
+type wDB_Host_RI struct {
 	// Name        string
-	RT          map[netip.Prefix]_I_DB_Host_RI_RT // Peer_RI_RT_Identifier
-	IF          map[_IF_Name]_I_DB_Host_RI_IF     // Peer_RI_IF_Name
-	IF_Index    map[_IF_Index]_IF_Name            // interface index to name mapping
+	RT          map[netip.Prefix]wDB_Host_RI_RT // Peer_RI_RT_Identifier
+	IF          map[_IF_Name]wDB_Host_RI_IF     // Peer_RI_IF_Name
+	IF_Index    map[_IF_Index]_IF_Name          // interface index to name mapping
 	Reserved    bool
 	Description string
 }
-type _I_DB_Host_RI_IF struct {
+type wDB_Host_RI_IF struct {
 	// Name        string
 	Index         _IF_Index
 	Communication _IF_Communication
-	Address       map[netip.Addr]_I_DB_Host_RI_IF_Address   // Peer_RI_IF_Address_IPPrefix
-	Proxy_ARP     map[netip.Addr]_I_DB_Host_RI_IF_Proxy_ARP // Peer_RI_IF_Proxy_ARP_IPPrefix
-	Address_Index map[_IP_Address_Index]netip.Addr          // interface's address index
+	Address       map[netip.Addr]wDB_Host_RI_IF_Address   // Peer_RI_IF_Address_IPPrefix
+	Proxy_ARP     map[netip.Addr]wDB_Host_RI_IF_Proxy_ARP // Peer_RI_IF_Proxy_ARP_IPPrefix
+	Address_Index map[_IP_Address_Index]netip.Addr        // interface's address index
 	Disable       bool
 	Reserved      bool
 	Description   string
 }
-type _I_DB_Host_RI_IF_Address struct {
+type wDB_Host_RI_IF_Address struct {
 	Index       _IP_Address_Index
 	IPPrefix    netip.Prefix
 	NAT         netip.Addr
@@ -196,19 +196,19 @@ type _I_DB_Host_RI_IF_Address struct {
 	Reserved    bool
 	Description string
 }
-type _I_DB_Host_RI_IF_Proxy_ARP struct {
+type wDB_Host_RI_IF_Proxy_ARP struct {
 	IPPrefix    netip.Prefix
 	NAT         netip.Addr
 	Reserved    bool
 	Description string
 }
-type _I_DB_Host_RI_RT struct {
+type wDB_Host_RI_RT struct {
 	// Identifier  netip.Prefix
-	GW          map[_GW_Name]_I_DB_Host_RI_RT_GW // Peer_RI_RT_GW (use IP/Interface/Table/Discard as string Index)
+	GW          map[_GW_Name]wDB_Host_RI_RT_GW // Peer_RI_RT_GW (use IP/Interface/Table/Discard as string Index)
 	Reserved    bool
 	Description string
 }
-type _I_DB_Host_RI_RT_GW struct {
+type wDB_Host_RI_RT_GW struct {
 	IP          netip.Addr // name candidate priority 1
 	IF          _IF_Name   // name candidate priority 2
 	Table       string     // name candidate priority 3
@@ -217,20 +217,20 @@ type _I_DB_Host_RI_RT_GW struct {
 	Reserved    bool
 	Description string
 }
-type _I_DB_VI struct {
+type wDB_VI struct {
 	VI_Index_Padded_Name _VI_Index_Padded_Name
 	// Index         uint
 	Type          _VI_Type
 	Communication _IF_Communication
 	PSK           string
 	Route_Metric  uint
-	// Peer          map[_VI_Peer_Index]*_I_DB_VI_Peer // VI_Peer_Index
+	// Peer          map[_VI_Peer_Index]*wDB_VI_Peer // VI_Peer_Index
 	Peer_AS_Index map[_VI_Peer_Index]_AS_Number
 	IPPrefix      netip.Prefix
 	Reserved      bool
 	Description   string
 }
-type _I_DB_VI_Peer struct {
+type wDB_VI_Peer struct {
 	Index          _VI_Peer_Index
 	ASN            _AS_Number
 	RI             _RI_Name
@@ -296,11 +296,11 @@ var (
 	address_book  = make(_Address_Book)
 	vi_ipprefix   netip.Prefix
 	vi_ip_shift   _VI_Index
-	i_db_host     = make(map[_AS_Number]*_I_DB_Host)                      // Peer_ASN
-	i_db_vi       = make(map[_VI_Index]*_I_DB_VI)                         // VI_Index
-	i_db_vi_peer  = make(map[_VI_Index]map[_VI_Peer_Index]*_I_DB_VI_Peer) // VI_Peer_Index
-	i_db_template = make(map[_Template_Name]*_I_DB_Template)              // Template_Name
-	config        = make(map[_AS_Number]bytes.Buffer)                     // resulting configs
+	i_db_host     = make(map[_AS_Number]*wDB_Host)                      // Peer_ASN
+	i_db_vi       = make(map[_VI_Index]*wDB_VI)                         // VI_Index
+	i_db_vi_peer  = make(map[_VI_Index]map[_VI_Peer_Index]*wDB_VI_Peer) // VI_Peer_Index
+	i_db_template = make(map[_Template_Name]*wDB_Template)              // Template_Name
+	config        = make(map[_AS_Number]bytes.Buffer)                   // resulting configs
 )
 
 func (inbound _AS_Number) String() string {
@@ -523,7 +523,7 @@ func read_db() (err error) {
 			"/usr/local/etc/" + _serviced + ".xml",
 			"/etc/" + _serviced + ".xml",
 		}
-		xml_db _XML_DB
+		xml_db sDB
 		data   []byte
 	)
 	for _, value := range configuration_files {
@@ -546,7 +546,7 @@ func read_db() (err error) {
 	}
 	return errors.New("no configuration found")
 }
-func parse_db(xml_db *_XML_DB) (err error) {
+func parse_db(xml_db *sDB) (err error) {
 	log_setlevel(&xml_db.Verbosity)
 	set_vi_ipprefix(xml_db.VI_IPPrefix)
 	for _, i_db_host_v := range xml_db.Peer {
@@ -559,26 +559,26 @@ func parse_db(xml_db *_XML_DB) (err error) {
 				i_db_host_major_v, _ = strconv.ParseFloat(i_db_host_version_i[0], 64)
 				i_db_host_ike_gcm_v  = i_db_host_major_v >= 12.3
 			)
-			i_db_host[i_db_host_v.ASN] = &_I_DB_Host{
+			i_db_host[i_db_host_v.ASN] = &wDB_Host{
 				ASN:            i_db_host_v.ASN,
 				AS_Padded_Name: fmt.Sprintf("%10d", i_db_host_as_name_v),
-				RI: func() (i_db_host_ri_o map[_RI_Name]_I_DB_Host_RI) {
-					i_db_host_ri_o = make(map[_RI_Name]_I_DB_Host_RI)
+				RI: func() (i_db_host_ri_o map[_RI_Name]wDB_Host_RI) {
+					i_db_host_ri_o = make(map[_RI_Name]wDB_Host_RI)
 					for _, i_db_host_ri_v := range i_db_host_v.RI {
 						switch i_db_host_ri_v.Reserved {
 						case false:
 							var (
 								i_db_host_ri_if_index_v = make(map[_IF_Index]_IF_Name)
 							)
-							i_db_host_ri_o[i_db_host_ri_v.Name] = _I_DB_Host_RI{
-								RT: func() (i_db_host_ri_rt_o map[netip.Prefix]_I_DB_Host_RI_RT) {
-									i_db_host_ri_rt_o = make(map[netip.Prefix]_I_DB_Host_RI_RT)
+							i_db_host_ri_o[i_db_host_ri_v.Name] = wDB_Host_RI{
+								RT: func() (i_db_host_ri_rt_o map[netip.Prefix]wDB_Host_RI_RT) {
+									i_db_host_ri_rt_o = make(map[netip.Prefix]wDB_Host_RI_RT)
 									for _, i_db_host_ri_rt_v := range i_db_host_ri_v.RT {
 										switch i_db_host_ri_rt_v.Reserved {
 										case false:
-											i_db_host_ri_rt_o[i_db_host_ri_rt_v.Identifier] = _I_DB_Host_RI_RT{
-												GW: func() (i_db_host_ri_rt_gw_o map[_GW_Name]_I_DB_Host_RI_RT_GW) {
-													i_db_host_ri_rt_gw_o = make(map[_GW_Name]_I_DB_Host_RI_RT_GW)
+											i_db_host_ri_rt_o[i_db_host_ri_rt_v.Identifier] = wDB_Host_RI_RT{
+												GW: func() (i_db_host_ri_rt_gw_o map[_GW_Name]wDB_Host_RI_RT_GW) {
+													i_db_host_ri_rt_gw_o = make(map[_GW_Name]wDB_Host_RI_RT_GW)
 													for _, i_db_host_ri_rt_gw_v := range i_db_host_ri_rt_v.GW {
 														switch i_db_host_ri_rt_gw_v.Reserved {
 														case false:
@@ -614,7 +614,7 @@ func parse_db(xml_db *_XML_DB) (err error) {
 															default:
 																continue
 															}
-															i_db_host_ri_rt_gw_o[_GW_Name(gw_i)] = _I_DB_Host_RI_RT_GW{
+															i_db_host_ri_rt_gw_o[_GW_Name(gw_i)] = wDB_Host_RI_RT_GW{
 																IP:          i_db_host_ri_rt_gw_v.IP,
 																IF:          i_db_host_ri_rt_gw_v.IF,
 																Table:       i_db_host_ri_rt_gw_v.Table,
@@ -634,8 +634,8 @@ func parse_db(xml_db *_XML_DB) (err error) {
 									}
 									return
 								}(),
-								IF: func() (i_db_host_ri_if_o map[_IF_Name]_I_DB_Host_RI_IF) {
-									i_db_host_ri_if_o = make(map[_IF_Name]_I_DB_Host_RI_IF)
+								IF: func() (i_db_host_ri_if_o map[_IF_Name]wDB_Host_RI_IF) {
+									i_db_host_ri_if_o = make(map[_IF_Name]wDB_Host_RI_IF)
 									for _, i_db_host_ri_if_v := range i_db_host_ri_v.IF {
 										switch i_db_host_ri_if_v.Reserved {
 										case false:
@@ -669,15 +669,15 @@ func parse_db(xml_db *_XML_DB) (err error) {
 											var (
 												i_db_host_ri_if_address_index_v = make(map[_IP_Address_Index]netip.Addr)
 											)
-											i_db_host_ri_if_o[i_db_host_ri_if_v.Name] = _I_DB_Host_RI_IF{
+											i_db_host_ri_if_o[i_db_host_ri_if_v.Name] = wDB_Host_RI_IF{
 												Index:         i_db_host_ri_if_v.Index,
 												Communication: i_db_host_ri_if_v.Communication,
-												Address: func() (i_db_host_ri_if_address_o map[netip.Addr]_I_DB_Host_RI_IF_Address) {
-													i_db_host_ri_if_address_o = make(map[netip.Addr]_I_DB_Host_RI_IF_Address)
+												Address: func() (i_db_host_ri_if_address_o map[netip.Addr]wDB_Host_RI_IF_Address) {
+													i_db_host_ri_if_address_o = make(map[netip.Addr]wDB_Host_RI_IF_Address)
 													for _, i_db_host_ri_if_address_v := range i_db_host_ri_if_v.Address {
 														switch i_db_host_ri_if_address_v.Reserved {
 														case false:
-															i_db_host_ri_if_address_o[i_db_host_ri_if_address_v.IPPrefix.Addr()] = _I_DB_Host_RI_IF_Address{
+															i_db_host_ri_if_address_o[i_db_host_ri_if_address_v.IPPrefix.Addr()] = wDB_Host_RI_IF_Address{
 																IPPrefix: i_db_host_ri_if_address_v.IPPrefix,
 																Index: func() (i_db_host_ri_if_address_index_o _IP_Address_Index) {
 																	switch _, flag := i_db_host_ri_if_address_index_v[i_db_host_ri_if_address_v.Index]; flag {
@@ -705,12 +705,12 @@ func parse_db(xml_db *_XML_DB) (err error) {
 													}
 													return
 												}(),
-												Proxy_ARP: func() (i_db_host_ri_if_proxy_arp_o map[netip.Addr]_I_DB_Host_RI_IF_Proxy_ARP) {
-													i_db_host_ri_if_proxy_arp_o = make(map[netip.Addr]_I_DB_Host_RI_IF_Proxy_ARP)
+												Proxy_ARP: func() (i_db_host_ri_if_proxy_arp_o map[netip.Addr]wDB_Host_RI_IF_Proxy_ARP) {
+													i_db_host_ri_if_proxy_arp_o = make(map[netip.Addr]wDB_Host_RI_IF_Proxy_ARP)
 													for _, i_db_host_ri_if_proxy_arp_v := range i_db_host_ri_if_v.Proxy_ARP {
 														switch i_db_host_ri_if_proxy_arp_v.Reserved {
 														case false:
-															i_db_host_ri_if_proxy_arp_o[i_db_host_ri_if_proxy_arp_v.IPPrefix.Addr()] = _I_DB_Host_RI_IF_Proxy_ARP{
+															i_db_host_ri_if_proxy_arp_o[i_db_host_ri_if_proxy_arp_v.IPPrefix.Addr()] = wDB_Host_RI_IF_Proxy_ARP{
 																IPPrefix:    i_db_host_ri_if_proxy_arp_v.IPPrefix,
 																NAT:         i_db_host_ri_if_proxy_arp_v.NAT,
 																Reserved:    i_db_host_ri_if_proxy_arp_v.Reserved,
@@ -770,9 +770,9 @@ func parse_db(xml_db *_XML_DB) (err error) {
 				Description:  i_db_host_v.Description,
 				Address_Book: &address_book,
 				RM_Index:     &rm_index,
-				VI:           map[_VI_Index]*_I_DB_VI{},
-				VI_Left:      map[_VI_Index]*_I_DB_VI_Peer{},
-				VI_Right:     map[_VI_Index]*_I_DB_VI_Peer{},
+				VI:           map[_VI_Index]*wDB_VI{},
+				VI_Left:      map[_VI_Index]*wDB_VI_Peer{},
+				VI_Right:     map[_VI_Index]*wDB_VI_Peer{},
 			}
 		default:
 		}
@@ -794,7 +794,7 @@ func parse_db(xml_db *_XML_DB) (err error) {
 			default:
 				continue
 			}
-			i_db_vi[i_db_vi_v.Index] = &_I_DB_VI{
+			i_db_vi[i_db_vi_v.Index] = &wDB_VI{
 				VI_Index_Padded_Name: _VI_Index_Padded_Name(fmt.Sprintf("%05d", i_db_vi_v.Index)),
 				Type:                 i_db_vi_v.Type,
 				Communication:        i_db_vi_v.Communication,
@@ -812,8 +812,8 @@ func parse_db(xml_db *_XML_DB) (err error) {
 					}
 					return i_db_vi_v.PSK
 				}(),
-				// Peer: func() (i_db_vi_peer_o map[_VI_Peer_Index]*_I_DB_VI_Peer) {
-				// 	i_db_vi_peer_o = make(map[_VI_Peer_Index]*_I_DB_VI_Peer)
+				// Peer: func() (i_db_vi_peer_o map[_VI_Peer_Index]*wDB_VI_Peer) {
+				// 	i_db_vi_peer_o = make(map[_VI_Peer_Index]*wDB_VI_Peer)
 				// 	for _, i_db_vi_peer_v := range i_db_vi_v.Peer {
 				// 		switch i_db_vi_peer_v.Reserved {
 				// 		case false:
@@ -854,7 +854,7 @@ func parse_db(xml_db *_XML_DB) (err error) {
 				// 				case true:
 				// 					i_db_vi_peer_v.Local_Address = true
 				// 				}
-				// 				i_db_vi_peer_o[i_db_vi_peer_v.Index] = &_I_DB_VI_Peer{
+				// 				i_db_vi_peer_o[i_db_vi_peer_v.Index] = &wDB_VI_Peer{
 				// 					Index:         i_db_vi_peer_v.Index,
 				// 					ASN:           i_db_vi_peer_v.ASN,
 				// 					RI:            i_db_vi_peer_v.RI,
@@ -881,8 +881,8 @@ func parse_db(xml_db *_XML_DB) (err error) {
 				Reserved:      i_db_vi_v.Reserved,
 				Description:   i_db_vi_v.Description,
 			}
-			i_db_vi_peer[i_db_vi_v.Index] = func() (i_db_vi_peer_o map[_VI_Peer_Index]*_I_DB_VI_Peer) {
-				i_db_vi_peer_o = make(map[_VI_Peer_Index]*_I_DB_VI_Peer)
+			i_db_vi_peer[i_db_vi_v.Index] = func() (i_db_vi_peer_o map[_VI_Peer_Index]*wDB_VI_Peer) {
+				i_db_vi_peer_o = make(map[_VI_Peer_Index]*wDB_VI_Peer)
 				for _, i_db_vi_peer_v := range i_db_vi_v.Peer {
 					switch i_db_vi_peer_v.Reserved {
 					case false:
@@ -932,7 +932,7 @@ func parse_db(xml_db *_XML_DB) (err error) {
 								i_db_vi_peer_nat_v = i_db_vi_peer_nat_i
 								i_db_vi_peer_use_nat_v = true
 							}
-							i_db_vi_peer_o[i_db_vi_peer_v.Index] = &_I_DB_VI_Peer{
+							i_db_vi_peer_o[i_db_vi_peer_v.Index] = &wDB_VI_Peer{
 								Index:          i_db_vi_peer_v.Index,
 								ASN:            i_db_vi_peer_v.ASN,
 								RI:             i_db_vi_peer_v.RI,
@@ -978,7 +978,7 @@ func parse_db(xml_db *_XML_DB) (err error) {
 		case false:
 			switch _, flag := i_db_template[i_db_template_v.Name]; flag {
 			case false:
-				i_db_template[i_db_template_v.Name] = &_I_DB_Template{
+				i_db_template[i_db_template_v.Name] = &wDB_Template{
 					Content:     sanitize_string(&i_db_template_v.Content),
 					Reserved:    i_db_template_v.Reserved,
 					Description: i_db_template_v.Description,
