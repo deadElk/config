@@ -27,6 +27,8 @@ import (
 
 // TODO: implement Junos $1$ (md5? user passwords), $9$ (sha? user passwords and PSKs) and other encryption methods
 // TODO: implement DB validation and maximum possible autofill
+// TODO: implement template list customization
+// TODO: this program is just adapter written on golang to gotemplate defined in config
 
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
 type _AS_Number uint32
