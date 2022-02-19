@@ -307,8 +307,8 @@ const (
 	_passwd                                = _passwd_Z + _passwd_z + _passwd_0 + _passwd_oops
 	_default_vi_ipprefix string            = "10.90.0.0/16"
 	_juniper_default_RI  _RI_Name          = "master"
-	_juniper_mgmt_RI     _RI_Name          = "master"
-	_juniper_mgmt_IF     _IF_Name          = "lo0.0"
+	_juniper_mgmt_RI     _RI_Name          = "mgmt_junos"
+	_juniper_mgmt_IF     _IF_Name          = "fxp0.0"
 	_gw_hop              _GW_Type          = "hop"
 	_gw_interface        _GW_Type          = "interface"
 	_gw_table            _GW_Type          = "table"
@@ -928,9 +928,15 @@ func parse_db(xml_db *sDB) (err error) {
 							}
 							return
 						}(),
-						IP_IF:       vIP_IF,
-						Reserved:    ri_v.Reserved,
-						Description: ri_v.Description,
+						IP_IF:    vIP_IF,
+						Reserved: ri_v.Reserved,
+						Description: func() (outbound _Description) {
+							switch ri_v.Name == _juniper_mgmt_RI && len(ri_v.Description) == 0 {
+							case true:
+								return "MANAGEMENT-INSTANCE"
+							}
+							return ri_v.Description
+						}(),
 					}
 				}
 				return
@@ -986,25 +992,25 @@ func use_db() (err error) {
 					continue
 				}
 			}
-			continue
-			var (
-				vGT_name = "AS" + value.ASN_PName.String() + "_GT_Patch"
-				vGT      *template.Template
-				vBuf     bytes.Buffer
-			)
-			switch vGT, err = template.New(vGT_name).Funcs(gt_fm).Parse(value.GT_Patch.String()); err == nil && vGT != nil {
-			case true:
-				switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
-				case true:
-					config[index][len(config[index])-1] = vBuf
-				default:
-					log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
-					continue
-				}
-			default:
-				log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
-				continue
-			}
+			// var (
+			// 	vGT_name = "AS" + value.ASN_PName.String() + "_GT_Patch"
+			// 	vGT      *template.Template
+			// 	vBuf     bytes.Buffer
+			// )
+			// switch vGT, err = template.New(vGT_name).Funcs(gt_fm).Parse(value.GT_Patch.String()); err == nil && vGT != nil {
+			// // switch vGT, err = template.New("config.tmpl").Funcs(gt_fm).ParseFiles("config.tmpl"); err == nil && vGT != nil {
+			// case true:
+			// 	switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
+			// 	case true:
+			// 		config[index][len(config[index])-1] = vBuf
+			// 	default:
+			// 		log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
+			// 		continue
+			// 	}
+			// default:
+			// 	log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
+			// 	continue
+			// }
 		}
 	}
 	return
