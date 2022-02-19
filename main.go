@@ -425,7 +425,7 @@ func sum_uint32_gt_fm(inbound ...uint32) (outbound uint32) {
 	}
 	return
 }
-func add_to_ab_ipset(public, private bool, ab_name string, ip ...interface{}) {
+func add_to_ab(public, private bool, ab_name string, ip ...interface{}) {
 	for _, address := range ip {
 		var (
 			interim netip.Prefix
@@ -433,7 +433,7 @@ func add_to_ab_ipset(public, private bool, ab_name string, ip ...interface{}) {
 		)
 		switch value := (address).(type) {
 		case netip.Addr:
-			switch is_private, is_valid := value.IsPrivate(), value.IsValid(); !is_valid || (is_private && !private) || (is_private && !public) {
+			switch is_private, is_valid := value.IsPrivate(), value.IsValid(); !is_valid || (is_private && !private) || (!is_private && !public) {
 			case true:
 				continue
 			}
@@ -448,8 +448,8 @@ func add_to_ab_ipset(public, private bool, ab_name string, ip ...interface{}) {
 				continue
 			}
 			interim = value
-		// case string:
-		// 	continue
+		case string:
+			continue
 		default:
 			continue
 		}
@@ -825,6 +825,7 @@ func parse_db(xml_db *sDB) (err error) {
 													log.Warnf("peer ASN '%v', router ID '%v' already defined; ACTION: skip.", value.ASN, vRouter_ID)
 												}
 											}
+											add_to_ab(true, false, "OUTTER_LIST", ip_v.IPPrefix.Addr(), ip_v.NAT)
 											ip_o[ip_i] = pDB_Peer_RI_IF_IP{
 												IPPrefix:    ip_v.IPPrefix,
 												Router_ID:   ip_v.Router_ID,
@@ -850,6 +851,7 @@ func parse_db(xml_db *sDB) (err error) {
 												continue
 											}
 											vIP_IF[parp_i] = if_v.Name
+											add_to_ab(true, false, "OUTTER_LIST", parp_v.IPPrefix.Addr(), parp_v.NAT)
 											parp_o[parp_v.IPPrefix.Addr()] = pDB_Peer_RI_IF_PARP{
 												IPPrefix:    parp_v.IPPrefix,
 												NAT:         parp_v.NAT,
