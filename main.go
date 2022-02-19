@@ -32,9 +32,6 @@ import (
 // TODO: this program is just an adapter written in golang for the gotemplate defined in the config
 
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
-type Stringer interface {
-	String() string
-}
 type _AB map[string]map[netip.Prefix]bool
 type _ASN uint32
 type _ASN_PName string
@@ -51,6 +48,7 @@ type _VI_ID uint
 type _VI_ID_PName string
 type _VI_Peer_ID uint
 type _VI_Type string
+type _Description string
 
 type sDB struct {
 	XMLName     xml.Name     `xml:"AS4200240XXX"`
@@ -60,14 +58,14 @@ type sDB struct {
 	VI_IPPrefix netip.Prefix `xml:"VI_IPPrefix,attr"`
 	GT_List     string       `xml:"GT_list,attr"`
 	Reserved    bool         `xml:"reserved,attr"`
-	Description string       `xml:"description,attr"`
+	Description _Description `xml:"description,attr"`
 	Verbosity   string       `xml:"verbosity,attr"`
 }
 type sDB_GT struct {
-	Name        _GT_Name    `xml:"name,attr"`
-	Content     _GT_Content `xml:",chardata"`
-	Reserved    bool        `xml:"reserved,attr"`
-	Description string      `xml:"description,attr"`
+	Name        _GT_Name     `xml:"name,attr"`
+	Content     _GT_Content  `xml:",chardata"`
+	Reserved    bool         `xml:"reserved,attr"`
+	Description _Description `xml:"description,attr"`
 }
 type sDB_Peer struct {
 	ASN          _ASN          `xml:"ASN,attr"`
@@ -81,14 +79,14 @@ type sDB_Peer struct {
 	Root         string        `xml:"root,attr"`
 	GT_List      string        `xml:"GT_list,attr"`
 	Reserved     bool          `xml:"reserved,attr"`
-	Description  string        `xml:"description,attr"`
+	Description  _Description  `xml:"description,attr"`
 }
 type sDB_Peer_RI struct {
 	Name        _RI_Name         `xml:"name,attr"`
 	RT          []sDB_Peer_RI_RT `xml:"RT"`
 	IF          []sDB_Peer_RI_IF `xml:"IF"`
 	Reserved    bool             `xml:"reserved,attr"`
-	Description string           `xml:"description,attr"`
+	Description _Description     `xml:"description,attr"`
 }
 type sDB_Peer_RI_IF struct {
 	Name          _IF_Name                 `xml:"name,attr"`
@@ -97,7 +95,7 @@ type sDB_Peer_RI_IF struct {
 	PARP          []sDB_Peer_RI_IF_PARP    `xml:"PARP"`
 	Disable       bool                     `xml:"disable,attr"`
 	Reserved      bool                     `xml:"reserved,attr"`
-	Description   string                   `xml:"description,attr"`
+	Description   _Description             `xml:"description,attr"`
 }
 type sDB_Peer_RI_IF_Address struct {
 	IPPrefix    netip.Prefix `xml:"ipprefix,attr"`
@@ -107,29 +105,29 @@ type sDB_Peer_RI_IF_Address struct {
 	NAT         netip.Addr   `xml:"NAT,attr"`
 	DHCP        bool         `xml:"dhcp,attr"`
 	Reserved    bool         `xml:"reserved,attr"`
-	Description string       `xml:"description,attr"`
+	Description _Description `xml:"description,attr"`
 }
 type sDB_Peer_RI_IF_PARP struct {
 	IPPrefix    netip.Prefix `xml:"ipprefix,attr"`
 	NAT         netip.Addr   `xml:"NAT,attr"`
 	Reserved    bool         `xml:"reserved,attr"`
-	Description string       `xml:"description,attr"`
+	Description _Description `xml:"description,attr"`
 }
 type sDB_Peer_RI_RT struct {
 	Identifier  netip.Prefix        `xml:"identifier,attr"`
 	GW          []sDB_Peer_RI_RT_GW `xml:"GW"`
 	Reserved    bool                `xml:"reserved,attr"`
-	Description string              `xml:"description,attr"`
+	Description _Description        `xml:"description,attr"`
 }
 type sDB_Peer_RI_RT_GW struct {
-	IP          netip.Addr `xml:"ip,attr"`
-	IF          _IF_Name   `xml:"IF,attr"`
-	Table       string     `xml:"table,attr"`
-	Discard     bool       `xml:"discard,attr"`
-	Type        _GW_Type   `xml:"type,attr"`
-	Metric      uint       `xml:"metric,attr"`
-	Reserved    bool       `xml:"reserved,attr"`
-	Description string     `xml:"description,attr"`
+	IP          netip.Addr   `xml:"ip,attr"`
+	IF          _IF_Name     `xml:"IF,attr"`
+	Table       string       `xml:"table,attr"`
+	Discard     bool         `xml:"discard,attr"`
+	Type        _GW_Type     `xml:"type,attr"`
+	Metric      uint         `xml:"metric,attr"`
+	Reserved    bool         `xml:"reserved,attr"`
+	Description _Description `xml:"description,attr"`
 }
 type sDB_VI struct {
 	ID            _VI_ID            `xml:"index,attr"`
@@ -139,21 +137,21 @@ type sDB_VI struct {
 	Peer          []sDB_VI_Peer     `xml:"peer"`
 	PSK           string            `xml:"PSK,attr"`
 	Reserved      bool              `xml:"reserved,attr"`
-	Description   string            `xml:"description,attr"`
+	Description   _Description      `xml:"description,attr"`
 }
 type sDB_VI_Peer struct {
-	ID            _VI_Peer_ID `xml:"index,attr"`
-	ASN           _ASN        `xml:"ASN,attr"`
-	RI            _RI_Name    `xml:"RI,attr"`
-	IF            _IF_Name    `xml:"IF,attr"`
-	IP            netip.Addr  `xml:"IP,attr"`
-	Local_Address bool        `xml:"local_address,attr"`
-	Dynamic       bool        `xml:"dynamic,attr"`
-	No_NAT        bool        `xml:"no_nat,attr"`
-	Hub           bool        `xml:"hub,attr"`
-	Inner_RI      _RI_Name    `xml:"inner_RI,attr"`
-	Reserved      bool        `xml:"reserved,attr"`
-	Description   string      `xml:"description,attr"`
+	ID            _VI_Peer_ID  `xml:"index,attr"`
+	ASN           _ASN         `xml:"ASN,attr"`
+	RI            _RI_Name     `xml:"RI,attr"`
+	IF            _IF_Name     `xml:"IF,attr"`
+	IP            netip.Addr   `xml:"IP,attr"`
+	Local_Address bool         `xml:"local_address,attr"`
+	Dynamic       bool         `xml:"dynamic,attr"`
+	No_NAT        bool         `xml:"no_nat,attr"`
+	Hub           bool         `xml:"hub,attr"`
+	Inner_RI      _RI_Name     `xml:"inner_RI,attr"`
+	Reserved      bool         `xml:"reserved,attr"`
+	Description   _Description `xml:"description,attr"`
 }
 
 type pDB_peer struct {
@@ -173,7 +171,7 @@ type pDB_peer struct {
 	Root         string
 	GT_List      []_GT_Name
 	Reserved     bool
-	Description  string
+	Description  _Description
 	VI           map[_VI_ID]pDB_Peer_VI
 	RM_ID        *_RM_ID
 	AB           *_AB
@@ -183,12 +181,12 @@ type pDB_Peer_RI struct {
 	IF          map[_IF_Name]pDB_Peer_RI_IF
 	IP_IF       map[netip.Addr]_IF_Name
 	Reserved    bool
-	Description string
+	Description _Description
 }
 type pDB_Peer_RI_RT struct {
 	GW          map[_GW_Name]pDB_Peer_RI_RT_GW
 	Reserved    bool
-	Description string
+	Description _Description
 }
 type pDB_Peer_RI_RT_GW struct {
 	IP          netip.Addr // name candidate priority 1
@@ -198,7 +196,7 @@ type pDB_Peer_RI_RT_GW struct {
 	Type        _GW_Type   // fill type appropriately
 	Metric      uint
 	Reserved    bool
-	Description string
+	Description _Description
 }
 type pDB_Peer_RI_IF struct {
 	Communication _IF_Communication
@@ -206,23 +204,24 @@ type pDB_Peer_RI_IF struct {
 	PARP          map[netip.Addr]pDB_Peer_RI_IF_PARP
 	Disable       bool
 	Reserved      bool
-	Description   string
+	Description   _Description
 }
 type pDB_Peer_RI_IF_IP struct {
 	IPPrefix    netip.Prefix
+	Masked      netip.Prefix
 	Router_ID   bool
 	Primary     bool
 	Preferred   bool
 	NAT         netip.Addr
 	DHCP        bool
 	Reserved    bool
-	Description string
+	Description _Description
 }
 type pDB_Peer_RI_IF_PARP struct {
 	IPPrefix    netip.Prefix
 	NAT         netip.Addr
 	Reserved    bool
-	Description string
+	Description _Description
 }
 type pDB_Peer_VI struct {
 	VI_ID_PName          _VI_ID_PName
@@ -254,7 +253,7 @@ type pDB_Peer_VI struct {
 	Right_Inner_RI       _RI_Name
 	Right_Inner_IPPrefix netip.Prefix
 	Reserved             bool
-	Description          string
+	Description          _Description
 }
 type pDB_VI struct {
 	VI_ID_PName   _VI_ID_PName
@@ -267,7 +266,7 @@ type pDB_VI struct {
 	IPPrefix      netip.Prefix
 	No_NAT        bool
 	Reserved      bool
-	Description   string
+	Description   _Description
 }
 type pDB_VI_Peer struct {
 	ID             _VI_Peer_ID
@@ -282,12 +281,12 @@ type pDB_VI_Peer struct {
 	Inner_RI       _RI_Name
 	Inner_IPPrefix netip.Prefix
 	Reserved       bool
-	Description    string
+	Description    _Description
 }
 type pDB_GT struct {
 	Content     _GT_Content
 	Reserved    bool
-	Description string
+	Description _Description
 }
 
 const (
@@ -334,9 +333,12 @@ var (
 	hash_cache sync.Map
 	re_caps    = regexp.MustCompile(`[A-Z]`)
 	re_period  = regexp.MustCompile(`,`)
-	gt_fm      = template.FuncMap{"sum_uint32": sum_uint32_gt_fm}
-	_loglevel  = _default_loglevel
-	rm_id      = func() (outbound _RM_ID) {
+	gt_fm      = template.FuncMap{
+		"sum_uint32": sum_uint32_gt_fm,
+		"sum_string": sum_string_gt_fm,
+	}
+	_loglevel = _default_loglevel
+	rm_id     = func() (outbound _RM_ID) {
 		for shift, interim := 0, 0; interim <= int(_rm_max); interim, shift = interim+1, shift+int(_rm_bits) {
 			outbound[interim] = 1 << shift
 		}
@@ -387,11 +389,21 @@ func (inbound *_IF_Communication) Parse(mode _IF_Mode) (outbound _IF_Communicati
 	log.Warnf("unknow IF Communication type '%v'; ACTION: use '%v'.", *inbound, outbound)
 	return
 }
+func (inbound *_Description) Parse(default_description _Description) _Description {
+	switch len(*inbound) == 0 {
+	case true:
+		return default_description
+	}
+	return *inbound
+}
 func (inbound *_GT_Content) Sanitize() (outbound _GT_Content) {
 	for _, value := range strings.Split(string(*inbound), "\n") {
 		outbound += _GT_Content(strings.TrimSpace(value) + "\n")
 	}
 	return
+}
+func (inbound _RI_Name) String() string {
+	return string(inbound)
 }
 func get_vi_ipprefix(vi_shift _VI_ID, peer_shift _VI_Peer_ID) (outbound netip.Prefix) {
 	var (
@@ -423,6 +435,18 @@ func sum_uint32_gt_fm(inbound ...uint32) (outbound uint32) {
 	}
 	for index := 0; index < len(inbound); index++ {
 		outbound += inbound[index]
+	}
+	return
+}
+func sum_string_gt_fm(inbound ...string) (outbound string) {
+	switch len(inbound) {
+	case 0:
+		return
+	case 1:
+		return inbound[0]
+	}
+	for index := 0; index < len(inbound); index++ {
+		outbound += string(inbound[index])
 	}
 	return
 }
@@ -829,6 +853,7 @@ func parse_db(xml_db *sDB) (err error) {
 											add_to_ab(true, false, "OUTTER_LIST", ip_v.IPPrefix.Addr(), ip_v.NAT)
 											ip_o[ip_i] = pDB_Peer_RI_IF_IP{
 												IPPrefix:    ip_v.IPPrefix,
+												Masked:      ip_v.IPPrefix.Masked(),
 												Router_ID:   ip_v.Router_ID,
 												Primary:     ip_v.Primary,
 												Preferred:   ip_v.Preferred,
@@ -927,6 +952,7 @@ func use_db() (err error) {
 					continue
 				}
 			}
+			continue
 			var (
 				vGT_name = "AS" + string(value.ASN_PName) + "_GT_Patch"
 				vGT      *template.Template
