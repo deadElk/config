@@ -818,7 +818,12 @@ func parse_db(xml_db *sDB) (err error) {
 											vIP_IF[ip_i] = if_v.Name
 											switch ip_v.Router_ID {
 											case true:
-												vRouter_ID = ip_i
+												switch vRouter_ID.IsValid() {
+												case false:
+													vRouter_ID = ip_i
+												default:
+													log.Warnf("peer ASN '%v', router ID '%v' already defined; ACTION: skip.", value.ASN, vRouter_ID)
+												}
 											}
 											ip_o[ip_i] = pDB_Peer_RI_IF_IP{
 												IPPrefix:    ip_v.IPPrefix,
