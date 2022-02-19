@@ -37,9 +37,7 @@ type _ASN_PName string
 type _GW_Name string
 type _GW_Type string
 type _IF_Communication string
-type _IF_ID uint
 type _IF_Name string
-type _IP_ID uint
 type _RI_Name string
 type _RM_ID [_rm_max + 1]uint32
 type _GT_Content string
@@ -89,7 +87,6 @@ type sDB_Peer_RI struct {
 }
 type sDB_Peer_RI_IF struct {
 	Name          _IF_Name                 `xml:"name,attr"`
-	ID            _IF_ID                   `xml:"index,attr"`
 	Communication _IF_Communication        `xml:"communication,attr"`
 	IP            []sDB_Peer_RI_IF_Address `xml:"IP"`
 	PARP          []sDB_Peer_RI_IF_PARP    `xml:"PARP"`
@@ -98,8 +95,10 @@ type sDB_Peer_RI_IF struct {
 	Description   string                   `xml:"description,attr"`
 }
 type sDB_Peer_RI_IF_Address struct {
-	ID          _IP_ID       `xml:"index,attr"`
 	IPPrefix    netip.Prefix `xml:"ipprefix,attr"`
+	Router_ID   bool         `xml:"router_id,attr"`
+	Primary     bool         `xml:"primary,attr"`
+	Preferred   bool         `xml:"preferred,attr"`
 	NAT         netip.Addr   `xml:"NAT,attr"`
 	DHCP        bool         `xml:"dhcp,attr"`
 	Reserved    bool         `xml:"reserved,attr"`
@@ -196,7 +195,6 @@ type pDB_Peer_RI_RT_GW struct {
 	Description string
 }
 type pDB_Peer_RI_IF struct {
-	ID            _IF_ID
 	Communication _IF_Communication
 	IP            map[netip.Addr]pDB_Peer_RI_IF_IP
 	PARP          map[netip.Addr]pDB_Peer_RI_IF_PARP
@@ -205,8 +203,10 @@ type pDB_Peer_RI_IF struct {
 	Description   string
 }
 type pDB_Peer_RI_IF_IP struct {
-	ID          _IP_ID
 	IPPrefix    netip.Prefix
+	Router_ID   bool
+	Primary     bool
+	Preferred   bool
 	NAT         netip.Addr
 	DHCP        bool
 	Reserved    bool
@@ -741,8 +741,20 @@ func parse_db(xml_db *sDB) (err error) {
 						}(),
 						IF: func() (if_o map[_IF_Name]pDB_Peer_RI_IF) {
 							if_o = make(map[_IF_Name]pDB_Peer_RI_IF)
-							for if_i, if_v := range ri_v.IF {
-								log.Errorf("'%v''%v'", if_i, if_v)
+							for _, if_v := range ri_v.IF {
+								log.Errorf("'%v''%v'", if_v)
+								if_o[if_v.Name] = pDB_Peer_RI_IF{
+									Communication: if_v.Communication,
+									IP: func() (ip_o map[netip.Addr]pDB_Peer_RI_IF_IP) {
+										return
+									}(),
+									PARP: func() (parp_o map[netip.Addr]pDB_Peer_RI_IF_PARP) {
+										return
+									}(),
+									Disable:     if_v.Disable,
+									Reserved:    if_v.Reserved,
+									Description: if_v.Description,
+								}
 							}
 							return
 						}(),
