@@ -123,6 +123,7 @@ type sDB_Peer_RI_RT_GW struct {
 	Table       string     `xml:"table,attr"`
 	Discard     bool       `xml:"discard,attr"`
 	Type        _GW_Type   `xml:"type,attr"`
+	Metric      uint       `xml:"metric,attr"`
 	Reserved    bool       `xml:"reserved,attr"`
 	Description string     `xml:"description,attr"`
 }
@@ -628,6 +629,16 @@ func parse_db(xml_db *sDB) (err error) {
 			log.Warnf("peer ASN '%v' already exist; ACTION: overwrite.", value.ASN)
 		}
 		var (
+			vASN_PName = _ASN_PName(value.ASN.String())
+			vHostname  = func() (outbound string) {
+				switch len(value.Hostname) == 0 {
+				case true:
+					outbound = "gw_as" + string(vASN_PName)
+					log.Warnf("peer ASN '%v' hostname not defined; ACTION: use '%v'.", value.ASN, outbound)
+					return
+				}
+				return value.Hostname
+			}()
 			vGT_List = func() (outbound []_GT_Name) {
 				var (
 					interim string
@@ -640,12 +651,18 @@ func parse_db(xml_db *sDB) (err error) {
 				}
 				var (
 					list = re_period.Split(interim, -1)
-					// outbound = make([]_GT_Name, len(list))
 				)
 				for _, list_v := range list {
-					switch _, flag := pdb_gt[_GT_Name(list_v)]; flag && !pdb_gt[_GT_Name(list_v)].Reserved {
+					switch _, flag := pdb_gt[_GT_Name(list_v)]; flag {
 					case true:
-						outbound = append(outbound, _GT_Name(list_v))
+						switch pdb_gt[_GT_Name(list_v)].Reserved {
+						case false:
+							outbound = append(outbound, _GT_Name(list_v))
+						default:
+							log.Warnf("peer ASN '%v' template '%v' cannot be used; ACTION: skip.", value.ASN, list_v)
+						}
+					default:
+						log.Warnf("peer ASN '%v', template '%v' not found; ACTION: skip.", value.ASN, list_v)
 					}
 				}
 				return
@@ -661,16 +678,83 @@ func parse_db(xml_db *sDB) (err error) {
 			vIF_RI     = make(map[_IF_Name]_RI_Name)
 			vRI        = func() (outbound map[_RI_Name]pDB_Peer_RI) {
 				outbound = make(map[_RI_Name]pDB_Peer_RI)
+				for _, ri_v := range value.RI {
+					outbound[ri_v.Name] = pDB_Peer_RI{
+						RT: func() (rt_o map[netip.Prefix]pDB_Peer_RI_RT) {
+							rt_o = make(map[netip.Prefix]pDB_Peer_RI_RT)
+							for _, rt_v := range ri_v.RT {
+								rt_o[rt_v.Identifier] = pDB_Peer_RI_RT{
+									GW: func() (gw_o map[_GW_Name]pDB_Peer_RI_RT_GW) {
+										gw_o = make(map[_GW_Name]pDB_Peer_RI_RT_GW)
+										for _, gw_v := range rt_v.GW {
+											var (
+												gw_i = strconv.FormatUint(uint64(gw_v.Metric), 10) + "_"
+											)
+											switch {
+											case gw_v.Type == _gw_discard:
+												gw_i += string(_gw_discard)
+											case gw_v.Type == _gw_hop && gw_v.IP.IsValid():
+												gw_i += gw_v.IP.String()
+											case gw_v.Type == _gw_interface && len(gw_v.IF) != 0:
+												gw_i += string(gw_v.IF)
+											case gw_v.Type == _gw_table && len(gw_v.Table) != 0:
+												gw_i += gw_v.Table
+											case len(gw_v.Type) == 0:
+												switch {
+												case gw_v.Discard:
+													gw_i += string(_gw_discard)
+													gw_v.Type = _gw_discard
+												case gw_v.IP.IsValid():
+													gw_i += gw_v.IP.String()
+													gw_v.Type = _gw_hop
+												case len(gw_v.IF) != 0:
+													gw_i += string(gw_v.IF)
+													gw_v.Type = _gw_interface
+												case len(gw_v.Table) != 0:
+													gw_i += gw_v.Table
+													gw_v.Type = _gw_table
+												default:
+													continue
+												}
+											default:
+												continue
+											}
+											gw_o[_GW_Name(gw_i)] = pDB_Peer_RI_RT_GW{
+												IP:          gw_v.IP,
+												IF:          gw_v.IF,
+												Table:       gw_v.Table,
+												Discard:     gw_v.Discard,
+												Type:        gw_v.Type,
+												Metric:      gw_v.Metric,
+												Reserved:    gw_v.Reserved,
+												Description: gw_v.Description,
+											}
+										}
+										return
+									}(),
+									Reserved:    rt_v.Reserved,
+									Description: rt_v.Description,
+								}
+							}
+							return
+						}(),
+						IF: func() (if_o map[_IF_Name]pDB_Peer_RI_IF) {
+							return
+						}(),
+						Reserved:    ri_v.Reserved,
+						Description: ri_v.Description,
+					}
+				}
 				return
 			}()
 		)
 		pdb_peer[value.ASN] = pDB_peer{
 			ASN:          value.ASN,
-			ASN_PName:    _ASN_PName(value.ASN.String()),
+			ASN_PName:    vASN_PName,
 			Router_ID:    vRouter_ID,
 			RI:           vRI,
 			IF_RI:        vIF_RI,
-			Hostname:     value.Hostname,
+			Hostname:     vHostname,
 			Version:      value.Version,
 			Major:        vMajor,
 			IKE_GCM:      vIKE_GCM,
