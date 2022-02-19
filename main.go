@@ -49,6 +49,7 @@ type _VI_ID_PName string
 type _VI_Peer_ID uint
 type _VI_Type string
 type _Description string
+type _Policy string
 
 type sDB struct {
 	XMLName     xml.Name     `xml:"AS4200240XXX"`
@@ -85,6 +86,7 @@ type sDB_Peer_RI struct {
 	Name        _RI_Name         `xml:"name,attr"`
 	RT          []sDB_Peer_RI_RT `xml:"RT"`
 	IF          []sDB_Peer_RI_IF `xml:"IF"`
+	Policy      _Policy          `xml:"policy,attr"`
 	Reserved    bool             `xml:"reserved,attr"`
 	Description _Description     `xml:"description,attr"`
 }
@@ -180,6 +182,7 @@ type pDB_Peer_RI struct {
 	RT          map[netip.Prefix]pDB_Peer_RI_RT
 	IF          map[_IF_Name]pDB_Peer_RI_IF
 	IP_IF       map[netip.Addr]_IF_Name
+	Policy      _Policy
 	Reserved    bool
 	Description _Description
 }
@@ -329,6 +332,9 @@ const (
 	_right               string            = "right"
 	_rm_bits             uint              = 2
 	_rm_max                                = 32/_rm_bits - 1
+	_policy_restrictive  _Policy           = "restrictive"
+	_policy_permissive   _Policy           = "permissive"
+	_default_policy                        = _policy_permissive
 )
 
 var (
@@ -421,6 +427,16 @@ func (inbound _GT_Name) String() string {
 	return string(inbound)
 }
 func (inbound _GT_Content) String() string {
+	return string(inbound)
+}
+func (inbound _Policy) Parse() _Policy {
+	switch len(inbound) == 0 {
+	case true:
+		return _default_policy
+	}
+	return inbound
+}
+func (inbound _Policy) String() string {
 	return string(inbound)
 }
 func get_vi_ipprefix(vi_shift _VI_ID, peer_shift _VI_Peer_ID) (outbound netip.Prefix) {
@@ -929,6 +945,7 @@ func parse_db(xml_db *sDB) (err error) {
 							return
 						}(),
 						IP_IF:    vIP_IF,
+						Policy:   ri_v.Policy.Parse(),
 						Reserved: ri_v.Reserved,
 						Description: func() (outbound _Description) {
 							switch ri_v.Name == _juniper_mgmt_RI && len(ri_v.Description) == 0 {
