@@ -55,6 +55,7 @@ type sDB struct {
 	VI          []sDB_VI     `xml:"VI_list>VI"`
 	GT          []sDB_GT     `xml:"template_list>GT"`
 	VI_IPPrefix netip.Prefix `xml:"VI_IPPrefix,attr"`
+	GT_List     string       `xml:"GT_list,attr"`
 	Reserved    bool         `xml:"reserved,attr"`
 	Description string       `xml:"description,attr"`
 	Verbosity   string       `xml:"verbosity,attr"`
@@ -75,6 +76,7 @@ type sDB_Peer struct {
 	Serial       string        `xml:"serial,attr"`
 	Config_Patch string        `xml:"config_patch"`
 	Root         string        `xml:"root,attr"`
+	GT_List      string        `xml:"GT_list,attr"`
 	Reserved     bool          `xml:"reserved,attr"`
 	Description  string        `xml:"description,attr"`
 }
@@ -164,6 +166,7 @@ type pDB_peer struct {
 	Serial       string
 	Config_Patch string
 	Root         string
+	GT_List      []_GT_Name
 	Reserved     bool
 	Description  string
 	VI           map[_VI_ID]pDB_Peer_VI
@@ -320,6 +323,7 @@ const (
 var (
 	hash_cache sync.Map
 	re_caps    = regexp.MustCompile(`[A-Z]`)
+	re_period  = regexp.MustCompile(`,`)
 	gt_fm      = template.FuncMap{"sum_uint32": sum_uint32_gt_fm}
 	_loglevel  = _default_loglevel
 	rm_id      = func() (outbound _RM_ID) {
@@ -334,7 +338,7 @@ var (
 	pdb_peer    = make(map[_ASN]pDB_peer)
 	pdb_vi      = make(map[_VI_ID]pDB_VI)
 	pdb_gt      = make(map[_GT_Name]pDB_GT)
-	config      = make(map[_ASN]bytes.Buffer)
+	config      = make(map[_ASN][]bytes.Buffer)
 	// i_db_host     = make(map[_ASN]*wDB_Host)                      // Peer_ASN
 	// i_db_vi       = make(map[_VI_ID]*wDB_VI)                      // VI_ID
 	// i_db_vi_peer  = make(map[_VI_ID]map[_VI_Peer_ID]*wDB_VI_Peer) // VI_Peer_ID
@@ -605,12 +609,47 @@ func parse_db(xml_db *sDB) (err error) {
 	log_setlevel(&xml_db.Verbosity)
 	set_vi_ipprefix(xml_db.VI_IPPrefix)
 
+	for _, value := range xml_db.GT {
+		switch _, flag := pdb_gt[value.Name]; flag {
+		case true:
+			log.Warnf("template '%v' already exist; ACTION: overwrite.", value.Name)
+		}
+
+		pdb_gt[value.Name] = pDB_GT{
+			Content:     sanitize_string(&value.Content),
+			Reserved:    value.Reserved,
+			Description: value.Description,
+		}
+	}
+
 	for _, value := range xml_db.Peer {
 		switch _, flag := pdb_peer[value.ASN]; flag {
 		case true:
 			log.Warnf("peer ASN '%v' already exist; ACTION: overwrite.", value.ASN)
 		}
 		var (
+			vGT_List = func() (outbound []_GT_Name) {
+				var (
+					interim string
+				)
+				switch len(value.GT_List) != 0 {
+				case false:
+					interim = xml_db.GT_List
+				default:
+					interim = value.GT_List
+				}
+				var (
+					list = re_period.Split(interim, -1)
+					// outbound = make([]_GT_Name, len(list))
+				)
+				for _, list_v := range list {
+					switch _, flag := pdb_gt[_GT_Name(list_v)]; flag && !pdb_gt[_GT_Name(list_v)].Reserved {
+					case true:
+						outbound = append(outbound, _GT_Name(list_v))
+					}
+				}
+				return outbound
+			}()
 			vMajor = func() float64 {
 				var (
 					interim = re_caps.Split(value.Version, -1)
@@ -637,24 +676,12 @@ func parse_db(xml_db *sDB) (err error) {
 			Serial:       value.Serial,
 			Config_Patch: value.Config_Patch,
 			Root:         value.Root,
+			GT_List:      vGT_List,
 			Reserved:     value.Reserved,
 			Description:  value.Description,
 			VI:           map[_VI_ID]pDB_Peer_VI{},
 			RM_ID:        &rm_id,
 			AB:           &ab,
-		}
-	}
-
-	for _, value := range xml_db.GT {
-		switch _, flag := pdb_gt[value.Name]; flag {
-		case true:
-			log.Warnf("template '%v' already exist; ACTION: overwrite.", value.Name)
-		}
-
-		pdb_gt[value.Name] = pDB_GT{
-			Content:     sanitize_string(&value.Content),
-			Reserved:    value.Reserved,
-			Description: value.Description,
 		}
 	}
 
@@ -665,23 +692,27 @@ func parse_db(xml_db *sDB) (err error) {
 	return
 }
 func use_db() (err error) {
-	for key, value := range pdb_peer {
+	for index, value := range pdb_peer {
 		switch value.Reserved {
 		case false:
-			var (
-				gt  *template.Template
-				buf bytes.Buffer
-			)
-			switch gt, err = template.New("asXXXXXXXXXX").Funcs(gt_fm).Parse(pdb_gt["asXXXXXXXXXX"].Content); err == nil && gt != nil {
-			case true:
-				switch err = gt.Execute(&buf, value); err == nil && gt != nil {
+			config[index] = make([]bytes.Buffer, len(value.GT_List))
+			for gt_i, gt_v := range value.GT_List {
+				var (
+					vGT_name = string(gt_v)
+					vGT      *template.Template
+					vBuf     bytes.Buffer
+				)
+				switch vGT, err = template.New(vGT_name).Funcs(gt_fm).Parse(pdb_gt[_GT_Name(vGT_name)].Content); err == nil && vGT != nil {
 				case true:
-					config[key] = buf
+					switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
+					case true:
+						config[index][gt_i] = vBuf
+					default:
+						return
+					}
 				default:
 					return
 				}
-			default:
-				return
 			}
 		}
 	}
