@@ -456,15 +456,18 @@ func sum_uint32_gt_fm(inbound ...uint32) (outbound uint32) {
 	}
 	return
 }
-func sum_string_gt_fm(inbound ...string) (outbound string) {
+func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 	switch len(inbound) {
 	case 0:
 		return
-	case 1:
-		return inbound[0]
 	}
-	for index := 0; index < len(inbound); index++ {
-		outbound += inbound[index]
+	for _, value := range inbound {
+		switch element := value.(type) {
+		case string:
+			outbound += element
+		case _RI_Name:
+			outbound += element.String()
+		}
 	}
 	return
 }
