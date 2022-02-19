@@ -258,32 +258,6 @@ type pDB_Peer_VI struct {
 	Reserved             bool
 	Description          _Description
 }
-type pDB_VI struct {
-	VI_ID_PName   _VI_ID_PName
-	Type          _VI_Type
-	Communication _IF_Communication
-	PSK           string
-	Route_Metric  uint
-	IPPrefix      netip.Prefix
-	No_NAT        bool
-	IKE_GCM       bool
-	Reserved      bool
-	Description   _Description
-}
-type pDB_VI_Peer struct {
-	ASN            _ASN
-	RI             _RI_Name
-	IF             _IF_Name
-	IP             netip.Addr
-	NAT            netip.Addr
-	Local_Address  bool
-	Dynamic        bool
-	Hub            bool
-	Inner_RI       _RI_Name
-	Inner_IPPrefix netip.Prefix
-	Reserved       bool
-	Description    _Description
-}
 type pDB_GT struct {
 	Content     _GT_Content
 	Reserved    bool
@@ -353,7 +327,6 @@ var (
 	vi_ipprefix netip.Prefix
 	vi_ip_shift _VI_ID
 	pdb_peer    = make(map[_ASN]pDB_peer)
-	pdb_vi      = make(map[_VI_ID]pDB_VI)
 	pdb_gt      = make(map[_GT_Name]pDB_GT)
 	config      = make(map[_ASN][]bytes.Buffer)
 	// i_db_host     = make(map[_ASN]*wDB_Host)                      // Peer_ASN
