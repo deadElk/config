@@ -334,7 +334,7 @@ var (
 	pdb_peer    = make(map[_ASN]pDB_peer)
 	pdb_vi      = make(map[_VI_ID]pDB_VI)
 	pdb_gt      = make(map[_GT_Name]pDB_GT)
-	config      = make(map[_ASN]bytes.Buffer) // resulting configs
+	config      = make(map[_ASN]bytes.Buffer)
 	// i_db_host     = make(map[_ASN]*wDB_Host)                      // Peer_ASN
 	// i_db_vi       = make(map[_VI_ID]*wDB_VI)                      // VI_ID
 	// i_db_vi_peer  = make(map[_VI_ID]map[_VI_Peer_ID]*wDB_VI_Peer) // VI_Peer_ID
