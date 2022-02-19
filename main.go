@@ -37,6 +37,7 @@ type _ASN_PName string
 type _GW_Name string
 type _GW_Type string
 type _IF_Communication string
+type _IF_Mode string
 type _IF_Name string
 type _RI_Name string
 type _RM_ID [_rm_max + 1]uint32
@@ -72,7 +73,7 @@ type sDB_Peer struct {
 	Manufacturer string        `xml:"manufacturer,attr"`
 	Model        string        `xml:"model,attr"`
 	Serial       string        `xml:"serial,attr"`
-	Config_Patch string        `xml:"config_patch"`
+	GT_Patch     _GT_Content   `xml:"GT_patch"`
 	Root         string        `xml:"root,attr"`
 	GT_List      string        `xml:"GT_list,attr"`
 	Reserved     bool          `xml:"reserved,attr"`
@@ -164,7 +165,7 @@ type pDB_peer struct {
 	Manufacturer string
 	Model        string
 	Serial       string
-	Config_Patch string
+	GT_Patch     _GT_Content
 	Root         string
 	GT_List      []_GT_Name
 	Reserved     bool
@@ -176,6 +177,7 @@ type pDB_peer struct {
 type pDB_Peer_RI struct {
 	RT          map[netip.Prefix]pDB_Peer_RI_RT
 	IF          map[_IF_Name]pDB_Peer_RI_IF
+	IP_IF       map[netip.Addr]_IF_Name
 	Reserved    bool
 	Description string
 }
@@ -278,7 +280,7 @@ type pDB_VI_Peer struct {
 	Description    string
 }
 type pDB_GT struct {
-	Content     string
+	Content     _GT_Content
 	Reserved    bool
 	Description string
 }
@@ -313,6 +315,8 @@ const (
 	_if_comm_ptmp        _IF_Communication = "ptmp"
 	_default_vi_comm                       = _if_comm_ptp
 	_default_if_comm                       = _if_comm_ptmp
+	_if_mode_vi          _IF_Mode          = "vi"
+	_if_mode_link        _IF_Mode          = "link"
 	_node0               string            = "node0"
 	_node1               string            = "node1"
 	_left                string            = "left"
@@ -354,6 +358,36 @@ func (inbound _VI_ID) String() (outbound string) {
 	outbound = "00000" + strconv.FormatUint(uint64(inbound), 10)
 	return outbound[len(outbound)-5:]
 }
+func (inbound _IF_Communication) Parse(mode _IF_Mode) (outbound _IF_Communication) {
+	switch mode {
+	case _if_mode_vi:
+		switch inbound {
+		case _if_comm_ptmp, _if_comm_ptp:
+			return inbound
+		case "":
+			return _default_vi_comm
+		default:
+			outbound = _default_vi_comm
+		}
+	case _if_mode_link:
+		switch inbound {
+		case _if_comm_ptmp, _if_comm_ptp:
+			return inbound
+		case "":
+			return _default_if_comm
+		default:
+			outbound = _default_if_comm
+		}
+	}
+	log.Warnf("unknow IF Communication type '%v'; ACTION: use '%v'.", inbound, outbound)
+	return
+}
+func (inbound _GT_Content) Sanitize() (outbound _GT_Content) {
+	for _, value := range strings.Split(*inbound, "\n") {
+		outbound += strings.TrimSpace(value) + "\n"
+	}
+	return
+}
 func get_vi_ipprefix(vi_shift _VI_ID, peer_shift _VI_Peer_ID) (outbound netip.Prefix) {
 	var (
 		b = make([]byte, 4)
@@ -384,12 +418,6 @@ func sum_uint32_gt_fm(inbound ...uint32) (outbound uint32) {
 	}
 	for index := 0; index < len(inbound); index++ {
 		outbound += inbound[index]
-	}
-	return
-}
-func sanitize_string(inbound *string) (outbound string) {
-	for _, value := range strings.Split(*inbound, "\n") {
-		outbound += strings.TrimSpace(value) + "\n"
 	}
 	return
 }
@@ -613,7 +641,8 @@ func parse_db(xml_db *sDB) (err error) {
 	for _, value := range xml_db.GT {
 		switch _, flag := pdb_gt[value.Name]; flag {
 		case true:
-			log.Warnf("template '%v' already exist; ACTION: overwrite.", value.Name)
+			log.Warnf("template '%v' already exist; ACTION: skip.", value.Name)
+			continue
 		}
 
 		pdb_gt[value.Name] = pDB_GT{
@@ -626,7 +655,8 @@ func parse_db(xml_db *sDB) (err error) {
 	for _, value := range xml_db.Peer {
 		switch _, flag := pdb_peer[value.ASN]; flag {
 		case true:
-			log.Warnf("peer ASN '%v' already exist; ACTION: overwrite.", value.ASN)
+			log.Warnf("peer ASN '%v' already exist; ACTION: skip.", value.ASN)
+			continue
 		}
 		var (
 			vASN_PName = _ASN_PName(value.ASN.String())
@@ -660,9 +690,11 @@ func parse_db(xml_db *sDB) (err error) {
 							outbound = append(outbound, _GT_Name(list_v))
 						default:
 							log.Warnf("peer ASN '%v' reserved template '%v' cannot be used; ACTION: skip.", value.ASN, list_v)
+							continue
 						}
 					default:
 						log.Warnf("peer ASN '%v', template '%v' not found; ACTION: skip.", value.ASN, list_v)
+						continue
 					}
 				}
 				return
@@ -676,12 +708,20 @@ func parse_db(xml_db *sDB) (err error) {
 			vRouter_ID netip.Addr
 			vIF_RI     = make(map[_IF_Name]_RI_Name)
 			vRI        = func() (outbound map[_RI_Name]pDB_Peer_RI) {
+				var (
+					vIP_IF = make(map[netip.Addr]_IF_Name)
+				)
 				outbound = make(map[_RI_Name]pDB_Peer_RI)
 				for _, ri_v := range value.RI {
 					outbound[ri_v.Name] = pDB_Peer_RI{
 						RT: func() (rt_o map[netip.Prefix]pDB_Peer_RI_RT) {
 							rt_o = make(map[netip.Prefix]pDB_Peer_RI_RT)
 							for _, rt_v := range ri_v.RT {
+								switch _, flag := rt_o[rt_v.Identifier]; flag {
+								case true:
+									log.Warnf("peer ASN '%v', RI '%v', route Identifier '%v' already defined; ACTION: skip.", value.ASN, ri_v.Name, rt_v.Identifier)
+									continue
+								}
 								rt_o[rt_v.Identifier] = pDB_Peer_RI_RT{
 									GW: func() (gw_o map[_GW_Name]pDB_Peer_RI_RT_GW) {
 										gw_o = make(map[_GW_Name]pDB_Peer_RI_RT_GW)
@@ -720,6 +760,11 @@ func parse_db(xml_db *sDB) (err error) {
 												log.Warnf("peer ASN '%v', RI '%v', route Identifier '%v', unknown gateway type '%v'; ACTION: skip.", value.ASN, ri_v.Name, rt_v.Identifier, gw_v.Type)
 												continue
 											}
+											switch _, flag := gw_o[_GW_Name(gw_i)]; flag {
+											case true:
+												log.Warnf("peer ASN '%v', RI '%v', route Identifier '%v', gateway '%v' already defined; ACTION: skip.", value.ASN, ri_v.Name, rt_v.Identifier, gw_i)
+												continue
+											}
 											gw_o[_GW_Name(gw_i)] = pDB_Peer_RI_RT_GW{
 												IP:          gw_v.IP,
 												IF:          gw_v.IF,
@@ -742,13 +787,62 @@ func parse_db(xml_db *sDB) (err error) {
 						IF: func() (if_o map[_IF_Name]pDB_Peer_RI_IF) {
 							if_o = make(map[_IF_Name]pDB_Peer_RI_IF)
 							for _, if_v := range ri_v.IF {
-								log.Errorf("'%v''%v'", if_v)
+								switch if_ri_v, flag := vIF_RI[if_v.Name]; flag {
+								case true:
+									log.Warnf("peer ASN '%v', RI '%v', IF '%v' already defined in RI '%v'; ACTION: skip.", value.ASN, ri_v.Name, if_v.Name, if_ri_v)
+									continue
+								}
+								vIF_RI[if_v.Name] = ri_v.Name
 								if_o[if_v.Name] = pDB_Peer_RI_IF{
-									Communication: if_v.Communication,
+									Communication: if_v.Communication.Parse(_if_mode_link),
 									IP: func() (ip_o map[netip.Addr]pDB_Peer_RI_IF_IP) {
+										ip_o = make(map[netip.Addr]pDB_Peer_RI_IF_IP)
+										for _, ip_v := range if_v.IP {
+											var (
+												ip_i = ip_v.IPPrefix.Addr()
+											)
+											switch ip_if_v, flag := vIP_IF[ip_i]; flag {
+											case true:
+												log.Warnf("peer ASN '%v', RI '%v', IF '%v', IP '%v' already defined in IF '%v'; ACTION: skip.", value.ASN, ri_v.Name, if_v.Name, ip_i, ip_if_v)
+												continue
+											}
+											vIP_IF[ip_i] = if_v.Name
+											switch ip_v.Router_ID {
+											case true:
+												vRouter_ID = ip_i
+											}
+											ip_o[ip_i] = pDB_Peer_RI_IF_IP{
+												IPPrefix:    ip_v.IPPrefix,
+												Router_ID:   ip_v.Router_ID,
+												Primary:     ip_v.Primary,
+												Preferred:   ip_v.Preferred,
+												NAT:         ip_v.NAT,
+												DHCP:        ip_v.DHCP,
+												Reserved:    ip_v.Reserved,
+												Description: ip_v.Description,
+											}
+										}
 										return
 									}(),
 									PARP: func() (parp_o map[netip.Addr]pDB_Peer_RI_IF_PARP) {
+										parp_o = make(map[netip.Addr]pDB_Peer_RI_IF_PARP)
+										for _, parp_v := range if_v.PARP {
+											var (
+												parp_i = parp_v.IPPrefix.Addr()
+											)
+											switch ip_if_v, flag := vIP_IF[parp_i]; flag {
+											case true:
+												log.Warnf("peer ASN '%v', RI '%v', IF '%v', Proxy_ARP IP '%v' already defined in IF '%v'; ACTION: skip.", value.ASN, ri_v.Name, if_v.Name, parp_i, ip_if_v)
+												continue
+											}
+											vIP_IF[parp_i] = if_v.Name
+											parp_o[parp_v.IPPrefix.Addr()] = pDB_Peer_RI_IF_PARP{
+												IPPrefix:    parp_v.IPPrefix,
+												NAT:         parp_v.NAT,
+												Reserved:    parp_v.Reserved,
+												Description: parp_v.Description,
+											}
+										}
 										return
 									}(),
 									Disable:     if_v.Disable,
@@ -758,6 +852,7 @@ func parse_db(xml_db *sDB) (err error) {
 							}
 							return
 						}(),
+						IP_IF:       vIP_IF,
 						Reserved:    ri_v.Reserved,
 						Description: ri_v.Description,
 					}
@@ -778,7 +873,7 @@ func parse_db(xml_db *sDB) (err error) {
 			Manufacturer: value.Manufacturer,
 			Model:        value.Model,
 			Serial:       value.Serial,
-			Config_Patch: sanitize_string(&value.Config_Patch),
+			GT_Patch:     sanitize_string(&value.GT_Patch),
 			Root:         value.Root,
 			GT_List:      vGT_List,
 			Reserved:     value.Reserved,
@@ -806,7 +901,7 @@ func use_db() (err error) {
 					vGT      *template.Template
 					vBuf     bytes.Buffer
 				)
-				switch vGT, err = template.New(vGT_name).Funcs(gt_fm).Parse(pdb_gt[_GT_Name(vGT_name)].Content); err == nil && vGT != nil {
+				switch vGT, err = template.New(vGT_name).Funcs(gt_fm).Parse(string(pdb_gt[_GT_Name(vGT_name)].Content)); err == nil && vGT != nil {
 				case true:
 					switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
 					case true:
