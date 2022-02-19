@@ -232,6 +232,7 @@ type pDB_Peer_VI struct {
 	Route_Metric         uint
 	IPPrefix             netip.Prefix
 	No_NAT               bool
+	IKE_GCM              bool
 	Left_ASN             _ASN
 	Left_RI              _RI_Name
 	Left_IF              _IF_Name
