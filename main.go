@@ -33,7 +33,7 @@ type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
 
 type _AB map[string]map[netip.Prefix]bool
 type _ASN uint32
-type _ASN_PName uint32
+type _ASN_PName string
 type _GW_Name string
 type _GW_Type string
 type _IF_Communication string
@@ -606,25 +606,62 @@ func parse_db(xml_db *sDB) (err error) {
 	set_vi_ipprefix(xml_db.VI_IPPrefix)
 
 	for _, value := range xml_db.Peer {
-
-	}
-	for _, value := range xml_db.GT {
-		switch value.Reserved {
-		case false:
-			switch _, flag := pdb_gt[value.Name]; flag {
-			case false:
-				pdb_gt[value.Name] = pDB_GT{
-					Content:     sanitize_string(&value.Content),
-					Reserved:    value.Reserved,
-					Description: value.Description,
-				}
-			default:
-				log.Warnf("template '%v' already exist; ACTION: skip.", value.Name)
-			}
-		default:
+		switch _, flag := pdb_peer[value.ASN]; flag {
+		case true:
+			log.Warnf("peer ASN '%v' already exist; ACTION: overwrite.", value.ASN)
+		}
+		var (
+			vMajor = func() float64 {
+				var (
+					interim = re_caps.Split(value.Version, -1)
+				)
+				return parse_interface(strconv.ParseFloat(interim[0], 64)).(float64)
+			}()
+			vIKE_GCM   = vMajor >= 12.3
+			vRI        = make(map[_RI_Name]pDB_Peer_RI)
+			vRouter_ID netip.Addr
+			vIF_RI     = make(map[_IF_Name]_RI_Name)
+		)
+		pdb_peer[value.ASN] = pDB_peer{
+			ASN:          value.ASN,
+			ASN_PName:    _ASN_PName(value.ASN.String()),
+			Router_ID:    vRouter_ID,
+			RI:           vRI,
+			IF_RI:        vIF_RI,
+			Hostname:     value.Hostname,
+			Version:      value.Version,
+			Major:        vMajor,
+			IKE_GCM:      vIKE_GCM,
+			Manufacturer: value.Manufacturer,
+			Model:        value.Model,
+			Serial:       value.Serial,
+			Config_Patch: value.Config_Patch,
+			Root:         value.Root,
+			Reserved:     value.Reserved,
+			Description:  value.Description,
+			VI:           map[_VI_ID]pDB_Peer_VI{},
+			RM_ID:        &rm_id,
+			AB:           &ab,
 		}
 	}
+
+	for _, value := range xml_db.GT {
+		switch _, flag := pdb_gt[value.Name]; flag {
+		case true:
+			log.Warnf("template '%v' already exist; ACTION: overwrite.", value.Name)
+		}
+
+		pdb_gt[value.Name] = pDB_GT{
+			Content:     sanitize_string(&value.Content),
+			Reserved:    value.Reserved,
+			Description: value.Description,
+		}
+	}
+
+	log.Infof("'%+v'", pdb_peer)
+	log.Infof("'%+v'", pdb_vi)
 	log.Infof("'%+v'", pdb_gt)
+	log.Infof("'%+v'", config)
 	return
 }
 func use_db() (err error) {
