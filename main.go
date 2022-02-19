@@ -1,3 +1,5 @@
+/* // go:generate stringer -type=_ASN */
+
 package main
 
 import (
@@ -30,7 +32,9 @@ import (
 // TODO: this program is just an adapter written in golang for the gotemplate defined in the config
 
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
-
+type Stringer interface {
+	String() string
+}
 type _AB map[string]map[netip.Prefix]bool
 type _ASN uint32
 type _ASN_PName string
@@ -350,40 +354,40 @@ var (
 	// i_db_template = make(map[_GT_Name]*wDB_GT)                    // GT_Name
 )
 
-func (inbound _ASN) String() (outbound string) {
-	outbound = "0000000000" + strconv.FormatUint(uint64(inbound), 10)
+func (inbound *_ASN) String() (outbound string) {
+	outbound = "0000000000" + strconv.FormatUint(uint64(*inbound), 10)
 	return outbound[len(outbound)-10:]
 }
-func (inbound _VI_ID) String() (outbound string) {
-	outbound = "00000" + strconv.FormatUint(uint64(inbound), 10)
+func (inbound *_VI_ID) String() (outbound string) {
+	outbound = "00000" + strconv.FormatUint(uint64(*inbound), 10)
 	return outbound[len(outbound)-5:]
 }
-func (inbound _IF_Communication) Parse(mode _IF_Mode) (outbound _IF_Communication) {
+func (inbound *_IF_Communication) Parse(mode _IF_Mode) (outbound _IF_Communication) {
 	switch mode {
 	case _if_mode_vi:
-		switch inbound {
+		switch *inbound {
 		case _if_comm_ptmp, _if_comm_ptp:
-			return inbound
+			return *inbound
 		case "":
 			return _default_vi_comm
 		default:
 			outbound = _default_vi_comm
 		}
 	case _if_mode_link:
-		switch inbound {
+		switch *inbound {
 		case _if_comm_ptmp, _if_comm_ptp:
-			return inbound
+			return *inbound
 		case "":
 			return _default_if_comm
 		default:
 			outbound = _default_if_comm
 		}
 	}
-	log.Warnf("unknow IF Communication type '%v'; ACTION: use '%v'.", inbound, outbound)
+	log.Warnf("unknow IF Communication type '%v'; ACTION: use '%v'.", *inbound, outbound)
 	return
 }
-func (inbound _GT_Content) Sanitize() (outbound _GT_Content) {
-	for _, value := range strings.Split(string(inbound), "\n") {
+func (inbound *_GT_Content) Sanitize() (outbound _GT_Content) {
+	for _, value := range strings.Split(string(*inbound), "\n") {
 		outbound += _GT_Content(strings.TrimSpace(value) + "\n")
 	}
 	return
@@ -574,10 +578,10 @@ func main() {
 		return
 	}
 
-	log.Infof("'%+v'", pdb_peer)
-	log.Infof("'%+v'", pdb_vi)
-	log.Infof("'%+v'", pdb_gt)
-	log.Infof("'%+s'", config)
+	// log.Infof("'%+v'", pdb_peer)
+	// log.Infof("'%+v'", pdb_vi)
+	// log.Infof("'%+v'", pdb_gt)
+	log.Infof("'%s'", config[4200240001])
 }
 func read_file(inbound *string, outbound *[]byte) (err error) {
 	var (
