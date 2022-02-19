@@ -60,10 +60,10 @@ type sDB struct {
 	Verbosity   string       `xml:"verbosity,attr"`
 }
 type sDB_GT struct {
-	Name        _GT_Name `xml:"name,attr"`
-	Content     string   `xml:",chardata"`
-	Reserved    bool     `xml:"reserved,attr"`
-	Description string   `xml:"description,attr"`
+	Name        _GT_Name    `xml:"name,attr"`
+	Content     _GT_Content `xml:",chardata"`
+	Reserved    bool        `xml:"reserved,attr"`
+	Description string      `xml:"description,attr"`
 }
 type sDB_Peer struct {
 	ASN          _ASN          `xml:"ASN,attr"`
@@ -383,8 +383,8 @@ func (inbound _IF_Communication) Parse(mode _IF_Mode) (outbound _IF_Communicatio
 	return
 }
 func (inbound _GT_Content) Sanitize() (outbound _GT_Content) {
-	for _, value := range strings.Split(*inbound, "\n") {
-		outbound += strings.TrimSpace(value) + "\n"
+	for _, value := range strings.Split(string(inbound), "\n") {
+		outbound += _GT_Content(strings.TrimSpace(value) + "\n")
 	}
 	return
 }
@@ -573,6 +573,11 @@ func main() {
 		log.Fatalf("DB use error: '%v'", err)
 		return
 	}
+
+	log.Infof("'%+v'", pdb_peer)
+	log.Infof("'%+v'", pdb_vi)
+	log.Infof("'%+v'", pdb_gt)
+	log.Infof("'%+s'", config)
 }
 func read_file(inbound *string, outbound *[]byte) (err error) {
 	var (
@@ -646,7 +651,7 @@ func parse_db(xml_db *sDB) (err error) {
 		}
 
 		pdb_gt[value.Name] = pDB_GT{
-			Content:     sanitize_string(&value.Content),
+			Content:     value.Content.Sanitize(),
 			Reserved:    value.Reserved,
 			Description: value.Description,
 		}
@@ -873,7 +878,7 @@ func parse_db(xml_db *sDB) (err error) {
 			Manufacturer: value.Manufacturer,
 			Model:        value.Model,
 			Serial:       value.Serial,
-			GT_Patch:     sanitize_string(&value.GT_Patch),
+			GT_Patch:     value.GT_Patch.Sanitize(),
 			Root:         value.Root,
 			GT_List:      vGT_List,
 			Reserved:     value.Reserved,
@@ -883,18 +888,13 @@ func parse_db(xml_db *sDB) (err error) {
 			AB:           &ab,
 		}
 	}
-
-	log.Infof("'%+v'", pdb_peer)
-	log.Infof("'%+v'", pdb_vi)
-	log.Infof("'%+v'", pdb_gt)
-	log.Infof("'%+v'", config)
 	return
 }
 func use_db() (err error) {
 	for index, value := range pdb_peer {
 		switch value.Reserved {
 		case false:
-			config[index] = make([]bytes.Buffer, len(value.GT_List))
+			config[index] = make([]bytes.Buffer, len(value.GT_List)+1)
 			for gt_i, gt_v := range value.GT_List {
 				var (
 					vGT_name = string(gt_v)
@@ -908,10 +908,30 @@ func use_db() (err error) {
 						config[index][gt_i] = vBuf
 					default:
 						log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
+						continue
 					}
 				default:
 					log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
+					continue
 				}
+			}
+			var (
+				vGT_name = "AS" + string(value.ASN_PName) + "_GT_Patch"
+				vGT      *template.Template
+				vBuf     bytes.Buffer
+			)
+			switch vGT, err = template.New(vGT_name).Funcs(gt_fm).Parse(string(value.GT_Patch)); err == nil && vGT != nil {
+			case true:
+				switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
+				case true:
+					config[index][len(config[index])-1] = vBuf
+				default:
+					log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
+					continue
+				}
+			default:
+				log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
+				continue
 			}
 		}
 	}
