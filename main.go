@@ -659,7 +659,7 @@ func parse_db(xml_db *sDB) (err error) {
 						case false:
 							outbound = append(outbound, _GT_Name(list_v))
 						default:
-							log.Warnf("peer ASN '%v' template '%v' cannot be used; ACTION: skip.", value.ASN, list_v)
+							log.Warnf("peer ASN '%v' reserved template '%v' cannot be used; ACTION: skip.", value.ASN, list_v)
 						}
 					default:
 						log.Warnf("peer ASN '%v', template '%v' not found; ACTION: skip.", value.ASN, list_v)
@@ -673,7 +673,6 @@ func parse_db(xml_db *sDB) (err error) {
 				)
 				return parse_interface(strconv.ParseFloat(interim[0], 64)).(float64)
 			}()
-			vIKE_GCM   = vMajor >= 12.3
 			vRouter_ID netip.Addr
 			vIF_RI     = make(map[_IF_Name]_RI_Name)
 			vRI        = func() (outbound map[_RI_Name]pDB_Peer_RI) {
@@ -714,9 +713,11 @@ func parse_db(xml_db *sDB) (err error) {
 													gw_i += gw_v.Table
 													gw_v.Type = _gw_table
 												default:
+													log.Warnf("peer ASN '%v', RI '%v', route Identifier '%v', no gateway found; ACTION: skip.", value.ASN, ri_v.Name, rt_v.Identifier)
 													continue
 												}
 											default:
+												log.Warnf("peer ASN '%v', RI '%v', route Identifier '%v', unknown gateway type '%v'; ACTION: skip.", value.ASN, ri_v.Name, rt_v.Identifier, gw_v.Type)
 												continue
 											}
 											gw_o[_GW_Name(gw_i)] = pDB_Peer_RI_RT_GW{
@@ -739,6 +740,10 @@ func parse_db(xml_db *sDB) (err error) {
 							return
 						}(),
 						IF: func() (if_o map[_IF_Name]pDB_Peer_RI_IF) {
+							if_o = make(map[_IF_Name]pDB_Peer_RI_IF)
+							for if_i, if_v := range ri_v.IF {
+								log.Errorf("'%v''%v'", if_i, if_v)
+							}
 							return
 						}(),
 						Reserved:    ri_v.Reserved,
@@ -757,11 +762,11 @@ func parse_db(xml_db *sDB) (err error) {
 			Hostname:     vHostname,
 			Version:      value.Version,
 			Major:        vMajor,
-			IKE_GCM:      vIKE_GCM,
+			IKE_GCM:      vMajor >= 12.3,
 			Manufacturer: value.Manufacturer,
 			Model:        value.Model,
 			Serial:       value.Serial,
-			Config_Patch: value.Config_Patch,
+			Config_Patch: sanitize_string(&value.Config_Patch),
 			Root:         value.Root,
 			GT_List:      vGT_List,
 			Reserved:     value.Reserved,
