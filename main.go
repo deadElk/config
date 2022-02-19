@@ -200,6 +200,8 @@ type pDB_Peer_RI_RT_GW struct {
 }
 type pDB_Peer_RI_IF struct {
 	Communication _IF_Communication
+	Major         string
+	Minor         string
 	IP            map[netip.Addr]pDB_Peer_RI_IF_IP
 	PARP          map[netip.Addr]pDB_Peer_RI_IF_PARP
 	Disable       bool
@@ -332,6 +334,7 @@ const (
 var (
 	hash_cache sync.Map
 	re_caps    = regexp.MustCompile(`[A-Z]`)
+	re_dot     = regexp.MustCompile(`\.`)
 	re_period  = regexp.MustCompile(`,`)
 	gt_fm      = template.FuncMap{
 		"sum_uint32": sum_uint32_gt_fm,
@@ -357,52 +360,67 @@ var (
 	// i_db_template = make(map[_GT_Name]*wDB_GT)                    // GT_Name
 )
 
-func (inbound *_ASN) String() (outbound string) {
-	outbound = "0000000000" + strconv.FormatUint(uint64(*inbound), 10)
+func (inbound _ASN) String() (outbound string) {
+	outbound = "0000000000" + strconv.FormatUint(uint64(inbound), 10)
 	return outbound[len(outbound)-10:]
 }
-func (inbound *_VI_ID) String() (outbound string) {
-	outbound = "00000" + strconv.FormatUint(uint64(*inbound), 10)
+func (inbound _VI_ID) String() (outbound string) {
+	outbound = "00000" + strconv.FormatUint(uint64(inbound), 10)
 	return outbound[len(outbound)-5:]
 }
-func (inbound *_IF_Communication) Parse(mode _IF_Mode) (outbound _IF_Communication) {
+func (inbound _IF_Communication) Parse(mode _IF_Mode) (outbound _IF_Communication) {
 	switch mode {
 	case _if_mode_vi:
-		switch *inbound {
+		switch inbound {
 		case _if_comm_ptmp, _if_comm_ptp:
-			return *inbound
+			return inbound
 		case "":
 			return _default_vi_comm
 		default:
 			outbound = _default_vi_comm
 		}
 	case _if_mode_link:
-		switch *inbound {
+		switch inbound {
 		case _if_comm_ptmp, _if_comm_ptp:
-			return *inbound
+			return inbound
 		case "":
 			return _default_if_comm
 		default:
 			outbound = _default_if_comm
 		}
 	}
-	log.Warnf("unknow IF Communication type '%v'; ACTION: use '%v'.", *inbound, outbound)
+	log.Warnf("unknow IF Communication type '%v'; ACTION: use '%v'.", inbound, outbound)
 	return
 }
-func (inbound *_Description) Parse(default_description _Description) _Description {
-	switch len(*inbound) == 0 {
+func (inbound _Description) Parse(default_description _Description) _Description {
+	switch len(inbound) == 0 {
 	case true:
 		return default_description
 	}
-	return *inbound
+	return inbound
 }
-func (inbound *_GT_Content) Sanitize() (outbound _GT_Content) {
-	for _, value := range strings.Split(string(*inbound), "\n") {
+func (inbound _GT_Content) Sanitize() (outbound _GT_Content) {
+	for _, value := range strings.Split(string(inbound), "\n") {
 		outbound += _GT_Content(strings.TrimSpace(value) + "\n")
 	}
 	return
 }
 func (inbound _RI_Name) String() string {
+	return string(inbound)
+}
+func (inbound _IF_Name) String() string {
+	return string(inbound)
+}
+func (inbound _ASN_PName) String() string {
+	return string(inbound)
+}
+func (inbound _GW_Type) String() string {
+	return string(inbound)
+}
+func (inbound _GT_Name) String() string {
+	return string(inbound)
+}
+func (inbound _GT_Content) String() string {
 	return string(inbound)
 }
 func get_vi_ipprefix(vi_shift _VI_ID, peer_shift _VI_Peer_ID) (outbound netip.Prefix) {
@@ -446,7 +464,7 @@ func sum_string_gt_fm(inbound ...string) (outbound string) {
 		return inbound[0]
 	}
 	for index := 0; index < len(inbound); index++ {
-		outbound += string(inbound[index])
+		outbound += inbound[index]
 	}
 	return
 }
@@ -697,7 +715,7 @@ func parse_db(xml_db *sDB) (err error) {
 			vHostname  = func() (outbound string) {
 				switch len(value.Hostname) == 0 {
 				case true:
-					outbound = "gw_as" + string(vASN_PName)
+					outbound = "gw_as" + vASN_PName.String()
 					log.Warnf("peer ASN '%v' hostname not defined; ACTION: use '%v'.", value.ASN, outbound)
 					return
 				}
@@ -765,23 +783,23 @@ func parse_db(xml_db *sDB) (err error) {
 											)
 											switch {
 											case gw_v.Type == _gw_discard:
-												gw_i += string(_gw_discard)
+												gw_i += _gw_discard.String()
 											case gw_v.Type == _gw_hop && gw_v.IP.IsValid():
 												gw_i += gw_v.IP.String()
 											case gw_v.Type == _gw_interface && len(gw_v.IF) != 0:
-												gw_i += string(gw_v.IF)
+												gw_i += gw_v.IF.String()
 											case gw_v.Type == _gw_table && len(gw_v.Table) != 0:
 												gw_i += gw_v.Table
 											case len(gw_v.Type) == 0:
 												switch {
 												case gw_v.Discard:
-													gw_i += string(_gw_discard)
+													gw_i += _gw_discard.String()
 													gw_v.Type = _gw_discard
 												case gw_v.IP.IsValid():
 													gw_i += gw_v.IP.String()
 													gw_v.Type = _gw_hop
 												case len(gw_v.IF) != 0:
-													gw_i += string(gw_v.IF)
+													gw_i += gw_v.IF.String()
 													gw_v.Type = _gw_interface
 												case len(gw_v.Table) != 0:
 													gw_i += gw_v.Table
@@ -827,8 +845,21 @@ func parse_db(xml_db *sDB) (err error) {
 									continue
 								}
 								vIF_RI[if_v.Name] = ri_v.Name
+								var (
+									if_o_Major string
+									if_o_Minor string
+								)
+								func() {
+									var (
+										interim = re_dot.Split(if_v.Name.String(), -1)
+									)
+									if_o_Major = interim[0]
+									if_o_Minor = interim[1]
+								}()
 								if_o[if_v.Name] = pDB_Peer_RI_IF{
 									Communication: if_v.Communication.Parse(_if_mode_link),
+									Major:         if_o_Major,
+									Minor:         if_o_Minor,
 									IP: func() (ip_o map[netip.Addr]pDB_Peer_RI_IF_IP) {
 										ip_o = make(map[netip.Addr]pDB_Peer_RI_IF_IP)
 										for _, ip_v := range if_v.IP {
@@ -934,11 +965,11 @@ func use_db() (err error) {
 			config[index] = make([]bytes.Buffer, len(value.GT_List)+1)
 			for gt_i, gt_v := range value.GT_List {
 				var (
-					vGT_name = string(gt_v)
+					vGT_name = gt_v.String()
 					vGT      *template.Template
 					vBuf     bytes.Buffer
 				)
-				switch vGT, err = template.New(vGT_name).Funcs(gt_fm).Parse(string(pdb_gt[_GT_Name(vGT_name)].Content)); err == nil && vGT != nil {
+				switch vGT, err = template.New(vGT_name).Funcs(gt_fm).Parse(pdb_gt[_GT_Name(vGT_name)].Content.String()); err == nil && vGT != nil {
 				case true:
 					switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
 					case true:
@@ -954,11 +985,11 @@ func use_db() (err error) {
 			}
 			continue
 			var (
-				vGT_name = "AS" + string(value.ASN_PName) + "_GT_Patch"
+				vGT_name = "AS" + value.ASN_PName.String() + "_GT_Patch"
 				vGT      *template.Template
 				vBuf     bytes.Buffer
 			)
-			switch vGT, err = template.New(vGT_name).Funcs(gt_fm).Parse(string(value.GT_Patch)); err == nil && vGT != nil {
+			switch vGT, err = template.New(vGT_name).Funcs(gt_fm).Parse(value.GT_Patch.String()); err == nil && vGT != nil {
 			case true:
 				switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
 				case true:
