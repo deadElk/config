@@ -142,18 +142,16 @@ type sDB_VI struct {
 	Description   _Description      `xml:"description,attr"`
 }
 type sDB_VI_Peer struct {
-	ID            _VI_Peer_ID  `xml:"index,attr"`
-	ASN           _ASN         `xml:"ASN,attr"`
-	RI            _RI_Name     `xml:"RI,attr"`
-	IF            _IF_Name     `xml:"IF,attr"`
-	IP            netip.Addr   `xml:"IP,attr"`
-	Local_Address bool         `xml:"local_address,attr"`
-	Dynamic       bool         `xml:"dynamic,attr"`
-	No_NAT        bool         `xml:"no_nat,attr"`
-	Hub           bool         `xml:"hub,attr"`
-	Inner_RI      _RI_Name     `xml:"inner_RI,attr"`
-	Reserved      bool         `xml:"reserved,attr"`
-	Description   _Description `xml:"description,attr"`
+	ID          _VI_Peer_ID  `xml:"index,attr"`
+	ASN         _ASN         `xml:"ASN,attr"`
+	RI          _RI_Name     `xml:"RI,attr"`
+	IF          _IF_Name     `xml:"IF,attr"`
+	IP          netip.Addr   `xml:"IP,attr"`
+	Dynamic     bool         `xml:"dynamic,attr"`
+	Hub         bool         `xml:"hub,attr"`
+	Inner_RI    _RI_Name     `xml:"inner_RI,attr"`
+	Reserved    bool         `xml:"reserved,attr"`
+	Description _Description `xml:"description,attr"`
 }
 
 type pDB_peer struct {
@@ -266,15 +264,13 @@ type pDB_VI struct {
 	Communication _IF_Communication
 	PSK           string
 	Route_Metric  uint
-	// Peer          map[_VI_Peer_ID]pDB_VI_Peer
-	// Peer_AS_ID    map[_VI_Peer_ID]_ASN
-	IPPrefix    netip.Prefix
-	No_NAT      bool
-	Reserved    bool
-	Description _Description
+	IPPrefix      netip.Prefix
+	No_NAT        bool
+	IKE_GCM       bool
+	Reserved      bool
+	Description   _Description
 }
 type pDB_VI_Peer struct {
-	// ID             _VI_Peer_ID
 	ASN            _ASN
 	RI             _RI_Name
 	IF             _IF_Name
@@ -983,18 +979,46 @@ func parse_db(xml_db *sDB) (err error) {
 		}
 	}
 	for _, value := range xml_db.VI {
-		pdb_vi[value.ID] = pDB_VI{
-			VI_ID_PName:   _VI_ID_PName(value.ID.String()),
-			Type:          value.Type,
-			Communication: value.Communication.Parse(_if_mode_vi),
-			PSK:           value.PSK,
-			Route_Metric:  value.Route_Metric,
-			IPPrefix:      get_vi_ipprefix(value.ID, 0),
-			No_NAT:        false,
-			Reserved:      value.Reserved,
-			Description:   value.Description,
+		switch (value.Reserved || len(value.Peer) != 2) || value.Peer[0].Reserved || value.Peer[1].Reserved {
+		case true:
+			continue
 		}
-		log.Infof("'%+v'", pdb_vi[value.ID])
+		log.Infof("'%+v'", value)
+		var (
+			r = pDB_Peer_VI{
+				VI_ID_PName:          _VI_ID_PName(value.ID.String()),
+				Type:                 value.Type,
+				Communication:        value.Communication.Parse(_if_mode_vi),
+				PSK:                  value.PSK,
+				Route_Metric:         value.Route_Metric,
+				IPPrefix:             get_vi_ipprefix(value.ID, 0),
+				No_NAT:               false,
+				IKE_GCM:              false,
+				Left_ASN:             value.Peer[0].ASN,
+				Left_RI:              value.Peer[0].RI,
+				Left_IF:              value.Peer[0].IF,
+				Left_IP:              value.Peer[0].IP,
+				Left_NAT:             netip.Addr{},
+				Left_Local_Address:   false,
+				Left_Dynamic:         value.Peer[0].Dynamic,
+				Left_Hub:             value.Peer[0].Hub,
+				Left_Inner_RI:        value.Peer[0].Inner_RI,
+				Left_Inner_IPPrefix:  netip.Prefix{},
+				Right_ASN:            value.Peer[1].ASN,
+				Right_RI:             value.Peer[1].RI,
+				Right_IF:             value.Peer[1].IF,
+				Right_IP:             value.Peer[1].IP,
+				Right_NAT:            netip.Addr{},
+				Right_Local_Address:  false,
+				Right_Dynamic:        value.Peer[1].Dynamic,
+				Right_Hub:            value.Peer[1].Hub,
+				Right_Inner_RI:       value.Peer[1].Inner_RI,
+				Right_Inner_IPPrefix: netip.Prefix{},
+				Reserved:             value.Reserved,
+				Description:          value.Description,
+			}
+		)
+		log.Infof("'%+v'", r)
 	}
 	return
 }
