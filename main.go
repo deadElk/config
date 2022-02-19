@@ -266,15 +266,15 @@ type pDB_VI struct {
 	Communication _IF_Communication
 	PSK           string
 	Route_Metric  uint
-	Peer          map[_VI_Peer_ID]pDB_VI_Peer
-	Peer_AS_ID    map[_VI_Peer_ID]_ASN
-	IPPrefix      netip.Prefix
-	No_NAT        bool
-	Reserved      bool
-	Description   _Description
+	// Peer          map[_VI_Peer_ID]pDB_VI_Peer
+	// Peer_AS_ID    map[_VI_Peer_ID]_ASN
+	IPPrefix    netip.Prefix
+	No_NAT      bool
+	Reserved    bool
+	Description _Description
 }
 type pDB_VI_Peer struct {
-	ID             _VI_Peer_ID
+	// ID             _VI_Peer_ID
 	ASN            _ASN
 	RI             _RI_Name
 	IF             _IF_Name
@@ -640,10 +640,10 @@ func main() {
 		return
 	}
 
-	// log.Infof("'%+v'", pdb_peer)
+	// log.Infof("'%s'", config[4200240001])
 	// log.Infof("'%+v'", pdb_vi)
+	// log.Infof("'%+v'", pdb_peer)
 	// log.Infof("'%+v'", pdb_gt)
-	log.Infof("'%s'", config[4200240001])
 }
 func read_file(inbound *string, outbound *[]byte) (err error) {
 	var (
@@ -981,6 +981,20 @@ func parse_db(xml_db *sDB) (err error) {
 			RM_ID:        &rm_id,
 			AB:           &ab,
 		}
+	}
+	for _, value := range xml_db.VI {
+		pdb_vi[value.ID] = pDB_VI{
+			VI_ID_PName:   _VI_ID_PName(value.ID.String()),
+			Type:          value.Type,
+			Communication: value.Communication.Parse(_if_mode_vi),
+			PSK:           value.PSK,
+			Route_Metric:  value.Route_Metric,
+			IPPrefix:      get_vi_ipprefix(value.ID, 0),
+			No_NAT:        false,
+			Reserved:      value.Reserved,
+			Description:   value.Description,
+		}
+		log.Infof("'%+v'", pdb_vi[value.ID])
 	}
 	return
 }
