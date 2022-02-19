@@ -596,7 +596,7 @@ func read_db() (err error) {
 					log.Debugf("DB '%v' parsed.", xml_db.XMLName)
 					return nil
 				case false:
-					log.Warnf("DB parse error: '%v'; ACTION: next.", err)
+					log.Warnf("configuration file '%v' DB parse error: '%v'; ACTION: skip.", value, err)
 				}
 			default:
 				log.Warnf("configuration file '%v' parse error: '%v'; ACTION: skip.", value, err)
@@ -648,7 +648,7 @@ func parse_db(xml_db *sDB) (err error) {
 						outbound = append(outbound, _GT_Name(list_v))
 					}
 				}
-				return outbound
+				return
 			}()
 			vMajor = func() float64 {
 				var (
@@ -657,9 +657,12 @@ func parse_db(xml_db *sDB) (err error) {
 				return parse_interface(strconv.ParseFloat(interim[0], 64)).(float64)
 			}()
 			vIKE_GCM   = vMajor >= 12.3
-			vRI        = make(map[_RI_Name]pDB_Peer_RI)
 			vRouter_ID netip.Addr
 			vIF_RI     = make(map[_IF_Name]_RI_Name)
+			vRI        = func() (outbound map[_RI_Name]pDB_Peer_RI) {
+				outbound = make(map[_RI_Name]pDB_Peer_RI)
+				return
+			}()
 		)
 		pdb_peer[value.ASN] = pDB_peer{
 			ASN:          value.ASN,
@@ -708,10 +711,10 @@ func use_db() (err error) {
 					case true:
 						config[index][gt_i] = vBuf
 					default:
-						return
+						log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
 					}
 				default:
-					return
+					log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
 				}
 			}
 		}
