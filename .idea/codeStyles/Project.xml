@@ -3,6 +3,8 @@
     <option name="AUTODETECT_INDENTS" value="false" />
     <option name="OTHER_INDENT_OPTIONS">
       <value>
+        <option name="INDENT_SIZE" value="2" />
+        <option name="TAB_SIZE" value="2" />
         <option name="USE_TAB_CHARACTER" value="true" />
       </value>
     </option>
@@ -29,6 +31,9 @@
       <option name="XML_ATTRIBUTE_WRAP" value="0" />
       <option name="XML_TEXT_WRAP" value="0" />
     </XML>
+    <editorconfig>
+      <option name="ENABLED" value="false" />
+    </editorconfig>
     <codeStyleSettings language="CSS">
       <indentOptions>
         <option name="CONTINUATION_INDENT_SIZE" value="6" />
