@@ -1392,7 +1392,6 @@ func config_upload() (err error) {
 		hosts string
 	)
 	for index, value := range config {
-		log.Errorf("'%v'", pdb_peer[index].IPPrefix_List)
 		hosts += func() (outbound string) {
 			var (
 				ips       string
