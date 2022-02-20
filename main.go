@@ -12,6 +12,7 @@ import (
 	"net/netip"
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -1398,9 +1399,27 @@ func config_test() (err error) {
 }
 func config_upload() (err error) {
 	var (
-		hosts string
+		hosts   string
+		ordered []int
 	)
 	for index, value := range config {
+		ordered = append(ordered, int(index))
+		var (
+			fn = upload_path + "./AS" + index.String()
+		)
+		switch err_i := os.WriteFile(fn, value, 0600); err_i == nil {
+		case true:
+			log.Infof("OK '%v'", index)
+		case false:
+			log.Errorf("Fail '%v' with error '%v'", index, err_i)
+		}
+	}
+
+	sort.Ints(ordered)
+	for _, value := range ordered {
+		var (
+			index = _ASN(value)
+		)
 		hosts += func() (outbound string) {
 			var (
 				ips       string
@@ -1431,15 +1450,6 @@ func config_upload() (err error) {
 			outbound += "\n"
 			return
 		}()
-		var (
-			fn = upload_path + "./AS" + index.String()
-		)
-		switch err_i := os.WriteFile(fn, value, 0600); err_i == nil {
-		case true:
-			log.Infof("OK '%v'", index)
-		case false:
-			log.Errorf("Fail '%v' with error '%v'", index, err_i)
-		}
 	}
 
 	switch err_i := os.WriteFile(upload_path+"./hosts.txt", []byte(hosts), 0600); err_i == nil {
