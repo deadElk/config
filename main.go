@@ -7,6 +7,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"io"
+	"io/ioutil"
 	"math/big"
 	"net/netip"
 	"os"
@@ -19,6 +20,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
+	// "golang.org/x/crypto/ssh"
 )
 
 // Note: XML database is a compromise between el odmin and a config-generator
@@ -372,7 +374,7 @@ const (
 	_service_dhcp        _Service          = "dhcp"
 	_service_dhcpv6      _Service          = "dhcpv6"
 	_service_ike         _Service          = "ike"
-	_service_ping        _Service          = "pink"
+	_service_ping        _Service          = "ping"
 	_service_snmp        _Service          = "snmp"
 	_service_snmp_trap   _Service          = "snmp-trap"
 	_service_ssh         _Service          = "ssh"
@@ -402,7 +404,7 @@ var (
 	vi_ip_shift      _VI_ID
 	pdb_peer         = make(map[_ASN]pDB_peer)
 	pdb_gt           = make(map[_GT_Name]pDB_GT)
-	config           = make(map[_ASN][]bytes.Buffer)
+	config           = make(map[_ASN][]byte)
 	default_services = _Service_List{
 		_service_all:         false,
 		_service_any_service: false,
@@ -1299,8 +1301,8 @@ func db_use() (err error) {
 	for index, value := range pdb_peer {
 		switch value.Reserved {
 		case false:
-			config[index] = make([]bytes.Buffer, len(value.GT_List)+1)
-			for gt_i, gt_v := range value.GT_List {
+			// config[index] = make([]bytes.Buffer, len(value.GT_List)+1)
+			for _, gt_v := range value.GT_List {
 				var (
 					vGT_name = gt_v.String()
 					vGT      *template.Template
@@ -1310,7 +1312,7 @@ func db_use() (err error) {
 				case true:
 					switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
 					case true:
-						config[index][gt_i] = vBuf
+						config[index] = append(config[index], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
 					default:
 						log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
 						continue
@@ -1330,7 +1332,7 @@ func db_use() (err error) {
 			case true:
 				switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
 				case true:
-					config[index][len(config[index])-1] = vBuf
+					config[index] = append(config[index], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
 				default:
 					log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
 					continue
@@ -1347,6 +1349,17 @@ func config_test() (err error) {
 	return
 }
 func config_upload() (err error) {
+	for index, value := range config {
+		var (
+			fn = upload_path + "./AS" + index.String()
+		)
+		switch err_i := os.WriteFile(fn, value, 0600); err_i == nil {
+		case true:
+			log.Infof("OK '%v'", index)
+		case false:
+			log.Errorf("Fail '%v' with error '%v'", index, err_i)
+		}
+	}
 
 	// var (
 	// 	connections_config_maintain = func(source_url *url.URL) (status bool) {
