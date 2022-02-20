@@ -354,7 +354,7 @@ func (inbound _VI_ID) String() string {
 func (inbound _VI_ID_PName) String() (outbound string) {
 	return string(inbound)
 }
-func (inbound _IF_Communication) Parse(mode _IF_Mode) (outbound _IF_Communication) {
+func (inbound _IF_Communication) Sanitize(mode _IF_Mode) (outbound _IF_Communication) {
 	switch mode {
 	case _if_mode_vi:
 		switch inbound {
@@ -636,7 +636,7 @@ func main() {
 		return
 	}
 
-	log.Infof("'%s'", config[4200240001])
+	log.Infof("'%s'", config[4200240059])
 	// log.Infof("'%+v'", pdb_vi)
 	// log.Infof("'%+v'", pdb_peer)
 	// log.Infof("'%+v'", pdb_gt)
@@ -872,7 +872,7 @@ func parse_db(xml_db *sDB) (err error) {
 									if_o_Minor = interim[1]
 								}()
 								if_o[if_v.Name] = pDB_Peer_RI_IF{
-									Communication: if_v.Communication.Parse(_if_mode_link),
+									Communication: if_v.Communication.Sanitize(_if_mode_link),
 									Major:         if_o_Major,
 									Minor:         if_o_Minor,
 									IP: func() (ip_o map[netip.Addr]pDB_Peer_RI_IF_IP) {
@@ -1059,12 +1059,21 @@ func parse_db(xml_db *sDB) (err error) {
 					v_No_NAT = false
 				}
 			}
+			var (
+				v_Metric = func() uint {
+					switch value.Route_Metric > _rm_max {
+					case true:
+						return 0
+					}
+					return _rm_max - value.Route_Metric
+				}()
+			)
 			pdb_peer[value.Peer[0].ASN].VI[value.ID] = pDB_Peer_VI{
 				VI_ID_PName:          value.ID.Sanitize(),
 				Type:                 value.Type,
-				Communication:        value.Communication.Parse(_if_mode_vi),
+				Communication:        value.Communication.Sanitize(_if_mode_vi),
 				PSK:                  value.PSK.Sanitize(64),
-				Route_Metric:         value.Route_Metric,
+				Route_Metric:         v_Metric,
 				IPPrefix:             get_vi_ipprefix(value.ID, 0),
 				No_NAT:               v_No_NAT,
 				IKE_GCM:              pdb_peer[value.Peer[0].ASN].IKE_GCM && pdb_peer[value.Peer[1].ASN].IKE_GCM,
