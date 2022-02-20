@@ -747,21 +747,34 @@ func init() {
 	log.SetReportCaller(true)
 }
 func main() {
-	switch err := read_db(); err != nil {
+	switch err := db_read(); err == nil {
 	case true:
+		switch err = db_use(); err == nil {
+		case true:
+			log.Infof("'%s'", config[4200240063])
+			// log.Infof("'%+v'", pdb_vi)
+			// log.Infof("'%+v'", pdb_peer)
+			// log.Infof("'%+v'", pdb_gt)
+			switch err = upload_config(); err == nil {
+			case true:
+				switch err = config_test(); err == nil {
+				case true:
+				default:
+					log.Fatalf("config test error: '%v'", err)
+					return
+				}
+			default:
+				log.Fatalf("config upload error: '%v'", err)
+				return
+			}
+		default:
+			log.Fatalf("DB use error: '%v'", err)
+			return
+		}
+	default:
 		log.Fatalf("DB read error: '%v'", err)
 		return
 	}
-	switch err := use_db(); err != nil {
-	case true:
-		log.Fatalf("DB use error: '%v'", err)
-		return
-	}
-
-	log.Infof("'%s'", config[4200240063])
-	// log.Infof("'%+v'", pdb_vi)
-	// log.Infof("'%+v'", pdb_peer)
-	// log.Infof("'%+v'", pdb_gt)
 }
 func read_file(inbound *string, outbound *[]byte) (err error) {
 	var (
@@ -791,7 +804,7 @@ func read_file(inbound *string, outbound *[]byte) (err error) {
 	}
 	return
 }
-func read_db() (err error) {
+func db_read() (err error) {
 	var (
 		configuration_files = []string{
 			"./" + _serviced + ".xml",
@@ -809,7 +822,7 @@ func read_db() (err error) {
 			switch err = xml.Unmarshal(data, &xml_db); err == nil {
 			case true:
 				log.Debugf("configuration file '%v' loaded.", value)
-				switch err = parse_db(&xml_db); err == nil {
+				switch err = db_parse(&xml_db); err == nil {
 				case true:
 					log.Debugf("DB '%v' parsed.", xml_db.XMLName)
 					return nil
@@ -823,7 +836,7 @@ func read_db() (err error) {
 	}
 	return errors.New("no configuration found")
 }
-func parse_db(xml_db *sDB) (err error) {
+func db_parse(xml_db *sDB) (err error) {
 	log_setlevel(&xml_db.Verbosity)
 	set_vi_ipprefix(xml_db.VI_IPPrefix)
 
@@ -1057,46 +1070,31 @@ func parse_db(xml_db *sDB) (err error) {
 									}(),
 									Disable: if_v.Disable,
 									Services: _Service_List{
-										_service_all:         false,
-										_service_any_service: false,
-										_service_bootp:       false,
-										_service_dhcp:        false,
-										_service_dhcpv6:      false,
-										_service_ike:         false,
-										_service_ping:        true,
-										_service_snmp:        false,
-										_service_snmp_trap:   false,
-										_service_ssh:         true,
-										_service_traceroute:  true,
+										_service_all:         default_services[_service_all],
+										_service_any_service: default_services[_service_any_service],
+										_service_bootp:       default_services[_service_bootp],
+										_service_dhcp:        default_services[_service_dhcp],
+										_service_dhcpv6:      default_services[_service_dhcpv6],
+										_service_ike:         default_services[_service_ike],
+										_service_ping:        default_services[_service_ping],
+										_service_snmp:        default_services[_service_snmp],
+										_service_snmp_trap:   default_services[_service_snmp_trap],
+										_service_ssh:         default_services[_service_ssh],
+										_service_traceroute:  default_services[_service_traceroute],
 									},
 									Protocols: _Protocol_List{
-										_protocol_all: false,
-										_protocol_bgp: false,
+										_protocol_all: default_protocols[_protocol_all],
+										_protocol_bgp: default_protocols[_protocol_bgp],
 									},
 								}
 							}
 							return
 						}(),
-						IP_IF:  vIP_IF,
-						Policy: ri_v.Policy.Sanitize(),
-						Services: _Service_List{
-							_service_all:         false,
-							_service_any_service: false,
-							_service_bootp:       false,
-							_service_dhcp:        false,
-							_service_dhcpv6:      false,
-							_service_ike:         false,
-							_service_ping:        false,
-							_service_snmp:        false,
-							_service_snmp_trap:   false,
-							_service_ssh:         false,
-							_service_traceroute:  false,
-						},
-						Protocols: _Protocol_List{
-							_protocol_all: false,
-							_protocol_bgp: false,
-						},
-						Reserved: ri_v.Reserved,
+						IP_IF:     vIP_IF,
+						Policy:    ri_v.Policy.Sanitize(),
+						Services:  _Service_List{},
+						Protocols: _Protocol_List{},
+						Reserved:  ri_v.Reserved,
 						Description: func() (outbound _Description) {
 							switch ri_v.Name == _juniper_mgmt_RI && len(ri_v.Description) == 0 {
 							case true:
@@ -1291,7 +1289,7 @@ func parse_db(xml_db *sDB) (err error) {
 	}
 	return
 }
-func use_db() (err error) {
+func db_use() (err error) {
 	for index, value := range pdb_peer {
 		switch value.Reserved {
 		case false:
@@ -1337,5 +1335,124 @@ func use_db() (err error) {
 			}
 		}
 	}
+	return
+}
+func config_test() (err error) {
+	return
+}
+func upload_config() (err error) {
+
+	// var (
+	// 	connections_config_maintain = func(source_url *url.URL) (status bool) {
+	// 		switch connections_config[source_url] == nil {
+	// 		case true:
+	// 			var (
+	// 				file_name = func() (outbound string) {
+	// 					switch current_user, err := user.Current(); err == nil && current_user != nil {
+	// 					case true:
+	// 						outbound = current_user.HomeDir
+	// 					}
+	// 					switch len(outbound) == 0 {
+	// 					case true:
+	// 						outbound = "~"
+	// 					}
+	// 					outbound += "/.ssh/" + source_url.User.Username() + "_" + source_url.Hostname() + "_" + source_url.Port() + ".key"
+	// 					return
+	// 				}()
+	// 			)
+	// 			switch file_reader, err := os.Open(file_name); err == nil {
+	// 			case true:
+	// 				defer func() {
+	// 					switch file_reader != nil {
+	// 					case true:
+	// 						log.Debugf("%v: file_reader.Close() status: '%v'", worker.Description, file_reader.Close())
+	// 					}
+	// 				}()
+	// 				switch file_data, err := io.ReadAll(file_reader); err == nil {
+	// 				case true:
+	// 					switch private_key, err := ssh.ParsePrivateKey(file_data); err == nil {
+	// 					case true:
+	// 						connections_config[source_url] = &ssh.ClientConfig{
+	// 							User:            source_url.User.Username(),
+	// 							Auth:            []ssh.AuthMethod{ssh.PublicKeys(private_key)},
+	// 							HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	// 							// BannerCallback:    nil,
+	// 							// ClientVersion:     nil,
+	// 							// HostKeyAlgorithms: nil,
+	// 							Timeout: _timeout_worker_retry,
+	// 						}
+	// 						return true
+	// 					default:
+	// 						log.Warnf("%v: file '%v' parse error '%v'; ACTION: retry later.", worker.Description, file_name, err)
+	// 					}
+	// 				default:
+	// 					log.Warnf("%v: file '%v' read error '%v'; ACTION: retry later.", worker.Description, file_name, err)
+	// 				}
+	// 			default:
+	// 				log.Warnf("%v: file '%v' open error '%v'; ACTION: retry later.", worker.Description, file_name, err)
+	// 			}
+	// 		}
+	// 		return
+	// 	}
+	// 	connection_maintain = func(source_url *url.URL) (status bool) {
+	// 		switch connections[source_url] == nil {
+	// 		case true:
+	// 			switch connections_config_maintain(source_url) {
+	// 			case true:
+	// 				switch connection, err := ssh.Dial("tcp", source_url.Host, connections_config[source_url]); err == nil {
+	// 				case true:
+	// 					log.Debugf("%v: '%v' connected.", worker.Description, source_url.Redacted())
+	// 					connections[source_url] = connection
+	// 					return true
+	// 				default:
+	// 					log.Warnf("%v: '%v' connect error '%v'; ACTION: retry later.", worker.Description, source_url.Redacted(), err)
+	// 					connection_terminate(source_url)
+	// 				}
+	// 			default:
+	// 				log.Warnf("%v: ssh options is not available for '%v'; ACTION: retry later.", worker.Description, source_url.Redacted())
+	// 			}
+	// 		default:
+	// 			return true
+	// 		}
+	// 		return
+	// 	}
+	// 	send_message = func(incoming_message Message) {
+	// 		for _, source_url := range worker.Source {
+	// 			switch connection_maintain(source_url) {
+	// 			case true:
+	// 				switch connection_session, err := connections[source_url].NewSession(); err == nil {
+	// 				case true:
+	// 					defer func() {
+	// 						switch connection_session != nil {
+	// 						case true:
+	// 							log.Debugf("%v: session.Close() status: '%v'", worker.Description, connection_session.Close())
+	// 						}
+	// 					}()
+	// 					var (
+	// 						session_stdout = new(bytes.Buffer)
+	// 						session_stderr = new(bytes.Buffer)
+	// 					)
+	// 					connection_session.Stdin = strings.NewReader(incoming_message.Content[_search_raw])
+	// 					connection_session.Stdout = session_stdout
+	// 					connection_session.Stderr = session_stderr
+	// 					switch err := connection_session.Run("cat > " + source_url.Path + "/" + incoming_message.ID.String() + ".txt"); err == nil {
+	// 					case true:
+	// 						delete(message_cache, incoming_message.ID)
+	// 						counter_counts(string(worker.Description), "cache", -1)
+	// 						log.Debugf("%v: message sent using '%v'. data: from '%v' to '%v'; ACTION: remove from a cache.", worker.Description, source_url.Redacted(), incoming_message.Content[_search_from], incoming_message.Content[_search_to])
+	// 						return
+	// 					default:
+	// 						log.Warnf("%v: %v command execution error '%v', stderr '%v', stdout '%v'; ACTION: try next source.", worker.Description, source_url.Redacted(), err, session_stdout.String(), session_stderr.String())
+	// 						connection_terminate(source_url)
+	// 					}
+	// 				default:
+	// 					log.Warnf("%v: %v create session error '%v'; ACTION: try next source.", worker.Description, source_url.Redacted(), err)
+	// 				}
+	// 			}
+	// 		}
+	// 		log.Warnf("%v: no way to send a message; ACTION: retry later.", worker.Description)
+	// 	}
+	// )
+
 	return
 }
