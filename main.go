@@ -1441,6 +1441,7 @@ func config_upload() (err error) {
 			log.Errorf("Fail '%v' with error '%v'", index, err_i)
 		}
 	}
+
 	switch err_i := os.WriteFile(upload_path+"./hosts.txt", []byte(hosts), 0600); err_i == nil {
 	case true:
 		log.Infof("OK 'hosts.txt'")
