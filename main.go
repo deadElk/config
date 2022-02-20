@@ -118,6 +118,7 @@ type sDB struct {
 	GT          []sDB_GT     `xml:"template_list>GT"`
 	VI_IPPrefix netip.Prefix `xml:"VI_IPPrefix,attr"`
 	GT_List     string       `xml:"GT_list,attr"`
+	Upload_Path string       `xml:"upload_path,attr"`
 	Reserved    bool         `xml:"reserved,attr"`
 	Description _Description `xml:"description,attr"`
 	Verbosity   string       `xml:"verbosity,attr"`
@@ -419,6 +420,7 @@ var (
 		_protocol_all: false,
 		_protocol_bgp: false,
 	}
+	upload_path = "./tmp/"
 )
 
 func (inbound _ASN) String() (outbound string) {
@@ -755,7 +757,7 @@ func main() {
 			// log.Infof("'%+v'", pdb_vi)
 			// log.Infof("'%+v'", pdb_peer)
 			// log.Infof("'%+v'", pdb_gt)
-			switch err = upload_config(); err == nil {
+			switch err = config_upload(); err == nil {
 			case true:
 				switch err = config_test(); err == nil {
 				case true:
@@ -839,6 +841,10 @@ func db_read() (err error) {
 func db_parse(xml_db *sDB) (err error) {
 	log_setlevel(&xml_db.Verbosity)
 	set_vi_ipprefix(xml_db.VI_IPPrefix)
+	switch len(xml_db.Upload_Path) == 0 {
+	case false:
+		upload_path = xml_db.Upload_Path
+	}
 
 	for _, value := range xml_db.GT {
 		switch _, flag := pdb_gt[value.Name]; flag {
@@ -1340,7 +1346,7 @@ func db_use() (err error) {
 func config_test() (err error) {
 	return
 }
-func upload_config() (err error) {
+func config_upload() (err error) {
 
 	// var (
 	// 	connections_config_maintain = func(source_url *url.URL) (status bool) {
