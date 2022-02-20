@@ -43,6 +43,7 @@ type _GW_Type string
 type _IF_Communication string
 type _IF_Mode string
 type _IF_Name string
+type _IFM_Name string
 type _Policy string
 type _RI_Name string
 type _RM_ID [_rm_max + 1]uint32
@@ -132,26 +133,26 @@ type sDB_GT struct {
 	Description _Description `xml:"description,attr"`
 }
 type sDB_Peer struct {
-	ASN          _ASN          `xml:"ASN,attr"`
-	IFM          sDB_Peer_IFM  `xml:"IFM"`
-	RI           []sDB_Peer_RI `xml:"RI"`
-	Hostname     string        `xml:"hostname,attr"`
-	Version      string        `xml:"version,attr"`
-	Manufacturer string        `xml:"manufacturer,attr"`
-	Model        string        `xml:"model,attr"`
-	Serial       string        `xml:"serial,attr"`
-	GT_Patch     _GT_Content   `xml:"GT_patch"`
-	Root         _Secret       `xml:"root,attr"`
-	GT_List      string        `xml:"GT_list,attr"`
-	Reserved     bool          `xml:"reserved,attr"`
-	Description  _Description  `xml:"description,attr"`
+	ASN          _ASN           `xml:"ASN,attr"`
+	IFM          []sDB_Peer_IFM `xml:"IFM"`
+	RI           []sDB_Peer_RI  `xml:"RI"`
+	Hostname     string         `xml:"hostname,attr"`
+	Version      string         `xml:"version,attr"`
+	Manufacturer string         `xml:"manufacturer,attr"`
+	Model        string         `xml:"model,attr"`
+	Serial       string         `xml:"serial,attr"`
+	GT_Patch     _GT_Content    `xml:"GT_patch"`
+	Root         _Secret        `xml:"root,attr"`
+	GT_List      string         `xml:"GT_list,attr"`
+	Reserved     bool           `xml:"reserved,attr"`
+	Description  _Description   `xml:"description,attr"`
 }
 type sDB_Peer_IFM struct {
-	Name          _IF_Name
-	Communication _IF_Communication
-	Disable       bool
-	Reserved      bool
-	Description   _Description
+	Name          _IFM_Name         `xml:"name,attr"`
+	Communication _IF_Communication `xml:"communication,attr"`
+	Disable       bool              `xml:"disable,attr"`
+	Reserved      bool              `xml:"reserved,attr"`
+	Description   _Description      `xml:"description,attr"`
 }
 type sDB_Peer_RI struct {
 	Name        _RI_Name         `xml:"name,attr"`
@@ -229,7 +230,7 @@ type pDB_peer struct {
 	ASN           _ASN
 	ASN_PName     _ASN_PName
 	Router_ID     netip.Addr
-	IFM           pDB_Peer_IFM
+	IFM           map[_IFM_Name]pDB_Peer_IFM
 	RI            map[_RI_Name]pDB_Peer_RI
 	IF_RI         map[_IF_Name]_RI_Name
 	Hostname      string
@@ -522,6 +523,9 @@ func (inbound _RI_Name) Sanitize(decline ..._RI_Name) (outbound _RI_Name) {
 func (inbound _IF_Name) String() string {
 	return string(inbound)
 }
+func (inbound _IFM_Name) String() string {
+	return string(inbound)
+}
 func (inbound _GW_Type) String() string {
 	return string(inbound)
 }
@@ -780,7 +784,7 @@ func main() {
 	case true:
 		switch err = db_use(); err == nil {
 		case true:
-			// log.Infof("'%s'", config[4200240063])
+			log.Infof("'%s'", config[4200240063])
 			// log.Infof("'%+v'", pdb_vi)
 			// log.Infof("'%+v'", pdb_peer)
 			// log.Infof("'%+v'", pdb_gt)
@@ -1150,11 +1154,24 @@ func db_parse(xml_db *sDB) (err error) {
 				}
 				return
 			}()
+			v_IFM = func() (outbound map[_IFM_Name]pDB_Peer_IFM) {
+				outbound = make(map[_IFM_Name]pDB_Peer_IFM)
+				for _, ifm_v := range value.IFM {
+					outbound[ifm_v.Name] = pDB_Peer_IFM{
+						Communication: ifm_v.Communication,
+						Disable:       ifm_v.Disable,
+						Reserved:      ifm_v.Reserved,
+						Description:   ifm_v.Description,
+					}
+				}
+				return
+			}()
 		)
 		pdb_peer[value.ASN] = pDB_peer{
 			ASN:           value.ASN,
 			ASN_PName:     vASN_PName,
 			Router_ID:     vRouter_ID,
+			IFM:           v_IFM,
 			RI:            vRI,
 			IF_RI:         vIF_RI,
 			Hostname:      vHostname,
