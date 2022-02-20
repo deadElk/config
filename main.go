@@ -986,13 +986,9 @@ func parse_db(xml_db *sDB) (err error) {
 				}
 				switch len(value.Peer[peer_index].IF) == 0 {
 				case true:
-					for if_i, if_v := range pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF {
-						log.Errorf("'%+v''%+v'", if_i, if_v)
+					for if_i := range pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF {
+						// log.Errorf("'%+v''%+v'", if_i, if_v)
 						value.Peer[peer_index].IF = if_i
-						// for ip_i := range if_v.IP {
-						// 	value.Peer[peer_index].IP = ip_i
-						// 	break
-						// }
 						break
 					}
 				}
@@ -1000,10 +996,19 @@ func parse_db(xml_db *sDB) (err error) {
 				case false:
 					return
 				}
-				// switch len(pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF].IP) == 0 {
-				// case true:
-				// 	return
-				// }
+				switch value.Peer[peer_index].IP.String() == "invalid IP" {
+				case true:
+					for ip_i := range pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF].IP {
+						// log.Errorf("'%+v''%+v'", ip_i, ip_v)
+						value.Peer[peer_index].IP = ip_i
+						break
+					}
+				}
+				switch _, flag := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF].IP[value.Peer[peer_index].IP]; flag {
+				case false:
+					return
+				}
+				// log.Errorf("'%+v'", value.Peer[peer_index].IP.String())
 			}
 			var (
 				r = pDB_Peer_VI{
@@ -1023,7 +1028,7 @@ func parse_db(xml_db *sDB) (err error) {
 					Left_Local_Address:   len(pdb_peer[value.Peer[0].ASN].RI[value.Peer[0].RI].IF[value.Peer[0].IF].IP) > 1,
 					Left_Dynamic:         value.Peer[0].Dynamic,
 					Left_Hub:             value.Peer[0].Hub,
-					Left_Inner_RI:        value.Peer[0].Inner_RI,
+					Left_Inner_RI:        value.Peer[0].Inner_RI.Parse(),
 					Left_Inner_IPPrefix:  get_vi_ipprefix(value.ID, 1),
 					Right_ASN:            value.Peer[1].ASN,
 					Right_RI:             value.Peer[1].RI,
@@ -1033,7 +1038,7 @@ func parse_db(xml_db *sDB) (err error) {
 					Right_Local_Address:  len(pdb_peer[value.Peer[1].ASN].RI[value.Peer[1].RI].IF[value.Peer[1].IF].IP) > 1,
 					Right_Dynamic:        value.Peer[1].Dynamic,
 					Right_Hub:            value.Peer[1].Hub,
-					Right_Inner_RI:       value.Peer[1].Inner_RI,
+					Right_Inner_RI:       value.Peer[1].Inner_RI.Parse(),
 					Right_Inner_IPPrefix: get_vi_ipprefix(value.ID, 2),
 					Reserved:             value.Reserved,
 					Description:          value.Description,
