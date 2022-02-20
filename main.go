@@ -731,14 +731,14 @@ func log_setlevel(inbound ...*string) {
 	}
 }
 func parse_interface(inbound interface{}, skip interface{}) interface{} {
-	switch skip.(type) {
+	switch value := skip.(type) {
 	case error:
-		switch skip == nil {
+		switch value == nil {
 		case false:
 			log.Debugf("'%v'", skip)
 		}
 	case bool:
-		switch skip {
+		switch value {
 		case false:
 			log.Debugf("'%v'", skip)
 		}
@@ -746,15 +746,15 @@ func parse_interface(inbound interface{}, skip interface{}) interface{} {
 	return inbound
 }
 func parse_interface_error(inbound interface{}, skip interface{}) (outbound interface{}) {
-	switch skip.(type) {
+	switch value := skip.(type) {
 	case error:
-		switch skip == nil {
+		switch value == nil {
 		case false:
 			log.Debugf("'%v'", skip)
 			return
 		}
 	case bool:
-		switch skip {
+		switch value {
 		case false:
 			log.Debugf("'%v'", skip)
 			return
