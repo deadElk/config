@@ -445,7 +445,7 @@ var (
 func (inbound _ASN) String() (outbound string) {
 	return strconv.FormatUint(uint64(inbound), 10)
 }
-func (inbound _ASN) Sanitize() _ASN_PName {
+func (inbound _ASN) _Sanitize() _ASN_PName {
 	var (
 		interim = "0000000000" + strconv.FormatUint(uint64(inbound), 10)
 	)
@@ -454,7 +454,7 @@ func (inbound _ASN) Sanitize() _ASN_PName {
 func (inbound _ASN_PName) String() (outbound string) {
 	return string(inbound)
 }
-func (inbound _VI_ID) Sanitize() (outbound _VI_ID_PName) {
+func (inbound _VI_ID) _Sanitize() (outbound _VI_ID_PName) {
 	var (
 		interim = "00000" + strconv.FormatUint(uint64(inbound), 10)
 	)
@@ -466,7 +466,7 @@ func (inbound _VI_ID) String() string {
 func (inbound _VI_ID_PName) String() (outbound string) {
 	return string(inbound)
 }
-func (inbound _IF_Communication) Sanitize(mode _IF_Mode) (outbound _IF_Communication) {
+func (inbound _IF_Communication) _Sanitize(mode _IF_Mode) (outbound _IF_Communication) {
 	switch mode {
 	case _if_mode_vi:
 		switch inbound {
@@ -490,14 +490,14 @@ func (inbound _IF_Communication) Sanitize(mode _IF_Mode) (outbound _IF_Communica
 	log.Warnf("unknow IF Communication type '%v'; ACTION: use '%v'.", inbound, outbound)
 	return
 }
-func (inbound _Description) Sanitize(default_description _Description) _Description {
+func (inbound _Description) _Sanitize(default_description _Description) _Description {
 	switch len(inbound) == 0 {
 	case true:
 		return default_description
 	}
 	return inbound
 }
-func (inbound _GT_Content) Sanitize() (outbound _GT_Content) {
+func (inbound _GT_Content) _Sanitize() (outbound _GT_Content) {
 	for _, value := range strings.Split(string(inbound), "\n") {
 		outbound += _GT_Content(strings.TrimSpace(value) + "\n")
 	}
@@ -506,7 +506,7 @@ func (inbound _GT_Content) Sanitize() (outbound _GT_Content) {
 func (inbound _RI_Name) String() string {
 	return string(inbound)
 }
-func (inbound _RI_Name) Sanitize(decline ..._RI_Name) (outbound _RI_Name) {
+func (inbound _RI_Name) _Sanitize(decline ..._RI_Name) (outbound _RI_Name) {
 	outbound = _juniper_default_RI
 	switch len(inbound) == 0 || inbound == _juniper_default_RI {
 	case true:
@@ -535,7 +535,7 @@ func (inbound _GT_Name) String() string {
 func (inbound _GT_Content) String() string {
 	return string(inbound)
 }
-func (inbound _Policy) Sanitize() _Policy {
+func (inbound _Policy) _Sanitize() _Policy {
 	switch len(inbound) == 0 {
 	case true:
 		return _default_policy
@@ -551,7 +551,7 @@ func (inbound _Policy) Sanitize() _Policy {
 func (inbound _Policy) String() string {
 	return string(inbound)
 }
-func (inbound _Secret) Sanitize(length uint, message ...string) _Secret {
+func (inbound _Secret) _Sanitize(length uint, message ...string) _Secret {
 	switch len(inbound) >= int(length) {
 	case true:
 		return inbound
@@ -579,7 +579,7 @@ func (inbound _Secret) String() string {
 func (inbound _VI_Type) String() string {
 	return string(inbound)
 }
-func (inbound _VI_Type) Sanitize() _VI_Type {
+func (inbound _VI_Type) _Sanitize() _VI_Type {
 	switch len(inbound) == 0 {
 	case true:
 		return _default_vi
@@ -885,7 +885,7 @@ func db_parse(xml_db *sDB) (err error) {
 		}
 
 		pdb_gt[value.Name] = pDB_GT{
-			Content:     value.Content.Sanitize(),
+			Content:     value.Content._Sanitize(),
 			Reserved:    value.Reserved,
 			Description: value.Description,
 		}
@@ -899,7 +899,7 @@ func db_parse(xml_db *sDB) (err error) {
 		}
 		var (
 			v_IP_List  = make(map[netip.Prefix]bool)
-			vASN_PName = value.ASN.Sanitize()
+			vASN_PName = value.ASN._Sanitize()
 			vHostname  = func() (outbound string) {
 				switch len(value.Hostname) == 0 {
 				case true:
@@ -1045,7 +1045,7 @@ func db_parse(xml_db *sDB) (err error) {
 									if_o_Minor = interim[1]
 								}()
 								if_o[if_v.Name] = pDB_Peer_RI_IF{
-									Communication: if_v.Communication.Sanitize(_if_mode_link),
+									Communication: if_v.Communication._Sanitize(_if_mode_link),
 									Major:         if_o_Major,
 									Minor:         if_o_Minor,
 									IP: func() (ip_o map[netip.Addr]pDB_Peer_RI_IF_IP) {
@@ -1139,7 +1139,7 @@ func db_parse(xml_db *sDB) (err error) {
 							return
 						}(),
 						IP_IF:     vIP_IF,
-						Policy:    ri_v.Policy.Sanitize(),
+						Policy:    ri_v.Policy._Sanitize(),
 						Services:  _Service_List{},
 						Protocols: _Protocol_List{},
 						Reserved:  ri_v.Reserved,
@@ -1181,8 +1181,8 @@ func db_parse(xml_db *sDB) (err error) {
 			Manufacturer:  value.Manufacturer,
 			Model:         value.Model,
 			Serial:        value.Serial,
-			GT_Patch:      value.GT_Patch.Sanitize(),
-			Root:          value.Root.Sanitize(16, "peer AS"+vASN_PName.String()+": root password is not acceptable"),
+			GT_Patch:      value.GT_Patch._Sanitize(),
+			Root:          value.Root._Sanitize(16, "peer AS"+vASN_PName.String()+": root password is not acceptable"),
 			GT_List:       vGT_List,
 			Reserved:      value.Reserved,
 			Description:   value.Description,
@@ -1217,13 +1217,13 @@ func db_parse(xml_db *sDB) (err error) {
 					log.Warnf("VI '%v', ASN '%v' not defined / peer '%v' reserved; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, peer_index)
 					return
 				}
-				value.Peer[peer_index].RI = value.Peer[peer_index].RI.Sanitize(_juniper_mgmt_RI)
+				value.Peer[peer_index].RI = value.Peer[peer_index].RI._Sanitize(_juniper_mgmt_RI)
 				switch _, flag := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI]; flag {
 				case false:
 					log.Warnf("VI '%v', ASN '%v' RI '%v' not defined; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, value.Peer[peer_index].RI)
 					return
 				}
-				value.Peer[peer_index].Inner_RI = value.Peer[peer_index].Inner_RI.Sanitize(_juniper_mgmt_RI)
+				value.Peer[peer_index].Inner_RI = value.Peer[peer_index].Inner_RI._Sanitize(_juniper_mgmt_RI)
 				switch _, flag := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].Inner_RI]; flag {
 				case false:
 					log.Warnf("VI '%v', ASN '%v' inner RI '%v' not defined; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, value.Peer[peer_index].Inner_RI)
@@ -1284,10 +1284,10 @@ func db_parse(xml_db *sDB) (err error) {
 				}()
 			)
 			pdb_peer[value.Peer[0].ASN].VI[value.ID] = pDB_Peer_VI{
-				VI_ID_PName:         value.ID.Sanitize(),
-				Type:                value.Type.Sanitize(),
-				Communication:       value.Communication.Sanitize(_if_mode_vi),
-				PSK:                 value.PSK.Sanitize(64),
+				VI_ID_PName:         value.ID._Sanitize(),
+				Type:                value.Type._Sanitize(),
+				Communication:       value.Communication._Sanitize(_if_mode_vi),
+				PSK:                 value.PSK._Sanitize(64),
 				Route_Metric:        v_Metric,
 				IPPrefix:            get_vi_ipprefix(value.ID, 0),
 				No_NAT:              v_No_NAT,
@@ -1300,7 +1300,7 @@ func db_parse(xml_db *sDB) (err error) {
 				Left_Local_Address:  len(pdb_peer[value.Peer[0].ASN].RI[value.Peer[0].RI].IF[value.Peer[0].IF].IP) > 1,
 				Left_Dynamic:        value.Peer[0].Dynamic,
 				Left_Hub:            value.Peer[0].Hub,
-				Left_Inner_RI:       value.Peer[0].Inner_RI.Sanitize(_juniper_mgmt_RI),
+				Left_Inner_RI:       value.Peer[0].Inner_RI._Sanitize(_juniper_mgmt_RI),
 				Left_Inner_IP:       get_vi_ipprefix(value.ID, 1).Addr(),
 				Right_ASN:           value.Peer[1].ASN,
 				Right_RI:            value.Peer[1].RI,
@@ -1310,7 +1310,7 @@ func db_parse(xml_db *sDB) (err error) {
 				Right_Local_Address: len(pdb_peer[value.Peer[1].ASN].RI[value.Peer[1].RI].IF[value.Peer[1].IF].IP) > 1,
 				Right_Dynamic:       value.Peer[1].Dynamic,
 				Right_Hub:           value.Peer[1].Hub,
-				Right_Inner_RI:      value.Peer[1].Inner_RI.Sanitize(_juniper_mgmt_RI),
+				Right_Inner_RI:      value.Peer[1].Inner_RI._Sanitize(_juniper_mgmt_RI),
 				Right_Inner_IP:      get_vi_ipprefix(value.ID, 2).Addr(),
 				Reserved:            value.Reserved,
 				Description:         value.Description,
