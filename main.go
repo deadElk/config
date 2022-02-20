@@ -35,22 +35,22 @@ type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
 type _AB map[string]map[netip.Prefix]bool
 type _ASN uint32
 type _ASN_PName string
+type _Description string
+type _GT_Content string
+type _GT_Name string
 type _GW_Name string
 type _GW_Type string
 type _IF_Communication string
 type _IF_Mode string
 type _IF_Name string
+type _Policy string
 type _RI_Name string
 type _RM_ID [_rm_max + 1]uint32
-type _GT_Content string
-type _GT_Name string
+type _Secret string
 type _VI_ID uint
 type _VI_ID_PName string
 type _VI_Peer_ID uint
 type _VI_Type string
-type _Description string
-type _Policy string
-type _Secret string
 
 type sDB struct {
 	XMLName     xml.Name     `xml:"AS4200240XXX"`
@@ -1169,25 +1169,25 @@ func use_db() (err error) {
 					continue
 				}
 			}
-			// var (
-			// 	vGT_name = "AS" + value.ASN_PName.String() + "_GT_Patch"
-			// 	vGT      *template.Template
-			// 	vBuf     bytes.Buffer
-			// )
-			// switch vGT, err = template.New(vGT_name).Funcs(gt_fm).Parse(value.GT_Patch.String()); err == nil && vGT != nil {
-			// // switch vGT, err = template.New("config.tmpl").Funcs(gt_fm).ParseFiles("config.tmpl"); err == nil && vGT != nil {
-			// case true:
-			// 	switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
-			// 	case true:
-			// 		config[index][len(config[index])-1] = vBuf
-			// 	default:
-			// 		log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
-			// 		continue
-			// 	}
-			// default:
-			// 	log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
-			// 	continue
-			// }
+			var (
+				vGT_name = "AS" + value.ASN_PName.String() + "_GT_Patch"
+				vGT      *template.Template
+				vBuf     bytes.Buffer
+			)
+			switch vGT, err = template.New(vGT_name).Funcs(gt_fm).Parse(value.GT_Patch.String()); err == nil && vGT != nil {
+			// switch vGT, err = template.New("config.tmpl").Funcs(gt_fm).ParseFiles("config.tmpl"); err == nil && vGT != nil {
+			case true:
+				switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
+				case true:
+					config[index][len(config[index])-1] = vBuf
+				default:
+					log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
+					continue
+				}
+			default:
+				log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
+				continue
+			}
 		}
 	}
 	return
