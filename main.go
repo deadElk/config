@@ -360,8 +360,6 @@ const (
 	_default_if_comm                       = _if_comm_ptmp
 	_if_mode_vi          _IF_Mode          = "vi"
 	_if_mode_link        _IF_Mode          = "link"
-	_node0               string            = "node0"
-	_node1               string            = "node1"
 	_rm_bits             uint              = 2
 	_rm_max                                = 32/_rm_bits - 1
 	_policy_restrictive  _Policy           = "restrictive"
@@ -375,7 +373,7 @@ const (
 	_service_ike         _Service          = "ike"
 	_service_ping        _Service          = "pink"
 	_service_snmp        _Service          = "snmp"
-	_service_snmp_trap   _Service          = "snmp_trap"
+	_service_snmp_trap   _Service          = "snmp-trap"
 	_service_ssh         _Service          = "ssh"
 	_service_traceroute  _Service          = "traceroute"
 	_protocol_all        _Protocol         = "all"
@@ -760,7 +758,7 @@ func main() {
 		return
 	}
 
-	log.Infof("'%s'", config[4200240062])
+	log.Infof("'%s'", config[4200240063])
 	// log.Infof("'%+v'", pdb_vi)
 	// log.Infof("'%+v'", pdb_peer)
 	// log.Infof("'%+v'", pdb_gt)
@@ -1057,20 +1055,48 @@ func parse_db(xml_db *sDB) (err error) {
 										}
 										return
 									}(),
-									Disable:     if_v.Disable,
-									Services:    default_services,
-									Protocols:   default_protocols,
-									Reserved:    if_v.Reserved,
-									Description: if_v.Description,
+									Disable: if_v.Disable,
+									Services: _Service_List{
+										_service_all:         false,
+										_service_any_service: false,
+										_service_bootp:       false,
+										_service_dhcp:        false,
+										_service_dhcpv6:      false,
+										_service_ike:         false,
+										_service_ping:        true,
+										_service_snmp:        false,
+										_service_snmp_trap:   false,
+										_service_ssh:         true,
+										_service_traceroute:  true,
+									},
+									Protocols: _Protocol_List{
+										_protocol_all: false,
+										_protocol_bgp: false,
+									},
 								}
 							}
 							return
 						}(),
-						IP_IF:     vIP_IF,
-						Policy:    ri_v.Policy.Sanitize(),
-						Services:  default_services,
-						Protocols: default_protocols,
-						Reserved:  ri_v.Reserved,
+						IP_IF:  vIP_IF,
+						Policy: ri_v.Policy.Sanitize(),
+						Services: _Service_List{
+							_service_all:         false,
+							_service_any_service: false,
+							_service_bootp:       false,
+							_service_dhcp:        false,
+							_service_dhcpv6:      false,
+							_service_ike:         false,
+							_service_ping:        false,
+							_service_snmp:        false,
+							_service_snmp_trap:   false,
+							_service_ssh:         false,
+							_service_traceroute:  false,
+						},
+						Protocols: _Protocol_List{
+							_protocol_all: false,
+							_protocol_bgp: false,
+						},
+						Reserved: ri_v.Reserved,
 						Description: func() (outbound _Description) {
 							switch ri_v.Name == _juniper_mgmt_RI && len(ri_v.Description) == 0 {
 							case true:
