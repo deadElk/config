@@ -25,9 +25,6 @@ import (
 
 // TODO: implement Junos $1$ (md5? user passwords), $9$ (sha? user passwords and PSKs) and other encryption methods
 // TODO: implement DB validation and maximum possible autofill
-// about: this program is just an adapter written in golang for the gotemplates defined in the config
-// XML database is a compromise between el odmin and a config-generator
-// the root of all evil premature optimization is
 
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
 type _AB map[string]map[netip.Prefix]bool
