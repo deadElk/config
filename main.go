@@ -49,62 +49,67 @@ type _VI_ID uint
 type _VI_ID_PName string
 type _VI_Peer_ID uint
 type _VI_Type string
-type _Services struct {
-	All               bool
-	Any_Service       bool
-	appqoe            bool
-	BOOTP             bool
-	DHCP              bool
-	DHCPv6            bool
-	dns               bool
-	finger            bool
-	ftp               bool
-	http              bool
-	https             bool
-	ident_reset       bool
-	IKE               bool
-	lsping            bool
-	netconf           bool
-	ntp               bool
-	PING              bool
-	r2cp              bool
-	reverse_ssh       bool
-	reverse_telnet    bool
-	rlogin            bool
-	rpm               bool
-	rsh               bool
-	SNMP              bool
-	SNMP_Trap         bool
-	SSH               bool
-	tcp_encap         bool
-	telnet            bool
-	tftp              bool
-	Traceroute        bool
-	webapi_clear_text bool
-	webapi_ssl        bool
-	xnm_clear_text    bool
-	xnm_ssl           bool
-}
-type _Protocols struct {
-	All              bool
-	bfd              bool
-	BGP              bool
-	dvmrp            bool
-	igmp             bool
-	ldp              bool
-	msdp             bool
-	nhrp             bool
-	ospf             bool
-	ospf3            bool
-	pgm              bool
-	pim              bool
-	rip              bool
-	ripng            bool
-	router_discovery bool
-	rsvp             bool
-	sap              bool
-	vrrp             bool
-}
+type _Service_List map[_Service]bool
+type _Protocol_List map[_Protocol]bool
+type _Service string
+type _Protocol string
+
+// type _Services struct {
+// 	All               bool
+// 	Any_Service       bool
+// 	appqoe            bool
+// 	BOOTP             bool
+// 	DHCP              bool
+// 	DHCPv6            bool
+// 	dns               bool
+// 	finger            bool
+// 	ftp               bool
+// 	http              bool
+// 	https             bool
+// 	ident_reset       bool
+// 	IKE               bool
+// 	lsping            bool
+// 	netconf           bool
+// 	ntp               bool
+// 	PING              bool
+// 	r2cp              bool
+// 	reverse_ssh       bool
+// 	reverse_telnet    bool
+// 	rlogin            bool
+// 	rpm               bool
+// 	rsh               bool
+// 	SNMP              bool
+// 	SNMP_Trap         bool
+// 	SSH               bool
+// 	tcp_encap         bool
+// 	telnet            bool
+// 	tftp              bool
+// 	Traceroute        bool
+// 	webapi_clear_text bool
+// 	webapi_ssl        bool
+// 	xnm_clear_text    bool
+// 	xnm_ssl           bool
+// }
+// type _Protocols struct {
+// 	All              bool
+// 	bfd              bool
+// 	BGP              bool
+// 	dvmrp            bool
+// 	igmp             bool
+// 	ldp              bool
+// 	msdp             bool
+// 	nhrp             bool
+// 	ospf             bool
+// 	ospf3            bool
+// 	pgm              bool
+// 	pim              bool
+// 	rip              bool
+// 	ripng            bool
+// 	router_discovery bool
+// 	rsvp             bool
+// 	sap              bool
+// 	vrrp             bool
+// }
 
 type sDB struct {
 	XMLName     xml.Name     `xml:"AS4200240XXX"`
@@ -236,8 +241,8 @@ type pDB_Peer_RI struct {
 	IF          map[_IF_Name]pDB_Peer_RI_IF
 	IP_IF       map[netip.Addr]_IF_Name
 	Policy      _Policy
-	Services    _Services
-	Protocols   _Protocols
+	Services    _Service_List
+	Protocols   _Protocol_List
 	Reserved    bool
 	Description _Description
 }
@@ -263,8 +268,8 @@ type pDB_Peer_RI_IF struct {
 	IP            map[netip.Addr]pDB_Peer_RI_IF_IP
 	PARP          map[netip.Addr]pDB_Peer_RI_IF_PARP
 	Disable       bool
-	Services      _Services
-	Protocols     _Protocols
+	Services      _Service_List
+	Protocols     _Protocol_List
 	Reserved      bool
 	Description   _Description
 }
@@ -362,6 +367,19 @@ const (
 	_policy_restrictive  _Policy           = "restrictive"
 	_policy_permissive   _Policy           = "permissive"
 	_default_policy                        = _policy_permissive
+	_service_all         _Service          = "all"
+	_service_any_service _Service          = "any-service"
+	_service_bootp       _Service          = "bootp"
+	_service_dhcp        _Service          = "dhcp"
+	_service_dhcpv6      _Service          = "dhcpv6"
+	_service_ike         _Service          = "ike"
+	_service_ping        _Service          = "pink"
+	_service_snmp        _Service          = "snmp"
+	_service_snmp_trap   _Service          = "snmp_trap"
+	_service_ssh         _Service          = "ssh"
+	_service_traceroute  _Service          = "traceroute"
+	_protocol_all        _Protocol         = "all"
+	_protocol_bgp        _Protocol         = "bgp"
 )
 
 var (
@@ -380,12 +398,29 @@ var (
 		}
 		return
 	}()
-	ab          = make(_AB)
-	vi_ipprefix netip.Prefix
-	vi_ip_shift _VI_ID
-	pdb_peer    = make(map[_ASN]pDB_peer)
-	pdb_gt      = make(map[_GT_Name]pDB_GT)
-	config      = make(map[_ASN][]bytes.Buffer)
+	ab               = make(_AB)
+	vi_ipprefix      netip.Prefix
+	vi_ip_shift      _VI_ID
+	pdb_peer         = make(map[_ASN]pDB_peer)
+	pdb_gt           = make(map[_GT_Name]pDB_GT)
+	config           = make(map[_ASN][]bytes.Buffer)
+	default_services = _Service_List{
+		_service_all:         false,
+		_service_any_service: false,
+		_service_bootp:       false,
+		_service_dhcp:        false,
+		_service_dhcpv6:      false,
+		_service_ike:         false,
+		_service_ping:        true,
+		_service_snmp:        false,
+		_service_snmp_trap:   false,
+		_service_ssh:         true,
+		_service_traceroute:  true,
+	}
+	default_protocols = _Protocol_List{
+		_protocol_all: false,
+		_protocol_bgp: false,
+	}
 )
 
 func (inbound _ASN) String() (outbound string) {
@@ -537,6 +572,12 @@ func (inbound _VI_Type) Sanitize() _VI_Type {
 		log.Warnf("unknow VI type '%v'; ACTION: use default '%v'.", inbound, _default_vi)
 		return _default_vi
 	}
+}
+func (inbound _Service) String() string {
+	return string(inbound)
+}
+func (inbound _Protocol) String() string {
+	return string(inbound)
 }
 
 func get_vi_ipprefix(vi_shift _VI_ID, peer_shift _VI_Peer_ID) (outbound netip.Prefix) {
@@ -1017,22 +1058,18 @@ func parse_db(xml_db *sDB) (err error) {
 										return
 									}(),
 									Disable:     if_v.Disable,
-									Services:    _Services{},
-									Protocols:   _Protocols{},
+									Services:    default_services,
+									Protocols:   default_protocols,
 									Reserved:    if_v.Reserved,
 									Description: if_v.Description,
 								}
 							}
 							return
 						}(),
-						IP_IF:  vIP_IF,
-						Policy: ri_v.Policy.Sanitize(),
-						Services: _Services{
-							PING:       true,
-							SSH:        true,
-							Traceroute: true,
-						},
-						Protocols: _Protocols{},
+						IP_IF:     vIP_IF,
+						Policy:    ri_v.Policy.Sanitize(),
+						Services:  default_services,
+						Protocols: default_protocols,
 						Reserved:  ri_v.Reserved,
 						Description: func() (outbound _Description) {
 							switch ri_v.Name == _juniper_mgmt_RI && len(ri_v.Description) == 0 {
@@ -1149,12 +1186,7 @@ func parse_db(xml_db *sDB) (err error) {
 					log.Warnf("VI '%v', peer '%v' no public outter IP found; ACTION: use IKE NAT traversal.", value.ID, peer_index)
 					v_No_NAT = false
 				}
-				func() {
-					var (
-						v = pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF].Services
-					)
-					v.IKE = true
-				}()
+				pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF].Services[_service_ike] = true
 			}
 			var (
 				v_Metric = func() uint {
