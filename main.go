@@ -1425,12 +1425,12 @@ func config_upload() (err error) {
 			}
 			for _, ip := range publics {
 				outbound += tabber(ip.Addr().String()) +
-					"\t####\t" +
+					"\t\t####\t" +
 					tabber(pdb_peer[index].ASN_PName.String()) + "\t" +
 					tabber(pdb_peer[index].Router_ID.String()) + "\t" +
 					tabber(pdb_peer[index].Hostname) + "\t" +
 					tabber(pdb_peer[index].Manufacturer) + "\t" +
-					tabber(pdb_peer[index].Model) + "\t####\t" +
+					tabber(pdb_peer[index].Model) + "\t####\t\t" +
 					ips + "\n"
 			}
 			outbound += "\n"
