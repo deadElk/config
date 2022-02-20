@@ -50,6 +50,7 @@ type _VI_Peer_ID uint
 type _VI_Type string
 type _Description string
 type _Policy string
+type _Secret string
 
 type sDB struct {
 	XMLName     xml.Name     `xml:"AS4200240XXX"`
@@ -77,7 +78,7 @@ type sDB_Peer struct {
 	Model        string        `xml:"model,attr"`
 	Serial       string        `xml:"serial,attr"`
 	GT_Patch     _GT_Content   `xml:"GT_patch"`
-	Root         string        `xml:"root,attr"`
+	Root         _Secret       `xml:"root,attr"`
 	GT_List      string        `xml:"GT_list,attr"`
 	Reserved     bool          `xml:"reserved,attr"`
 	Description  _Description  `xml:"description,attr"`
@@ -137,7 +138,7 @@ type sDB_VI struct {
 	Communication _IF_Communication `xml:"communication,attr"`
 	Route_Metric  uint              `xml:"route_metric,attr"`
 	Peer          []sDB_VI_Peer     `xml:"peer"`
-	PSK           string            `xml:"PSK,attr"`
+	PSK           _Secret           `xml:"PSK,attr"`
 	Reserved      bool              `xml:"reserved,attr"`
 	Description   _Description      `xml:"description,attr"`
 }
@@ -168,7 +169,7 @@ type pDB_peer struct {
 	Model        string
 	Serial       string
 	GT_Patch     _GT_Content
-	Root         string
+	Root         _Secret
 	GT_List      []_GT_Name
 	Reserved     bool
 	Description  _Description
@@ -230,7 +231,7 @@ type pDB_Peer_VI struct {
 	VI_ID_PName          _VI_ID_PName
 	Type                 _VI_Type
 	Communication        _IF_Communication
-	PSK                  string
+	PSK                  _Secret
 	Route_Metric         uint
 	IPPrefix             netip.Prefix
 	No_NAT               bool
@@ -377,6 +378,13 @@ func (inbound _GT_Content) Sanitize() (outbound _GT_Content) {
 func (inbound _RI_Name) String() string {
 	return string(inbound)
 }
+func (inbound _RI_Name) Parse() _RI_Name {
+	switch len(inbound) == 0 {
+	case true:
+		return _juniper_default_RI
+	}
+	return inbound
+}
 func (inbound _IF_Name) String() string {
 	return string(inbound)
 }
@@ -400,6 +408,31 @@ func (inbound _Policy) Parse() _Policy {
 	return inbound
 }
 func (inbound _Policy) String() string {
+	return string(inbound)
+}
+func (inbound _Secret) Parse(length uint, format ...string) _Secret {
+	switch len(inbound) >= int(length) {
+	case true:
+		return inbound
+	}
+	var (
+		ret = make([]byte, length)
+	)
+	for i := 0; i < int(length); i++ {
+		switch next, err := rand.Int(rand.Reader, big.NewInt(int64(len(_passwd)))); err == nil && next != nil {
+		case true:
+			ret[i] = _passwd[next.Int64()]
+		default:
+			log.Panicf("rand.Int error: %#v", err)
+		}
+	}
+	switch len(format) > 0 {
+	case true:
+		log.Warnf("%v; ACTION: new value is '%v'.", format[0], string(ret))
+	}
+	return _Secret(ret)
+}
+func (inbound _Secret) String() string {
 	return string(inbound)
 }
 func get_vi_ipprefix(vi_shift _VI_ID, peer_shift _VI_Peer_ID) (outbound netip.Prefix) {
@@ -511,20 +544,6 @@ func hash(inbound *string) (outbound _ID) {
 	}
 	return
 }
-func generate_passwd(length uint) string {
-	var (
-		ret = make([]byte, length)
-	)
-	for i := 0; i < int(length); i++ {
-		switch next, err := rand.Int(rand.Reader, big.NewInt(int64(len(_passwd)))); err == nil && next != nil {
-		case true:
-			ret[i] = _passwd[next.Int64()]
-		default:
-			log.Panicf("rand.Int error: %#v", err)
-		}
-	}
-	return string(ret)
-}
 func log_setlevel(inbound ...*string) {
 	switch len(inbound) > 0 {
 	case true:
@@ -570,13 +589,6 @@ func parse_interface_error(inbound interface{}, skip interface{}) (outbound inte
 		}
 	}
 	return inbound
-}
-func parse_RI(inbound *_RI_Name) _RI_Name {
-	switch len(*inbound) == 0 {
-	case true:
-		return _juniper_default_RI
-	}
-	return *inbound
 }
 func init() {
 	log.SetLevel(_loglevel)
@@ -936,7 +948,7 @@ func parse_db(xml_db *sDB) (err error) {
 			Model:        value.Model,
 			Serial:       value.Serial,
 			GT_Patch:     value.GT_Patch.Sanitize(),
-			Root:         value.Root,
+			Root:         value.Root.Parse(16, "peer AS"+string(vASN_PName)+": root password is not acceptable"),
 			GT_List:      vGT_List,
 			Reserved:     value.Reserved,
 			Description:  value.Description,
@@ -945,47 +957,70 @@ func parse_db(xml_db *sDB) (err error) {
 			AB:           &ab,
 		}
 	}
+
 	for _, value := range xml_db.VI {
-		switch (value.Reserved || len(value.Peer) != 2) || value.Peer[0].Reserved || value.Peer[1].Reserved {
+		switch value.Reserved {
 		case true:
 			continue
 		}
-		log.Infof("'%+v'", value)
 		var (
-			r = pDB_Peer_VI{
-				VI_ID_PName:          _VI_ID_PName(value.ID.String()),
-				Type:                 value.Type,
-				Communication:        value.Communication.Parse(_if_mode_vi),
-				PSK:                  value.PSK,
-				Route_Metric:         value.Route_Metric,
-				IPPrefix:             get_vi_ipprefix(value.ID, 0),
-				No_NAT:               false,
-				IKE_GCM:              pdb_peer[value.Peer[0].ASN].IKE_GCM && pdb_peer[value.Peer[1].ASN].IKE_GCM,
-				Left_ASN:             value.Peer[0].ASN,
-				Left_RI:              value.Peer[0].RI,
-				Left_IF:              value.Peer[0].IF,
-				Left_IP:              value.Peer[0].IP,
-				Left_NAT:             pdb_peer[value.Peer[0].ASN].RI[value.Peer[0].RI].IF[value.Peer[0].IF].IP[value.Peer[0].IP].NAT,
-				Left_Local_Address:   len(pdb_peer[value.Peer[0].ASN].RI[value.Peer[0].RI].IF[value.Peer[0].IF].IP) > 1,
-				Left_Dynamic:         value.Peer[0].Dynamic,
-				Left_Hub:             value.Peer[0].Hub,
-				Left_Inner_RI:        value.Peer[0].Inner_RI,
-				Left_Inner_IPPrefix:  get_vi_ipprefix(value.ID, 1),
-				Right_ASN:            value.Peer[1].ASN,
-				Right_RI:             value.Peer[1].RI,
-				Right_IF:             value.Peer[1].IF,
-				Right_IP:             value.Peer[1].IP,
-				Right_NAT:            pdb_peer[value.Peer[1].ASN].RI[value.Peer[1].RI].IF[value.Peer[1].IF].IP[value.Peer[1].IP].NAT,
-				Right_Local_Address:  len(pdb_peer[value.Peer[1].ASN].RI[value.Peer[1].RI].IF[value.Peer[1].IF].IP) > 1,
-				Right_Dynamic:        value.Peer[1].Dynamic,
-				Right_Hub:            value.Peer[1].Hub,
-				Right_Inner_RI:       value.Peer[1].Inner_RI,
-				Right_Inner_IPPrefix: get_vi_ipprefix(value.ID, 2),
-				Reserved:             value.Reserved,
-				Description:          value.Description,
-			}
+			peers = len(value.Peer)
 		)
-		log.Infof("'%+v'", r)
+		switch peers == 2 {
+		case false:
+			continue
+		}
+		var (
+		// ri = make([]_RI_Name, peers)
+		)
+		func() {
+			for peer_index := range value.Peer {
+				switch _, flag := pdb_peer[value.Peer[peer_index].ASN]; flag || !value.Peer[peer_index].Reserved {
+				case false:
+					return
+				}
+				value.Peer[peer_index].RI = value.Peer[peer_index].RI.Parse()
+				switch _, flag := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI]; flag {
+				case false:
+					return
+				}
+			}
+			var (
+				r = pDB_Peer_VI{
+					VI_ID_PName:          _VI_ID_PName(value.ID.String()),
+					Type:                 value.Type,
+					Communication:        value.Communication.Parse(_if_mode_vi),
+					PSK:                  value.PSK.Parse(64),
+					Route_Metric:         value.Route_Metric,
+					IPPrefix:             get_vi_ipprefix(value.ID, 0),
+					No_NAT:               false,
+					IKE_GCM:              pdb_peer[value.Peer[0].ASN].IKE_GCM && pdb_peer[value.Peer[1].ASN].IKE_GCM,
+					Left_ASN:             value.Peer[0].ASN,
+					Left_RI:              value.Peer[0].RI,
+					Left_IF:              value.Peer[0].IF,
+					Left_IP:              value.Peer[0].IP,
+					Left_NAT:             pdb_peer[value.Peer[0].ASN].RI[value.Peer[0].RI].IF[value.Peer[0].IF].IP[value.Peer[0].IP].NAT,
+					Left_Local_Address:   len(pdb_peer[value.Peer[0].ASN].RI[value.Peer[0].RI].IF[value.Peer[0].IF].IP) > 1,
+					Left_Dynamic:         value.Peer[0].Dynamic,
+					Left_Hub:             value.Peer[0].Hub,
+					Left_Inner_RI:        value.Peer[0].Inner_RI,
+					Left_Inner_IPPrefix:  get_vi_ipprefix(value.ID, 1),
+					Right_ASN:            value.Peer[1].ASN,
+					Right_RI:             value.Peer[1].RI,
+					Right_IF:             value.Peer[1].IF,
+					Right_IP:             value.Peer[1].IP,
+					Right_NAT:            pdb_peer[value.Peer[1].ASN].RI[value.Peer[1].RI].IF[value.Peer[1].IF].IP[value.Peer[1].IP].NAT,
+					Right_Local_Address:  len(pdb_peer[value.Peer[1].ASN].RI[value.Peer[1].RI].IF[value.Peer[1].IF].IP) > 1,
+					Right_Dynamic:        value.Peer[1].Dynamic,
+					Right_Hub:            value.Peer[1].Hub,
+					Right_Inner_RI:       value.Peer[1].Inner_RI,
+					Right_Inner_IPPrefix: get_vi_ipprefix(value.ID, 2),
+					Reserved:             value.Reserved,
+					Description:          value.Description,
+				}
+			)
+			log.Infof("'%+v'", r)
+		}()
 	}
 	return
 }
