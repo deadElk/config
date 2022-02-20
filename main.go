@@ -133,6 +133,7 @@ type sDB_GT struct {
 }
 type sDB_Peer struct {
 	ASN          _ASN          `xml:"ASN,attr"`
+	IFM          sDB_Peer_IFM  `xml:"IFM"`
 	RI           []sDB_Peer_RI `xml:"RI"`
 	Hostname     string        `xml:"hostname,attr"`
 	Version      string        `xml:"version,attr"`
@@ -144,6 +145,13 @@ type sDB_Peer struct {
 	GT_List      string        `xml:"GT_list,attr"`
 	Reserved     bool          `xml:"reserved,attr"`
 	Description  _Description  `xml:"description,attr"`
+}
+type sDB_Peer_IFM struct {
+	Name          _IF_Name
+	Communication _IF_Communication
+	Disable       bool
+	Reserved      bool
+	Description   _Description
 }
 type sDB_Peer_RI struct {
 	Name        _RI_Name         `xml:"name,attr"`
@@ -221,6 +229,7 @@ type pDB_peer struct {
 	ASN           _ASN
 	ASN_PName     _ASN_PName
 	Router_ID     netip.Addr
+	IFM           pDB_Peer_IFM
 	RI            map[_RI_Name]pDB_Peer_RI
 	IF_RI         map[_IF_Name]_RI_Name
 	Hostname      string
@@ -243,7 +252,6 @@ type pDB_peer struct {
 type pDB_Peer_RI struct {
 	RT          map[netip.Prefix]pDB_Peer_RI_RT
 	IF          map[_IF_Name]pDB_Peer_RI_IF
-	IFM         map[_IF_Name]pDB_Peer_RI_IFM
 	IP_IF       map[netip.Addr]_IF_Name
 	Policy      _Policy
 	Services    _Service_List
@@ -266,20 +274,9 @@ type pDB_Peer_RI_RT_GW struct {
 	Reserved    bool
 	Description _Description
 }
-type pDB_Peer_RI_IFM struct {
-	IF            map[_IF_Name]qDB_Peer_RI_IF
+type pDB_Peer_IFM struct {
 	Communication _IF_Communication
 	Disable       bool
-	Reserved      bool
-	Description   _Description
-}
-type qDB_Peer_RI_IF struct {
-	Communication _IF_Communication
-	IP            map[netip.Addr]pDB_Peer_RI_IF_IP
-	PARP          map[netip.Addr]pDB_Peer_RI_IF_PARP
-	Disable       bool
-	Services      _Service_List
-	Protocols     _Protocol_List
 	Reserved      bool
 	Description   _Description
 }
