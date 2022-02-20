@@ -218,27 +218,27 @@ type sDB_VI_Peer struct {
 }
 
 type pDB_peer struct {
-	ASN          _ASN
-	ASN_PName    _ASN_PName
-	Router_ID    netip.Addr
-	RI           map[_RI_Name]pDB_Peer_RI
-	IF_RI        map[_IF_Name]_RI_Name
-	Hostname     string
-	Version      string
-	Major        float64
-	IKE_GCM      bool
-	Manufacturer string
-	Model        string
-	Serial       string
-	GT_Patch     _GT_Content
-	Root         _Secret
-	GT_List      []_GT_Name
-	Reserved     bool
-	Description  _Description
-	VI           map[_VI_ID]pDB_Peer_VI
-	RM_ID        *_RM_ID
-	AB           *_AB
-	IP_List      map[netip.Addr]bool // true = public
+	ASN           _ASN
+	ASN_PName     _ASN_PName
+	Router_ID     netip.Addr
+	RI            map[_RI_Name]pDB_Peer_RI
+	IF_RI         map[_IF_Name]_RI_Name
+	Hostname      string
+	Version       string
+	Major         float64
+	IKE_GCM       bool
+	Manufacturer  string
+	Model         string
+	Serial        string
+	GT_Patch      _GT_Content
+	Root          _Secret
+	GT_List       []_GT_Name
+	Reserved      bool
+	Description   _Description
+	VI            map[_VI_ID]pDB_Peer_VI
+	RM_ID         *_RM_ID
+	AB            *_AB
+	IPPrefix_List map[netip.Prefix]bool // true = public
 }
 type pDB_Peer_RI struct {
 	RT          map[netip.Prefix]pDB_Peer_RI_RT
@@ -601,6 +601,15 @@ func (inbound _Protocol) String() string {
 	return string(inbound)
 }
 
+func tabber(inbound string) string {
+	switch {
+	case len(inbound) > 15:
+		return inbound[:15]
+	case len(inbound) < 8:
+		return inbound + "\t"
+	}
+	return inbound
+}
 func get_vi_ipprefix(vi_shift _VI_ID, peer_shift _VI_Peer_ID) (outbound netip.Prefix) {
 	var (
 		b = make([]byte, 4)
@@ -888,7 +897,7 @@ func db_parse(xml_db *sDB) (err error) {
 			continue
 		}
 		var (
-			v_IP_List  = make(map[netip.Addr]bool)
+			v_IP_List  = make(map[netip.Prefix]bool)
 			vASN_PName = value.ASN.Sanitize()
 			vHostname  = func() (outbound string) {
 				switch len(value.Hostname) == 0 {
@@ -1062,11 +1071,11 @@ func db_parse(xml_db *sDB) (err error) {
 											add_to_ab(true, false, "OUTTER_LIST", ip_v.IPPrefix.Addr(), ip_v.NAT)
 											switch {
 											case ip_v.NAT.IsValid() && !ip_v.NAT.IsPrivate():
-												v_IP_List[ip_v.NAT] = true
-											case ip_i.IsValid() && !ip_i.IsPrivate():
-												v_IP_List[ip_i] = true
-											case ip_i.IsValid():
-												v_IP_List[ip_i] = false
+												v_IP_List[parse_interface(ip_v.NAT.Prefix(32)).(netip.Prefix)] = true
+											case ip_v.IPPrefix.IsValid() && !ip_v.IPPrefix.Addr().IsPrivate():
+												v_IP_List[ip_v.IPPrefix] = true
+											case ip_v.IPPrefix.IsValid():
+												v_IP_List[ip_v.IPPrefix] = false
 											}
 											ip_o[ip_i] = pDB_Peer_RI_IF_IP{
 												IPPrefix:    ip_v.IPPrefix,
@@ -1146,27 +1155,27 @@ func db_parse(xml_db *sDB) (err error) {
 			}()
 		)
 		pdb_peer[value.ASN] = pDB_peer{
-			ASN:          value.ASN,
-			ASN_PName:    vASN_PName,
-			Router_ID:    vRouter_ID,
-			RI:           vRI,
-			IF_RI:        vIF_RI,
-			Hostname:     vHostname,
-			Version:      value.Version,
-			Major:        vMajor,
-			IKE_GCM:      vMajor >= 12.3,
-			Manufacturer: value.Manufacturer,
-			Model:        value.Model,
-			Serial:       value.Serial,
-			GT_Patch:     value.GT_Patch.Sanitize(),
-			Root:         value.Root.Sanitize(16, "peer AS"+vASN_PName.String()+": root password is not acceptable"),
-			GT_List:      vGT_List,
-			Reserved:     value.Reserved,
-			Description:  value.Description,
-			VI:           map[_VI_ID]pDB_Peer_VI{},
-			RM_ID:        &rm_id,
-			AB:           &ab,
-			IP_List:      v_IP_List,
+			ASN:           value.ASN,
+			ASN_PName:     vASN_PName,
+			Router_ID:     vRouter_ID,
+			RI:            vRI,
+			IF_RI:         vIF_RI,
+			Hostname:      vHostname,
+			Version:       value.Version,
+			Major:         vMajor,
+			IKE_GCM:       vMajor >= 12.3,
+			Manufacturer:  value.Manufacturer,
+			Model:         value.Model,
+			Serial:        value.Serial,
+			GT_Patch:      value.GT_Patch.Sanitize(),
+			Root:          value.Root.Sanitize(16, "peer AS"+vASN_PName.String()+": root password is not acceptable"),
+			GT_List:       vGT_List,
+			Reserved:      value.Reserved,
+			Description:   value.Description,
+			VI:            map[_VI_ID]pDB_Peer_VI{},
+			RM_ID:         &rm_id,
+			AB:            &ab,
+			IPPrefix_List: v_IP_List,
 		}
 	}
 
@@ -1379,14 +1388,41 @@ func config_test() (err error) {
 	return
 }
 func config_upload() (err error) {
-	// var (
-	// 	hosts string
-	// )
+	var (
+		hosts string
+	)
 	for index, value := range config {
-		log.Errorf("'%v'", pdb_peer[index].IP_List)
-		// hosts += func() (outbound string) {
-		// 	return
-		// }()
+		log.Errorf("'%v'", pdb_peer[index].IPPrefix_List)
+		hosts += func() (outbound string) {
+			var (
+				ips       string
+				publics   []netip.Prefix
+				router_id = parse_interface(pdb_peer[index].Router_ID.Prefix(32)).(netip.Prefix)
+			)
+			publics = append(publics, router_id)
+			for ip_i, ip_v := range pdb_peer[index].IPPrefix_List {
+				switch ip_i == router_id {
+				case false:
+					ips += tabber(ip_i.String()) + "\t"
+				}
+				switch ip_v {
+				case true:
+					publics = append(publics, ip_i)
+				}
+			}
+			for _, ip := range publics {
+				outbound += tabber(ip.Addr().String()) +
+					"\t####\t" +
+					tabber(pdb_peer[index].ASN_PName.String()) + "\t" +
+					tabber(pdb_peer[index].Router_ID.String()) + "\t" +
+					tabber(pdb_peer[index].Hostname) + "\t" +
+					tabber(pdb_peer[index].Manufacturer) + "\t" +
+					tabber(pdb_peer[index].Model) + "\t####\t" +
+					ips + "####\t\n"
+			}
+			outbound += "\n"
+			return
+		}()
 		var (
 			fn = upload_path + "./AS" + index.String()
 		)
@@ -1396,6 +1432,12 @@ func config_upload() (err error) {
 		case false:
 			log.Errorf("Fail '%v' with error '%v'", index, err_i)
 		}
+	}
+	switch err_i := os.WriteFile(upload_path+"./hosts.txt", []byte(hosts), 0600); err_i == nil {
+	case true:
+		log.Infof("OK 'hosts.txt'")
+	case false:
+		log.Errorf("Fail 'hosts.txt' with error '%v'", err_i)
 	}
 
 	// var (
