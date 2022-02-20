@@ -242,6 +242,7 @@ type pDB_peer struct {
 type pDB_Peer_RI struct {
 	RT          map[netip.Prefix]pDB_Peer_RI_RT
 	IF          map[_IF_Name]pDB_Peer_RI_IF
+	IFM         map[_IF_Name]pDB_Peer_RI_IFM
 	IP_IF       map[netip.Addr]_IF_Name
 	Policy      _Policy
 	Services    _Service_List
@@ -264,7 +265,7 @@ type pDB_Peer_RI_RT_GW struct {
 	Reserved    bool
 	Description _Description
 }
-type qDB_Peer_RI_IM struct {
+type pDB_Peer_RI_IFM struct {
 	IF            map[_IF_Name]qDB_Peer_RI_IF
 	Communication _IF_Communication
 	Disable       bool
