@@ -8,8 +8,8 @@
         <option name="USE_TAB_CHARACTER" value="true" />
       </value>
     </option>
-    <option name="FORMATTER_TAGS_ENABLED" value="true" />
     <option name="FORMATTER_TAGS_ACCEPT_REGEXP" value="true" />
+    <option name="ENABLE_SECOND_REFORMAT" value="true" />
     <GoCodeStyleSettings>
       <option name="ADD_PARENTHESES_FOR_SINGLE_IMPORT" value="true" />
       <option name="REMOVE_REDUNDANT_IMPORT_ALIASES" value="true" />
@@ -28,7 +28,6 @@
       <option name="PROPERTY_ALIGNMENT" value="1" />
     </JSON>
     <XML>
-      <option name="XML_ATTRIBUTE_WRAP" value="0" />
       <option name="XML_TEXT_WRAP" value="0" />
     </XML>
     <editorconfig>
