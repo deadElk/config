@@ -1149,7 +1149,12 @@ func parse_db(xml_db *sDB) (err error) {
 					log.Warnf("VI '%v', peer '%v' no public outter IP found; ACTION: use IKE NAT traversal.", value.ID, peer_index)
 					v_No_NAT = false
 				}
-				pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF].Services.IKE = true
+				func() {
+					var (
+						v = pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF].Services
+					)
+					v.IKE = true
+				}()
 			}
 			var (
 				v_Metric = func() uint {
