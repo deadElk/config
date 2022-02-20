@@ -615,7 +615,7 @@ func main() {
 		return
 	}
 
-	// log.Infof("'%s'", config[4200240001])
+	log.Infof("'%s'", config[4200240001])
 	// log.Infof("'%+v'", pdb_vi)
 	// log.Infof("'%+v'", pdb_peer)
 	// log.Infof("'%+v'", pdb_gt)
@@ -970,10 +970,11 @@ func parse_db(xml_db *sDB) (err error) {
 		case false:
 			continue
 		}
-		var (
-		// ri = make([]_RI_Name, peers)
-		)
 		func() {
+			var (
+				v_No_NAT = true
+				v_NAT    = make([]netip.Addr, peers)
+			)
 			for peer_index := range value.Peer {
 				switch _, flag := pdb_peer[value.Peer[peer_index].ASN]; flag || !value.Peer[peer_index].Reserved {
 				case false:
@@ -987,20 +988,21 @@ func parse_db(xml_db *sDB) (err error) {
 				switch len(value.Peer[peer_index].IF) == 0 {
 				case true:
 					for if_i := range pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF {
-						// log.Errorf("'%+v''%+v'", if_i, if_v)
 						value.Peer[peer_index].IF = if_i
+						log.Debugf("VI '%v', peer '%v', no interface defined; ACTION: found '%v'.", value.ID.String(), peer_index, value.Peer[peer_index].IF)
 						break
 					}
-				}
-				switch _, flag := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF]; flag {
 				case false:
-					return
+					switch _, flag := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF]; flag {
+					case false:
+						return
+					}
 				}
 				switch value.Peer[peer_index].IP.String() == "invalid IP" {
 				case true:
 					for ip_i := range pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF].IP {
-						// log.Errorf("'%+v''%+v'", ip_i, ip_v)
 						value.Peer[peer_index].IP = ip_i
+						log.Debugf("VI '%v', peer '%v', no IP defined; ACTION: found '%v'.", value.ID.String(), peer_index, value.Peer[peer_index].IP)
 						break
 					}
 				}
@@ -1008,43 +1010,87 @@ func parse_db(xml_db *sDB) (err error) {
 				case false:
 					return
 				}
-				// log.Errorf("'%+v'", value.Peer[peer_index].IP.String())
-			}
-			var (
-				r = pDB_Peer_VI{
-					VI_ID_PName:          _VI_ID_PName(value.ID.String()),
-					Type:                 value.Type,
-					Communication:        value.Communication.Parse(_if_mode_vi),
-					PSK:                  value.PSK.Parse(64),
-					Route_Metric:         value.Route_Metric,
-					IPPrefix:             get_vi_ipprefix(value.ID, 0),
-					No_NAT:               false,
-					IKE_GCM:              pdb_peer[value.Peer[0].ASN].IKE_GCM && pdb_peer[value.Peer[1].ASN].IKE_GCM,
-					Left_ASN:             value.Peer[0].ASN,
-					Left_RI:              value.Peer[0].RI,
-					Left_IF:              value.Peer[0].IF,
-					Left_IP:              value.Peer[0].IP,
-					Left_NAT:             pdb_peer[value.Peer[0].ASN].RI[value.Peer[0].RI].IF[value.Peer[0].IF].IP[value.Peer[0].IP].NAT,
-					Left_Local_Address:   len(pdb_peer[value.Peer[0].ASN].RI[value.Peer[0].RI].IF[value.Peer[0].IF].IP) > 1,
-					Left_Dynamic:         value.Peer[0].Dynamic,
-					Left_Hub:             value.Peer[0].Hub,
-					Left_Inner_RI:        value.Peer[0].Inner_RI.Parse(),
-					Left_Inner_IPPrefix:  get_vi_ipprefix(value.ID, 1),
-					Right_ASN:            value.Peer[1].ASN,
-					Right_RI:             value.Peer[1].RI,
-					Right_IF:             value.Peer[1].IF,
-					Right_IP:             value.Peer[1].IP,
-					Right_NAT:            pdb_peer[value.Peer[1].ASN].RI[value.Peer[1].RI].IF[value.Peer[1].IF].IP[value.Peer[1].IP].NAT,
-					Right_Local_Address:  len(pdb_peer[value.Peer[1].ASN].RI[value.Peer[1].RI].IF[value.Peer[1].IF].IP) > 1,
-					Right_Dynamic:        value.Peer[1].Dynamic,
-					Right_Hub:            value.Peer[1].Hub,
-					Right_Inner_RI:       value.Peer[1].Inner_RI.Parse(),
-					Right_Inner_IPPrefix: get_vi_ipprefix(value.ID, 2),
-					Reserved:             value.Reserved,
-					Description:          value.Description,
+				switch nat := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF].IP[value.Peer[peer_index].IP].NAT; nat.IsValid() {
+				case true:
+					v_NAT[peer_index] = nat
+				case false:
+					v_NAT[peer_index] = value.Peer[peer_index].IP
 				}
-			)
-			log.Infof("'%+v'", r)
+				switch v_NAT[peer_index].IsValid() {
+				case false:
+					return
+				}
+				switch v_NAT[peer_index].IsPrivate() {
+				case true:
+					v_No_NAT = false
+				}
+			}
+			pdb_peer[value.Peer[0].ASN].VI[value.ID] = pDB_Peer_VI{
+				VI_ID_PName:          _VI_ID_PName(value.ID.String()),
+				Type:                 value.Type,
+				Communication:        value.Communication.Parse(_if_mode_vi),
+				PSK:                  value.PSK.Parse(64),
+				Route_Metric:         value.Route_Metric,
+				IPPrefix:             get_vi_ipprefix(value.ID, 0),
+				No_NAT:               v_No_NAT,
+				IKE_GCM:              pdb_peer[value.Peer[0].ASN].IKE_GCM && pdb_peer[value.Peer[1].ASN].IKE_GCM,
+				Left_ASN:             value.Peer[0].ASN,
+				Left_RI:              value.Peer[0].RI,
+				Left_IF:              value.Peer[0].IF,
+				Left_IP:              value.Peer[0].IP,
+				Left_NAT:             v_NAT[0],
+				Left_Local_Address:   len(pdb_peer[value.Peer[0].ASN].RI[value.Peer[0].RI].IF[value.Peer[0].IF].IP) > 1,
+				Left_Dynamic:         value.Peer[0].Dynamic,
+				Left_Hub:             value.Peer[0].Hub,
+				Left_Inner_RI:        value.Peer[0].Inner_RI.Parse(),
+				Left_Inner_IPPrefix:  get_vi_ipprefix(value.ID, 1),
+				Right_ASN:            value.Peer[1].ASN,
+				Right_RI:             value.Peer[1].RI,
+				Right_IF:             value.Peer[1].IF,
+				Right_IP:             value.Peer[1].IP,
+				Right_NAT:            v_NAT[1],
+				Right_Local_Address:  len(pdb_peer[value.Peer[1].ASN].RI[value.Peer[1].RI].IF[value.Peer[1].IF].IP) > 1,
+				Right_Dynamic:        value.Peer[1].Dynamic,
+				Right_Hub:            value.Peer[1].Hub,
+				Right_Inner_RI:       value.Peer[1].Inner_RI.Parse(),
+				Right_Inner_IPPrefix: get_vi_ipprefix(value.ID, 2),
+				Reserved:             value.Reserved,
+				Description:          value.Description,
+			}
+			pdb_peer[value.Peer[1].ASN].VI[value.ID] = pDB_Peer_VI{
+				VI_ID_PName:          pdb_peer[value.Peer[0].ASN].VI[value.ID].VI_ID_PName,
+				Type:                 pdb_peer[value.Peer[0].ASN].VI[value.ID].Type,
+				Communication:        pdb_peer[value.Peer[0].ASN].VI[value.ID].Communication,
+				PSK:                  pdb_peer[value.Peer[0].ASN].VI[value.ID].PSK,
+				Route_Metric:         pdb_peer[value.Peer[0].ASN].VI[value.ID].Route_Metric,
+				IPPrefix:             pdb_peer[value.Peer[0].ASN].VI[value.ID].IPPrefix,
+				No_NAT:               pdb_peer[value.Peer[0].ASN].VI[value.ID].No_NAT,
+				IKE_GCM:              pdb_peer[value.Peer[0].ASN].VI[value.ID].IKE_GCM,
+				Left_ASN:             pdb_peer[value.Peer[0].ASN].VI[value.ID].Right_ASN,
+				Left_RI:              pdb_peer[value.Peer[0].ASN].VI[value.ID].Right_RI,
+				Left_IF:              pdb_peer[value.Peer[0].ASN].VI[value.ID].Right_IF,
+				Left_IP:              pdb_peer[value.Peer[0].ASN].VI[value.ID].Right_IP,
+				Left_NAT:             pdb_peer[value.Peer[0].ASN].VI[value.ID].Right_NAT,
+				Left_Local_Address:   pdb_peer[value.Peer[0].ASN].VI[value.ID].Right_Local_Address,
+				Left_Dynamic:         pdb_peer[value.Peer[0].ASN].VI[value.ID].Right_Dynamic,
+				Left_Hub:             pdb_peer[value.Peer[0].ASN].VI[value.ID].Right_Hub,
+				Left_Inner_RI:        pdb_peer[value.Peer[0].ASN].VI[value.ID].Right_Inner_RI,
+				Left_Inner_IPPrefix:  pdb_peer[value.Peer[0].ASN].VI[value.ID].Right_Inner_IPPrefix,
+				Right_ASN:            pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_ASN,
+				Right_RI:             pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_RI,
+				Right_IF:             pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_IF,
+				Right_IP:             pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_IP,
+				Right_NAT:            pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_NAT,
+				Right_Local_Address:  pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_Local_Address,
+				Right_Dynamic:        pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_Dynamic,
+				Right_Hub:            pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_Hub,
+				Right_Inner_RI:       pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_Inner_RI,
+				Right_Inner_IPPrefix: pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_Inner_IPPrefix,
+				Reserved:             pdb_peer[value.Peer[0].ASN].VI[value.ID].Reserved,
+				Description:          pdb_peer[value.Peer[0].ASN].VI[value.ID].Description,
+			}
+			// log.Infof("'%+v'", pdb_peer[value.Peer[0].ASN].VI[value.ID])
+			// log.Infof("'%+v'", pdb_peer[value.Peer[1].ASN].VI[value.ID])
 		}()
 	}
 	return
