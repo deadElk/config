@@ -333,7 +333,7 @@ var (
 func (inbound _ASN) String() (outbound string) {
 	return strconv.FormatUint(uint64(inbound), 10)
 }
-func (inbound _ASN) Parse() _ASN_PName {
+func (inbound _ASN) Sanitize() _ASN_PName {
 	var (
 		interim = "0000000000" + strconv.FormatUint(uint64(inbound), 10)
 	)
@@ -342,7 +342,7 @@ func (inbound _ASN) Parse() _ASN_PName {
 func (inbound _ASN_PName) String() (outbound string) {
 	return string(inbound)
 }
-func (inbound _VI_ID) Parse() (outbound _VI_ID_PName) {
+func (inbound _VI_ID) Sanitize() (outbound _VI_ID_PName) {
 	var (
 		interim = "00000" + strconv.FormatUint(uint64(inbound), 10)
 	)
@@ -378,7 +378,7 @@ func (inbound _IF_Communication) Parse(mode _IF_Mode) (outbound _IF_Communicatio
 	log.Warnf("unknow IF Communication type '%v'; ACTION: use '%v'.", inbound, outbound)
 	return
 }
-func (inbound _Description) Parse(default_description _Description) _Description {
+func (inbound _Description) Sanitize(default_description _Description) _Description {
 	switch len(inbound) == 0 {
 	case true:
 		return default_description
@@ -394,10 +394,17 @@ func (inbound _GT_Content) Sanitize() (outbound _GT_Content) {
 func (inbound _RI_Name) String() string {
 	return string(inbound)
 }
-func (inbound _RI_Name) Parse() _RI_Name {
-	switch len(inbound) == 0 {
+func (inbound _RI_Name) Sanitize(decline ..._RI_Name) (outbound _RI_Name) {
+	outbound = _juniper_default_RI
+	switch len(inbound) == 0 || inbound == _juniper_default_RI {
 	case true:
-		return _juniper_default_RI
+		return
+	}
+	for _, interim := range decline {
+		switch inbound == interim {
+		case true:
+			return
+		}
 	}
 	return inbound
 }
@@ -413,7 +420,7 @@ func (inbound _GT_Name) String() string {
 func (inbound _GT_Content) String() string {
 	return string(inbound)
 }
-func (inbound _Policy) Parse() _Policy {
+func (inbound _Policy) Sanitize() _Policy {
 	switch len(inbound) == 0 || (inbound != _policy_permissive && inbound != _policy_restrictive) {
 	case true:
 		return _default_policy
@@ -423,7 +430,7 @@ func (inbound _Policy) Parse() _Policy {
 func (inbound _Policy) String() string {
 	return string(inbound)
 }
-func (inbound _Secret) Parse(length uint, format ...string) _Secret {
+func (inbound _Secret) Sanitize(length uint, message ...string) _Secret {
 	switch len(inbound) >= int(length) {
 	case true:
 		return inbound
@@ -439,15 +446,16 @@ func (inbound _Secret) Parse(length uint, format ...string) _Secret {
 			log.Panicf("rand.Int error: %#v", err)
 		}
 	}
-	switch len(format) > 0 {
+	switch len(message) > 0 {
 	case true:
-		log.Warnf("%v; ACTION: new value is '%v'.", format[0], string(ret))
+		log.Warnf("%v; ACTION: new value is '%v'.", message[0], string(ret))
 	}
 	return _Secret(ret)
 }
 func (inbound _Secret) String() string {
 	return string(inbound)
 }
+
 func get_vi_ipprefix(vi_shift _VI_ID, peer_shift _VI_Peer_ID) (outbound netip.Prefix) {
 	var (
 		b = make([]byte, 4)
@@ -718,7 +726,7 @@ func parse_db(xml_db *sDB) (err error) {
 			continue
 		}
 		var (
-			vASN_PName = value.ASN.Parse()
+			vASN_PName = value.ASN.Sanitize()
 			vHostname  = func() (outbound string) {
 				switch len(value.Hostname) == 0 {
 				case true:
@@ -933,7 +941,7 @@ func parse_db(xml_db *sDB) (err error) {
 							return
 						}(),
 						IP_IF:    vIP_IF,
-						Policy:   ri_v.Policy.Parse(),
+						Policy:   ri_v.Policy.Sanitize(),
 						Reserved: ri_v.Reserved,
 						Description: func() (outbound _Description) {
 							switch ri_v.Name == _juniper_mgmt_RI && len(ri_v.Description) == 0 {
@@ -961,7 +969,7 @@ func parse_db(xml_db *sDB) (err error) {
 			Model:        value.Model,
 			Serial:       value.Serial,
 			GT_Patch:     value.GT_Patch.Sanitize(),
-			Root:         value.Root.Parse(16, "peer AS"+vASN_PName.String()+": root password is not acceptable"),
+			Root:         value.Root.Sanitize(16, "peer AS"+vASN_PName.String()+": root password is not acceptable"),
 			GT_List:      vGT_List,
 			Reserved:     value.Reserved,
 			Description:  value.Description,
@@ -981,6 +989,7 @@ func parse_db(xml_db *sDB) (err error) {
 		)
 		switch peers == 2 {
 		case false:
+			log.Warnf("VI '%v', wrong total peers number '%v'; ACTION: skip.", value.ID, peers)
 			continue
 		}
 		func() {
@@ -991,11 +1000,19 @@ func parse_db(xml_db *sDB) (err error) {
 			for peer_index := range value.Peer {
 				switch _, flag := pdb_peer[value.Peer[peer_index].ASN]; flag || !value.Peer[peer_index].Reserved {
 				case false:
+					log.Warnf("VI '%v', ASN '%v' not defined / peer '%v' reserved; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, peer_index)
 					return
 				}
-				value.Peer[peer_index].RI = value.Peer[peer_index].RI.Parse()
+				value.Peer[peer_index].RI = value.Peer[peer_index].RI.Sanitize(_juniper_mgmt_RI)
 				switch _, flag := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI]; flag {
 				case false:
+					log.Warnf("VI '%v', ASN '%v' RI '%v' not defined; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, value.Peer[peer_index].RI)
+					return
+				}
+				value.Peer[peer_index].Inner_RI = value.Peer[peer_index].Inner_RI.Sanitize(_juniper_mgmt_RI)
+				switch _, flag := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].Inner_RI]; flag {
+				case false:
+					log.Warnf("VI '%v', ASN '%v' inner RI '%v' not defined; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, value.Peer[peer_index].Inner_RI)
 					return
 				}
 				switch len(value.Peer[peer_index].IF) == 0 {
@@ -1008,6 +1025,7 @@ func parse_db(xml_db *sDB) (err error) {
 				case false:
 					switch _, flag := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF]; flag {
 					case false:
+						log.Warnf("VI '%v', ASN '%v' RI '%v' IF '%v' not defined; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, value.Peer[peer_index].RI, value.Peer[peer_index].IF)
 						return
 					}
 				}
@@ -1021,6 +1039,7 @@ func parse_db(xml_db *sDB) (err error) {
 				}
 				switch _, flag := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF].IP[value.Peer[peer_index].IP]; flag {
 				case false:
+					log.Warnf("VI '%v', ASN '%v' RI '%v' IF '%v' IP '%v' not found; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, value.Peer[peer_index].RI, value.Peer[peer_index].IF, value.Peer[peer_index].IP)
 					return
 				}
 				switch nat := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF].IP[value.Peer[peer_index].IP].NAT; nat.IsValid() {
@@ -1031,18 +1050,20 @@ func parse_db(xml_db *sDB) (err error) {
 				}
 				switch v_NAT[peer_index].IsValid() {
 				case false:
+					log.Warnf("VI '%v', peer '%v' no valid outter IP found; ACTION: skip.", value.ID, peer_index)
 					return
 				}
 				switch v_NAT[peer_index].IsPrivate() {
 				case true:
+					log.Warnf("VI '%v', peer '%v' no public outter IP found; ACTION: use IKE NAT traversal.", value.ID, peer_index)
 					v_No_NAT = false
 				}
 			}
 			pdb_peer[value.Peer[0].ASN].VI[value.ID] = pDB_Peer_VI{
-				VI_ID_PName:          value.ID.Parse(),
+				VI_ID_PName:          value.ID.Sanitize(),
 				Type:                 value.Type,
 				Communication:        value.Communication.Parse(_if_mode_vi),
-				PSK:                  value.PSK.Parse(64),
+				PSK:                  value.PSK.Sanitize(64),
 				Route_Metric:         value.Route_Metric,
 				IPPrefix:             get_vi_ipprefix(value.ID, 0),
 				No_NAT:               v_No_NAT,
@@ -1055,7 +1076,7 @@ func parse_db(xml_db *sDB) (err error) {
 				Left_Local_Address:   len(pdb_peer[value.Peer[0].ASN].RI[value.Peer[0].RI].IF[value.Peer[0].IF].IP) > 1,
 				Left_Dynamic:         value.Peer[0].Dynamic,
 				Left_Hub:             value.Peer[0].Hub,
-				Left_Inner_RI:        value.Peer[0].Inner_RI.Parse(),
+				Left_Inner_RI:        value.Peer[0].Inner_RI.Sanitize(_juniper_mgmt_RI),
 				Left_Inner_IPPrefix:  get_vi_ipprefix(value.ID, 1),
 				Right_ASN:            value.Peer[1].ASN,
 				Right_RI:             value.Peer[1].RI,
@@ -1065,7 +1086,7 @@ func parse_db(xml_db *sDB) (err error) {
 				Right_Local_Address:  len(pdb_peer[value.Peer[1].ASN].RI[value.Peer[1].RI].IF[value.Peer[1].IF].IP) > 1,
 				Right_Dynamic:        value.Peer[1].Dynamic,
 				Right_Hub:            value.Peer[1].Hub,
-				Right_Inner_RI:       value.Peer[1].Inner_RI.Parse(),
+				Right_Inner_RI:       value.Peer[1].Inner_RI.Sanitize(_juniper_mgmt_RI),
 				Right_Inner_IPPrefix: get_vi_ipprefix(value.ID, 2),
 				Reserved:             value.Reserved,
 				Description:          value.Description,
