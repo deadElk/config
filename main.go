@@ -298,8 +298,6 @@ const (
 	_if_mode_link        _IF_Mode          = "link"
 	_node0               string            = "node0"
 	_node1               string            = "node1"
-	_left                string            = "left"
-	_right               string            = "right"
 	_rm_bits             uint              = 2
 	_rm_max                                = 32/_rm_bits - 1
 	_policy_restrictive  _Policy           = "restrictive"
@@ -395,7 +393,7 @@ func (inbound _GT_Content) String() string {
 	return string(inbound)
 }
 func (inbound _Policy) Parse() _Policy {
-	switch len(inbound) == 0 {
+	switch len(inbound) == 0 || (inbound != _policy_permissive && inbound != _policy_restrictive) {
 	case true:
 		return _default_policy
 	}
