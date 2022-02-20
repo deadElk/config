@@ -238,6 +238,7 @@ type pDB_peer struct {
 	VI           map[_VI_ID]pDB_Peer_VI
 	RM_ID        *_RM_ID
 	AB           *_AB
+	IP_List      map[netip.Addr]bool // true = public
 }
 type pDB_Peer_RI struct {
 	RT          map[netip.Prefix]pDB_Peer_RI_RT
@@ -887,6 +888,7 @@ func db_parse(xml_db *sDB) (err error) {
 			continue
 		}
 		var (
+			v_IP_List  = make(map[netip.Addr]bool)
 			vASN_PName = value.ASN.Sanitize()
 			vHostname  = func() (outbound string) {
 				switch len(value.Hostname) == 0 {
@@ -1058,6 +1060,14 @@ func db_parse(xml_db *sDB) (err error) {
 												}
 											}
 											add_to_ab(true, false, "OUTTER_LIST", ip_v.IPPrefix.Addr(), ip_v.NAT)
+											switch {
+											case ip_v.NAT.IsValid() && !ip_v.NAT.IsPrivate():
+												v_IP_List[ip_v.NAT] = true
+											case ip_i.IsValid() && !ip_i.IsPrivate():
+												v_IP_List[ip_i] = true
+											case ip_i.IsValid():
+												v_IP_List[ip_i] = false
+											}
 											ip_o[ip_i] = pDB_Peer_RI_IF_IP{
 												IPPrefix:    ip_v.IPPrefix,
 												Masked:      ip_v.IPPrefix.Masked(),
@@ -1156,6 +1166,7 @@ func db_parse(xml_db *sDB) (err error) {
 			VI:           map[_VI_ID]pDB_Peer_VI{},
 			RM_ID:        &rm_id,
 			AB:           &ab,
+			IP_List:      v_IP_List,
 		}
 	}
 
@@ -1368,7 +1379,14 @@ func config_test() (err error) {
 	return
 }
 func config_upload() (err error) {
+	// var (
+	// 	hosts string
+	// )
 	for index, value := range config {
+		log.Errorf("'%v'", pdb_peer[index].IP_List)
+		// hosts += func() (outbound string) {
+		// 	return
+		// }()
 		var (
 			fn = upload_path + "./AS" + index.String()
 		)
