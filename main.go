@@ -1431,7 +1431,7 @@ func config_upload() (err error) {
 					tabber(pdb_peer[index].Hostname) + "\t" +
 					tabber(pdb_peer[index].Manufacturer) + "\t" +
 					tabber(pdb_peer[index].Model) + "\t####\t" +
-					ips + "####\t\n"
+					ips + "\n"
 			}
 			outbound += "\n"
 			return
