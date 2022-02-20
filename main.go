@@ -783,7 +783,7 @@ func main() {
 	case true:
 		switch err = db_use(); err == nil {
 		case true:
-			log.Infof("'%s'", config[4200240063])
+			// log.Infof("'%s'", config[4200240063])
 			// log.Infof("'%+v'", pdb_vi)
 			// log.Infof("'%+v'", pdb_peer)
 			// log.Infof("'%+v'", pdb_gt)
