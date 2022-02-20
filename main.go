@@ -331,12 +331,28 @@ var (
 )
 
 func (inbound _ASN) String() (outbound string) {
-	outbound = "0000000000" + strconv.FormatUint(uint64(inbound), 10)
-	return outbound[len(outbound)-10:]
+	return strconv.FormatUint(uint64(inbound), 10)
 }
-func (inbound _VI_ID) String() (outbound string) {
-	outbound = "00000" + strconv.FormatUint(uint64(inbound), 10)
-	return outbound[len(outbound)-5:]
+func (inbound _ASN) Parse() _ASN_PName {
+	var (
+		interim = "0000000000" + strconv.FormatUint(uint64(inbound), 10)
+	)
+	return _ASN_PName(interim[len(interim)-10:])
+}
+func (inbound _ASN_PName) String() (outbound string) {
+	return string(inbound)
+}
+func (inbound _VI_ID) Parse() (outbound _VI_ID_PName) {
+	var (
+		interim = "00000" + strconv.FormatUint(uint64(inbound), 10)
+	)
+	return _VI_ID_PName(interim[len(interim)-5:])
+}
+func (inbound _VI_ID) String() string {
+	return strconv.FormatUint(uint64(inbound), 10)
+}
+func (inbound _VI_ID_PName) String() (outbound string) {
+	return string(inbound)
 }
 func (inbound _IF_Communication) Parse(mode _IF_Mode) (outbound _IF_Communication) {
 	switch mode {
@@ -386,9 +402,6 @@ func (inbound _RI_Name) Parse() _RI_Name {
 	return inbound
 }
 func (inbound _IF_Name) String() string {
-	return string(inbound)
-}
-func (inbound _ASN_PName) String() string {
 	return string(inbound)
 }
 func (inbound _GW_Type) String() string {
@@ -705,7 +718,7 @@ func parse_db(xml_db *sDB) (err error) {
 			continue
 		}
 		var (
-			vASN_PName = _ASN_PName(value.ASN.String())
+			vASN_PName = value.ASN.Parse()
 			vHostname  = func() (outbound string) {
 				switch len(value.Hostname) == 0 {
 				case true:
@@ -948,7 +961,7 @@ func parse_db(xml_db *sDB) (err error) {
 			Model:        value.Model,
 			Serial:       value.Serial,
 			GT_Patch:     value.GT_Patch.Sanitize(),
-			Root:         value.Root.Parse(16, "peer AS"+string(vASN_PName)+": root password is not acceptable"),
+			Root:         value.Root.Parse(16, "peer AS"+vASN_PName.String()+": root password is not acceptable"),
 			GT_List:      vGT_List,
 			Reserved:     value.Reserved,
 			Description:  value.Description,
@@ -1026,7 +1039,7 @@ func parse_db(xml_db *sDB) (err error) {
 				}
 			}
 			pdb_peer[value.Peer[0].ASN].VI[value.ID] = pDB_Peer_VI{
-				VI_ID_PName:          _VI_ID_PName(value.ID.String()),
+				VI_ID_PName:          value.ID.Parse(),
 				Type:                 value.Type,
 				Communication:        value.Communication.Parse(_if_mode_vi),
 				PSK:                  value.PSK.Parse(64),
