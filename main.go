@@ -421,11 +421,17 @@ func (inbound _GT_Content) String() string {
 	return string(inbound)
 }
 func (inbound _Policy) Sanitize() _Policy {
-	switch len(inbound) == 0 || (inbound != _policy_permissive && inbound != _policy_restrictive) {
+	switch len(inbound) == 0 {
 	case true:
 		return _default_policy
 	}
-	return inbound
+	switch inbound {
+	case _policy_restrictive, _policy_permissive:
+		return inbound
+	default:
+		log.Warnf("unknow security policy '%v'; ACTION: use default '%v'.", inbound, _default_policy)
+		return _default_policy
+	}
 }
 func (inbound _Policy) String() string {
 	return string(inbound)
