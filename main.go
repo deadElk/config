@@ -1,5 +1,3 @@
-/* // go:generate stringer -type=_ASN */
-
 package main
 
 import (
@@ -461,6 +459,25 @@ func (inbound _Secret) Sanitize(length uint, message ...string) _Secret {
 func (inbound _Secret) String() string {
 	return string(inbound)
 }
+func (inbound _VI_Type) String() string {
+	return string(inbound)
+}
+func (inbound _VI_Type) Sanitize() _VI_Type {
+	switch len(inbound) == 0 {
+	case true:
+		return _default_vi
+	}
+	switch inbound {
+	case _vi_ti:
+		return inbound
+	case _vi_gr, _vi_lt:
+		log.Errorf("unsupported VI type '%v'; ACTION: use default '%v'.", inbound, _default_vi)
+		return _default_vi
+	default:
+		log.Warnf("unknow VI type '%v'; ACTION: use default '%v'.", inbound, _default_vi)
+		return _default_vi
+	}
+}
 
 func get_vi_ipprefix(vi_shift _VI_ID, peer_shift _VI_Peer_ID) (outbound netip.Prefix) {
 	var (
@@ -642,7 +659,7 @@ func main() {
 		return
 	}
 
-	log.Infof("'%s'", config[4200240059])
+	log.Infof("'%s'", config[4200240062])
 	// log.Infof("'%+v'", pdb_vi)
 	// log.Infof("'%+v'", pdb_peer)
 	// log.Infof("'%+v'", pdb_gt)
@@ -1076,7 +1093,7 @@ func parse_db(xml_db *sDB) (err error) {
 			)
 			pdb_peer[value.Peer[0].ASN].VI[value.ID] = pDB_Peer_VI{
 				VI_ID_PName:         value.ID.Sanitize(),
-				Type:                value.Type,
+				Type:                value.Type.Sanitize(),
 				Communication:       value.Communication.Sanitize(_if_mode_vi),
 				PSK:                 value.PSK.Sanitize(64),
 				Route_Metric:        v_Metric,
@@ -1138,8 +1155,6 @@ func parse_db(xml_db *sDB) (err error) {
 				Reserved:            pdb_peer[value.Peer[0].ASN].VI[value.ID].Reserved,
 				Description:         pdb_peer[value.Peer[0].ASN].VI[value.ID].Description,
 			}
-			// log.Infof("'%+v'", pdb_peer[value.Peer[0].ASN].VI[value.ID])
-			// log.Infof("'%+v'", pdb_peer[value.Peer[1].ASN].VI[value.ID])
 		}()
 	}
 	return
