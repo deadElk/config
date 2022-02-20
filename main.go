@@ -264,6 +264,23 @@ type pDB_Peer_RI_RT_GW struct {
 	Reserved    bool
 	Description _Description
 }
+type qDB_Peer_RI_IM struct {
+	IF            map[_IF_Name]qDB_Peer_RI_IF
+	Communication _IF_Communication
+	Disable       bool
+	Reserved      bool
+	Description   _Description
+}
+type qDB_Peer_RI_IF struct {
+	Communication _IF_Communication
+	IP            map[netip.Addr]pDB_Peer_RI_IF_IP
+	PARP          map[netip.Addr]pDB_Peer_RI_IF_PARP
+	Disable       bool
+	Services      _Service_List
+	Protocols     _Protocol_List
+	Reserved      bool
+	Description   _Description
+}
 type pDB_Peer_RI_IF struct {
 	Communication _IF_Communication
 	Major         string
