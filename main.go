@@ -984,6 +984,26 @@ func parse_db(xml_db *sDB) (err error) {
 				case false:
 					return
 				}
+				switch len(value.Peer[peer_index].IF) == 0 {
+				case true:
+					for if_i, if_v := range pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF {
+						log.Errorf("'%+v''%+v'", if_i, if_v)
+						value.Peer[peer_index].IF = if_i
+						// for ip_i := range if_v.IP {
+						// 	value.Peer[peer_index].IP = ip_i
+						// 	break
+						// }
+						break
+					}
+				}
+				switch _, flag := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF]; flag {
+				case false:
+					return
+				}
+				// switch len(pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF].IP) == 0 {
+				// case true:
+				// 	return
+				// }
 			}
 			var (
 				r = pDB_Peer_VI{
