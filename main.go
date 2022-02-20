@@ -1094,6 +1094,8 @@ func db_parse(xml_db *sDB) (err error) {
 										_protocol_all: default_protocols[_protocol_all],
 										_protocol_bgp: default_protocols[_protocol_bgp],
 									},
+									Reserved:    if_v.Reserved,
+									Description: if_v.Description,
 								}
 							}
 							return
@@ -1301,7 +1303,6 @@ func db_use() (err error) {
 	for index, value := range pdb_peer {
 		switch value.Reserved {
 		case false:
-			// config[index] = make([]bytes.Buffer, len(value.GT_List)+1)
 			for _, gt_v := range value.GT_List {
 				var (
 					vGT_name = gt_v.String()
