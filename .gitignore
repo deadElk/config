@@ -1,8 +1,11 @@
 /config.xml
 /config.json
 /config
+/tmp
+/sync.sh
+/templates
 config.xml
 config.json
 config
-/tmp
 sync.sh
+templates
