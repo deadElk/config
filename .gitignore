@@ -4,8 +4,10 @@
 /tmp
 /sync.sh
 /templates
+/.DS_Store
 config.xml
 config.json
 config
 sync.sh
 templates
+.DS_Store
