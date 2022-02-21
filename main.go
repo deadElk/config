@@ -110,6 +110,11 @@ type _Protocol string
 // 	vrrp             bool
 // }
 
+type _Service_Attributes struct {
+	Reserved    bool         `xml:"reserved,attr"`
+	Description _Description `xml:"description,attr"`
+	Verbosity   string       `xml:"verbosity,attr"`
+}
 type sDB struct {
 	XMLName     xml.Name     `xml:"AS4200240XXX"`
 	Peer        []sDB_Peer   `xml:"peer_list>peer"`
@@ -118,15 +123,11 @@ type sDB struct {
 	VI_IPPrefix netip.Prefix `xml:"VI_IPPrefix,attr"`
 	GT_List     string       `xml:"GT_list,attr"`
 	Upload_Path string       `xml:"upload_path,attr"`
-	Reserved    bool         `xml:"reserved,attr"`
-	Description _Description `xml:"description,attr"`
-	Verbosity   string       `xml:"verbosity,attr"`
+	_Service_Attributes
 }
 type sDB_GT struct {
-	Name        _GT_Name     `xml:"name,attr"`
-	Content     _GT_Content  `xml:",chardata"`
-	Reserved    bool         `xml:"reserved,attr"`
-	Description _Description `xml:"description,attr"`
+	Name _GT_Name `xml:"name,attr"`
+	pDB_GT
 }
 type sDB_Peer struct {
 	ASN          _ASN           `xml:"ASN,attr"`
@@ -140,23 +141,18 @@ type sDB_Peer struct {
 	GT_Patch     _GT_Content    `xml:"GT_patch"`
 	Root         _Secret        `xml:"root,attr"`
 	GT_List      string         `xml:"GT_list,attr"`
-	Reserved     bool           `xml:"reserved,attr"`
-	Description  _Description   `xml:"description,attr"`
+	_Service_Attributes
 }
 type sDB_Peer_IFM struct {
-	Name          _IFM_Name         `xml:"name,attr"`
-	Communication _IF_Communication `xml:"communication,attr"`
-	Disable       bool              `xml:"disable,attr"`
-	Reserved      bool              `xml:"reserved,attr"`
-	Description   _Description      `xml:"description,attr"`
+	Name _IFM_Name `xml:"name,attr"`
+	pDB_Peer_IFM
 }
 type sDB_Peer_RI struct {
-	Name        _RI_Name         `xml:"name,attr"`
-	RT          []sDB_Peer_RI_RT `xml:"RT"`
-	IF          []sDB_Peer_RI_IF `xml:"IF"`
-	Policy      _Policy          `xml:"policy,attr"`
-	Reserved    bool             `xml:"reserved,attr"`
-	Description _Description     `xml:"description,attr"`
+	Name   _RI_Name         `xml:"name,attr"`
+	RT     []sDB_Peer_RI_RT `xml:"RT"`
+	IF     []sDB_Peer_RI_IF `xml:"IF"`
+	Policy _Policy          `xml:"policy,attr"`
+	_Service_Attributes
 }
 type sDB_Peer_RI_IF struct {
 	Name          _IF_Name                 `xml:"name,attr"`
@@ -164,40 +160,35 @@ type sDB_Peer_RI_IF struct {
 	IP            []sDB_Peer_RI_IF_Address `xml:"IP"`
 	PARP          []sDB_Peer_RI_IF_PARP    `xml:"PARP"`
 	Disable       bool                     `xml:"disable,attr"`
-	Reserved      bool                     `xml:"reserved,attr"`
-	Description   _Description             `xml:"description,attr"`
+	_Service_Attributes
 }
 type sDB_Peer_RI_IF_Address struct {
-	IPPrefix    netip.Prefix `xml:"ipprefix,attr"`
-	Router_ID   bool         `xml:"router_id,attr"`
-	Primary     bool         `xml:"primary,attr"`
-	Preferred   bool         `xml:"preferred,attr"`
-	NAT         netip.Addr   `xml:"NAT,attr"`
-	DHCP        bool         `xml:"dhcp,attr"`
-	Reserved    bool         `xml:"reserved,attr"`
-	Description _Description `xml:"description,attr"`
+	IPPrefix  netip.Prefix `xml:"ipprefix,attr"`
+	Router_ID bool         `xml:"router_id,attr"`
+	Primary   bool         `xml:"primary,attr"`
+	Preferred bool         `xml:"preferred,attr"`
+	NAT       netip.Addr   `xml:"NAT,attr"`
+	DHCP      bool         `xml:"dhcp,attr"`
+	_Service_Attributes
 }
 type sDB_Peer_RI_IF_PARP struct {
-	IPPrefix    netip.Prefix `xml:"ipprefix,attr"`
-	NAT         netip.Addr   `xml:"NAT,attr"`
-	Reserved    bool         `xml:"reserved,attr"`
-	Description _Description `xml:"description,attr"`
+	IPPrefix netip.Prefix `xml:"ipprefix,attr"`
+	NAT      netip.Addr   `xml:"NAT,attr"`
+	_Service_Attributes
 }
 type sDB_Peer_RI_RT struct {
-	Identifier  netip.Prefix        `xml:"identifier,attr"`
-	GW          []sDB_Peer_RI_RT_GW `xml:"GW"`
-	Reserved    bool                `xml:"reserved,attr"`
-	Description _Description        `xml:"description,attr"`
+	Identifier netip.Prefix        `xml:"identifier,attr"`
+	GW         []sDB_Peer_RI_RT_GW `xml:"GW"`
+	_Service_Attributes
 }
 type sDB_Peer_RI_RT_GW struct {
-	IP          netip.Addr   `xml:"ip,attr"`
-	IF          _IF_Name     `xml:"IF,attr"`
-	Table       string       `xml:"table,attr"`
-	Discard     bool         `xml:"discard,attr"`
-	Type        _GW_Type     `xml:"type,attr"`
-	Metric      uint         `xml:"metric,attr"`
-	Reserved    bool         `xml:"reserved,attr"`
-	Description _Description `xml:"description,attr"`
+	IP      netip.Addr `xml:"ip,attr"`
+	IF      _IF_Name   `xml:"IF,attr"`
+	Table   string     `xml:"table,attr"`
+	Discard bool       `xml:"discard,attr"`
+	Type    _GW_Type   `xml:"type,attr"`
+	Metric  uint       `xml:"metric,attr"`
+	_Service_Attributes
 }
 type sDB_VI struct {
 	ID            _VI_ID            `xml:"index,attr"`
@@ -206,20 +197,18 @@ type sDB_VI struct {
 	Route_Metric  uint              `xml:"route_metric,attr"`
 	Peer          []sDB_VI_Peer     `xml:"peer"`
 	PSK           _Secret           `xml:"PSK,attr"`
-	Reserved      bool              `xml:"reserved,attr"`
-	Description   _Description      `xml:"description,attr"`
+	_Service_Attributes
 }
 type sDB_VI_Peer struct {
-	ID          _VI_Peer_ID  `xml:"index,attr"`
-	ASN         _ASN         `xml:"ASN,attr"`
-	RI          _RI_Name     `xml:"RI,attr"`
-	IF          _IF_Name     `xml:"IF,attr"`
-	IP          netip.Addr   `xml:"IP,attr"`
-	Dynamic     bool         `xml:"dynamic,attr"`
-	Hub         bool         `xml:"hub,attr"`
-	Inner_RI    _RI_Name     `xml:"inner_RI,attr"`
-	Reserved    bool         `xml:"reserved,attr"`
-	Description _Description `xml:"description,attr"`
+	ID       _VI_Peer_ID `xml:"index,attr"`
+	ASN      _ASN        `xml:"ASN,attr"`
+	RI       _RI_Name    `xml:"RI,attr"`
+	IF       _IF_Name    `xml:"IF,attr"`
+	IP       netip.Addr  `xml:"IP,attr"`
+	Dynamic  bool        `xml:"dynamic,attr"`
+	Hub      bool        `xml:"hub,attr"`
+	Inner_RI _RI_Name    `xml:"inner_RI,attr"`
+	_Service_Attributes
 }
 
 type pDB_peer struct {
@@ -239,12 +228,12 @@ type pDB_peer struct {
 	GT_Patch      _GT_Content
 	Root          _Secret
 	GT_List       []_GT_Name
-	Reserved      bool
-	Description   _Description
 	VI            map[_VI_ID]pDB_Peer_VI
 	RM_ID         *_RM_ID
 	AB            *_AB
 	IPPrefix_List map[netip.Prefix]bool // true = public
+	Reserved      bool
+	Description   _Description
 }
 type pDB_Peer_RI struct {
 	RT          map[netip.Prefix]pDB_Peer_RI_RT
@@ -272,10 +261,10 @@ type pDB_Peer_RI_RT_GW struct {
 	Description _Description
 }
 type pDB_Peer_IFM struct {
-	Communication _IF_Communication
-	Disable       bool
-	Reserved      bool
-	Description   _Description
+	Communication _IF_Communication `xml:"communication,attr"`
+	Disable       bool              `xml:"disable,attr"`
+	Reserved      bool              `xml:"reserved,attr"`
+	Description   _Description      `xml:"description,attr"`
 }
 type pDB_Peer_RI_IF struct {
 	Communication _IF_Communication
@@ -339,9 +328,8 @@ type pDB_Peer_VI struct {
 	Description         _Description
 }
 type pDB_GT struct {
-	Content     _GT_Content
-	Reserved    bool
-	Description _Description
+	Content _GT_Content `xml:",chardata"`
+	_Service_Attributes
 }
 
 const (
@@ -881,9 +869,12 @@ func db_parse(xml_db *sDB) (err error) {
 		}
 
 		pdb_gt[value.Name] = pDB_GT{
-			Content:     value.Content._Sanitize(),
-			Reserved:    value.Reserved,
-			Description: value.Description,
+			Content: value.Content._Sanitize(),
+			_Service_Attributes: _Service_Attributes{
+				Reserved:    value.Reserved,
+				Description: value.Description,
+				Verbosity:   value.Verbosity,
+			},
 		}
 	}
 
