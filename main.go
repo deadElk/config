@@ -237,13 +237,16 @@ type pDB_peer struct {
 	IPPrefix_List map[netip.Prefix]bool // true = public
 	_service_attributes
 }
+type Host_Inbound_Traffic struct {
+	Services  map[_Service]bool
+	Protocols map[_Protocol]bool
+}
 type pDB_Peer_RI struct {
-	RT        map[netip.Prefix]pDB_Peer_RI_RT
-	IF        map[_IF_Name]pDB_Peer_RI_IF
-	IP_IF     map[netip.Addr]_IF_Name
-	Policy    _Policy
-	Services  _Service_List
-	Protocols _Protocol_List
+	RT     map[netip.Prefix]pDB_Peer_RI_RT
+	IF     map[_IF_Name]pDB_Peer_RI_IF
+	IP_IF  map[netip.Addr]_IF_Name
+	Policy _Policy
+	Host_Inbound_Traffic
 	_service_attributes
 }
 type pDB_Peer_RI_RT struct {
@@ -271,8 +274,7 @@ type pDB_Peer_RI_IF struct {
 	IP            map[netip.Addr]pDB_Peer_RI_IF_IP
 	PARP          map[netip.Addr]pDB_Peer_RI_IF_PARP
 	Disable       bool
-	Services      _Service_List
-	Protocols     _Protocol_List
+	Host_Inbound_Traffic
 	_service_attributes
 }
 type pDB_Peer_RI_IF_IP struct {
@@ -394,29 +396,31 @@ var (
 		}
 		return
 	}()
-	ab               = make(_AB)
-	vi_ipprefix      netip.Prefix
-	vi_ip_shift      _VI_ID
-	pdb_peer         = make(map[_ASN]pDB_peer)
-	pdb_gt           = make(map[_GT_Name]pDB_GT)
-	config           = make(map[_ASN][]byte)
-	default_services = _Service_List{
-		_service_all:         false,
-		_service_any_service: false,
-		_service_bootp:       false,
-		_service_dhcp:        false,
-		_service_dhcpv6:      false,
-		_service_ike:         false,
-		_service_ping:        true,
-		_service_snmp:        false,
-		_service_snmp_trap:   false,
-		_service_ssh:         true,
-		_service_traceroute:  true,
-	}
-	default_protocols = _Protocol_List{
-		_protocol_all: false,
-		_protocol_bgp: false,
-	}
+	ab          = make(_AB)
+	vi_ipprefix netip.Prefix
+	vi_ip_shift _VI_ID
+	pdb_peer    = make(map[_ASN]pDB_peer)
+	pdb_gt      = make(map[_GT_Name]pDB_GT)
+	config      = make(map[_ASN][]byte)
+	// default_Host_Inbound_Traffic = Host_Inbound_Traffic{
+	// 	Services: map[_Service]bool{
+	// 		_service_all:         false,
+	// 		_service_any_service: false,
+	// 		_service_bootp:       false,
+	// 		_service_dhcp:        false,
+	// 		_service_dhcpv6:      false,
+	// 		_service_ike:         false,
+	// 		_service_ping:        true,
+	// 		_service_snmp:        false,
+	// 		_service_snmp_trap:   false,
+	// 		_service_ssh:         true,
+	// 		_service_traceroute:  true,
+	// 	},
+	// 	Protocols: map[_Protocol]bool{
+	// 		_protocol_all: false,
+	// 		_protocol_bgp: false,
+	// 	},
+	// }
 	upload_path = "./tmp/"
 )
 
@@ -1088,32 +1092,50 @@ func db_parse(xml_db *sDB) (err error) {
 										return
 									}(),
 									Disable: if_v.Disable,
-									Services: _Service_List{
-										_service_all:         default_services[_service_all],
-										_service_any_service: default_services[_service_any_service],
-										_service_bootp:       default_services[_service_bootp],
-										_service_dhcp:        default_services[_service_dhcp],
-										_service_dhcpv6:      default_services[_service_dhcpv6],
-										_service_ike:         default_services[_service_ike],
-										_service_ping:        default_services[_service_ping],
-										_service_snmp:        default_services[_service_snmp],
-										_service_snmp_trap:   default_services[_service_snmp_trap],
-										_service_ssh:         default_services[_service_ssh],
-										_service_traceroute:  default_services[_service_traceroute],
+									Host_Inbound_Traffic: Host_Inbound_Traffic{
+										Services: map[_Service]bool{
+											_service_all:         false,
+											_service_any_service: false,
+											_service_bootp:       false,
+											_service_dhcp:        false,
+											_service_dhcpv6:      false,
+											_service_ike:         false,
+											_service_ping:        true,
+											_service_snmp:        false,
+											_service_snmp_trap:   false,
+											_service_ssh:         true,
+											_service_traceroute:  true,
+										},
+										Protocols: map[_Protocol]bool{
+											_protocol_all: false,
+											_protocol_bgp: false,
+										},
 									},
-									Protocols: _Protocol_List{
-										_protocol_all: default_protocols[_protocol_all],
-										_protocol_bgp: default_protocols[_protocol_bgp],
-									},
+									// Services: _Service_List{
+									// 	_service_all:         default_services[_service_all],
+									// 	_service_any_service: default_services[_service_any_service],
+									// 	_service_bootp:       default_services[_service_bootp],
+									// 	_service_dhcp:        default_services[_service_dhcp],
+									// 	_service_dhcpv6:      default_services[_service_dhcpv6],
+									// 	_service_ike:         default_services[_service_ike],
+									// 	_service_ping:        default_services[_service_ping],
+									// 	_service_snmp:        default_services[_service_snmp],
+									// 	_service_snmp_trap:   default_services[_service_snmp_trap],
+									// 	_service_ssh:         default_services[_service_ssh],
+									// 	_service_traceroute:  default_services[_service_traceroute],
+									// },
+									// Protocols: _Protocol_List{
+									// 	_protocol_all: default_protocols[_protocol_all],
+									// 	_protocol_bgp: default_protocols[_protocol_bgp],
+									// },
 									_service_attributes: if_v._service_attributes,
 								}
 							}
 							return
 						}(),
-						IP_IF:     vIP_IF,
-						Policy:    ri_v.Policy._Sanitize(),
-						Services:  _Service_List{},
-						Protocols: _Protocol_List{},
+						IP_IF:                vIP_IF,
+						Policy:               ri_v.Policy._Sanitize(),
+						Host_Inbound_Traffic: Host_Inbound_Traffic{},
 						_service_attributes: _service_attributes{
 							Reserved: ri_v.Reserved,
 							Description: func() (outbound _Description) {
@@ -1546,5 +1568,6 @@ func config_upload() (err error) {
 	// 	}
 	// )
 
+	log.Infof("\n%s\n", hosts)
 	return
 }
