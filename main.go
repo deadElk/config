@@ -134,6 +134,7 @@ type sDB struct {
 	Upload_Path string       `xml:"upload_path,attr"`
 	_service_attributes
 }
+
 type sDB_GT struct {
 	Name    _GT_Name    `xml:"name,attr"`
 	Content _GT_Content `xml:",chardata"`
