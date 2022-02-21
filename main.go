@@ -134,24 +134,42 @@ type sDB struct {
 	Templates_Path string       `xml:"templates_path,attr"`
 	_service_attributes
 }
-type sDB_GT struct {
-	Name    _GT_Name    `xml:"name,attr"`
-	Content _GT_Content `xml:",chardata"`
-	_service_attributes
-}
 type sDB_Peer struct {
-	ASN          _ASN           `xml:"ASN,attr"`
-	IFM          []sDB_Peer_IFM `xml:"IFM"`
-	RI           []sDB_Peer_RI  `xml:"RI"`
-	Hostname     string         `xml:"hostname,attr"`
-	Version      string         `xml:"version,attr"`
-	Manufacturer string         `xml:"manufacturer,attr"`
-	Model        string         `xml:"model,attr"`
-	Serial       string         `xml:"serial,attr"`
-	Root         _Secret        `xml:"root,attr"`
-	GT_List      string         `xml:"GT_list,attr"`
+	ASN          _ASN                `xml:"ASN,attr"`
+	IFM          []sDB_Peer_IFM      `xml:"IFM"`
+	RI           []sDB_Peer_RI       `xml:"RI"`
+	Hostname     string              `xml:"hostname,attr"`
+	Version      string              `xml:"version,attr"`
+	Manufacturer string              `xml:"manufacturer,attr"`
+	Model        string              `xml:"model,attr"`
+	Serial       string              `xml:"serial,attr"`
+	Root         _Secret             `xml:"root,attr"`
+	GT_List      string              `xml:"GT_list,attr"`
+	Secutiry     []sDB_Peer_Security `xml:"Secutiry"`
 	_service_attributes
 }
+type sDB_Peer_Security struct {
+	Zone     []sDB_Peer_Security_Zone     `xml:"Zone"`
+	NAT      []sDB_Peer_Security_NAT      `xml:"NAT"`
+	Policies []sDB_Peer_Security_Policies `xml:"Policies"`
+}
+type sDB_Peer_Security_Zone struct {
+	SZ []sDB_Peer_Security_Zone_SZ `xml:"SZ"`
+}
+type sDB_Peer_Security_Zone_SZ struct {
+	Name   string `xml:"name,attr"`
+	Screen string `xml:"screen,attr"`
+}
+type sDB_Peer_Security_NAT struct {
+	Source      []string `xml:"Source"`
+	Destination []string `xml:"Destination"`
+	Static      []string `xml:"Static"`
+}
+type sDB_Peer_Security_Policies struct {
+	From_To []string `xml:"From_To"`
+	Global  []string `xml:"Global"`
+}
+
 type sDB_Peer_IFM struct {
 	Name          _IFM_Name         `xml:"name,attr"`
 	Communication _IF_Communication `xml:"communication,attr"`
