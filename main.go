@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"encoding/xml"
 	"errors"
-	"io"
 	"io/ioutil"
 	"math/big"
 	"net/netip"
@@ -128,13 +127,11 @@ type sDB struct {
 	XMLName     xml.Name     `xml:"AS4200240XXX"`
 	Peer        []sDB_Peer   `xml:"peer_list>peer"`
 	VI          []sDB_VI     `xml:"VI_list>VI"`
-	GT          []sDB_GT     `xml:"template_list>GT"`
 	VI_IPPrefix netip.Prefix `xml:"VI_IPPrefix,attr"`
 	GT_List     string       `xml:"GT_list,attr"`
 	Upload_Path string       `xml:"upload_path,attr"`
 	_service_attributes
 }
-
 type sDB_GT struct {
 	Name    _GT_Name    `xml:"name,attr"`
 	Content _GT_Content `xml:",chardata"`
@@ -149,7 +146,6 @@ type sDB_Peer struct {
 	Manufacturer string         `xml:"manufacturer,attr"`
 	Model        string         `xml:"model,attr"`
 	Serial       string         `xml:"serial,attr"`
-	GT_Patch     _GT_Content    `xml:"GT_patch"`
 	Root         _Secret        `xml:"root,attr"`
 	GT_List      string         `xml:"GT_list,attr"`
 	_service_attributes
@@ -810,34 +806,6 @@ func main() {
 		return
 	}
 }
-func read_file(inbound *string, outbound *[]byte) (err error) {
-	var (
-		inbound_link *os.File
-	)
-	switch inbound_link, err = os.Open(*inbound); err == nil {
-	case true:
-		defer func() {
-			switch inbound_link != nil {
-			case true:
-				switch defer_err := inbound_link.Close(); defer_err != nil {
-				case true:
-					log.Debugf(".Close() error: '%v'", defer_err)
-					switch err == nil && defer_err != nil {
-					case true:
-						err = defer_err
-					}
-				}
-			}
-		}()
-		switch *outbound, err = io.ReadAll(inbound_link); err == nil {
-		case false:
-			log.Warnf("file '%v' read error: '%v'; ACTION: skip.", inbound, err)
-		}
-	default:
-		log.Debugf("file '%v' open error: '%v'; ACTION: skip.", inbound, err)
-	}
-	return
-}
 func db_read() (err error) {
 	var (
 		configuration_files = []string{
@@ -851,7 +819,7 @@ func db_read() (err error) {
 		data   []byte
 	)
 	for _, value := range configuration_files {
-		switch err = read_file(&value, &data); err == nil {
+		switch data, err = os.ReadFile(value); err == nil {
 		case true:
 			switch err = xml.Unmarshal(data, &xml_db); err == nil {
 			case true:
@@ -866,8 +834,24 @@ func db_read() (err error) {
 			default:
 				log.Warnf("configuration file '%v' parse error: '%v'; ACTION: skip.", value, err)
 			}
+		default:
+			log.Warnf("file '%v' read error: '%v'; ACTION: skip.", value, err)
 		}
 	}
+
+	// for _, value := range xml_db.GT {
+	// 	switch _, flag := pdb_gt[value.Name]; flag {
+	// 	case true:
+	// 		log.Warnf("template '%v' already exist; ACTION: skip.", value.Name)
+	// 		continue
+	// 	}
+	//
+	// 	pdb_gt[value.Name] = pDB_GT{
+	// 		Content:             value.Content._Sanitize(),
+	// 		_service_attributes: value._service_attributes,
+	// 	}
+	// }
+
 	return errors.New("no configuration found")
 }
 func db_parse(xml_db *sDB) (err error) {
@@ -876,19 +860,6 @@ func db_parse(xml_db *sDB) (err error) {
 	switch len(xml_db.Upload_Path) == 0 {
 	case false:
 		upload_path = xml_db.Upload_Path
-	}
-
-	for _, value := range xml_db.GT {
-		switch _, flag := pdb_gt[value.Name]; flag {
-		case true:
-			log.Warnf("template '%v' already exist; ACTION: skip.", value.Name)
-			continue
-		}
-
-		pdb_gt[value.Name] = pDB_GT{
-			Content:             value.Content._Sanitize(),
-			_service_attributes: value._service_attributes,
-		}
 	}
 
 	for _, value := range xml_db.Peer {
@@ -1201,7 +1172,6 @@ func db_parse(xml_db *sDB) (err error) {
 			Manufacturer:        value.Manufacturer,
 			Model:               value.Model,
 			Serial:              value.Serial,
-			GT_Patch:            value.GT_Patch._Sanitize(),
 			Root:                value.Root._Sanitize(16, "peer AS"+vASN_PName.String()+": root password is not acceptable"),
 			GT_List:             vGT_List,
 			VI:                  map[_VI_ID]pDB_Peer_VI{},
