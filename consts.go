@@ -1,0 +1,58 @@
+package main
+
+import (
+	log "github.com/sirupsen/logrus"
+)
+
+const (
+	// _juniper_mgmt_RI _RI_Name = "mgmt_junos"
+	// _juniper_mgmt_IF string = "fxp0.0"
+	_default_loglevel                           = log.InfoLevel
+	_service                  string            = "config"
+	_serviced                                   = _service /*+ "d"*/
+	_SERVICE                  string            = "CONFIG"
+	_SERVICED                                   = _SERVICE /*+ "D"*/
+	_hash_Size                int               = 512 / 8
+	_passwd_Z                 string            = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	_passwd_z                 string            = "abcdefghijklmnopqrstuvwxyz"
+	_passwd_0                 string            = "0123456789"
+	_passwd_oops              string            = "_" // carefully with special symbols
+	_passwd                                     = _passwd_Z + _passwd_z + _passwd_0 + _passwd_oops
+	_default_vi_ipprefix      string            = "10.90.0.0/16"
+	_juniper_default_RI       _RI_Name          = "master"
+	_juniper_mgmt_RI          _RI_Name          = "mgmt_junos"
+	_juniper_mgmt_IF          _IF_Name          = "fxp0.0"
+	_juniper_mgmt_Description _Description      = "MANAGEMENT-INSTANCE"
+	_gw_hop                   _GW_Type          = "hop"
+	_gw_interface             _GW_Type          = "interface"
+	_gw_table                 _GW_Type          = "table"
+	_gw_discard               _GW_Type          = "discard"
+	_vi_ti                    _VI_Type          = "ti"
+	_vi_gr                    _VI_Type          = "gr"
+	_vi_lt                    _VI_Type          = "lt"
+	_default_vi                                 = _vi_ti
+	_if_comm_ptp              _IF_Communication = "ptp"
+	_if_comm_ptmp             _IF_Communication = "ptmp"
+	_default_vi_comm                            = _if_comm_ptp
+	_default_if_comm                            = _if_comm_ptmp
+	_if_mode_vi               _IF_Mode          = "vi"
+	_if_mode_link             _IF_Mode          = "link"
+	_rm_bits                  uint              = 2
+	_rm_max                                     = 32/_rm_bits - 1
+	_policy_restrictive       _Policy           = "restrictive"
+	_policy_permissive        _Policy           = "permissive"
+	_default_policy                             = _policy_permissive
+	_service_all              _Service          = "all"
+	_service_any_service      _Service          = "any-service"
+	_service_bootp            _Service          = "bootp"
+	_service_dhcp             _Service          = "dhcp"
+	_service_dhcpv6           _Service          = "dhcpv6"
+	_service_ike              _Service          = "ike"
+	_service_ping             _Service          = "ping"
+	_service_snmp             _Service          = "snmp"
+	_service_snmp_trap        _Service          = "snmp-trap"
+	_service_ssh              _Service          = "ssh"
+	_service_traceroute       _Service          = "traceroute"
+	_protocol_all             _Protocol         = "all"
+	_protocol_bgp             _Protocol         = "bgp"
+)
