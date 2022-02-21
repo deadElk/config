@@ -139,6 +139,7 @@ type sDB struct {
 	Application    []sDB_Application `xml:"Security>Application_List>Application"`
 	Peer           []sDB_Peer        `xml:"Peer_List>Peer"`
 	VI             []sDB_VI          `xml:"VI_List>VI"`
+	Domain_Name    _FQDN             `xml:"domain_name,attr"`
 	VI_IPPrefix    netip.Prefix      `xml:"VI_IPprefix,attr"`
 	GT_List        string            `xml:"GT_list,attr"`
 	Upload_Path    string            `xml:"upload_path,attr"`
@@ -150,7 +151,8 @@ type sDB_Peer struct {
 	ASN          _ASN                `xml:"ASN,attr"`
 	IFM          []sDB_Peer_IFM      `xml:"IFM"`
 	RI           []sDB_Peer_RI       `xml:"RI"`
-	Hostname     string              `xml:"hostname,attr"`
+	Hostname     _FQDN               `xml:"hostname,attr"`
+	Domain_Name  _FQDN               `xml:"domain_name,attr"`
 	Version      string              `xml:"version,attr"`
 	Manufacturer string              `xml:"manufacturer,attr"`
 	Model        string              `xml:"model,attr"`
@@ -342,7 +344,8 @@ type pDB_Peer struct {
 	IFM           map[_IFM_Name]pDB_Peer_IFM
 	RI            map[_RI_Name]pDB_Peer_RI
 	IF_RI         map[_IF_Name]_RI_Name
-	Hostname      string
+	Hostname      _FQDN
+	Domain_Name   _FQDN
 	Version       string
 	Major         float64
 	IKE_GCM       bool
@@ -528,6 +531,7 @@ var (
 		"upload":    "./tmp/",
 		"templates": "./templates/",
 	}
+	domain_name _FQDN
 )
 
 func (inbound _ASN) String() (outbound string) {
@@ -945,6 +949,7 @@ func db_read() (err error) {
 				log.Debugf("configuration file '%v' loaded.", value)
 				log_setlevel(&xml_db.Verbosity)
 				set_vi_ipprefix(xml_db.VI_IPPrefix)
+				domain_name = xml_db.Domain_Name
 				// for _, peer := range xml_db.Peer {
 				// 	switch peer.ASN == 4200240062 {
 				// 	case true:
@@ -1022,10 +1027,10 @@ func db_parse(xml_db *sDB) (err error) {
 		var (
 			v_IP_List  = make(map[netip.Prefix]bool)
 			vASN_PName = value.ASN._Sanitize()
-			vHostname  = func() (outbound string) {
+			vHostname  = func() (outbound _FQDN) {
 				switch len(value.Hostname) == 0 {
 				case true:
-					outbound = "gw_as" + vASN_PName.String()
+					outbound = _FQDN("gw_as" + vASN_PName.String())
 					log.Warnf("peer ASN '%v' hostname not defined; ACTION: use '%v'.", value.ASN, outbound)
 					return
 				}
@@ -1308,6 +1313,13 @@ func db_parse(xml_db *sDB) (err error) {
 				}
 				return
 			}()
+			v_Domain_Name = func() (outbound _FQDN) {
+				switch len(value.Domain_Name) == 0 {
+				case true:
+					return domain_name
+				}
+				return value.Domain_Name
+			}()
 		)
 		pdb_peer[value.ASN] = pDB_Peer{
 			ASN:                 value.ASN,
@@ -1317,6 +1329,7 @@ func db_parse(xml_db *sDB) (err error) {
 			RI:                  vRI,
 			IF_RI:               vIF_RI,
 			Hostname:            vHostname,
+			Domain_Name:         v_Domain_Name,
 			Version:             value.Version,
 			Major:               vMajor,
 			IKE_GCM:             vMajor >= 12.3,
@@ -1595,9 +1608,10 @@ func config_upload() (err error) {
 					"\t####\t" +
 					tabber(pdb_peer[index].ASN_PName.String(), 2) + "\t" +
 					tabber(pdb_peer[index].Router_ID.String(), 2) + "\t" +
-					tabber(pdb_peer[index].Hostname, 2) + "\t" +
-					tabber(pdb_peer[index].Manufacturer, 2) + "\t" +
-					tabber(pdb_peer[index].Model, 2) + "\t####\t\t" +
+					tabber(pdb_peer[index].Hostname.String(), 3) + "\t" +
+					tabber(pdb_peer[index].Manufacturer+" "+pdb_peer[index].Model, 3) + "\t####\t" +
+					// tabber(pdb_peer[index].Manufacturer, 2) + "\t"+
+					// tabber(pdb_peer[index].Model, 2) + "\t####\t\t" +
 					ips + "\n"
 			}
 			outbound += "\n"
