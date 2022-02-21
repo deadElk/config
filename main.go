@@ -232,39 +232,34 @@ type pDB_peer struct {
 	RM_ID         *_RM_ID
 	AB            *_AB
 	IPPrefix_List map[netip.Prefix]bool // true = public
-	Reserved      bool
-	Description   _Description
+	_Service_Attributes
 }
 type pDB_Peer_RI struct {
-	RT          map[netip.Prefix]pDB_Peer_RI_RT
-	IF          map[_IF_Name]pDB_Peer_RI_IF
-	IP_IF       map[netip.Addr]_IF_Name
-	Policy      _Policy
-	Services    _Service_List
-	Protocols   _Protocol_List
-	Reserved    bool
-	Description _Description
+	RT        map[netip.Prefix]pDB_Peer_RI_RT
+	IF        map[_IF_Name]pDB_Peer_RI_IF
+	IP_IF     map[netip.Addr]_IF_Name
+	Policy    _Policy
+	Services  _Service_List
+	Protocols _Protocol_List
+	_Service_Attributes
 }
 type pDB_Peer_RI_RT struct {
-	GW          map[_GW_Name]pDB_Peer_RI_RT_GW
-	Reserved    bool
-	Description _Description
+	GW map[_GW_Name]pDB_Peer_RI_RT_GW
+	_Service_Attributes
 }
 type pDB_Peer_RI_RT_GW struct {
-	IP          netip.Addr // name candidate priority 1
-	IF          _IF_Name   // name candidate priority 2
-	Table       string     // name candidate priority 3
-	Discard     bool       // name candidate priority 0
-	Type        _GW_Type   // fill type appropriately
-	Metric      uint
-	Reserved    bool
-	Description _Description
+	IP      netip.Addr // name candidate priority 1
+	IF      _IF_Name   // name candidate priority 2
+	Table   string     // name candidate priority 3
+	Discard bool       // name candidate priority 0
+	Type    _GW_Type   // fill type appropriately
+	Metric  uint
+	_Service_Attributes
 }
 type pDB_Peer_IFM struct {
 	Communication _IF_Communication `xml:"communication,attr"`
 	Disable       bool              `xml:"disable,attr"`
-	Reserved      bool              `xml:"reserved,attr"`
-	Description   _Description      `xml:"description,attr"`
+	_Service_Attributes
 }
 type pDB_Peer_RI_IF struct {
 	Communication _IF_Communication
@@ -275,25 +270,22 @@ type pDB_Peer_RI_IF struct {
 	Disable       bool
 	Services      _Service_List
 	Protocols     _Protocol_List
-	Reserved      bool
-	Description   _Description
+	_Service_Attributes
 }
 type pDB_Peer_RI_IF_IP struct {
-	IPPrefix    netip.Prefix
-	Masked      netip.Prefix
-	Router_ID   bool
-	Primary     bool
-	Preferred   bool
-	NAT         netip.Addr
-	DHCP        bool
-	Reserved    bool
-	Description _Description
+	IPPrefix  netip.Prefix
+	Masked    netip.Prefix
+	Router_ID bool
+	Primary   bool
+	Preferred bool
+	NAT       netip.Addr
+	DHCP      bool
+	_Service_Attributes
 }
 type pDB_Peer_RI_IF_PARP struct {
-	IPPrefix    netip.Prefix
-	NAT         netip.Addr
-	Reserved    bool
-	Description _Description
+	IPPrefix netip.Prefix
+	NAT      netip.Addr
+	_Service_Attributes
 }
 type pDB_Peer_VI struct {
 	VI_ID_PName         _VI_ID_PName
@@ -324,8 +316,7 @@ type pDB_Peer_VI struct {
 	Right_Hub           bool
 	Right_Inner_RI      _RI_Name
 	Right_Inner_IP      netip.Addr
-	Reserved            bool
-	Description         _Description
+	_Service_Attributes
 }
 type pDB_GT struct {
 	Content _GT_Content `xml:",chardata"`
@@ -993,20 +984,18 @@ func db_parse(xml_db *sDB) (err error) {
 												continue
 											}
 											gw_o[_GW_Name(gw_i)] = pDB_Peer_RI_RT_GW{
-												IP:          gw_v.IP,
-												IF:          gw_v.IF,
-												Table:       gw_v.Table,
-												Discard:     gw_v.Discard,
-												Type:        gw_v.Type,
-												Metric:      gw_v.Metric,
-												Reserved:    gw_v.Reserved,
-												Description: gw_v.Description,
+												IP:                  gw_v.IP,
+												IF:                  gw_v.IF,
+												Table:               gw_v.Table,
+												Discard:             gw_v.Discard,
+												Type:                gw_v.Type,
+												Metric:              gw_v.Metric,
+												_Service_Attributes: gw_v._Service_Attributes,
 											}
 										}
 										return
 									}(),
-									Reserved:    rt_v.Reserved,
-									Description: rt_v.Description,
+									_Service_Attributes: rt_v._Service_Attributes,
 								}
 							}
 							return
@@ -1066,15 +1055,14 @@ func db_parse(xml_db *sDB) (err error) {
 												v_IP_List[ip_v.IPPrefix] = false
 											}
 											ip_o[ip_i] = pDB_Peer_RI_IF_IP{
-												IPPrefix:    ip_v.IPPrefix,
-												Masked:      ip_v.IPPrefix.Masked(),
-												Router_ID:   ip_v.Router_ID,
-												Primary:     ip_v.Primary,
-												Preferred:   ip_v.Preferred,
-												NAT:         ip_v.NAT,
-												DHCP:        ip_v.DHCP,
-												Reserved:    ip_v.Reserved,
-												Description: ip_v.Description,
+												IPPrefix:            ip_v.IPPrefix,
+												Masked:              ip_v.IPPrefix.Masked(),
+												Router_ID:           ip_v.Router_ID,
+												Primary:             ip_v.Primary,
+												Preferred:           ip_v.Preferred,
+												NAT:                 ip_v.NAT,
+												DHCP:                ip_v.DHCP,
+												_Service_Attributes: ip_v._Service_Attributes,
 											}
 										}
 										return
@@ -1093,10 +1081,9 @@ func db_parse(xml_db *sDB) (err error) {
 											vIP_IF[parp_i] = if_v.Name
 											add_to_ab(true, false, "OUTTER_LIST", parp_v.IPPrefix.Addr(), parp_v.NAT)
 											parp_o[parp_v.IPPrefix.Addr()] = pDB_Peer_RI_IF_PARP{
-												IPPrefix:    parp_v.IPPrefix,
-												NAT:         parp_v.NAT,
-												Reserved:    parp_v.Reserved,
-												Description: parp_v.Description,
+												IPPrefix:            parp_v.IPPrefix,
+												NAT:                 parp_v.NAT,
+												_Service_Attributes: parp_v._Service_Attributes,
 											}
 										}
 										return
@@ -1119,8 +1106,7 @@ func db_parse(xml_db *sDB) (err error) {
 										_protocol_all: default_protocols[_protocol_all],
 										_protocol_bgp: default_protocols[_protocol_bgp],
 									},
-									Reserved:    if_v.Reserved,
-									Description: if_v.Description,
+									_Service_Attributes: if_v._Service_Attributes,
 								}
 							}
 							return
@@ -1129,14 +1115,17 @@ func db_parse(xml_db *sDB) (err error) {
 						Policy:    ri_v.Policy._Sanitize(),
 						Services:  _Service_List{},
 						Protocols: _Protocol_List{},
-						Reserved:  ri_v.Reserved,
-						Description: func() (outbound _Description) {
-							switch ri_v.Name == _juniper_mgmt_RI && len(ri_v.Description) == 0 {
-							case true:
-								return "MANAGEMENT-INSTANCE"
-							}
-							return ri_v.Description
-						}(),
+						_Service_Attributes: _Service_Attributes{
+							Reserved: ri_v.Reserved,
+							Description: func() (outbound _Description) {
+								switch ri_v.Name == _juniper_mgmt_RI && len(ri_v.Description) == 0 {
+								case true:
+									return "MANAGEMENT-INSTANCE"
+								}
+								return ri_v.Description
+							}(),
+							Verbosity: ri_v.Verbosity,
+						},
 					}
 				}
 				return
@@ -1145,38 +1134,36 @@ func db_parse(xml_db *sDB) (err error) {
 				outbound = make(map[_IFM_Name]pDB_Peer_IFM)
 				for _, ifm_v := range value.IFM {
 					outbound[ifm_v.Name] = pDB_Peer_IFM{
-						Communication: ifm_v.Communication,
-						Disable:       ifm_v.Disable,
-						Reserved:      ifm_v.Reserved,
-						Description:   ifm_v.Description,
+						Communication:       ifm_v.Communication,
+						Disable:             ifm_v.Disable,
+						_Service_Attributes: ifm_v._Service_Attributes,
 					}
 				}
 				return
 			}()
 		)
 		pdb_peer[value.ASN] = pDB_peer{
-			ASN:           value.ASN,
-			ASN_PName:     vASN_PName,
-			Router_ID:     vRouter_ID,
-			IFM:           v_IFM,
-			RI:            vRI,
-			IF_RI:         vIF_RI,
-			Hostname:      vHostname,
-			Version:       value.Version,
-			Major:         vMajor,
-			IKE_GCM:       vMajor >= 12.3,
-			Manufacturer:  value.Manufacturer,
-			Model:         value.Model,
-			Serial:        value.Serial,
-			GT_Patch:      value.GT_Patch._Sanitize(),
-			Root:          value.Root._Sanitize(16, "peer AS"+vASN_PName.String()+": root password is not acceptable"),
-			GT_List:       vGT_List,
-			Reserved:      value.Reserved,
-			Description:   value.Description,
-			VI:            map[_VI_ID]pDB_Peer_VI{},
-			RM_ID:         &rm_id,
-			AB:            &ab,
-			IPPrefix_List: v_IP_List,
+			ASN:                 value.ASN,
+			ASN_PName:           vASN_PName,
+			Router_ID:           vRouter_ID,
+			IFM:                 v_IFM,
+			RI:                  vRI,
+			IF_RI:               vIF_RI,
+			Hostname:            vHostname,
+			Version:             value.Version,
+			Major:               vMajor,
+			IKE_GCM:             vMajor >= 12.3,
+			Manufacturer:        value.Manufacturer,
+			Model:               value.Model,
+			Serial:              value.Serial,
+			GT_Patch:            value.GT_Patch._Sanitize(),
+			Root:                value.Root._Sanitize(16, "peer AS"+vASN_PName.String()+": root password is not acceptable"),
+			GT_List:             vGT_List,
+			VI:                  map[_VI_ID]pDB_Peer_VI{},
+			RM_ID:               &rm_id,
+			AB:                  &ab,
+			IPPrefix_List:       v_IP_List,
+			_Service_Attributes: value._Service_Attributes,
 		}
 	}
 
@@ -1299,8 +1286,7 @@ func db_parse(xml_db *sDB) (err error) {
 				Right_Hub:           value.Peer[1].Hub,
 				Right_Inner_RI:      value.Peer[1].Inner_RI._Sanitize(_juniper_mgmt_RI),
 				Right_Inner_IP:      get_vi_ipprefix(value.ID, 2).Addr(),
-				Reserved:            value.Reserved,
-				Description:         value.Description,
+				_Service_Attributes: value._Service_Attributes,
 			}
 			pdb_peer[value.Peer[1].ASN].VI[value.ID] = pDB_Peer_VI{
 				VI_ID_PName:         pdb_peer[value.Peer[0].ASN].VI[value.ID].VI_ID_PName,
@@ -1331,8 +1317,7 @@ func db_parse(xml_db *sDB) (err error) {
 				Right_Hub:           pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_Hub,
 				Right_Inner_RI:      pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_Inner_RI,
 				Right_Inner_IP:      pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_Inner_IP,
-				Reserved:            pdb_peer[value.Peer[0].ASN].VI[value.ID].Reserved,
-				Description:         pdb_peer[value.Peer[0].ASN].VI[value.ID].Description,
+				_Service_Attributes: pdb_peer[value.Peer[0].ASN].VI[value.ID]._Service_Attributes,
 			}
 		}()
 	}
