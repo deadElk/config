@@ -126,8 +126,9 @@ type sDB struct {
 	_Service_Attributes
 }
 type sDB_GT struct {
-	Name _GT_Name `xml:"name,attr"`
-	pDB_GT
+	Name    _GT_Name    `xml:"name,attr"`
+	Content _GT_Content `xml:",chardata"`
+	_Service_Attributes
 }
 type sDB_Peer struct {
 	ASN          _ASN           `xml:"ASN,attr"`
@@ -144,8 +145,10 @@ type sDB_Peer struct {
 	_Service_Attributes
 }
 type sDB_Peer_IFM struct {
-	Name _IFM_Name `xml:"name,attr"`
-	pDB_Peer_IFM
+	Name          _IFM_Name         `xml:"name,attr"`
+	Communication _IF_Communication `xml:"communication,attr"`
+	Disable       bool              `xml:"disable,attr"`
+	_Service_Attributes
 }
 type sDB_Peer_RI struct {
 	Name   _RI_Name         `xml:"name,attr"`
@@ -155,14 +158,14 @@ type sDB_Peer_RI struct {
 	_Service_Attributes
 }
 type sDB_Peer_RI_IF struct {
-	Name          _IF_Name                 `xml:"name,attr"`
-	Communication _IF_Communication        `xml:"communication,attr"`
-	IP            []sDB_Peer_RI_IF_Address `xml:"IP"`
-	PARP          []sDB_Peer_RI_IF_PARP    `xml:"PARP"`
-	Disable       bool                     `xml:"disable,attr"`
+	Name          _IF_Name              `xml:"name,attr"`
+	Communication _IF_Communication     `xml:"communication,attr"`
+	IP            []sDB_Peer_RI_IF_IP   `xml:"IP"`
+	PARP          []sDB_Peer_RI_IF_PARP `xml:"PARP"`
+	Disable       bool                  `xml:"disable,attr"`
 	_Service_Attributes
 }
-type sDB_Peer_RI_IF_Address struct {
+type sDB_Peer_RI_IF_IP struct {
 	IPPrefix  netip.Prefix `xml:"ipprefix,attr"`
 	Router_ID bool         `xml:"router_id,attr"`
 	Primary   bool         `xml:"primary,attr"`
@@ -257,8 +260,8 @@ type pDB_Peer_RI_RT_GW struct {
 	_Service_Attributes
 }
 type pDB_Peer_IFM struct {
-	Communication _IF_Communication `xml:"communication,attr"`
-	Disable       bool              `xml:"disable,attr"`
+	Communication _IF_Communication
+	Disable       bool
 	_Service_Attributes
 }
 type pDB_Peer_RI_IF struct {
@@ -319,7 +322,7 @@ type pDB_Peer_VI struct {
 	_Service_Attributes
 }
 type pDB_GT struct {
-	Content _GT_Content `xml:",chardata"`
+	Content _GT_Content
 	_Service_Attributes
 }
 
