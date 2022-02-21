@@ -50,6 +50,15 @@ type _VI_Peer_ID uint
 type _VI_Type string
 type _Service string
 type _Protocol string
+type _Host_Inbound_Traffic struct {
+	Services  map[_Service]bool  `xml:"service,attr"`
+	Protocols map[_Protocol]bool `xml:"protocol,attr"`
+}
+type _Route_Attributes struct {
+	QNH        bool `xml:"QNH,attr"`
+	Metric     uint `xml:"metric,attr"`
+	Preference uint `xml:"preference,attr"`
+}
 
 // type _Service_List map[_Service]bool
 // type _Protocol_List map[_Protocol]bool
@@ -190,7 +199,7 @@ type sDB_Peer_RI_RT_GW struct {
 	Table   string     `xml:"table,attr"`
 	Discard bool       `xml:"discard,attr"`
 	Type    _GW_Type   `xml:"type,attr"`
-	Metric  uint       `xml:"metric,attr"`
+	_Route_Attributes
 	_service_attributes
 }
 type sDB_VI struct {
@@ -237,16 +246,12 @@ type pDB_peer struct {
 	IPPrefix_List map[netip.Prefix]bool // true = public
 	_service_attributes
 }
-type Host_Inbound_Traffic struct {
-	Services  map[_Service]bool
-	Protocols map[_Protocol]bool
-}
 type pDB_Peer_RI struct {
 	RT     map[netip.Prefix]pDB_Peer_RI_RT
 	IF     map[_IF_Name]pDB_Peer_RI_IF
 	IP_IF  map[netip.Addr]_IF_Name
 	Policy _Policy
-	Host_Inbound_Traffic
+	_Host_Inbound_Traffic
 	_service_attributes
 }
 type pDB_Peer_RI_RT struct {
@@ -259,7 +264,7 @@ type pDB_Peer_RI_RT_GW struct {
 	Table   string     // name candidate priority 3
 	Discard bool       // name candidate priority 0
 	Type    _GW_Type   // fill type appropriately
-	Metric  uint
+	_Route_Attributes
 	_service_attributes
 }
 type pDB_Peer_IFM struct {
@@ -274,7 +279,7 @@ type pDB_Peer_RI_IF struct {
 	IP            map[netip.Addr]pDB_Peer_RI_IF_IP
 	PARP          map[netip.Addr]pDB_Peer_RI_IF_PARP
 	Disable       bool
-	Host_Inbound_Traffic
+	_Host_Inbound_Traffic
 	_service_attributes
 }
 type pDB_Peer_RI_IF_IP struct {
@@ -331,53 +336,54 @@ type pDB_GT struct {
 const (
 	// _juniper_mgmt_RI _RI_Name = "mgmt_junos"
 	// _juniper_mgmt_IF string = "fxp0.0"
-	_default_loglevel                      = log.InfoLevel
-	_service             string            = "config"
-	_serviced                              = _service /*+ "d"*/
-	_SERVICE             string            = "CONFIG"
-	_SERVICED                              = _SERVICE /*+ "D"*/
-	_hash_Size           int               = 512 / 8
-	_passwd_Z            string            = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	_passwd_z            string            = "abcdefghijklmnopqrstuvwxyz"
-	_passwd_0            string            = "0123456789"
-	_passwd_oops         string            = "_" // carefully with special symbols
-	_passwd                                = _passwd_Z + _passwd_z + _passwd_0 + _passwd_oops
-	_default_vi_ipprefix string            = "10.90.0.0/16"
-	_juniper_default_RI  _RI_Name          = "master"
-	_juniper_mgmt_RI     _RI_Name          = "mgmt_junos"
-	_juniper_mgmt_IF     _IF_Name          = "fxp0.0"
-	_gw_hop              _GW_Type          = "hop"
-	_gw_interface        _GW_Type          = "interface"
-	_gw_table            _GW_Type          = "table"
-	_gw_discard          _GW_Type          = "discard"
-	_vi_ti               _VI_Type          = "ti"
-	_vi_gr               _VI_Type          = "gr"
-	_vi_lt               _VI_Type          = "lt"
-	_default_vi                            = _vi_ti
-	_if_comm_ptp         _IF_Communication = "ptp"
-	_if_comm_ptmp        _IF_Communication = "ptmp"
-	_default_vi_comm                       = _if_comm_ptp
-	_default_if_comm                       = _if_comm_ptmp
-	_if_mode_vi          _IF_Mode          = "vi"
-	_if_mode_link        _IF_Mode          = "link"
-	_rm_bits             uint              = 2
-	_rm_max                                = 32/_rm_bits - 1
-	_policy_restrictive  _Policy           = "restrictive"
-	_policy_permissive   _Policy           = "permissive"
-	_default_policy                        = _policy_permissive
-	_service_all         _Service          = "all"
-	_service_any_service _Service          = "any-service"
-	_service_bootp       _Service          = "bootp"
-	_service_dhcp        _Service          = "dhcp"
-	_service_dhcpv6      _Service          = "dhcpv6"
-	_service_ike         _Service          = "ike"
-	_service_ping        _Service          = "ping"
-	_service_snmp        _Service          = "snmp"
-	_service_snmp_trap   _Service          = "snmp-trap"
-	_service_ssh         _Service          = "ssh"
-	_service_traceroute  _Service          = "traceroute"
-	_protocol_all        _Protocol         = "all"
-	_protocol_bgp        _Protocol         = "bgp"
+	_default_loglevel                           = log.InfoLevel
+	_service                  string            = "config"
+	_serviced                                   = _service /*+ "d"*/
+	_SERVICE                  string            = "CONFIG"
+	_SERVICED                                   = _SERVICE /*+ "D"*/
+	_hash_Size                int               = 512 / 8
+	_passwd_Z                 string            = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	_passwd_z                 string            = "abcdefghijklmnopqrstuvwxyz"
+	_passwd_0                 string            = "0123456789"
+	_passwd_oops              string            = "_" // carefully with special symbols
+	_passwd                                     = _passwd_Z + _passwd_z + _passwd_0 + _passwd_oops
+	_default_vi_ipprefix      string            = "10.90.0.0/16"
+	_juniper_default_RI       _RI_Name          = "master"
+	_juniper_mgmt_RI          _RI_Name          = "mgmt_junos"
+	_juniper_mgmt_IF          _IF_Name          = "fxp0.0"
+	_juniper_mgmt_Description _Description      = "MANAGEMENT-INSTANCE"
+	_gw_hop                   _GW_Type          = "hop"
+	_gw_interface             _GW_Type          = "interface"
+	_gw_table                 _GW_Type          = "table"
+	_gw_discard               _GW_Type          = "discard"
+	_vi_ti                    _VI_Type          = "ti"
+	_vi_gr                    _VI_Type          = "gr"
+	_vi_lt                    _VI_Type          = "lt"
+	_default_vi                                 = _vi_ti
+	_if_comm_ptp              _IF_Communication = "ptp"
+	_if_comm_ptmp             _IF_Communication = "ptmp"
+	_default_vi_comm                            = _if_comm_ptp
+	_default_if_comm                            = _if_comm_ptmp
+	_if_mode_vi               _IF_Mode          = "vi"
+	_if_mode_link             _IF_Mode          = "link"
+	_rm_bits                  uint              = 2
+	_rm_max                                     = 32/_rm_bits - 1
+	_policy_restrictive       _Policy           = "restrictive"
+	_policy_permissive        _Policy           = "permissive"
+	_default_policy                             = _policy_permissive
+	_service_all              _Service          = "all"
+	_service_any_service      _Service          = "any-service"
+	_service_bootp            _Service          = "bootp"
+	_service_dhcp             _Service          = "dhcp"
+	_service_dhcpv6           _Service          = "dhcpv6"
+	_service_ike              _Service          = "ike"
+	_service_ping             _Service          = "ping"
+	_service_snmp             _Service          = "snmp"
+	_service_snmp_trap        _Service          = "snmp-trap"
+	_service_ssh              _Service          = "ssh"
+	_service_traceroute       _Service          = "traceroute"
+	_protocol_all             _Protocol         = "all"
+	_protocol_bgp             _Protocol         = "bgp"
 )
 
 var (
@@ -1004,7 +1010,7 @@ func db_parse(xml_db *sDB) (err error) {
 												Table:               gw_v.Table,
 												Discard:             gw_v.Discard,
 												Type:                gw_v.Type,
-												Metric:              gw_v.Metric,
+												_Route_Attributes:   gw_v._Route_Attributes,
 												_service_attributes: gw_v._service_attributes,
 											}
 										}
@@ -1109,7 +1115,7 @@ func db_parse(xml_db *sDB) (err error) {
 										return
 									}(),
 									Disable: if_v.Disable,
-									Host_Inbound_Traffic: Host_Inbound_Traffic{
+									_Host_Inbound_Traffic: _Host_Inbound_Traffic{
 										Services: map[_Service]bool{
 											_service_all:         false,
 											_service_any_service: false,
@@ -1150,15 +1156,15 @@ func db_parse(xml_db *sDB) (err error) {
 							}
 							return
 						}(),
-						IP_IF:                vIP_IF,
-						Policy:               ri_v.Policy._Sanitize(),
-						Host_Inbound_Traffic: Host_Inbound_Traffic{},
+						IP_IF:                 vIP_IF,
+						Policy:                ri_v.Policy._Sanitize(),
+						_Host_Inbound_Traffic: _Host_Inbound_Traffic{},
 						_service_attributes: _service_attributes{
 							Reserved: ri_v.Reserved,
 							Description: func() (outbound _Description) {
 								switch ri_v.Name == _juniper_mgmt_RI && len(ri_v.Description) == 0 {
 								case true:
-									return "MANAGEMENT-INSTANCE"
+									return _juniper_mgmt_Description
 								}
 								return ri_v.Description
 							}(),
