@@ -584,14 +584,26 @@ func (inbound _Protocol) String() string {
 	return string(inbound)
 }
 
-func tabber(inbound string) string {
+func tabber(inbound string, tabs int) string {
+	var (
+		in_lenght  = len(inbound)
+		tab_lenght = 8
+		max_lenght = tabs*tab_lenght - 1
+	)
 	switch {
-	case len(inbound) > 15:
-		return inbound[:15]
-	case len(inbound) < 8:
-		return inbound + "\t"
+	case in_lenght > max_lenght:
+		return inbound[:max_lenght]
+	case in_lenght < max_lenght:
+		var (
+			add_tabs string
+		)
+		for counter := max_lenght - in_lenght - tab_lenght; counter >= 0; counter -= tab_lenght {
+			add_tabs += "\t"
+		}
+		return inbound + add_tabs
+	default:
+		return inbound
 	}
-	return inbound
 }
 func get_vi_ipprefix(vi_shift _VI_ID, peer_shift _VI_Peer_ID) (outbound netip.Prefix) {
 	var (
@@ -1432,7 +1444,7 @@ func config_upload() (err error) {
 			for ip_i, ip_v := range pdb_peer[index].IPPrefix_List {
 				switch ip_i == router_id {
 				case false:
-					ips += tabber(ip_i.String()) + "\t"
+					ips += tabber(ip_i.String(), 3) + "\t"
 				}
 				switch ip_v {
 				case true:
@@ -1440,13 +1452,13 @@ func config_upload() (err error) {
 				}
 			}
 			for _, ip := range publics {
-				outbound += tabber(ip.Addr().String()) +
-					"\t\t####\t" +
-					tabber(pdb_peer[index].ASN_PName.String()) + "\t" +
-					tabber(pdb_peer[index].Router_ID.String()) + "\t" +
-					tabber(pdb_peer[index].Hostname) + "\t" +
-					tabber(pdb_peer[index].Manufacturer) + "\t" +
-					tabber(pdb_peer[index].Model) + "\t####\t\t" +
+				outbound += tabber(ip.Addr().String(), 2) +
+					"\t####\t" +
+					tabber(pdb_peer[index].ASN_PName.String(), 2) + "\t" +
+					tabber(pdb_peer[index].Router_ID.String(), 2) + "\t" +
+					tabber(pdb_peer[index].Hostname, 2) + "\t" +
+					tabber(pdb_peer[index].Manufacturer, 2) + "\t" +
+					tabber(pdb_peer[index].Model, 2) + "\t####\t\t" +
 					ips + "\n"
 			}
 			outbound += "\n"
