@@ -131,18 +131,19 @@ type Route_Attributes struct {
 type _service_attributes struct {
 	Reserved    bool         `xml:"reserved,attr"`
 	Description _Description `xml:"description,attr"`
-	Verbosity   string       `xml:"verbosity,attr"`
+	// Verbosity   string       `xml:"verbosity,attr"`
 }
 type sDB struct {
 	XMLName        xml.Name          `xml:"AS4200240XXX"`
-	AB             []sDB_AB          `xml:"Security>AB"`
-	Application    []sDB_Application `xml:"Security>Application"`
-	Peer           []sDB_Peer        `xml:"peer_list>peer"`
-	VI             []sDB_VI          `xml:"VI_list>VI"`
-	VI_IPPrefix    netip.Prefix      `xml:"VI_IPPrefix,attr"`
+	AB             []sDB_AB          `xml:"Security>AB_List>AB"`
+	Application    []sDB_Application `xml:"Security>Application_List>Application"`
+	Peer           []sDB_Peer        `xml:"Peer_List>Peer"`
+	VI             []sDB_VI          `xml:"VI_List>VI"`
+	VI_IPPrefix    netip.Prefix      `xml:"VI_IPprefix,attr"`
 	GT_List        string            `xml:"GT_list,attr"`
 	Upload_Path    string            `xml:"upload_path,attr"`
 	Templates_Path string            `xml:"templates_path,attr"`
+	Verbosity      string            `xml:"verbosity,attr"`
 	_service_attributes
 }
 type sDB_Peer struct {
@@ -160,90 +161,108 @@ type sDB_Peer struct {
 	_service_attributes
 }
 type sDB_Peer_Security struct {
-	Zone        []sDB_Peer_Security_Zone     `xml:"Zone"`
-	NAT         []sDB_Peer_Security_NAT      `xml:"NAT"`
-	Policies    []sDB_Peer_Security_Policies `xml:"Policies"`
-	AB          []sDB_AB                     `xml:"AB"`
-	Application []sDB_Application            `xml:"Application"`
+	Zone     []sDB_Peer_Security_Zone     `xml:"Zone"`
+	NAT      []sDB_Peer_Security_NAT      `xml:"NAT"`
+	Policies []sDB_Peer_Security_Policies `xml:"Policies"`
+	// AB          []sDB_AB                     `xml:"AB"`
+	// Application []sDB_Application            `xml:"Application"`
+	_service_attributes
 }
 type sDB_AB struct {
 	Name    _AB_Name         `xml:"name,attr"`
 	Address []sDB_AB_Address `xml:"Address"`
+	_service_attributes
 }
 type sDB_AB_Address struct {
 	AB       _AB_Name     `xml:"AB,attr"`
-	IPPrefix netip.Prefix `xml:"ipprefix,attr"`
-	FQDN     _FQDN        `xml:"fqdn,attr"`
+	IPPrefix netip.Prefix `xml:"IPprefix,attr"`
+	FQDN     _FQDN        `xml:"FQDN,attr"`
+	_service_attributes
 }
 type sDB_Application struct {
 	Name _Application_Name      `xml:"name,attr"`
 	Term []sDB_Application_Term `xml:"Term"`
+	_service_attributes
 }
 type sDB_Application_Term struct {
 	Name             string `xml:"name,attr"`
 	Protocol         string `xml:"protocol,attr"`
 	Destination_Port uint16 `xml:"destination_port,attr"`
+	_service_attributes
 }
 type sDB_Peer_Security_Zone struct {
 	SZ []sDB_Peer_Security_Zone_SZ `xml:"SZ"`
+	_service_attributes
 }
 type sDB_Peer_Security_Zone_SZ struct {
 	Name   _SZ_Name     `xml:"name,attr"`
 	Screen _Screen_Name `xml:"screen,attr"`
+	_service_attributes
 }
 type sDB_Peer_Security_NAT struct {
 	Source      []sDB_Peer_Security_NAT_Source      `xml:"Source"`
 	Destination []sDB_Peer_Security_NAT_Destination `xml:"Destination"`
 	Static      []sDB_Peer_Security_NAT_Static      `xml:"Static"`
+	_service_attributes
 }
 type sDB_Peer_Security_NAT_Source struct {
 	Address_Persistent bool                             `xml:"address_persistent,attr"`
 	Pool               []sDB_Peer_Security_NAT_Pool     `xml:"Pool"`
 	Rule_Set           []sDB_Peer_Security_NAT_Rule_Set `xml:"Rule_Set"`
+	_service_attributes
 }
 type sDB_Peer_Security_NAT_Destination struct {
 	Pool     []sDB_Peer_Security_NAT_Pool     `xml:"Pool"`
 	Rule_Set []sDB_Peer_Security_NAT_Rule_Set `xml:"Rule_Set"`
+	_service_attributes
 }
 type sDB_Peer_Security_NAT_Static struct {
+	_service_attributes
 }
 type sDB_Peer_Security_NAT_Pool struct {
 	Name     _Pool_Name   `xml:"name,attr"`
-	IPPrefix netip.Prefix `xml:"ipprefix,attr"`
+	IPPrefix netip.Prefix `xml:"IPprefix,attr"`
 	RI       _RI_Name     `xml:"RI,attr"`
 	SZ       _SZ_Name     `xml:"SZ,attr"`
+	_service_attributes
 }
 type sDB_Peer_Security_NAT_Rule_Set struct {
 	Name _Rule_Set_Name                    `xml:"name,attr"`
 	From []sDB_Peer_Security_NAT_Direction `xml:"From"`
 	To   []sDB_Peer_Security_NAT_Direction `xml:"To"`
 	Rule []sDB_Peer_Security_NAT_Rule      `xml:"Rule"`
+	_service_attributes
 }
 type sDB_Peer_Security_NAT_Direction struct {
 	SZ _SZ_Name `xml:"SZ,attr"`
 	RI _RI_Name `xml:"RI,attr"`
+	_service_attributes
 }
 type sDB_Peer_Security_NAT_Rule struct {
 	Name  _Rule_Name                         `xml:"name,attr"`
 	Match []sDB_Peer_Security_NAT_Rule_Match `xml:"Match"`
 	Then  []sDB_Peer_Security_NAT_Rule_Then  `xml:"Then"`
+	_service_attributes
 }
 type sDB_Peer_Security_NAT_Rule_Match struct {
 	Source      bool              `xml:"source,attr"`
 	Destination bool              `xml:"destination,attr"`
-	Application _Application_Name `xml:"Application,attr"`
+	Application _Application_Name `xml:"application,attr"`
 	AB          _AB_Name          `xml:"AB,attr"`
+	_service_attributes
 }
 type sDB_Peer_Security_NAT_Rule_Then struct {
-	Source_NAT      bool       `xml:"source_nat,attr"`
-	Destination_NAT bool       `xml:"destination_nat,attr"`
+	Source_NAT      bool       `xml:"source_NAT,attr"`
+	Destination_NAT bool       `xml:"destination_NAT,attr"`
 	Pool            _Pool_Name `xml:"pool,attr"`
 	Permit          bool       `xml:"permit,attr"`
 	Deny            bool       `xml:"deny,attr"`
+	_service_attributes
 }
 type sDB_Peer_Security_Policies struct {
 	From_To []string `xml:"From_To"`
 	Global  []string `xml:"Global"`
+	_service_attributes
 }
 
 type sDB_Peer_IFM struct {
@@ -268,16 +287,16 @@ type sDB_Peer_RI_IF struct {
 	_service_attributes
 }
 type sDB_Peer_RI_IF_IP struct {
-	IPPrefix  netip.Prefix `xml:"ipprefix,attr"`
-	Router_ID bool         `xml:"router_id,attr"`
+	IPPrefix  netip.Prefix `xml:"IPprefix,attr"`
+	Router_ID bool         `xml:"router_ID,attr"`
 	Primary   bool         `xml:"primary,attr"`
 	Preferred bool         `xml:"preferred,attr"`
 	NAT       netip.Addr   `xml:"NAT,attr"`
-	DHCP      bool         `xml:"dhcp,attr"`
+	DHCP      bool         `xml:"DHCP,attr"`
 	_service_attributes
 }
 type sDB_Peer_RI_IF_PARP struct {
-	IPPrefix netip.Prefix `xml:"ipprefix,attr"`
+	IPPrefix netip.Prefix `xml:"IPprefix,attr"`
 	NAT      netip.Addr   `xml:"NAT,attr"`
 	_service_attributes
 }
@@ -287,7 +306,7 @@ type sDB_Peer_RI_RT struct {
 	_service_attributes
 }
 type sDB_Peer_RI_RT_GW struct {
-	IP      netip.Addr `xml:"ip,attr"`
+	IP      netip.Addr `xml:"IP,attr"`
 	IF      _IF_Name   `xml:"IF,attr"`
 	Table   string     `xml:"table,attr"`
 	Discard bool       `xml:"discard,attr"`
@@ -300,7 +319,7 @@ type sDB_VI struct {
 	Type          _VI_Type          `xml:"type,attr"`
 	Communication _IF_Communication `xml:"communication,attr"`
 	Route_Metric  uint              `xml:"route_metric,attr"`
-	Peer          []sDB_VI_Peer     `xml:"peer"`
+	Peer          []sDB_VI_Peer     `xml:"Peer"`
 	PSK           _Secret           `xml:"PSK,attr"`
 	_service_attributes
 }
@@ -316,7 +335,7 @@ type sDB_VI_Peer struct {
 	_service_attributes
 }
 
-type pDB_peer struct {
+type pDB_Peer struct {
 	ASN           _ASN
 	ASN_PName     _ASN_PName
 	Router_ID     netip.Addr
@@ -500,7 +519,9 @@ var (
 	ab          = make(_AB)
 	vi_ipprefix netip.Prefix
 	vi_ip_shift _VI_ID
-	pdb_peer    = make(map[_ASN]pDB_peer)
+	pdb_ab      = make(map[_AB_Name]string)
+	pdb_appl    = make(map[_Application_Name]_Application)
+	pdb_peer    = make(map[_ASN]pDB_Peer)
 	pdb_gt      = make(map[_GT_Name]pDB_GT)
 	config      = make(map[_ASN][]byte)
 	fs_path     = map[string]string{
@@ -924,15 +945,15 @@ func db_read() (err error) {
 				log.Debugf("configuration file '%v' loaded.", value)
 				log_setlevel(&xml_db.Verbosity)
 				set_vi_ipprefix(xml_db.VI_IPPrefix)
-				for _, peer := range xml_db.Peer {
-					switch peer.ASN == 4200240062 {
-					case true:
-						log.Infof("'%+v'", peer.Secutiry)
-					}
-				}
-				log.Infof("'%+v'", xml_db.AB)
-				log.Infof("'%+v'", xml_db.Application)
-				log.Exit(1)
+				// for _, peer := range xml_db.Peer {
+				// 	switch peer.ASN == 4200240062 {
+				// 	case true:
+				// 		log.Infof("'%+v'", peer.Secutiry)
+				// 	}
+				// }
+				// log.Infof("'%+v'", xml_db.AB)
+				// log.Infof("'%+v'", xml_db.Application)
+				// log.Exit(1)
 				switch len(xml_db.Upload_Path) == 0 {
 				case false:
 					fs_path["upload"] = xml_db.Upload_Path
@@ -1270,7 +1291,7 @@ func db_parse(xml_db *sDB) (err error) {
 								}
 								return ri_v.Description
 							}(),
-							Verbosity: ri_v.Verbosity,
+							// Verbosity: ri_v.Verbosity,
 						},
 					}
 				}
@@ -1288,7 +1309,7 @@ func db_parse(xml_db *sDB) (err error) {
 				return
 			}()
 		)
-		pdb_peer[value.ASN] = pDB_peer{
+		pdb_peer[value.ASN] = pDB_Peer{
 			ASN:                 value.ASN,
 			ASN_PName:           vASN_PName,
 			Router_ID:           vRouter_ID,
@@ -1331,21 +1352,26 @@ func db_parse(xml_db *sDB) (err error) {
 				v_NAT    = make([]netip.Addr, peers)
 			)
 			for peer_index := range value.Peer {
-				switch _, flag := pdb_peer[value.Peer[peer_index].ASN]; flag || !value.Peer[peer_index].Reserved {
+				switch _, flag := pdb_peer[value.Peer[peer_index].ASN]; flag {
 				case false:
-					log.Warnf("VI '%v', ASN '%v' not defined / peer '%v' reserved; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, peer_index)
+					log.Warnf("VI '%v', ASN '%v', peer '%v' not defined; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, peer_index)
+					return
+				}
+				switch value.Peer[peer_index].Reserved {
+				case true:
+					log.Warnf("VI '%v', ASN '%v', peer '%v' reserved; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, peer_index)
 					return
 				}
 				value.Peer[peer_index].RI = value.Peer[peer_index].RI._Sanitize(_juniper_mgmt_RI)
 				switch _, flag := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI]; flag {
 				case false:
-					log.Warnf("VI '%v', ASN '%v' RI '%v' not defined; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, value.Peer[peer_index].RI)
+					log.Warnf("VI '%v', ASN '%v', RI '%v' not defined; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, value.Peer[peer_index].RI)
 					return
 				}
 				value.Peer[peer_index].Inner_RI = value.Peer[peer_index].Inner_RI._Sanitize(_juniper_mgmt_RI)
 				switch _, flag := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].Inner_RI]; flag {
 				case false:
-					log.Warnf("VI '%v', ASN '%v' inner RI '%v' not defined; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, value.Peer[peer_index].Inner_RI)
+					log.Warnf("VI '%v', ASN '%v', inner RI '%v' not defined; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, value.Peer[peer_index].Inner_RI)
 					return
 				}
 				switch len(value.Peer[peer_index].IF) == 0 {
@@ -1358,7 +1384,7 @@ func db_parse(xml_db *sDB) (err error) {
 				case false:
 					switch _, flag := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF]; flag {
 					case false:
-						log.Warnf("VI '%v', ASN '%v' RI '%v' IF '%v' not defined; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, value.Peer[peer_index].RI, value.Peer[peer_index].IF)
+						log.Warnf("VI '%v', ASN '%v', RI '%v', IF '%v' not defined; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, value.Peer[peer_index].RI, value.Peer[peer_index].IF)
 						return
 					}
 				}
