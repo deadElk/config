@@ -349,23 +349,6 @@ func db_parse(xml_db *sDB) (err error) {
 											_protocol_bgp: false,
 										},
 									},
-									// Services: _Service_List{
-									// 	_service_all:         default_services[_service_all],
-									// 	_service_any_service: default_services[_service_any_service],
-									// 	_service_bootp:       default_services[_service_bootp],
-									// 	_service_dhcp:        default_services[_service_dhcp],
-									// 	_service_dhcpv6:      default_services[_service_dhcpv6],
-									// 	_service_ike:         default_services[_service_ike],
-									// 	_service_ping:        default_services[_service_ping],
-									// 	_service_snmp:        default_services[_service_snmp],
-									// 	_service_snmp_trap:   default_services[_service_snmp_trap],
-									// 	_service_ssh:         default_services[_service_ssh],
-									// 	_service_traceroute:  default_services[_service_traceroute],
-									// },
-									// Protocols: _Protocol_List{
-									// 	_protocol_all: default_protocols[_protocol_all],
-									// 	_protocol_bgp: default_protocols[_protocol_bgp],
-									// },
 									_service_attributes: if_v._service_attributes,
 								}
 							}
@@ -427,7 +410,9 @@ func db_parse(xml_db *sDB) (err error) {
 			GT_List:             vGT_List,
 			VI:                  map[_VI_ID]pDB_Peer_VI{},
 			RM_ID:               &rm_id,
-			AB:                  &ab,
+			AB_Set:              pdb_abset,
+			AB_FQDN:             pdb_abfqdn,
+			AB_IPPrefix:         pdb_abipprefix,
 			IPPrefix_List:       v_IP_List,
 			_service_attributes: value._service_attributes,
 		}

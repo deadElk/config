@@ -8,11 +8,12 @@ import (
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
 // type _AB map[_AB_Name]_AB2
 type _AB_Type string
-type _AB struct {
-	Type     _AB_Type
-	AB       []_AB_Name
-	FQDN     []_FQDN
-	IPPrefix []netip.Prefix
+type _AB_IPPrefix map[netip.Prefix]bool
+type _AB_FQDN map[_FQDN]bool
+type _AB_Set struct {
+	AB       map[_AB_Name]bool
+	FQDN     map[_FQDN]bool
+	IPPrefix map[netip.Prefix]bool
 }
 type _AB_Name string
 type _Application map[_Application_Name]string
@@ -343,7 +344,9 @@ type pDB_Peer struct {
 	GT_List       []_GT_Name
 	VI            map[_VI_ID]pDB_Peer_VI
 	RM_ID         *_RM_ID
-	AB            *_AB
+	AB_Set        map[_AB_Name]_AB_Set
+	AB_IPPrefix   _AB_IPPrefix
+	AB_FQDN       _AB_FQDN
 	IPPrefix_List map[netip.Prefix]bool // true = public
 	_service_attributes
 }

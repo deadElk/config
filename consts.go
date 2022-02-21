@@ -55,4 +55,7 @@ const (
 	_service_traceroute       _Service          = "traceroute"
 	_protocol_all             _Protocol         = "all"
 	_protocol_bgp             _Protocol         = "bgp"
+	_AB_Type_set              _AB_Type          = "set"
+	_AB_Type_ipprefix         _AB_Type          = "ipprefix"
+	_AB_Type_fqdn             _AB_Type          = "fqdn"
 )

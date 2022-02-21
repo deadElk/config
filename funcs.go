@@ -74,7 +74,8 @@ func get_vi_ipprefix(vi_shift _VI_ID, peer_shift _VI_Peer_ID) netip.Prefix {
 	var (
 		b = make([]byte, 4)
 	)
-	binary.BigEndian.PutUint32(b, uint32(vi_ip_shift)+uint32(vi_shift)*4+uint32(peer_shift))
+	// binary.BigEndian.PutUint32(b, uint32(vi_ip_shift)+uint32(vi_shift)*4+uint32(peer_shift))
+	binary.BigEndian.PutUint32(b, uint32(vi_ip_shift+vi_shift*4)+uint32(peer_shift))
 	return netip.PrefixFrom(parse_interface(netip.AddrFromSlice(b)).(netip.Addr), 30)
 }
 func set_vi_ipprefix(inbound netip.Prefix) {
@@ -131,13 +132,15 @@ func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 func add_to_ab(public, private bool, ab_name _AB_Name, ip ...interface{}) {
 	for _, address := range ip {
 		var (
-			interim netip.Prefix
-			bits    = 32
+			interim interface{}
+			// interim_type _AB_Type
+			bits = 32
 		)
 		switch value := (address).(type) {
 		case netip.Addr:
 			switch is_private, is_valid := value.IsPrivate(), value.IsValid(); !is_valid || (is_private && !private) || (!is_private && !public) {
 			case true:
+				log.Debugf("AB '%v', address '%v' is valid '%v' against public '%v' / private '%v': address not suitable; ACTION: skip.", ab_name, value, value.IsValid(), public, private)
 				continue
 			}
 			switch value.Is6() {
@@ -145,28 +148,41 @@ func add_to_ab(public, private bool, ab_name _AB_Name, ip ...interface{}) {
 				bits = 128
 			}
 			interim, _ = value.Prefix(bits)
+			// interim_type = _AB_Type_ipprefix
 		case netip.Prefix:
-			switch value.IsValid() {
-			case false:
+			switch is_private, is_valid := value.Masked().Addr().IsPrivate(), value.IsValid(); !is_valid || (is_private && !private) || (!is_private && !public) {
+			case true:
+				log.Debugf("AB '%v', address '%v' is valid '%v' against public '%v' / private '%v': address not suitable; ACTION: skip.", ab_name, value, value.IsValid(), public, private)
 				continue
 			}
 			interim = value
-		case string:
-			continue
+			// interim_type = _AB_Type_ipprefix
+		case _FQDN:
+			// interim_type = _AB_Type_fqdn
+		case _AB_Name:
+			// interim_type = _AB_Type_set
 		default:
+			log.Warnf("AB '%v', address '%v'; unknown address type; ACTION: skip.", ab_name, value)
 			continue
 		}
-		switch _, flag := pdb_ab[ab_name]; flag {
-		case false:
-			// ab[ab_name] = make(map[netip.Prefix]bool)
-			pdb_ab[ab_name] = map[netip.Prefix]bool{
-				interim: true,
+
+		switch _, flag := pdb_abset[ab_name]; {
+		case !flag:
+			pdb_abset[ab_name] = _AB_Set{
+				AB:       map[_AB_Name]bool{},
+				FQDN:     map[_FQDN]bool{},
+				IPPrefix: map[netip.Prefix]bool{},
 			}
-			continue
 		}
-		switch _, flag := pdb_ab[ab_name][interim]; flag {
-		case false:
-			pdb_ab[ab_name][interim] = true
+		switch value := (interim).(type) {
+		case _AB_Name:
+			pdb_abset[ab_name].AB[value] = true
+		case _FQDN:
+			pdb_abset[ab_name].FQDN[value] = true
+			pdb_abfqdn[value] = true
+		case netip.Prefix:
+			pdb_abset[ab_name].IPPrefix[value] = true
+			pdb_abipprefix[value] = true
 		}
 	}
 }
