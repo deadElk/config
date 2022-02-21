@@ -42,6 +42,8 @@ type _IF_Name string
 type _IFM_Name string
 type _Policy string
 type _RI_Name string
+type _SZ_Name string
+type _Screen_Name string
 type _RM_ID [_rm_max + 1]uint32
 type _Secret string
 type _VI_ID uint
@@ -157,14 +159,51 @@ type sDB_Peer_Security_Zone struct {
 	SZ []sDB_Peer_Security_Zone_SZ `xml:"SZ"`
 }
 type sDB_Peer_Security_Zone_SZ struct {
-	Name   string `xml:"name,attr"`
-	Screen string `xml:"screen,attr"`
+	Name   _SZ_Name     `xml:"name,attr"`
+	Screen _Screen_Name `xml:"screen,attr"`
 }
 type sDB_Peer_Security_NAT struct {
-	Source      []string `xml:"Source"`
-	Destination []string `xml:"Destination"`
-	Static      []string `xml:"Static"`
+	Source      []sDB_Peer_Security_NAT_Source      `xml:"Source"`
+	Destination []sDB_Peer_Security_NAT_Destination `xml:"Destination"`
+	Static      []sDB_Peer_Security_NAT_Static      `xml:"Static"`
 }
+type sDB_Peer_Security_NAT_Source struct {
+	Address_Persistent bool                             `xml:"address_persistent,attr"`
+	Pool               []sDB_Peer_Security_NAT_Pool     `xml:"Pool"`
+	Rule_Set           []sDB_Peer_Security_NAT_Rule_Set `xml:"Rule_Set"`
+}
+type sDB_Peer_Security_NAT_Destination struct {
+	Pool     []sDB_Peer_Security_NAT_Pool     `xml:"Pool"`
+	Rule_Set []sDB_Peer_Security_NAT_Rule_Set `xml:"Rule_Set"`
+}
+type sDB_Peer_Security_NAT_Static struct {
+}
+type sDB_Peer_Security_NAT_Pool struct {
+	Name     string       `xml:"name,attr"`
+	IPPrefix netip.Prefix `xml:"ipprefix,attr"`
+	RI       _RI_Name     `xml:"RI,attr"`
+	SZ       _SZ_Name     `xml:"SZ,attr"`
+}
+type sDB_Peer_Security_NAT_Rule_Set struct {
+	Name string                       `xml:"name,attr"`
+	From []sDB_Peer_Security_NAT_From `xml:"From"`
+	To   []sDB_Peer_Security_NAT_To   `xml:"To"`
+	Rule []sDB_Peer_Security_NAT_Rule `xml:"Rule"`
+}
+type sDB_Peer_Security_NAT_From struct {
+	SZ _SZ_Name `xml:"SZ,attr"`
+	RI _RI_Name `xml:"RI,attr"`
+}
+type sDB_Peer_Security_NAT_To struct {
+	SZ _SZ_Name `xml:"SZ,attr"`
+	RI _RI_Name `xml:"RI,attr"`
+}
+type sDB_Peer_Security_NAT_Rule struct {
+	Name  string   `xml:"name,attr"`
+	Match []string `xml:"Match"`
+	Then  []string `xml:"Then"`
+}
+
 type sDB_Peer_Security_Policies struct {
 	From_To []string `xml:"From_To"`
 	Global  []string `xml:"Global"`
