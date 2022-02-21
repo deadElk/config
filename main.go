@@ -50,11 +50,11 @@ type _VI_Peer_ID uint
 type _VI_Type string
 type _Service string
 type _Protocol string
-type _Host_Inbound_Traffic struct {
+type Host_Inbound_Traffic struct {
 	Services  map[_Service]bool  `xml:"service,attr"`
 	Protocols map[_Protocol]bool `xml:"protocol,attr"`
 }
-type _Route_Attributes struct {
+type Route_Attributes struct {
 	QNH        bool `xml:"QNH,attr"`
 	Metric     uint `xml:"metric,attr"`
 	Preference uint `xml:"preference,attr"`
@@ -198,7 +198,7 @@ type sDB_Peer_RI_RT_GW struct {
 	Table   string     `xml:"table,attr"`
 	Discard bool       `xml:"discard,attr"`
 	Type    _GW_Type   `xml:"type,attr"`
-	_Route_Attributes
+	Route_Attributes
 	_service_attributes
 }
 type sDB_VI struct {
@@ -250,7 +250,7 @@ type pDB_Peer_RI struct {
 	IF     map[_IF_Name]pDB_Peer_RI_IF
 	IP_IF  map[netip.Addr]_IF_Name
 	Policy _Policy
-	_Host_Inbound_Traffic
+	Host_Inbound_Traffic
 	_service_attributes
 }
 type pDB_Peer_RI_RT struct {
@@ -263,7 +263,7 @@ type pDB_Peer_RI_RT_GW struct {
 	Table   string     // name candidate priority 3
 	Discard bool       // name candidate priority 0
 	Type    _GW_Type   // fill type appropriately
-	_Route_Attributes
+	Route_Attributes
 	_service_attributes
 }
 type pDB_Peer_IFM struct {
@@ -278,7 +278,7 @@ type pDB_Peer_RI_IF struct {
 	IP            map[netip.Addr]pDB_Peer_RI_IF_IP
 	PARP          map[netip.Addr]pDB_Peer_RI_IF_PARP
 	Disable       bool
-	_Host_Inbound_Traffic
+	Host_Inbound_Traffic
 	_service_attributes
 }
 type pDB_Peer_RI_IF_IP struct {
@@ -654,6 +654,16 @@ func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 			outbound += element
 		case _RI_Name:
 			outbound += element.String()
+		case uint:
+			outbound += strconv.FormatUint(uint64(element), 10)
+		case uint8:
+			outbound += strconv.FormatUint(uint64(element), 10)
+		case uint16:
+			outbound += strconv.FormatUint(uint64(element), 10)
+		case uint32:
+			outbound += strconv.FormatUint(uint64(element), 10)
+		case uint64:
+			outbound += strconv.FormatUint(element, 10)
 		}
 	}
 	return
@@ -1004,7 +1014,7 @@ func db_parse(xml_db *sDB) (err error) {
 												Table:               gw_v.Table,
 												Discard:             gw_v.Discard,
 												Type:                gw_v.Type,
-												_Route_Attributes:   gw_v._Route_Attributes,
+												Route_Attributes:    gw_v.Route_Attributes,
 												_service_attributes: gw_v._service_attributes,
 											}
 										}
@@ -1109,7 +1119,7 @@ func db_parse(xml_db *sDB) (err error) {
 										return
 									}(),
 									Disable: if_v.Disable,
-									_Host_Inbound_Traffic: _Host_Inbound_Traffic{
+									Host_Inbound_Traffic: Host_Inbound_Traffic{
 										Services: map[_Service]bool{
 											_service_all:         false,
 											_service_any_service: false,
@@ -1150,9 +1160,9 @@ func db_parse(xml_db *sDB) (err error) {
 							}
 							return
 						}(),
-						IP_IF:                 vIP_IF,
-						Policy:                ri_v.Policy._Sanitize(),
-						_Host_Inbound_Traffic: _Host_Inbound_Traffic{},
+						IP_IF:                vIP_IF,
+						Policy:               ri_v.Policy._Sanitize(),
+						Host_Inbound_Traffic: Host_Inbound_Traffic{},
 						_service_attributes: _service_attributes{
 							Reserved: ri_v.Reserved,
 							Description: func() (outbound _Description) {
