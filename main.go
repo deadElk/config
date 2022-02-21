@@ -48,11 +48,11 @@ type _VI_ID uint
 type _VI_ID_PName string
 type _VI_Peer_ID uint
 type _VI_Type string
-type _Service_List map[_Service]bool
-type _Protocol_List map[_Protocol]bool
 type _Service string
 type _Protocol string
 
+// type _Service_List map[_Service]bool
+// type _Protocol_List map[_Protocol]bool
 // type _Services struct {
 // 	All               bool
 // 	Any_Service       bool
