@@ -167,13 +167,17 @@ type sDB_Peer_Security struct {
 	Application []sDB_Application            `xml:"Application"`
 }
 type sDB_AB struct {
-	Name     _AB_Name
-	IPPrefix netip.Prefix `xml:"ip_prefix,attr"`
+	Name    _AB_Name         `xml:"name,attr"`
+	Address []sDB_AB_Address `xml:"Address"`
+}
+type sDB_AB_Address struct {
+	AB       _AB_Name     `xml:"AB,attr"`
+	IPPrefix netip.Prefix `xml:"ipprefix,attr"`
 	FQDN     _FQDN        `xml:"fqdn,attr"`
 }
 type sDB_Application struct {
-	Name string                 `xml:"name,attr"`
-	Term []sDB_Application_Term `xml:"term"`
+	Name _Application_Name      `xml:"name,attr"`
+	Term []sDB_Application_Term `xml:"Term"`
 }
 type sDB_Application_Term struct {
 	Name             string `xml:"name,attr"`
@@ -499,26 +503,7 @@ var (
 	pdb_peer    = make(map[_ASN]pDB_peer)
 	pdb_gt      = make(map[_GT_Name]pDB_GT)
 	config      = make(map[_ASN][]byte)
-	// default_Host_Inbound_Traffic = Host_Inbound_Traffic{
-	// 	Services: map[_Service]bool{
-	// 		_service_all:         false,
-	// 		_service_any_service: false,
-	// 		_service_bootp:       false,
-	// 		_service_dhcp:        false,
-	// 		_service_dhcpv6:      false,
-	// 		_service_ike:         false,
-	// 		_service_ping:        true,
-	// 		_service_snmp:        false,
-	// 		_service_snmp_trap:   false,
-	// 		_service_ssh:         true,
-	// 		_service_traceroute:  true,
-	// 	},
-	// 	Protocols: map[_Protocol]bool{
-	// 		_protocol_all: false,
-	// 		_protocol_bgp: false,
-	// 	},
-	// }
-	fs_path = map[string]string{
+	fs_path     = map[string]string{
 		"upload":    "./tmp/",
 		"templates": "./templates/",
 	}
@@ -684,6 +669,9 @@ func (inbound _Protocol) String() string {
 	return string(inbound)
 }
 func (inbound _AB_Name) String() string {
+	return string(inbound)
+}
+func (inbound _FQDN) String() string {
 	return string(inbound)
 }
 
@@ -942,6 +930,8 @@ func db_read() (err error) {
 						log.Infof("'%+v'", peer.Secutiry)
 					}
 				}
+				log.Infof("'%+v'", xml_db.AB)
+				log.Infof("'%+v'", xml_db.Application)
 				log.Exit(1)
 				switch len(xml_db.Upload_Path) == 0 {
 				case false:
