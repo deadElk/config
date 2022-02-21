@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"encoding/xml"
 	"errors"
+	"io/fs"
 	"io/ioutil"
 	"math/big"
 	"net/netip"
@@ -124,12 +125,13 @@ type _service_attributes struct {
 	Verbosity   string       `xml:"verbosity,attr"`
 }
 type sDB struct {
-	XMLName     xml.Name     `xml:"AS4200240XXX"`
-	Peer        []sDB_Peer   `xml:"peer_list>peer"`
-	VI          []sDB_VI     `xml:"VI_list>VI"`
-	VI_IPPrefix netip.Prefix `xml:"VI_IPPrefix,attr"`
-	GT_List     string       `xml:"GT_list,attr"`
-	Upload_Path string       `xml:"upload_path,attr"`
+	XMLName        xml.Name     `xml:"AS4200240XXX"`
+	Peer           []sDB_Peer   `xml:"peer_list>peer"`
+	VI             []sDB_VI     `xml:"VI_list>VI"`
+	VI_IPPrefix    netip.Prefix `xml:"VI_IPPrefix,attr"`
+	GT_List        string       `xml:"GT_list,attr"`
+	Upload_Path    string       `xml:"upload_path,attr"`
+	Templates_Path string       `xml:"templates_path,attr"`
 	_service_attributes
 }
 type sDB_GT struct {
@@ -824,6 +826,40 @@ func db_read() (err error) {
 			switch err = xml.Unmarshal(data, &xml_db); err == nil {
 			case true:
 				log.Debugf("configuration file '%v' loaded.", value)
+				var (
+					dentry []fs.DirEntry
+				)
+				switch dentry, err = os.ReadDir(xml_db.Templates_Path); err == nil {
+				case true:
+					for _, fentry := range dentry {
+						switch fentry.Type().IsRegular() {
+						case true:
+							var (
+								fsplit = re_dot.Split(fentry.Name(), -1)
+							)
+							switch len(fsplit) < 1 {
+							case false:
+								switch fsplit[len(fsplit)-1] == "tmpl" {
+								case true:
+									var (
+										tname = _GT_Name(fentry.Name()[:len(fentry.Name())-5])
+									)
+									switch data, err = os.ReadFile(xml_db.Templates_Path + "/" + fentry.Name()); err == nil {
+									case true:
+										switch _, flag := pdb_gt[tname]; flag {
+										case true:
+											log.Warnf("template '%v' already exist; ACTION: skip.", tname)
+											continue
+										}
+										pdb_gt[tname] = pDB_GT{
+											Content: _GT_Content(data)._Sanitize(),
+										}
+									}
+								}
+							}
+						}
+					}
+				}
 				switch err = db_parse(&xml_db); err == nil {
 				case true:
 					log.Debugf("DB '%v' parsed.", xml_db.XMLName)
@@ -838,20 +874,6 @@ func db_read() (err error) {
 			log.Warnf("file '%v' read error: '%v'; ACTION: skip.", value, err)
 		}
 	}
-
-	// for _, value := range xml_db.GT {
-	// 	switch _, flag := pdb_gt[value.Name]; flag {
-	// 	case true:
-	// 		log.Warnf("template '%v' already exist; ACTION: skip.", value.Name)
-	// 		continue
-	// 	}
-	//
-	// 	pdb_gt[value.Name] = pDB_GT{
-	// 		Content:             value.Content._Sanitize(),
-	// 		_service_attributes: value._service_attributes,
-	// 	}
-	// }
-
 	return errors.New("no configuration found")
 }
 func db_parse(xml_db *sDB) (err error) {
@@ -884,9 +906,9 @@ func db_parse(xml_db *sDB) (err error) {
 				var (
 					interim string
 				)
-				switch len(value.GT_List) != 0 {
-				case false:
-					interim = xml_db.GT_List
+				switch len(value.GT_List) == 0 {
+				case true:
+					interim = xml_db.GT_List + ",AS" + vASN_PName.String()
 				default:
 					interim = value.GT_List
 				}
