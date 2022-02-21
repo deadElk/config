@@ -28,7 +28,10 @@ import (
 // TODO: implement DB validation and maximum possible autofill
 
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
-type _AB map[string]map[netip.Prefix]bool
+type _AB map[_AB_Name]map[netip.Prefix]bool
+type _AB_Name string
+type _Application map[_Application_Name]string
+type _Application_Name string
 type _ASN uint32
 type _ASN_PName string
 type _Description string
@@ -52,6 +55,10 @@ type _VI_Peer_ID uint
 type _VI_Type string
 type _Service string
 type _Protocol string
+type _Pool_Name string
+type _Rule_Set_Name string
+type _Rule_Name string
+type _FQDN string
 type Host_Inbound_Traffic struct {
 	Services  map[_Service]bool  `xml:"service,attr"`
 	Protocols map[_Protocol]bool `xml:"protocol,attr"`
@@ -127,13 +134,15 @@ type _service_attributes struct {
 	Verbosity   string       `xml:"verbosity,attr"`
 }
 type sDB struct {
-	XMLName        xml.Name     `xml:"AS4200240XXX"`
-	Peer           []sDB_Peer   `xml:"peer_list>peer"`
-	VI             []sDB_VI     `xml:"VI_list>VI"`
-	VI_IPPrefix    netip.Prefix `xml:"VI_IPPrefix,attr"`
-	GT_List        string       `xml:"GT_list,attr"`
-	Upload_Path    string       `xml:"upload_path,attr"`
-	Templates_Path string       `xml:"templates_path,attr"`
+	XMLName        xml.Name          `xml:"AS4200240XXX"`
+	AB             []sDB_AB          `xml:"Security>AB"`
+	Application    []sDB_Application `xml:"Security>Application"`
+	Peer           []sDB_Peer        `xml:"peer_list>peer"`
+	VI             []sDB_VI          `xml:"VI_list>VI"`
+	VI_IPPrefix    netip.Prefix      `xml:"VI_IPPrefix,attr"`
+	GT_List        string            `xml:"GT_list,attr"`
+	Upload_Path    string            `xml:"upload_path,attr"`
+	Templates_Path string            `xml:"templates_path,attr"`
 	_service_attributes
 }
 type sDB_Peer struct {
@@ -147,13 +156,29 @@ type sDB_Peer struct {
 	Serial       string              `xml:"serial,attr"`
 	Root         _Secret             `xml:"root,attr"`
 	GT_List      string              `xml:"GT_list,attr"`
-	Secutiry     []sDB_Peer_Security `xml:"Secutiry"`
+	Secutiry     []sDB_Peer_Security `xml:"Security"`
 	_service_attributes
 }
 type sDB_Peer_Security struct {
-	Zone     []sDB_Peer_Security_Zone     `xml:"Zone"`
-	NAT      []sDB_Peer_Security_NAT      `xml:"NAT"`
-	Policies []sDB_Peer_Security_Policies `xml:"Policies"`
+	Zone        []sDB_Peer_Security_Zone     `xml:"Zone"`
+	NAT         []sDB_Peer_Security_NAT      `xml:"NAT"`
+	Policies    []sDB_Peer_Security_Policies `xml:"Policies"`
+	AB          []sDB_AB                     `xml:"AB"`
+	Application []sDB_Application            `xml:"Application"`
+}
+type sDB_AB struct {
+	Name     _AB_Name
+	IPPrefix netip.Prefix `xml:"ip_prefix,attr"`
+	FQDN     _FQDN        `xml:"fqdn,attr"`
+}
+type sDB_Application struct {
+	Name string                 `xml:"name,attr"`
+	Term []sDB_Application_Term `xml:"term"`
+}
+type sDB_Application_Term struct {
+	Name             string `xml:"name,attr"`
+	Protocol         string `xml:"protocol,attr"`
+	Destination_Port uint16 `xml:"destination_port,attr"`
 }
 type sDB_Peer_Security_Zone struct {
 	SZ []sDB_Peer_Security_Zone_SZ `xml:"SZ"`
@@ -179,31 +204,39 @@ type sDB_Peer_Security_NAT_Destination struct {
 type sDB_Peer_Security_NAT_Static struct {
 }
 type sDB_Peer_Security_NAT_Pool struct {
-	Name     string       `xml:"name,attr"`
+	Name     _Pool_Name   `xml:"name,attr"`
 	IPPrefix netip.Prefix `xml:"ipprefix,attr"`
 	RI       _RI_Name     `xml:"RI,attr"`
 	SZ       _SZ_Name     `xml:"SZ,attr"`
 }
 type sDB_Peer_Security_NAT_Rule_Set struct {
-	Name string                       `xml:"name,attr"`
-	From []sDB_Peer_Security_NAT_From `xml:"From"`
-	To   []sDB_Peer_Security_NAT_To   `xml:"To"`
-	Rule []sDB_Peer_Security_NAT_Rule `xml:"Rule"`
+	Name _Rule_Set_Name                    `xml:"name,attr"`
+	From []sDB_Peer_Security_NAT_Direction `xml:"From"`
+	To   []sDB_Peer_Security_NAT_Direction `xml:"To"`
+	Rule []sDB_Peer_Security_NAT_Rule      `xml:"Rule"`
 }
-type sDB_Peer_Security_NAT_From struct {
-	SZ _SZ_Name `xml:"SZ,attr"`
-	RI _RI_Name `xml:"RI,attr"`
-}
-type sDB_Peer_Security_NAT_To struct {
+type sDB_Peer_Security_NAT_Direction struct {
 	SZ _SZ_Name `xml:"SZ,attr"`
 	RI _RI_Name `xml:"RI,attr"`
 }
 type sDB_Peer_Security_NAT_Rule struct {
-	Name  string   `xml:"name,attr"`
-	Match []string `xml:"Match"`
-	Then  []string `xml:"Then"`
+	Name  _Rule_Name                         `xml:"name,attr"`
+	Match []sDB_Peer_Security_NAT_Rule_Match `xml:"Match"`
+	Then  []sDB_Peer_Security_NAT_Rule_Then  `xml:"Then"`
 }
-
+type sDB_Peer_Security_NAT_Rule_Match struct {
+	Source      bool              `xml:"source,attr"`
+	Destination bool              `xml:"destination,attr"`
+	Application _Application_Name `xml:"Application,attr"`
+	AB          _AB_Name          `xml:"AB,attr"`
+}
+type sDB_Peer_Security_NAT_Rule_Then struct {
+	Source_NAT      bool       `xml:"source_nat,attr"`
+	Destination_NAT bool       `xml:"destination_nat,attr"`
+	Pool            _Pool_Name `xml:"pool,attr"`
+	Permit          bool       `xml:"permit,attr"`
+	Deny            bool       `xml:"deny,attr"`
+}
 type sDB_Peer_Security_Policies struct {
 	From_To []string `xml:"From_To"`
 	Global  []string `xml:"Global"`
@@ -650,6 +683,9 @@ func (inbound _Service) String() string {
 func (inbound _Protocol) String() string {
 	return string(inbound)
 }
+func (inbound _AB_Name) String() string {
+	return string(inbound)
+}
 
 func tabber(inbound string, tabs int) string {
 	var (
@@ -730,7 +766,7 @@ func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 	}
 	return
 }
-func add_to_ab(public, private bool, ab_name string, ip ...interface{}) {
+func add_to_ab(public, private bool, ab_name _AB_Name, ip ...interface{}) {
 	for _, address := range ip {
 		var (
 			interim netip.Prefix
@@ -857,7 +893,7 @@ func main() {
 		case true:
 			// log.Infof("'%s'", config[4200240063])
 			// log.Infof("'%+v'", pdb_vi)
-			// log.Infof("'%+v'", pdb_peer)
+			// log.Infof("'%+v'", pdb_peer[4200240062])
 			// log.Infof("'%+v'", pdb_gt)
 			switch err = config_upload(); err == nil {
 			case true:
@@ -900,6 +936,13 @@ func db_read() (err error) {
 				log.Debugf("configuration file '%v' loaded.", value)
 				log_setlevel(&xml_db.Verbosity)
 				set_vi_ipprefix(xml_db.VI_IPPrefix)
+				for _, peer := range xml_db.Peer {
+					switch peer.ASN == 4200240062 {
+					case true:
+						log.Infof("'%+v'", peer.Secutiry)
+					}
+				}
+				log.Exit(1)
 				switch len(xml_db.Upload_Path) == 0 {
 				case false:
 					fs_path["upload"] = xml_db.Upload_Path
