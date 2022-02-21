@@ -428,7 +428,10 @@ var (
 	// 		_protocol_bgp: false,
 	// 	},
 	// }
-	upload_path = "./tmp/"
+	fs_path = map[string]string{
+		"upload":    "./tmp/",
+		"templates": "./templates/",
+	}
 )
 
 func (inbound _ASN) String() (outbound string) {
@@ -838,10 +841,20 @@ func db_read() (err error) {
 			switch err = xml.Unmarshal(data, &xml_db); err == nil {
 			case true:
 				log.Debugf("configuration file '%v' loaded.", value)
+				log_setlevel(&xml_db.Verbosity)
+				set_vi_ipprefix(xml_db.VI_IPPrefix)
+				switch len(xml_db.Upload_Path) == 0 {
+				case false:
+					fs_path["upload"] = xml_db.Upload_Path
+				}
+				switch len(xml_db.Templates_Path) == 0 {
+				case false:
+					fs_path["templates"] = xml_db.Templates_Path
+				}
 				var (
 					dentry []fs.DirEntry
 				)
-				switch dentry, err = os.ReadDir(xml_db.Templates_Path); err == nil {
+				switch dentry, err = os.ReadDir(fs_path["templates"]); err == nil {
 				case true:
 					for _, fentry := range dentry {
 						switch fentry.Type().IsRegular() {
@@ -856,7 +869,7 @@ func db_read() (err error) {
 									var (
 										tname = _GT_Name(fentry.Name()[:len(fentry.Name())-5])
 									)
-									switch data, err = os.ReadFile(xml_db.Templates_Path + "/" + fentry.Name()); err == nil {
+									switch data, err = os.ReadFile(fs_path["templates"] + "/" + fentry.Name()); err == nil {
 									case true:
 										switch _, flag := pdb_gt[tname]; flag {
 										case true:
@@ -889,13 +902,6 @@ func db_read() (err error) {
 	return errors.New("no configuration found")
 }
 func db_parse(xml_db *sDB) (err error) {
-	log_setlevel(&xml_db.Verbosity)
-	set_vi_ipprefix(xml_db.VI_IPPrefix)
-	switch len(xml_db.Upload_Path) == 0 {
-	case false:
-		upload_path = xml_db.Upload_Path
-	}
-
 	for _, value := range xml_db.Peer {
 		switch _, flag := pdb_peer[value.ASN]; flag {
 		case true:
@@ -1436,7 +1442,7 @@ func config_upload() (err error) {
 	for index, value := range config {
 		ordered = append(ordered, int(index))
 		var (
-			fn = upload_path + "./AS" + index.String()
+			fn = fs_path["upload"] + "./AS" + index.String()
 		)
 		switch err_i := os.WriteFile(fn, value, 0600); err_i == nil {
 		case true:
@@ -1483,7 +1489,7 @@ func config_upload() (err error) {
 		}()
 	}
 
-	switch err_i := os.WriteFile(upload_path+"./hosts.txt", []byte(hosts), 0600); err_i == nil {
+	switch err_i := os.WriteFile(fs_path["upload"]+"./hosts.txt", []byte(hosts), 0600); err_i == nil {
 	case true:
 		log.Infof("OK 'hosts.txt'")
 	case false:
