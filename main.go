@@ -1030,6 +1030,11 @@ func db_parse(xml_db *sDB) (err error) {
 									IP: func() (ip_o map[netip.Addr]pDB_Peer_RI_IF_IP) {
 										ip_o = make(map[netip.Addr]pDB_Peer_RI_IF_IP)
 										for _, ip_v := range if_v.IP {
+											switch ip_v.IPPrefix.IsValid() || ip_v.DHCP {
+											case false:
+												log.Warnf("peer ASN '%v', RI '%v', IF '%v', invalid IPPrefix '%v'; ACTION: skip.", value.ASN, ri_v.Name, if_v.Name, ip_v.IPPrefix)
+												continue
+											}
 											var (
 												ip_i = ip_v.IPPrefix.Addr()
 											)
