@@ -534,7 +534,7 @@ var (
 	domain_name _FQDN
 )
 
-func (inbound _ASN) String() (outbound string) {
+func (inbound _ASN) String() string {
 	return strconv.FormatUint(uint64(inbound), 10)
 }
 func (inbound _ASN) _Sanitize() _ASN_PName {
@@ -543,10 +543,10 @@ func (inbound _ASN) _Sanitize() _ASN_PName {
 	)
 	return _ASN_PName(interim[len(interim)-10:])
 }
-func (inbound _ASN_PName) String() (outbound string) {
+func (inbound _ASN_PName) String() string {
 	return string(inbound)
 }
-func (inbound _VI_ID) _Sanitize() (outbound _VI_ID_PName) {
+func (inbound _VI_ID) _Sanitize() _VI_ID_PName {
 	var (
 		interim = "00000" + strconv.FormatUint(uint64(inbound), 10)
 	)
@@ -555,7 +555,7 @@ func (inbound _VI_ID) _Sanitize() (outbound _VI_ID_PName) {
 func (inbound _VI_ID) String() string {
 	return strconv.FormatUint(uint64(inbound), 10)
 }
-func (inbound _VI_ID_PName) String() (outbound string) {
+func (inbound _VI_ID_PName) String() string {
 	return string(inbound)
 }
 func (inbound _IF_Communication) _Sanitize(mode _IF_Mode) (outbound _IF_Communication) {
@@ -721,7 +721,7 @@ func tabber(inbound string, tabs int) string {
 		return inbound
 	}
 }
-func get_vi_ipprefix(vi_shift _VI_ID, peer_shift _VI_Peer_ID) (outbound netip.Prefix) {
+func get_vi_ipprefix(vi_shift _VI_ID, peer_shift _VI_Peer_ID) netip.Prefix {
 	var (
 		b = make([]byte, 4)
 	)
@@ -869,19 +869,19 @@ func parse_interface(inbound interface{}, skip interface{}) interface{} {
 	}
 	return inbound
 }
-func parse_interface_error(inbound interface{}, skip interface{}) (outbound interface{}) {
+func parse_interface_error(inbound interface{}, skip interface{}) interface{} {
 	switch value := skip.(type) {
 	case error:
 		switch value == nil {
 		case false:
 			log.Debugf("'%v'", skip)
-			return
+			return nil
 		}
 	case bool:
 		switch value {
 		case false:
 			log.Debugf("'%v'", skip)
-			return
+			return nil
 		}
 	}
 	return inbound
@@ -1289,7 +1289,7 @@ func db_parse(xml_db *sDB) (err error) {
 						Host_Inbound_Traffic: Host_Inbound_Traffic{},
 						_service_attributes: _service_attributes{
 							Reserved: ri_v.Reserved,
-							Description: func() (outbound _Description) {
+							Description: func() _Description {
 								switch ri_v.Name == _juniper_mgmt_RI && len(ri_v.Description) == 0 {
 								case true:
 									return _juniper_mgmt_Description
@@ -1313,7 +1313,7 @@ func db_parse(xml_db *sDB) (err error) {
 				}
 				return
 			}()
-			v_Domain_Name = func() (outbound _FQDN) {
+			v_Domain_Name = func() _FQDN {
 				switch len(value.Domain_Name) == 0 {
 				case true:
 					return domain_name
