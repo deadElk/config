@@ -312,27 +312,30 @@ func db_parse(xml_db *sDB) (err error) {
 									Disable:             if_v.Disable,
 									_service_attributes: if_v._service_attributes,
 								}
-								v_SZ[ri_v.Name._SZ_Name()].IF[if_v.Name] = pDB_Peer_Security_Zone_SZ_IF{
-									_Host_Inbound_Traffic: _Host_Inbound_Traffic{
-										Services: map[_Service]bool{
-											_service_all:         false,
-											_service_any_service: false,
-											_service_bootp:       false,
-											_service_dhcp:        false,
-											_service_dhcpv6:      false,
-											_service_ike:         false,
-											_service_ping:        true,
-											_service_snmp:        false,
-											_service_snmp_trap:   false,
-											_service_ssh:         true,
-											_service_traceroute:  true,
+								switch ri_v.Name == _juniper_mgmt_RI {
+								case false:
+									v_SZ[ri_v.Name._SZ_Name()].IF[if_v.Name] = pDB_Peer_Security_Zone_SZ_IF{
+										_Host_Inbound_Traffic: _Host_Inbound_Traffic{
+											Services: map[_Service]bool{
+												_service_all:         false,
+												_service_any_service: false,
+												_service_bootp:       false,
+												_service_dhcp:        false,
+												_service_dhcpv6:      false,
+												_service_ike:         false,
+												_service_ping:        true,
+												_service_snmp:        false,
+												_service_snmp_trap:   false,
+												_service_ssh:         true,
+												_service_traceroute:  true,
+											},
+											Protocols: map[_Protocol]bool{
+												_protocol_all: false,
+												_protocol_bgp: false,
+											},
 										},
-										Protocols: map[_Protocol]bool{
-											_protocol_all: false,
-											_protocol_bgp: false,
-										},
-									},
-									_service_attributes: _service_attributes{},
+										_service_attributes: _service_attributes{},
+									}
 								}
 							}
 							return
@@ -484,6 +487,18 @@ func db_parse(xml_db *sDB) (err error) {
 			_v_Application_list = make(map[_Application_Name]bool)
 		)
 		for _, b := range value.NAT_Source {
+			for _, d := range b.Rule_Set {
+				for _, f := range d.Rule {
+					for _, h := range f.Match {
+						switch len(h.AB) == 0 {
+						case false:
+							_v_AB_list[h.AB] = true
+						}
+					}
+				}
+			}
+		}
+		for _, b := range value.NAT_Destination {
 			for _, d := range b.Rule_Set {
 				for _, f := range d.Rule {
 					for _, h := range f.Match {
