@@ -152,7 +152,7 @@ func (inbound _VI_Type) _Sanitize() _VI_Type {
 		return _default_vi
 	}
 	switch inbound {
-	case _vi_ti:
+	case _vi_st:
 		return inbound
 	case _vi_gr, _vi_lt:
 		log.Errorf("unsupported VI type '%v'; ACTION: use default '%v'.", inbound, _default_vi)

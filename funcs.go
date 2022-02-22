@@ -185,50 +185,37 @@ func _Application_create(ap_name _Application_Name, term []_Security_Application
 	return
 }
 
-func _SZ_create(outbound *map[_SZ_Name]pDB_Peer_Security_Zone_SZ, inbound ...interface{}) (ok bool) {
-	switch b := (inbound[0]).(type) {
+func _SZ_create(outbound *map[_SZ_Name]pDB_Peer_Security_Zone_SZ, sz_name _SZ_Name, inbound interface{}) (ok bool) {
+	switch value := (inbound).(type) {
 	case sDB_Peer_Security_Zone_SZ:
-		switch _, flag := (*outbound)[b.Name]; flag {
+		switch _, flag := (*outbound)[value.Name]; flag {
 		case true:
-			log.Warnf("SZ '%v' already defined; ACTION: skip.", b.Name)
+			log.Warnf("SZ '%v' already defined; ACTION: skip.", value.Name)
 			return
 		}
-		(*outbound)[b.Name] = pDB_Peer_Security_Zone_SZ{
-			Screen:                b.Screen,
+		(*outbound)[value.Name] = pDB_Peer_Security_Zone_SZ{
+			Screen:                value.Screen,
 			IF:                    map[_IF_Name]pDB_Peer_Security_Zone_SZ_IF{},
 			_Host_Inbound_Traffic: _Host_Inbound_Traffic{},
-			_service_attributes:   b._service_attributes,
+			_service_attributes:   value._service_attributes,
 		}
 		return true
-	case _SZ_Name:
-		switch _, flag := (*outbound)[b]; flag {
+	case pDB_Peer_Security_Zone_SZ:
+		switch _, flag := (*outbound)[sz_name]; flag {
 		case true:
-			log.Warnf("SZ '%v' already defined; ACTION: skip.", b)
+			log.Warnf("SZ '%v' already defined; ACTION: skip.", sz_name)
 			return
 		}
-		switch d := (inbound[1]).(type) {
-		case pDB_Peer_Security_Zone_SZ:
-			(*outbound)[b] = pDB_Peer_Security_Zone_SZ{
-				Screen:                d.Screen,
-				IF:                    d.IF,
-				_Host_Inbound_Traffic: d._Host_Inbound_Traffic,
-				_service_attributes:   d._service_attributes,
-			}
-			return true
-			// case nil:
-			// 	(*outbound)[b] = pDB_Peer_Security_Zone_SZ{
-			// 		Screen:                "",
-			// 		IF:                    map[_IF_Name]pDB_Peer_Security_Zone_SZ_IF{},
-			// 		_Host_Inbound_Traffic: _Host_Inbound_Traffic{},
-			// 		_service_attributes:   _service_attributes{},
-			// 	}
+		// (*outbound)[sz_name] = value
+		(*outbound)[sz_name] = pDB_Peer_Security_Zone_SZ{
+			Screen:                "",
+			IF:                    map[_IF_Name]pDB_Peer_Security_Zone_SZ_IF{},
+			_Host_Inbound_Traffic: _Host_Inbound_Traffic{},
+			_service_attributes:   _service_attributes{},
 		}
+		return true
 	}
 	log.Warnf("don't know what to do with '%+s' and '%+s'; ACTION: skip.", inbound, outbound)
-	return
-}
-func _SZ_add_IF(outbound *pDB_Peer_Security_Zone_SZ, if_index _IF_Name, if_value pDB_Peer_Security_Zone_SZ_IF) (ok bool) {
-	(*outbound).IF[if_index] = if_value
 	return
 }
 

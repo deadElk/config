@@ -84,9 +84,8 @@ func db_parse(xml_db *sDB) (err error) {
 			v_SZ = make(map[_SZ_Name]pDB_Peer_Security_Zone_SZ)
 		)
 		for _, b := range value.SZ {
-			_SZ_create(&v_SZ, &b)
+			_SZ_create(&v_SZ, "", b)
 		}
-		log.Errorf("%v", v_SZ)
 
 		// log.Errorf("%v", value.NAT_Source)
 		// log.Errorf("%v", value.NAT_Destination)
@@ -420,6 +419,7 @@ func db_parse(xml_db *sDB) (err error) {
 			Router_ID:           v_Router_ID,
 			AB:                  v_AB,
 			Application:         v_Application,
+			SZ:                  v_SZ,
 			IFM:                 v_IFM,
 			RI:                  v_RI,
 			IF_RI:               v_IF_RI,
@@ -457,6 +457,7 @@ func db_parse(xml_db *sDB) (err error) {
 			var (
 				v_No_NAT = true
 				v_NAT    = make([]netip.Addr, peers)
+				v_Type   = value.Type._Sanitize()
 			)
 			for peer_index := range value.Peer {
 				switch _, flag := pdb_peer[value.Peer[peer_index].ASN]; flag {
@@ -524,7 +525,30 @@ func db_parse(xml_db *sDB) (err error) {
 					log.Warnf("VI '%v', peer '%v' no public outter IP found; ACTION: use IKE NAT traversal.", value.ID, peer_index)
 					v_No_NAT = false
 				}
-				pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF].Services[_service_ike] = true
+				pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].RI._SZ_Name()].IF[value.Peer[peer_index].IF].Services[_service_ike] = true
+				pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].RI._SZ_Name()].IF[_IF_Name(v_Type.String()+"0."+value.ID.String())] = pDB_Peer_Security_Zone_SZ_IF{
+					_Host_Inbound_Traffic: _Host_Inbound_Traffic{
+						Services: map[_Service]bool{
+							_service_all:         false,
+							_service_any_service: false,
+							_service_bootp:       false,
+							_service_dhcp:        false,
+							_service_dhcpv6:      false,
+							_service_ike:         false,
+							_service_ping:        true,
+							_service_snmp:        false,
+							_service_snmp_trap:   false,
+							_service_ssh:         true,
+							_service_traceroute:  true,
+						},
+						Protocols: map[_Protocol]bool{
+							_protocol_all: false,
+							_protocol_bgp: true,
+						},
+					},
+					_service_attributes: _service_attributes{},
+				}
+
 			}
 			var (
 				v_Metric = func() uint {
@@ -539,7 +563,7 @@ func db_parse(xml_db *sDB) (err error) {
 			)
 			pdb_peer[value.Peer[0].ASN].VI[value.ID] = pDB_Peer_VI{
 				VI_ID_PName:          value.ID._Sanitize(),
-				Type:                 value.Type._Sanitize(),
+				Type:                 v_Type,
 				Communication:        value.Communication._Sanitize(_if_mode_vi),
 				PSK:                  value.PSK._Sanitize(64),
 				Route_Metric:         v_Metric,
@@ -644,6 +668,7 @@ func config_upload() (err error) {
 		ordered []int
 	)
 	for index, value := range config {
+		log.Errorf("%v", pdb_peer[index].SZ)
 		ordered = append(ordered, int(index))
 		var (
 			fn = fs_path["upload"] + "./AS" + index.String()

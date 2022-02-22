@@ -27,10 +27,10 @@ const (
 	_gw_interface             _GW_Type          = "interface"
 	_gw_table                 _GW_Type          = "table"
 	_gw_discard               _GW_Type          = "discard"
-	_vi_ti                    _VI_Type          = "ti"
+	_vi_st                    _VI_Type          = "st"
 	_vi_gr                    _VI_Type          = "gr"
 	_vi_lt                    _VI_Type          = "lt"
-	_default_vi                                 = _vi_ti
+	_default_vi                                 = _vi_st
 	_if_comm_ptp              _IF_Communication = "ptp"
 	_if_comm_ptmp             _IF_Communication = "ptmp"
 	_default_vi_comm                            = _if_comm_ptp
