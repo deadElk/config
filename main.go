@@ -105,6 +105,7 @@ func db_read() (err error) {
 	return errors.New("no configuration found")
 }
 func db_parse(xml_db *sDB) (err error) {
+	ab_create_set("OUTTER_LIST")
 	for _, value := range xml_db.Peer {
 		switch _, flag := pdb_peer[value.ASN]; flag {
 		case true:
@@ -286,7 +287,7 @@ func db_parse(xml_db *sDB) (err error) {
 													log.Warnf("peer ASN '%v', router ID '%v' already defined; ACTION: skip.", value.ASN, vRouter_ID)
 												}
 											}
-											add_to_ab(true, false, "OUTTER_LIST", ip_v.IPPrefix.Addr(), ip_v.NAT)
+											ab_add(true, false, "OUTTER_LIST", ip_v.IPPrefix.Addr(), ip_v.NAT)
 											switch {
 											case ip_v.NAT.IsValid() && !ip_v.NAT.IsPrivate():
 												v_IP_List[parse_interface(ip_v.NAT.Prefix(32)).(netip.Prefix)] = true
@@ -320,7 +321,7 @@ func db_parse(xml_db *sDB) (err error) {
 												continue
 											}
 											vIP_IF[parp_i] = if_v.Name
-											add_to_ab(true, false, "OUTTER_LIST", parp_v.IPPrefix.Addr(), parp_v.NAT)
+											ab_add(true, false, "OUTTER_LIST", parp_v.IPPrefix.Addr(), parp_v.NAT)
 											parp_o[parp_v.IPPrefix.Addr()] = pDB_Peer_RI_IF_PARP{
 												IPPrefix:            parp_v.IPPrefix,
 												NAT:                 parp_v.NAT,
@@ -392,27 +393,28 @@ func db_parse(xml_db *sDB) (err error) {
 			}()
 		)
 		pdb_peer[value.ASN] = pDB_Peer{
-			ASN:                 value.ASN,
-			ASN_PName:           vASN_PName,
-			Router_ID:           vRouter_ID,
-			IFM:                 v_IFM,
-			RI:                  vRI,
-			IF_RI:               vIF_RI,
-			Hostname:            vHostname,
-			Domain_Name:         v_Domain_Name,
-			Version:             value.Version,
-			Major:               vMajor,
-			IKE_GCM:             vMajor >= 12.3,
-			Manufacturer:        value.Manufacturer,
-			Model:               value.Model,
-			Serial:              value.Serial,
-			Root:                value.Root._Sanitize(16, "peer AS"+vASN_PName.String()+": root password is not acceptable"),
-			GT_List:             vGT_List,
-			VI:                  map[_VI_ID]pDB_Peer_VI{},
-			RM_ID:               &rm_id,
-			AB_Set:              pdb_abset,
-			AB_FQDN:             pdb_abfqdn,
-			AB_IPPrefix:         pdb_abipprefix,
+			ASN:          value.ASN,
+			ASN_PName:    vASN_PName,
+			Router_ID:    vRouter_ID,
+			IFM:          v_IFM,
+			RI:           vRI,
+			IF_RI:        vIF_RI,
+			Hostname:     vHostname,
+			Domain_Name:  v_Domain_Name,
+			Version:      value.Version,
+			Major:        vMajor,
+			IKE_GCM:      vMajor >= 12.3,
+			Manufacturer: value.Manufacturer,
+			Model:        value.Model,
+			Serial:       value.Serial,
+			Root:         value.Root._Sanitize(16, "peer AS"+vASN_PName.String()+": root password is not acceptable"),
+			GT_List:      vGT_List,
+			VI:           map[_VI_ID]pDB_Peer_VI{},
+			RM_ID:        &rm_id,
+			AB:           pdb_ab,
+			// AB_Set:              pdb_abset,
+			// AB_FQDN:             pdb_abfqdn,
+			// AB_IPPrefix:         pdb_abipprefix,
 			IPPrefix_List:       v_IP_List,
 			_service_attributes: value._service_attributes,
 		}

@@ -6,11 +6,16 @@ import (
 )
 
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
-// type _AB map[_AB_Name]_AB2
+type _service_attributes struct {
+	Reserved    bool         `xml:"reserved,attr"`
+	Description _Description `xml:"description,attr"`
+	// Verbosity   string       `xml:"verbosity,attr"`
+}
+
 type _AB_Type string
-type _AB_IPPrefix map[netip.Prefix]bool
-type _AB_FQDN map[_FQDN]bool
-type _AB_Set struct {
+type _AB struct {
+	Address  interface{}
+	Type     _AB_Type
 	AB       map[_AB_Name]bool
 	FQDN     map[_FQDN]bool
 	IPPrefix map[netip.Prefix]bool
@@ -45,7 +50,6 @@ type _Pool_Name string
 type _Rule_Set_Name string
 type _Rule_Name string
 type _FQDN string
-
 type Host_Inbound_Traffic struct {
 	Services  map[_Service]bool  `xml:"service,attr"`
 	Protocols map[_Protocol]bool `xml:"protocol,attr"`
@@ -115,11 +119,6 @@ type Route_Attributes struct {
 // 	vrrp             bool
 // }
 
-type _service_attributes struct {
-	Reserved    bool         `xml:"reserved,attr"`
-	Description _Description `xml:"description,attr"`
-	// Verbosity   string       `xml:"verbosity,attr"`
-}
 type sDB struct {
 	XMLName        xml.Name          `xml:"AS4200240XXX"`
 	AB             []sDB_AB          `xml:"Security>AB_List>AB"`
@@ -159,6 +158,7 @@ type sDB_Peer_Security struct {
 }
 type sDB_AB struct {
 	Name    _AB_Name         `xml:"name,attr"`
+	Set     bool             `xml:"set,attr"`
 	Address []sDB_AB_Address `xml:"Address"`
 	_service_attributes
 }
@@ -344,9 +344,7 @@ type pDB_Peer struct {
 	GT_List       []_GT_Name
 	VI            map[_VI_ID]pDB_Peer_VI
 	RM_ID         *_RM_ID
-	AB_Set        map[_AB_Name]_AB_Set
-	AB_IPPrefix   _AB_IPPrefix
-	AB_FQDN       _AB_FQDN
+	AB            map[_AB_Name]_AB
 	IPPrefix_List map[netip.Prefix]bool // true = public
 	_service_attributes
 }

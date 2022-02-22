@@ -23,16 +23,17 @@ var (
 		}
 		return
 	}()
-	vi_ipprefix    netip.Prefix
-	vi_ip_shift    _VI_ID
-	pdb_abset      = make(map[_AB_Name]_AB_Set)
-	pdb_abfqdn     = make(_AB_FQDN)
-	pdb_abipprefix = make(_AB_IPPrefix)
-	pdb_appl       = make(map[_Application_Name]_Application)
-	pdb_peer       = make(map[_ASN]pDB_Peer)
-	pdb_gt         = make(map[_GT_Name]pDB_GT)
-	config         = make(map[_ASN][]byte)
-	fs_path        = map[string]string{
+	vi_ipprefix netip.Prefix
+	vi_ip_shift _VI_ID
+	pdb_ab      = make(map[_AB_Name]_AB)
+	// pdb_abset      = make(map[_AB_Name]_AB_Set)
+	// pdb_abfqdn     = make(_AB_FQDN)
+	// pdb_abipprefix = make(_AB_IPPrefix)
+	pdb_appl = make(map[_Application_Name]_Application)
+	pdb_peer = make(map[_ASN]pDB_Peer)
+	pdb_gt   = make(map[_GT_Name]pDB_GT)
+	config   = make(map[_ASN][]byte)
+	fs_path  = map[string]string{
 		"upload":    "./tmp/",
 		"templates": "./templates/",
 	}

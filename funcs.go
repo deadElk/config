@@ -129,11 +129,26 @@ func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 	}
 	return
 }
-func add_to_ab(public, private bool, ab_name _AB_Name, ip ...interface{}) {
-	for _, address := range ip {
+func ab_create_set(inbound _AB_Name) {
+	switch _, flag := pdb_ab[inbound]; flag {
+	case true:
+		log.Warnf("AB '%v' already exist; ACTION: skip.", inbound)
+	}
+	pdb_ab[inbound] = _AB{
+		Type:     _AB_Type_set,
+		AB:       map[_AB_Name]bool{},
+		FQDN:     map[_FQDN]bool{},
+		IPPrefix: map[netip.Prefix]bool{},
+	}
+}
+
+func ab_add(public, private bool, ab_name _AB_Name, inbound ...interface{}) {
+	var (
+		interim []interface{}
+		// outbound []interface{}
+	)
+	for _, address := range inbound {
 		var (
-			interim interface{}
-			// interim_type _AB_Type
 			bits = 32
 		)
 		switch value := (address).(type) {
@@ -147,42 +162,71 @@ func add_to_ab(public, private bool, ab_name _AB_Name, ip ...interface{}) {
 			case true:
 				bits = 128
 			}
-			interim, _ = value.Prefix(bits)
-			// interim_type = _AB_Type_ipprefix
+			interim = append(interim, parse_interface(value.Prefix(bits)).(netip.Prefix))
 		case netip.Prefix:
 			switch is_private, is_valid := value.Masked().Addr().IsPrivate(), value.IsValid(); !is_valid || (is_private && !private) || (!is_private && !public) {
 			case true:
 				log.Debugf("AB '%v', address '%v' is valid '%v' against public '%v' / private '%v': address not suitable; ACTION: skip.", ab_name, value, value.IsValid(), public, private)
 				continue
 			}
-			interim = value
-			// interim_type = _AB_Type_ipprefix
+			interim = append(interim, value)
 		case _FQDN:
-			// interim_type = _AB_Type_fqdn
+			interim = append(interim, value)
 		case _AB_Name:
-			// interim_type = _AB_Type_set
+			interim = append(interim, value)
 		default:
 			log.Warnf("AB '%v', address '%v'; unknown address type; ACTION: skip.", ab_name, value)
 			continue
 		}
+	}
 
-		switch _, flag := pdb_abset[ab_name]; {
-		case !flag:
-			pdb_abset[ab_name] = _AB_Set{
-				AB:       map[_AB_Name]bool{},
-				FQDN:     map[_FQDN]bool{},
-				IPPrefix: map[netip.Prefix]bool{},
+	for _, address := range interim {
+		switch _, flag := pdb_ab[ab_name]; {
+		case flag && pdb_ab[ab_name].Type == _AB_Type_set:
+			switch value := (address).(type) {
+			case _AB_Name:
+				pdb_ab[ab_name].AB[value] = true
+			case _FQDN:
+				pdb_ab[ab_name].FQDN[value] = true
+				ab_add(true, true, _AB_Name(value.String()), value)
+				// pdb_ab[_AB_Name(value.String())] = _AB{
+				// 	Type: _AB_Type_fqdn,
+				// 	FQDN: map[_FQDN]bool{
+				// 		value: true,
+				// 	},
+				// }
+			case netip.Prefix:
+				pdb_ab[ab_name].IPPrefix[value] = true
+				ab_add(true, true, _AB_Name(value.String()), value)
+				// pdb_ab[_AB_Name(value.String())] = _AB{
+				// 	Type: _AB_Type_ipprefix,
+				// 	IPPrefix: map[netip.Prefix]bool{
+				// 		value: true,
+				// 	},
+				// }
 			}
-		}
-		switch value := (interim).(type) {
-		case _AB_Name:
-			pdb_abset[ab_name].AB[value] = true
-		case _FQDN:
-			pdb_abset[ab_name].FQDN[value] = true
-			pdb_abfqdn[value] = true
-		case netip.Prefix:
-			pdb_abset[ab_name].IPPrefix[value] = true
-			pdb_abipprefix[value] = true
+		case flag:
+			log.Warnf("AB '%v', already exist; ACTION: skip.", ab_name)
+			continue
+		default:
+			switch value := (address).(type) {
+			case _FQDN:
+				pdb_ab[ab_name] = _AB{
+					Type: _AB_Type_fqdn,
+					// FQDN: map[_FQDN]bool{
+					// 	value: true,
+					// },
+					Address: value,
+				}
+			case netip.Prefix:
+				pdb_ab[ab_name] = _AB{
+					Type: _AB_Type_ipprefix,
+					// IPPrefix: map[netip.Prefix]bool{
+					// 	value: true,
+					// },
+					Address: value,
+				}
+			}
 		}
 	}
 }
