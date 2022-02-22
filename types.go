@@ -83,8 +83,8 @@ type _Security_Then struct {
 	_service_attributes
 }
 type _Security_Policies_From_To struct {
-	From   []_SZ_Name                  `xml:"From>SZ,attr"`
-	To     []_SZ_Name                  `xml:"To>SZ,attr"`
+	From   []_SZ_Name                  `xml:"From"`
+	To     []_SZ_Name                  `xml:"To"`
 	Policy []_Security_Policies_Policy `xml:"Policy"`
 	_service_attributes
 }
@@ -132,65 +132,6 @@ type _Route_Attributes struct {
 	Metric     uint `xml:"metric,attr"`
 	Preference uint `xml:"preference,attr"`
 }
-
-// type _Service_List map[_Service]bool
-// type _Protocol_List map[_Protocol]bool
-// type _Services struct {
-// 	All               bool
-// 	Any_Service       bool
-// 	appqoe            bool
-// 	BOOTP             bool
-// 	DHCP              bool
-// 	DHCPv6            bool
-// 	dns               bool
-// 	finger            bool
-// 	ftp               bool
-// 	http              bool
-// 	https             bool
-// 	ident_reset       bool
-// 	IKE               bool
-// 	lsping            bool
-// 	netconf           bool
-// 	ntp               bool
-// 	PING              bool
-// 	r2cp              bool
-// 	reverse_ssh       bool
-// 	reverse_telnet    bool
-// 	rlogin            bool
-// 	rpm               bool
-// 	rsh               bool
-// 	SNMP              bool
-// 	SNMP_Trap         bool
-// 	SSH               bool
-// 	tcp_encap         bool
-// 	telnet            bool
-// 	tftp              bool
-// 	Traceroute        bool
-// 	webapi_clear_text bool
-// 	webapi_ssl        bool
-// 	xnm_clear_text    bool
-// 	xnm_ssl           bool
-// }
-// type _Protocols struct {
-// 	All              bool
-// 	bfd              bool
-// 	BGP              bool
-// 	dvmrp            bool
-// 	igmp             bool
-// 	ldp              bool
-// 	msdp             bool
-// 	nhrp             bool
-// 	ospf             bool
-// 	ospf3            bool
-// 	pgm              bool
-// 	pim              bool
-// 	rip              bool
-// 	ripng            bool
-// 	router_discovery bool
-// 	rsvp             bool
-// 	sap              bool
-// 	vrrp             bool
-// }
 
 type sDB struct {
 	XMLName        xml.Name          `xml:"AS4200240XXX"`
