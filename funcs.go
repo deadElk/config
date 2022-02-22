@@ -74,7 +74,6 @@ func get_vi_ipprefix(vi_shift _VI_ID, peer_shift _VI_Peer_ID) netip.Prefix {
 	var (
 		b = make([]byte, 4)
 	)
-	// binary.BigEndian.PutUint32(b, uint32(vi_ip_shift)+uint32(vi_shift)*4+uint32(peer_shift))
 	binary.BigEndian.PutUint32(b, uint32(vi_ip_shift+vi_shift*4)+uint32(peer_shift))
 	return netip.PrefixFrom(parse_interface(netip.AddrFromSlice(b)).(netip.Addr), 30)
 }
@@ -145,7 +144,6 @@ func ab_create_set(inbound _AB_Name) {
 func ab_add(public, private bool, ab_name _AB_Name, inbound ...interface{}) {
 	var (
 		interim []interface{}
-		// outbound []interface{}
 	)
 	for _, address := range inbound {
 		var (
@@ -189,21 +187,9 @@ func ab_add(public, private bool, ab_name _AB_Name, inbound ...interface{}) {
 			case _FQDN:
 				pdb_ab[ab_name].FQDN[value] = true
 				ab_add(true, true, _AB_Name(value.String()), value)
-				// pdb_ab[_AB_Name(value.String())] = _AB{
-				// 	Type: _AB_Type_fqdn,
-				// 	FQDN: map[_FQDN]bool{
-				// 		value: true,
-				// 	},
-				// }
 			case netip.Prefix:
 				pdb_ab[ab_name].IPPrefix[value] = true
 				ab_add(true, true, _AB_Name(value.String()), value)
-				// pdb_ab[_AB_Name(value.String())] = _AB{
-				// 	Type: _AB_Type_ipprefix,
-				// 	IPPrefix: map[netip.Prefix]bool{
-				// 		value: true,
-				// 	},
-				// }
 			}
 		case flag:
 			log.Warnf("AB '%v', already exist; ACTION: skip.", ab_name)
@@ -212,18 +198,12 @@ func ab_add(public, private bool, ab_name _AB_Name, inbound ...interface{}) {
 			switch value := (address).(type) {
 			case _FQDN:
 				pdb_ab[ab_name] = _AB{
-					Type: _AB_Type_fqdn,
-					// FQDN: map[_FQDN]bool{
-					// 	value: true,
-					// },
+					Type:    _AB_Type_fqdn,
 					Address: value,
 				}
 			case netip.Prefix:
 				pdb_ab[ab_name] = _AB{
-					Type: _AB_Type_ipprefix,
-					// IPPrefix: map[netip.Prefix]bool{
-					// 	value: true,
-					// },
+					Type:    _AB_Type_ipprefix,
 					Address: value,
 				}
 			}
