@@ -169,34 +169,38 @@ func _Templates_read() {
 	}
 }
 
-func _Application_create(ap_name *_Application_Name, term *[]_Application_Term) {
+func _Application_create(ap_name *_Application_Name, term *[]_Security_Application_Term) (ok bool) {
 	switch _, flag := pdb_appl[*ap_name]; flag {
 	case true:
 		log.Warnf("Application '%v' already exist; ACTION: skip.", *ap_name)
 	}
 	var (
-		c []_Application_Term
+		c []_Security_Application_Term
 	)
 	for _, b := range *term {
 		c = append(c, b)
 	}
+	ok = true
 	pdb_appl[*ap_name] = c
+	return
 }
 
-func _AB_Set_create(inbound *_AB_Name) {
+func _AB_Set_create(inbound *_AB_Name) (ok bool) {
 	switch _, flag := pdb_ab[*inbound]; flag {
 	case true:
 		log.Warnf("AB '%v' already exist; ACTION: skip.", *inbound)
 		return
 	}
-	pdb_ab[*inbound] = _AB{
+	ok = true
+	pdb_ab[*inbound] = _Security_AB{
 		Type:     _AB_Type_set,
 		AB:       map[_AB_Name]bool{},
 		FQDN:     map[_FQDN]bool{},
 		IPPrefix: map[netip.Prefix]bool{},
 	}
+	return
 }
-func _AB_Address_add(public, private bool, ab_name _AB_Name, inbound ...interface{}) {
+func _AB_Address_add(public, private bool, ab_name _AB_Name, inbound ...interface{}) (ok bool) {
 	var (
 		interim []interface{}
 	)
@@ -246,11 +250,14 @@ func _AB_Address_add(public, private bool, ab_name _AB_Name, inbound ...interfac
 		case flag && pdb_ab[ab_name].Type == _AB_Type_set:
 			switch value := (address).(type) {
 			case _AB_Name:
+				ok = true
 				pdb_ab[ab_name].AB[value] = true
 			case _FQDN:
+				ok = true
 				pdb_ab[ab_name].FQDN[value] = true
 				_AB_Address_add(true, true, _AB_Name(value.String()), value)
 			case netip.Prefix:
+				ok = true
 				pdb_ab[ab_name].IPPrefix[value] = true
 				_AB_Address_add(true, true, _AB_Name(value.String()), value)
 			}
@@ -260,18 +267,21 @@ func _AB_Address_add(public, private bool, ab_name _AB_Name, inbound ...interfac
 		default:
 			switch value := (address).(type) {
 			case _FQDN:
-				pdb_ab[ab_name] = _AB{
+				ok = true
+				pdb_ab[ab_name] = _Security_AB{
 					Type:    _AB_Type_fqdn,
 					Address: value,
 				}
 			case netip.Prefix:
-				pdb_ab[ab_name] = _AB{
+				ok = true
+				pdb_ab[ab_name] = _Security_AB{
 					Type:    _AB_Type_ipprefix,
 					Address: value,
 				}
 			}
 		}
 	}
+	return
 }
 func hash(inbound *string) (outbound _ID) {
 	var (

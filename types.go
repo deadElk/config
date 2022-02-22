@@ -14,7 +14,7 @@ type _service_attributes struct {
 
 type _AB_Type string
 type _AB_Name string
-type _AB struct {
+type _Security_AB struct {
 	Address  interface{}
 	Type     _AB_Type
 	AB       map[_AB_Name]bool
@@ -23,12 +23,78 @@ type _AB struct {
 	_service_attributes
 }
 type _Application_Name string
-type _Application_Term struct {
+type _Security_Application_Term struct {
 	Name             string `xml:"name,attr"`
 	Protocol         string `xml:"protocol,attr"`
 	Destination_Port uint16 `xml:"destination_port,attr"`
 	_service_attributes
 }
+type _Security_NAT_Source struct {
+	Address_Persistent bool
+	Pool               []_Security_NAT_Pool
+	Rule_Set           []_Security_NAT_Rule_Set
+	_service_attributes
+}
+type _Security_NAT_Destination struct {
+	Pool     []_Security_NAT_Pool
+	Rule_Set []_Security_NAT_Rule_Set
+	_service_attributes
+}
+type _Security_NAT_Static struct {
+	_service_attributes
+}
+type _Security_NAT_Pool struct {
+	IPPrefix netip.Prefix
+	RI       _RI_Name
+	SZ       _SZ_Name
+	_service_attributes
+}
+type _Security_NAT_Rule_Set struct {
+	Name _Rule_Set_Name
+	From []_Security_NAT_Direction
+	To   []_Security_NAT_Direction
+	Rule []_Security_NAT_Rule
+	_service_attributes
+}
+type _Security_NAT_Direction struct {
+	SZ _SZ_Name `xml:"SZ,attr"`
+	RI _RI_Name `xml:"RI,attr"`
+	_service_attributes
+}
+type _Security_NAT_Rule struct {
+	Name  _Rule_Name        `xml:"name,attr"`
+	Match []_Security_Match `xml:"Match"`
+	Then  []_Security_Then  `xml:"Then"`
+	_service_attributes
+}
+type _Security_Match struct {
+	Source      bool              `xml:"source,attr"`
+	Destination bool              `xml:"destination,attr"`
+	Application _Application_Name `xml:"application,attr"`
+	AB          _AB_Name          `xml:"AB,attr"`
+	_service_attributes
+}
+type _Security_Then struct {
+	Source_NAT      bool       `xml:"source_NAT,attr"`
+	Destination_NAT bool       `xml:"destination_NAT,attr"`
+	Pool            _Pool_Name `xml:"pool,attr"`
+	Permit          bool       `xml:"permit,attr"`
+	Deny            bool       `xml:"deny,attr"`
+	_service_attributes
+}
+type _Security_Policies_From_To struct {
+	From   []_SZ_Name                  `xml:"From>SZ,attr"`
+	To     []_SZ_Name                  `xml:"To>SZ,attr"`
+	Policy []_Security_Policies_Policy `xml:"Policy"`
+	_service_attributes
+}
+type _Security_Policies_Policy struct {
+	Name  _Policy_Name      `xml:"name,attr"`
+	Match []_Security_Match `xml:"Match"`
+	Then  []_Security_Then  `xml:"Then"`
+	_service_attributes
+}
+
 type _ASN uint32
 type _ASN_PName string
 type _Description string
@@ -41,6 +107,7 @@ type _IF_Mode string
 type _IF_Name string
 type _IFM_Name string
 type _Policy string
+type _Policy_Name string
 type _RI_Name string
 type _SZ_Name string
 type _Screen_Name string
@@ -140,26 +207,25 @@ type sDB struct {
 	_service_attributes
 }
 type sDB_Peer struct {
-	ASN          _ASN              `xml:"ASN,attr"`
-	IFM          []sDB_Peer_IFM    `xml:"IFM"`
-	RI           []sDB_Peer_RI     `xml:"RI"`
-	Hostname     _FQDN             `xml:"hostname,attr"`
-	Domain_Name  _FQDN             `xml:"domain_name,attr"`
-	Version      string            `xml:"version,attr"`
-	Manufacturer string            `xml:"manufacturer,attr"`
-	Model        string            `xml:"model,attr"`
-	Serial       string            `xml:"serial,attr"`
-	Root         _Secret           `xml:"root,attr"`
-	GT_List      string            `xml:"GT_list,attr"`
-	Security     sDB_Peer_Security `xml:"Security"`
-	_service_attributes
-}
-type sDB_Peer_Security struct {
-	Zone        []sDB_Peer_Security_Zone     `xml:"Zone"`
-	NAT         []sDB_Peer_Security_NAT      `xml:"NAT"`
-	Policies    []sDB_Peer_Security_Policies `xml:"Policies"`
-	AB          []sDB_AB                     `xml:"AB"`
-	Application []sDB_Application            `xml:"Application"`
+	ASN              _ASN                         `xml:"ASN,attr"`
+	IFM              []sDB_Peer_IFM               `xml:"IFM"`
+	RI               []sDB_Peer_RI                `xml:"RI"`
+	Hostname         _FQDN                        `xml:"hostname,attr"`
+	Domain_Name      _FQDN                        `xml:"domain_name,attr"`
+	Version          string                       `xml:"version,attr"`
+	Manufacturer     string                       `xml:"manufacturer,attr"`
+	Model            string                       `xml:"model,attr"`
+	Serial           string                       `xml:"serial,attr"`
+	Root             _Secret                      `xml:"root,attr"`
+	GT_List          string                       `xml:"GT_list,attr"`
+	SZ               []sDB_Peer_Security_Zone_SZ  `xml:"Security>Zone>SZ"`
+	NAT_Source       []_Security_NAT_Source       `xml:"Security>NAT>Source"`
+	NAT_Destination  []_Security_NAT_Destination  `xml:"Security>NAT>Destination"`
+	NAT_Static       []_Security_NAT_Static       `xml:"Security>NAT>Static"`
+	Policies_From_To []_Security_Policies_From_To `xml:"Security>Policies>From_To"`
+	Policies_Global  []_Security_Policies_Policy  `xml:"Security>Policies>Global"`
+	AB               []sDB_AB                     `xml:"Security>AB"`
+	Application      []sDB_Application            `xml:"Security>Application"`
 	_service_attributes
 }
 type sDB_AB struct {
@@ -175,82 +241,13 @@ type sDB_AB_Address struct {
 	_service_attributes
 }
 type sDB_Application struct {
-	Name _Application_Name   `xml:"name,attr"`
-	Term []_Application_Term `xml:"Term"`
-	_service_attributes
-}
-type sDB_Peer_Security_Zone struct {
-	SZ []sDB_Peer_Security_Zone_SZ `xml:"SZ"`
+	Name _Application_Name            `xml:"name,attr"`
+	Term []_Security_Application_Term `xml:"Term"`
 	_service_attributes
 }
 type sDB_Peer_Security_Zone_SZ struct {
 	Name   _SZ_Name     `xml:"name,attr"`
 	Screen _Screen_Name `xml:"screen,attr"`
-	_service_attributes
-}
-type sDB_Peer_Security_NAT struct {
-	Source      []sDB_Peer_Security_NAT_Source      `xml:"Source"`
-	Destination []sDB_Peer_Security_NAT_Destination `xml:"Destination"`
-	Static      []sDB_Peer_Security_NAT_Static      `xml:"Static"`
-	_service_attributes
-}
-type sDB_Peer_Security_NAT_Source struct {
-	Address_Persistent bool                             `xml:"address_persistent,attr"`
-	Pool               []sDB_Peer_Security_NAT_Pool     `xml:"Pool"`
-	Rule_Set           []sDB_Peer_Security_NAT_Rule_Set `xml:"Rule_Set"`
-	_service_attributes
-}
-type sDB_Peer_Security_NAT_Destination struct {
-	Pool     []sDB_Peer_Security_NAT_Pool     `xml:"Pool"`
-	Rule_Set []sDB_Peer_Security_NAT_Rule_Set `xml:"Rule_Set"`
-	_service_attributes
-}
-type sDB_Peer_Security_NAT_Static struct {
-	_service_attributes
-}
-type sDB_Peer_Security_NAT_Pool struct {
-	Name     _Pool_Name   `xml:"name,attr"`
-	IPPrefix netip.Prefix `xml:"IPprefix,attr"`
-	RI       _RI_Name     `xml:"RI,attr"`
-	SZ       _SZ_Name     `xml:"SZ,attr"`
-	_service_attributes
-}
-type sDB_Peer_Security_NAT_Rule_Set struct {
-	Name _Rule_Set_Name                    `xml:"name,attr"`
-	From []sDB_Peer_Security_NAT_Direction `xml:"From"`
-	To   []sDB_Peer_Security_NAT_Direction `xml:"To"`
-	Rule []sDB_Peer_Security_NAT_Rule      `xml:"Rule"`
-	_service_attributes
-}
-type sDB_Peer_Security_NAT_Direction struct {
-	SZ _SZ_Name `xml:"SZ,attr"`
-	RI _RI_Name `xml:"RI,attr"`
-	_service_attributes
-}
-type sDB_Peer_Security_NAT_Rule struct {
-	Name  _Rule_Name                         `xml:"name,attr"`
-	Match []sDB_Peer_Security_NAT_Rule_Match `xml:"Match"`
-	Then  []sDB_Peer_Security_NAT_Rule_Then  `xml:"Then"`
-	_service_attributes
-}
-type sDB_Peer_Security_NAT_Rule_Match struct {
-	Source      bool              `xml:"source,attr"`
-	Destination bool              `xml:"destination,attr"`
-	Application _Application_Name `xml:"application,attr"`
-	AB          _AB_Name          `xml:"AB,attr"`
-	_service_attributes
-}
-type sDB_Peer_Security_NAT_Rule_Then struct {
-	Source_NAT      bool       `xml:"source_NAT,attr"`
-	Destination_NAT bool       `xml:"destination_NAT,attr"`
-	Pool            _Pool_Name `xml:"pool,attr"`
-	Permit          bool       `xml:"permit,attr"`
-	Deny            bool       `xml:"deny,attr"`
-	_service_attributes
-}
-type sDB_Peer_Security_Policies struct {
-	From_To []string `xml:"From_To"`
-	Global  []string `xml:"Global"`
 	_service_attributes
 }
 
@@ -325,27 +322,37 @@ type sDB_VI_Peer struct {
 }
 
 type pDB_Peer struct {
-	ASN           _ASN
-	ASN_PName     _ASN_PName
-	Router_ID     netip.Addr
-	AB            map[_AB_Name]_AB
-	Application   map[_Application_Name][]_Application_Term
-	IFM           map[_IFM_Name]pDB_Peer_IFM
-	RI            map[_RI_Name]pDB_Peer_RI
-	IF_RI         map[_IF_Name]_RI_Name
-	Hostname      _FQDN
-	Domain_Name   _FQDN
-	Version       string
-	Major         float64
-	IKE_GCM       bool
-	Manufacturer  string
-	Model         string
-	Serial        string
-	Root          _Secret
-	GT_List       []_GT_Name
-	VI            map[_VI_ID]pDB_Peer_VI
-	RM_ID         *_RM_ID
-	IPPrefix_List map[netip.Prefix]bool // true = public
+	ASN              _ASN
+	ASN_PName        _ASN_PName
+	Router_ID        netip.Addr
+	AB               map[_AB_Name]_Security_AB
+	Application      map[_Application_Name][]_Security_Application_Term
+	SZ               map[_SZ_Name]pDB_Peer_Security_Zone_SZ
+	NAT_Source       []_Security_NAT_Source
+	NAT_Destination  []_Security_NAT_Destination
+	NAT_Static       []_Security_NAT_Static
+	Policies_From_To []_Security_Policies_From_To
+	Policies_Global  []_Security_Policies_Policy
+	IFM              map[_IFM_Name]pDB_Peer_IFM
+	RI               map[_RI_Name]pDB_Peer_RI
+	IF_RI            map[_IF_Name]_RI_Name
+	Hostname         _FQDN
+	Domain_Name      _FQDN
+	Version          string
+	Major            float64
+	IKE_GCM          bool
+	Manufacturer     string
+	Model            string
+	Serial           string
+	Root             _Secret
+	GT_List          []_GT_Name
+	VI               map[_VI_ID]pDB_Peer_VI
+	RM_ID            *_RM_ID
+	IPPrefix_List    map[netip.Prefix]bool // true = public
+	_service_attributes
+}
+type pDB_Peer_Security_Zone_SZ struct {
+	Screen _Screen_Name
 	_service_attributes
 }
 type pDB_Peer_RI struct {

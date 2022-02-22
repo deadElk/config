@@ -81,24 +81,26 @@ func db_parse(xml_db *sDB) (err error) {
 			continue
 		}
 		var (
-			v_IP_List  = make(map[netip.Prefix]bool)
-			vASN_PName = value.ASN._Sanitize()
-			vHostname  = func() (outbound _FQDN) {
+			_v_AB_list          = make(map[_AB_Name]bool)
+			_v_Application_list = make(map[_Application_Name]bool)
+			v_IP_List           = make(map[netip.Prefix]bool)
+			v_ASN_PName         = value.ASN._Sanitize()
+			v_Hostname          = func() (outbound _FQDN) {
 				switch len(value.Hostname) == 0 {
 				case true:
-					outbound = _FQDN("gw_as" + vASN_PName.String())
+					outbound = _FQDN("gw_as" + v_ASN_PName.String())
 					log.Warnf("peer ASN '%v' hostname not defined; ACTION: use '%v'.", value.ASN, outbound)
 					return
 				}
 				return value.Hostname
 			}()
-			vGT_List = func() (outbound []_GT_Name) {
+			v_GT_List = func() (outbound []_GT_Name) {
 				var (
 					interim string
 				)
 				switch len(value.GT_List) == 0 {
 				case true:
-					interim = xml_db.GT_List + ",AS" + vASN_PName.String()
+					interim = xml_db.GT_List + ",AS" + v_ASN_PName.String()
 				default:
 					interim = value.GT_List
 				}
@@ -122,15 +124,15 @@ func db_parse(xml_db *sDB) (err error) {
 				}
 				return
 			}()
-			vMajor = func() float64 {
+			v_Major = func() float64 {
 				var (
 					interim = re_caps.Split(value.Version, -1)
 				)
 				return parse_interface(strconv.ParseFloat(interim[0], 64)).(float64)
 			}()
-			vRouter_ID netip.Addr
-			vIF_RI     = make(map[_IF_Name]_RI_Name)
-			vRI        = func() (outbound map[_RI_Name]pDB_Peer_RI) {
+			v_Router_ID netip.Addr
+			v_IF_RI     = make(map[_IF_Name]_RI_Name)
+			v_RI        = func() (outbound map[_RI_Name]pDB_Peer_RI) {
 				var (
 					vIP_IF = make(map[netip.Addr]_IF_Name)
 				)
@@ -208,12 +210,12 @@ func db_parse(xml_db *sDB) (err error) {
 						IF: func() (if_o map[_IF_Name]pDB_Peer_RI_IF) {
 							if_o = make(map[_IF_Name]pDB_Peer_RI_IF)
 							for _, if_v := range ri_v.IF {
-								switch if_ri_v, flag := vIF_RI[if_v.Name]; flag {
+								switch if_ri_v, flag := v_IF_RI[if_v.Name]; flag {
 								case true:
 									log.Warnf("peer ASN '%v', RI '%v', IF '%v' already defined in RI '%v'; ACTION: skip.", value.ASN, ri_v.Name, if_v.Name, if_ri_v)
 									continue
 								}
-								vIF_RI[if_v.Name] = ri_v.Name
+								v_IF_RI[if_v.Name] = ri_v.Name
 								var (
 									if_o_Major string
 									if_o_Minor string
@@ -248,11 +250,11 @@ func db_parse(xml_db *sDB) (err error) {
 											vIP_IF[ip_i] = if_v.Name
 											switch ip_v.Router_ID {
 											case true:
-												switch vRouter_ID.IsValid() {
+												switch v_Router_ID.IsValid() {
 												case false:
-													vRouter_ID = ip_i
+													v_Router_ID = ip_i
 												default:
-													log.Warnf("peer ASN '%v', router ID '%v' already defined; ACTION: skip.", value.ASN, vRouter_ID)
+													log.Warnf("peer ASN '%v', router ID '%v' already defined; ACTION: skip.", value.ASN, v_Router_ID)
 												}
 											}
 											_AB_Address_add(true, false, "OUTTER_LIST", ip_v.IPPrefix.Addr(), ip_v.NAT)
@@ -360,26 +362,61 @@ func db_parse(xml_db *sDB) (err error) {
 				return value.Domain_Name
 			}()
 		)
+		for _, b := range value.AB {
+			switch b.Set {
+			case true:
+				_v_AB_list[b.Name] = _v_AB_list[b.Name] || _AB_Set_create(&b.Name)
+			}
+			for _, d := range b.Address {
+				_v_AB_list[b.Name] = _v_AB_list[b.Name] || _AB_Address_add(true, true, b.Name, d.AB, d.FQDN, d.IPPrefix)
+			}
+		}
+		for _, b := range value.Application {
+			_v_Application_list[b.Name] = _v_Application_list[b.Name] || _Application_create(&b.Name, &b.Term)
+		}
+		var (
+			v_AB = func() (outbound map[_AB_Name]_Security_AB) {
+				outbound = make(map[_AB_Name]_Security_AB)
+				for h, flag := range _v_AB_list {
+					switch flag {
+					case true:
+						outbound[h] = pdb_ab[h]
+					}
+				}
+				return
+			}()
+			v_Application = func() (outbound map[_Application_Name][]_Security_Application_Term) {
+				outbound = make(map[_Application_Name][]_Security_Application_Term)
+				for h, flag := range _v_Application_list {
+					switch flag {
+					case true:
+						outbound[h] = pdb_appl[h]
+					}
+				}
+				return
+			}()
+		)
 		pdb_peer[value.ASN] = pDB_Peer{
 			ASN:                 value.ASN,
-			ASN_PName:           vASN_PName,
-			Router_ID:           vRouter_ID,
+			ASN_PName:           v_ASN_PName,
+			Router_ID:           v_Router_ID,
+			AB:                  v_AB,
+			Application:         v_Application,
 			IFM:                 v_IFM,
-			RI:                  vRI,
-			IF_RI:               vIF_RI,
-			Hostname:            vHostname,
+			RI:                  v_RI,
+			IF_RI:               v_IF_RI,
+			Hostname:            v_Hostname,
 			Domain_Name:         v_Domain_Name,
 			Version:             value.Version,
-			Major:               vMajor,
-			IKE_GCM:             vMajor >= 12.3,
+			Major:               v_Major,
+			IKE_GCM:             v_Major >= 12.3,
 			Manufacturer:        value.Manufacturer,
 			Model:               value.Model,
 			Serial:              value.Serial,
-			Root:                value.Root._Sanitize(16, "peer AS"+vASN_PName.String()+": root password is not acceptable"),
-			GT_List:             vGT_List,
+			Root:                value.Root._Sanitize(16, "peer AS"+v_ASN_PName.String()+": root password is not acceptable"),
+			GT_List:             v_GT_List,
 			VI:                  map[_VI_ID]pDB_Peer_VI{},
 			RM_ID:               &rm_id,
-			AB:                  pdb_ab,
 			IPPrefix_List:       v_IP_List,
 			_service_attributes: value._service_attributes,
 		}
