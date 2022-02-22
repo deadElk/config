@@ -82,7 +82,7 @@ type _Security_Then struct {
 	Deny            bool       `xml:"deny,attr"`
 	_service_attributes
 }
-type _Security_Policies_From_To struct {
+type _Security_Policies_Exact struct {
 	From   []_SZ_Name                  `xml:"From"`
 	To     []_SZ_Name                  `xml:"To"`
 	Policy []_Security_Policies_Policy `xml:"Policy"`
@@ -148,25 +148,25 @@ type sDB struct {
 	_service_attributes
 }
 type sDB_Peer struct {
-	ASN              _ASN                         `xml:"ASN,attr"`
-	IFM              []sDB_Peer_IFM               `xml:"IFM"`
-	RI               []sDB_Peer_RI                `xml:"RI"`
-	Hostname         _FQDN                        `xml:"hostname,attr"`
-	Domain_Name      _FQDN                        `xml:"domain_name,attr"`
-	Version          string                       `xml:"version,attr"`
-	Manufacturer     string                       `xml:"manufacturer,attr"`
-	Model            string                       `xml:"model,attr"`
-	Serial           string                       `xml:"serial,attr"`
-	Root             _Secret                      `xml:"root,attr"`
-	GT_List          string                       `xml:"GT_list,attr"`
-	SZ               []sDB_Peer_Security_Zone_SZ  `xml:"Security>Zone>SZ"`
-	NAT_Source       []_Security_NAT_Source       `xml:"Security>NAT>Source"`
-	NAT_Destination  []_Security_NAT_Destination  `xml:"Security>NAT>Destination"`
-	NAT_Static       []_Security_NAT_Static       `xml:"Security>NAT>Static"`
-	Policies_From_To []_Security_Policies_From_To `xml:"Security>Policies>From_To"`
-	Policies_Global  []_Security_Policies_Policy  `xml:"Security>Policies>Global"`
-	AB               []sDB_AB                     `xml:"Security>AB"`
-	Application      []sDB_Application            `xml:"Security>Application"`
+	ASN             _ASN                        `xml:"ASN,attr"`
+	IFM             []sDB_Peer_IFM              `xml:"IFM"`
+	RI              []sDB_Peer_RI               `xml:"RI"`
+	Hostname        _FQDN                       `xml:"hostname,attr"`
+	Domain_Name     _FQDN                       `xml:"domain_name,attr"`
+	Version         string                      `xml:"version,attr"`
+	Manufacturer    string                      `xml:"manufacturer,attr"`
+	Model           string                      `xml:"model,attr"`
+	Serial          string                      `xml:"serial,attr"`
+	Root            _Secret                     `xml:"root,attr"`
+	GT_List         string                      `xml:"GT_list,attr"`
+	SZ              []sDB_Peer_Security_Zone_SZ `xml:"Security>Zone>SZ"`
+	NAT_Source      []_Security_NAT_Source      `xml:"Security>NAT>Source"`
+	NAT_Destination []_Security_NAT_Destination `xml:"Security>NAT>Destination"`
+	NAT_Static      []_Security_NAT_Static      `xml:"Security>NAT>Static"`
+	Policies_Exact  []_Security_Policies_Exact  `xml:"Security>Policies>Exact"`
+	Policies_Global []_Security_Policies_Policy `xml:"Security>Policies>Global"`
+	AB              []sDB_AB                    `xml:"Security>AB"`
+	Application     []sDB_Application           `xml:"Security>Application"`
 	_service_attributes
 }
 type sDB_AB struct {
@@ -263,33 +263,33 @@ type sDB_VI_Peer struct {
 }
 
 type pDB_Peer struct {
-	ASN              _ASN
-	ASN_PName        _ASN_PName
-	Router_ID        netip.Addr
-	AB               map[_AB_Name]_Security_AB
-	Application      map[_Application_Name][]_Security_Application_Term
-	SZ               map[_SZ_Name]pDB_Peer_Security_Zone_SZ
-	NAT_Source       []_Security_NAT_Source
-	NAT_Destination  []_Security_NAT_Destination
-	NAT_Static       []_Security_NAT_Static
-	Policies_From_To []_Security_Policies_From_To
-	Policies_Global  []_Security_Policies_Policy
-	IFM              map[_IFM_Name]pDB_Peer_IFM
-	RI               map[_RI_Name]pDB_Peer_RI
-	IF_RI            map[_IF_Name]_RI_Name
-	Hostname         _FQDN
-	Domain_Name      _FQDN
-	Version          string
-	Major            float64
-	IKE_GCM          bool
-	Manufacturer     string
-	Model            string
-	Serial           string
-	Root             _Secret
-	GT_List          []_GT_Name
-	VI               map[_VI_ID]pDB_Peer_VI
-	RM_ID            *_RM_ID
-	IPPrefix_List    map[netip.Prefix]bool // true = public
+	ASN             _ASN
+	ASN_PName       _ASN_PName
+	Router_ID       netip.Addr
+	AB              map[_AB_Name]_Security_AB
+	Application     map[_Application_Name][]_Security_Application_Term
+	SZ              map[_SZ_Name]pDB_Peer_Security_Zone_SZ
+	NAT_Source      []_Security_NAT_Source
+	NAT_Destination []_Security_NAT_Destination
+	NAT_Static      []_Security_NAT_Static
+	Policies_Exact  []_Security_Policies_Exact
+	Policies_Global []_Security_Policies_Policy
+	IFM             map[_IFM_Name]pDB_Peer_IFM
+	RI              map[_RI_Name]pDB_Peer_RI
+	IF_RI           map[_IF_Name]_RI_Name
+	Hostname        _FQDN
+	Domain_Name     _FQDN
+	Version         string
+	Major           float64
+	IKE_GCM         bool
+	Manufacturer    string
+	Model           string
+	Serial          string
+	Root            _Secret
+	GT_List         []_GT_Name
+	VI              map[_VI_ID]pDB_Peer_VI
+	RM_ID           *_RM_ID
+	IPPrefix_List   map[netip.Prefix]bool // true = public
 	_service_attributes
 }
 type pDB_Peer_Security_Zone_SZ struct {

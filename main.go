@@ -391,7 +391,39 @@ func db_parse(xml_db *sDB) (err error) {
 		for _, b := range value.Application {
 			_v_Application_list[b.Name] = _v_Application_list[b.Name] || _Application_create(b.Name, b.Term)
 		}
+		for _, b := range value.NAT_Source {
+			for _, d := range b.Rule_Set {
+				for _, f := range d.Rule {
+					for _, h := range f.Match {
+						switch len(h.AB) == 0 {
+						case false:
+							_v_AB_list[h.AB] = true
+						}
+					}
+				}
+			}
+		}
+		for _, b := range value.Policies_Exact {
+			for _, d := range b.Policy {
+				for _, f := range d.Match {
+					switch len(f.AB) == 0 {
+					case false:
+						_v_AB_list[f.AB] = true
+					}
+				}
+			}
+		}
+		for a, b := range _v_AB_list {
+			switch b && pdb_ab[a].Type == _AB_Type_set {
+			case true:
+			}
+		}
 		var (
+			// v_NAT_Source      = value.NAT_Source
+			// v_NAT_Destination = value.NAT_Destination
+			// v_NAT_Static      = value.NAT_Static
+			// v_Policies_Exact  = value.Policies_Exact
+			// v_Policies_Global = value.Policies_Global
 			v_AB = func() (outbound map[_AB_Name]_Security_AB) {
 				outbound = make(map[_AB_Name]_Security_AB)
 				for h, flag := range _v_AB_list {
@@ -420,6 +452,11 @@ func db_parse(xml_db *sDB) (err error) {
 			AB:                  v_AB,
 			Application:         v_Application,
 			SZ:                  v_SZ,
+			NAT_Source:          value.NAT_Source,
+			NAT_Destination:     value.NAT_Destination,
+			NAT_Static:          value.NAT_Static,
+			Policies_Exact:      value.Policies_Exact,
+			Policies_Global:     value.Policies_Global,
 			IFM:                 v_IFM,
 			RI:                  v_RI,
 			IF_RI:               v_IF_RI,
@@ -668,7 +705,6 @@ func config_upload() (err error) {
 		ordered []int
 	)
 	for index, value := range config {
-		log.Errorf("%v", pdb_peer[index].SZ)
 		ordered = append(ordered, int(index))
 		var (
 			fn = fs_path["upload"] + "./AS" + index.String()
