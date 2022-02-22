@@ -174,3 +174,6 @@ func (inbound _AB_Name) String() string {
 func (inbound _FQDN) String() string {
 	return string(inbound)
 }
+func (inbound _RI_Name) _SZ_Name() _SZ_Name {
+	return _SZ_Name(inbound.String())
+}

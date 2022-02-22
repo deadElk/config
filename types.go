@@ -294,6 +294,12 @@ type pDB_Peer struct {
 }
 type pDB_Peer_Security_Zone_SZ struct {
 	Screen _Screen_Name
+	IF     map[_IF_Name]pDB_Peer_Security_Zone_SZ_IF
+	_Host_Inbound_Traffic
+	_service_attributes
+}
+type pDB_Peer_Security_Zone_SZ_IF struct {
+	_Host_Inbound_Traffic
 	_service_attributes
 }
 type pDB_Peer_RI struct {

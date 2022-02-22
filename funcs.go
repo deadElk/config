@@ -169,30 +169,77 @@ func _Templates_read() {
 	}
 }
 
-func _Application_create(ap_name *_Application_Name, term *[]_Security_Application_Term) (ok bool) {
-	switch _, flag := pdb_appl[*ap_name]; flag {
+func _Application_create(ap_name _Application_Name, term []_Security_Application_Term) (ok bool) {
+	switch _, flag := pdb_appl[ap_name]; flag {
 	case true:
-		log.Warnf("Application '%v' already exist; ACTION: skip.", *ap_name)
+		log.Warnf("Application '%v' already exist; ACTION: skip.", ap_name)
 	}
 	var (
 		c []_Security_Application_Term
 	)
-	for _, b := range *term {
+	for _, b := range term {
 		c = append(c, b)
 	}
 	ok = true
-	pdb_appl[*ap_name] = c
+	pdb_appl[ap_name] = c
 	return
 }
 
-func _AB_Set_create(inbound *_AB_Name) (ok bool) {
-	switch _, flag := pdb_ab[*inbound]; flag {
+func _SZ_create(outbound *map[_SZ_Name]pDB_Peer_Security_Zone_SZ, inbound ...interface{}) (ok bool) {
+	switch b := (inbound[0]).(type) {
+	case sDB_Peer_Security_Zone_SZ:
+		switch _, flag := (*outbound)[b.Name]; flag {
+		case true:
+			log.Warnf("SZ '%v' already defined; ACTION: skip.", b.Name)
+			return
+		}
+		(*outbound)[b.Name] = pDB_Peer_Security_Zone_SZ{
+			Screen:                b.Screen,
+			IF:                    map[_IF_Name]pDB_Peer_Security_Zone_SZ_IF{},
+			_Host_Inbound_Traffic: _Host_Inbound_Traffic{},
+			_service_attributes:   b._service_attributes,
+		}
+		return true
+	case _SZ_Name:
+		switch _, flag := (*outbound)[b]; flag {
+		case true:
+			log.Warnf("SZ '%v' already defined; ACTION: skip.", b)
+			return
+		}
+		switch d := (inbound[1]).(type) {
+		case pDB_Peer_Security_Zone_SZ:
+			(*outbound)[b] = pDB_Peer_Security_Zone_SZ{
+				Screen:                d.Screen,
+				IF:                    d.IF,
+				_Host_Inbound_Traffic: d._Host_Inbound_Traffic,
+				_service_attributes:   d._service_attributes,
+			}
+			return true
+			// case nil:
+			// 	(*outbound)[b] = pDB_Peer_Security_Zone_SZ{
+			// 		Screen:                "",
+			// 		IF:                    map[_IF_Name]pDB_Peer_Security_Zone_SZ_IF{},
+			// 		_Host_Inbound_Traffic: _Host_Inbound_Traffic{},
+			// 		_service_attributes:   _service_attributes{},
+			// 	}
+		}
+	}
+	log.Warnf("don't know what to do with '%+s' and '%+s'; ACTION: skip.", inbound, outbound)
+	return
+}
+func _SZ_add_IF(outbound *pDB_Peer_Security_Zone_SZ, if_index _IF_Name, if_value pDB_Peer_Security_Zone_SZ_IF) (ok bool) {
+	(*outbound).IF[if_index] = if_value
+	return
+}
+
+func _AB_Set_create(inbound _AB_Name) (ok bool) {
+	switch _, flag := pdb_ab[inbound]; flag {
 	case true:
-		log.Warnf("AB '%v' already exist; ACTION: skip.", *inbound)
+		log.Warnf("AB '%v' already exist; ACTION: skip.", inbound)
 		return
 	}
 	ok = true
-	pdb_ab[*inbound] = _Security_AB{
+	pdb_ab[inbound] = _Security_AB{
 		Type:     _AB_Type_set,
 		AB:       map[_AB_Name]bool{},
 		FQDN:     map[_FQDN]bool{},

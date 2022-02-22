@@ -65,27 +65,35 @@ func db_parse(xml_db *sDB) (err error) {
 	for _, b := range xml_db.AB {
 		switch b.Set {
 		case true:
-			_AB_Set_create(&b.Name)
+			_AB_Set_create(b.Name)
 		}
 		for _, d := range b.Address {
 			_AB_Address_add(true, true, b.Name, d.AB, d.FQDN, d.IPPrefix)
 		}
 	}
 	for _, b := range xml_db.Application {
-		_Application_create(&b.Name, &b.Term)
+		_Application_create(b.Name, b.Term)
 	}
 	for _, value := range xml_db.Peer {
-		log.Errorf("%v", value.SZ)
-		log.Errorf("%v", value.NAT_Source)
-		log.Errorf("%v", value.NAT_Destination)
-		log.Errorf("%v", value.NAT_Static)
-		log.Errorf("%v", value.Policies_From_To)
-		log.Errorf("%v", value.Policies_Global)
 		switch _, flag := pdb_peer[value.ASN]; flag {
 		case true:
 			log.Warnf("peer ASN '%v' already exist; ACTION: skip.", value.ASN)
 			continue
 		}
+		var (
+			v_SZ = make(map[_SZ_Name]pDB_Peer_Security_Zone_SZ)
+		)
+		for _, b := range value.SZ {
+			_SZ_create(&v_SZ, &b)
+		}
+		log.Errorf("%v", v_SZ)
+
+		// log.Errorf("%v", value.NAT_Source)
+		// log.Errorf("%v", value.NAT_Destination)
+		// log.Errorf("%v", value.NAT_Static)
+		// log.Errorf("%v", value.Policies_From_To)
+		// log.Errorf("%v", value.Policies_Global)
+
 		var (
 			_v_AB_list          = make(map[_AB_Name]bool)
 			_v_Application_list = make(map[_Application_Name]bool)
@@ -144,6 +152,7 @@ func db_parse(xml_db *sDB) (err error) {
 				)
 				outbound = make(map[_RI_Name]pDB_Peer_RI)
 				for _, ri_v := range value.RI {
+					_SZ_create(&v_SZ, ri_v.Name._SZ_Name(), pDB_Peer_Security_Zone_SZ{})
 					outbound[ri_v.Name] = pDB_Peer_RI{
 						RT: func() (rt_o map[netip.Prefix]pDB_Peer_RI_RT) {
 							rt_o = make(map[netip.Prefix]pDB_Peer_RI_RT)
@@ -306,7 +315,10 @@ func db_parse(xml_db *sDB) (err error) {
 										}
 										return
 									}(),
-									Disable: if_v.Disable,
+									Disable:             if_v.Disable,
+									_service_attributes: if_v._service_attributes,
+								}
+								v_SZ[ri_v.Name._SZ_Name()].IF[if_v.Name] = pDB_Peer_Security_Zone_SZ_IF{
 									_Host_Inbound_Traffic: _Host_Inbound_Traffic{
 										Services: map[_Service]bool{
 											_service_all:         false,
@@ -326,7 +338,7 @@ func db_parse(xml_db *sDB) (err error) {
 											_protocol_bgp: false,
 										},
 									},
-									_service_attributes: if_v._service_attributes,
+									_service_attributes: _service_attributes{},
 								}
 							}
 							return
@@ -371,14 +383,14 @@ func db_parse(xml_db *sDB) (err error) {
 		for _, b := range value.AB {
 			switch b.Set {
 			case true:
-				_v_AB_list[b.Name] = _v_AB_list[b.Name] || _AB_Set_create(&b.Name)
+				_v_AB_list[b.Name] = _v_AB_list[b.Name] || _AB_Set_create(b.Name)
 			}
 			for _, d := range b.Address {
 				_v_AB_list[b.Name] = _v_AB_list[b.Name] || _AB_Address_add(true, true, b.Name, d.AB, d.FQDN, d.IPPrefix)
 			}
 		}
 		for _, b := range value.Application {
-			_v_Application_list[b.Name] = _v_Application_list[b.Name] || _Application_create(&b.Name, &b.Term)
+			_v_Application_list[b.Name] = _v_Application_list[b.Name] || _Application_create(b.Name, b.Term)
 		}
 		var (
 			v_AB = func() (outbound map[_AB_Name]_Security_AB) {
