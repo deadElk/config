@@ -88,18 +88,12 @@ func db_parse(xml_db *sDB) (err error) {
 			_SZ_create(&v_SZ, "", b)
 		}
 
-		// log.Errorf("%v", value.NAT_Source)
-		// log.Errorf("%v", value.NAT_Destination)
-		// log.Errorf("%v", value.NAT_Static)
-		// log.Errorf("%v", value.Policies_From_To)
-		// log.Errorf("%v", value.Policies_Global)
-
 		var (
-			_v_AB_list          = make(map[_AB_Name]bool)
-			_v_Application_list = make(map[_Application_Name]bool)
-			v_IP_List           = make(map[netip.Prefix]bool)
-			v_ASN_PName         = value.ASN._Sanitize()
-			v_Hostname          = func() (outbound _FQDN) {
+			// _v_AB_list          = make(map[_AB_Name]bool)
+			// _v_Application_list = make(map[_Application_Name]bool)
+			v_IP_List   = make(map[netip.Prefix]bool)
+			v_ASN_PName = value.ASN._Sanitize()
+			v_Hostname  = func() (outbound _FQDN) {
 				switch len(value.Hostname) == 0 {
 				case true:
 					outbound = _FQDN("gw_as" + v_ASN_PName.String())
@@ -383,73 +377,80 @@ func db_parse(xml_db *sDB) (err error) {
 		for _, b := range value.AB {
 			switch b.Set {
 			case true:
-				switch _AB_Set_create(b.Name) {
-				case true:
-					_v_AB_list[b.Name] = true
-				}
+				_AB_Set_create(b.Name)
 			}
 			for _, d := range b.Address {
-				switch _AB_Address_add(true, true, b.Name, d.AB, d.FQDN, d.IPPrefix) {
-				case true:
-					_v_AB_list[b.Name] = true
-				}
+				_AB_Address_add(true, true, b.Name, d.AB, d.FQDN, d.IPPrefix)
 			}
 		}
 		for _, b := range value.Application {
-			switch _Application_create(b.Name, b.Term) {
-			case true:
-				_v_Application_list[b.Name] = true
-			}
+			_Application_create(b.Name, b.Term)
 		}
-		for _, b := range value.NAT_Source {
-			for _, d := range b.Rule_Set {
-				for _, f := range d.Rule {
-					for _, h := range f.Match {
-						switch len(h.AB) == 0 {
-						case false:
-							_v_AB_list[h.AB] = true
-						}
-					}
-				}
-			}
-		}
-		for _, b := range value.Policies_Exact {
-			for _, d := range b.Policy {
-				for _, f := range d.Match {
-					switch len(f.AB) == 0 {
-					case false:
-						_v_AB_list[f.AB] = true
-					}
-				}
-			}
-		}
-		var (
-			// v_NAT_Source      = value.NAT_Source
-			// v_NAT_Destination = value.NAT_Destination
-			// v_NAT_Static      = value.NAT_Static
-			// v_Policies_Exact  = value.Policies_Exact
-			// v_Policies_Global = value.Policies_Global
-			v_AB = func() (outbound map[_AB_Name]_Security_AB) {
-				outbound = make(map[_AB_Name]_Security_AB)
-				for h := range _AB_rparse(_v_AB_list) {
-					outbound[h] = pdb_ab[h]
-				}
-				return
-			}()
-			v_Application = func() (outbound map[_Application_Name][]_Security_Application_Term) {
-				outbound = make(map[_Application_Name][]_Security_Application_Term)
-				for h := range _v_Application_list {
-					outbound[h] = pdb_appl[h]
-				}
-				return
-			}()
-		)
+		// for _, b := range value.AB {
+		// 	switch b.Set {
+		// 	case true:
+		// 		switch _AB_Set_create(b.Name) {
+		// 		case true:
+		// 			_v_AB_list[b.Name] = true
+		// 		}
+		// 	}
+		// 	for _, d := range b.Address {
+		// 		switch _AB_Address_add(true, true, b.Name, d.AB, d.FQDN, d.IPPrefix) {
+		// 		case true:
+		// 			_v_AB_list[b.Name] = true
+		// 		}
+		// 	}
+		// }
+		// for _, b := range value.Application {
+		// 	switch _Application_create(b.Name, b.Term) {
+		// 	case true:
+		// 		_v_Application_list[b.Name] = true
+		// 	}
+		// }
+		// for _, b := range value.NAT_Source {
+		// 	for _, d := range b.Rule_Set {
+		// 		for _, f := range d.Rule {
+		// 			for _, h := range f.Match {
+		// 				switch len(h.AB) == 0 {
+		// 				case false:
+		// 					_v_AB_list[h.AB] = true
+		// 				}
+		// 			}
+		// 		}
+		// 	}
+		// }
+		// for _, b := range value.Policies_Exact {
+		// 	for _, d := range b.Policy {
+		// 		for _, f := range d.Match {
+		// 			switch len(f.AB) == 0 {
+		// 			case false:
+		// 				_v_AB_list[f.AB] = true
+		// 			}
+		// 		}
+		// 	}
+		// }
+		// var (
+		// 	v_AB = func() (outbound map[_AB_Name]_Security_AB) {
+		// 		outbound = make(map[_AB_Name]_Security_AB)
+		// 		for h := range _AB_rparse(_v_AB_list) {
+		// 			outbound[h] = pdb_ab[h]
+		// 		}
+		// 		return
+		// 	}()
+		// 	v_Application = func() (outbound map[_Application_Name][]_Security_Application_Term) {
+		// 		outbound = make(map[_Application_Name][]_Security_Application_Term)
+		// 		for h := range _v_Application_list {
+		// 			outbound[h] = pdb_appl[h]
+		// 		}
+		// 		return
+		// 	}()
+		// )
 		pdb_peer[value.ASN] = pDB_Peer{
 			ASN:                 value.ASN,
 			ASN_PName:           v_ASN_PName,
 			Router_ID:           v_Router_ID,
-			AB:                  v_AB,
-			Application:         v_Application,
+			AB:                  map[_AB_Name]_Security_AB{},
+			Application:         map[_Application_Name][]_Security_Application_Term{},
 			SZ:                  v_SZ,
 			NAT_Source:          value.NAT_Source,
 			NAT_Destination:     value.NAT_Destination,
@@ -473,6 +474,53 @@ func db_parse(xml_db *sDB) (err error) {
 			RM_ID:               &rm_id,
 			IPPrefix_List:       v_IP_List,
 			_service_attributes: value._service_attributes,
+		}
+	}
+
+	for _, value := range pdb_peer {
+
+		var (
+			_v_AB_list          = make(map[_AB_Name]bool)
+			_v_Application_list = make(map[_Application_Name]bool)
+		)
+		for _, b := range value.NAT_Source {
+			for _, d := range b.Rule_Set {
+				for _, f := range d.Rule {
+					for _, h := range f.Match {
+						switch len(h.AB) == 0 {
+						case false:
+							_v_AB_list[h.AB] = true
+						}
+					}
+				}
+			}
+		}
+		for _, b := range value.Policies_Exact {
+			for _, d := range b.Policy {
+				for _, f := range d.Match {
+					switch len(f.AB) == 0 {
+					case false:
+						_v_AB_list[f.AB] = true
+					}
+				}
+			}
+		}
+		for _, b := range value.Policies_Global {
+			for _, f := range b.Match {
+				switch len(f.AB) == 0 {
+				case false:
+					_v_AB_list[f.AB] = true
+				}
+			}
+		}
+
+		_v_AB_list = _AB_rparse(_v_AB_list)
+
+		for h := range _v_AB_list {
+			value.AB[h] = pdb_ab[h]
+		}
+		for h := range _v_Application_list {
+			value.Application[h] = pdb_appl[h]
 		}
 	}
 

@@ -206,7 +206,6 @@ func _SZ_create(outbound *map[_SZ_Name]pDB_Peer_Security_Zone_SZ, sz_name _SZ_Na
 			log.Warnf("SZ '%v' already defined; ACTION: skip.", sz_name)
 			return
 		}
-		// (*outbound)[sz_name] = value
 		(*outbound)[sz_name] = pDB_Peer_Security_Zone_SZ{
 			Screen:                "",
 			IF:                    map[_IF_Name]pDB_Peer_Security_Zone_SZ_IF{},
