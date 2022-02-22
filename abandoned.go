@@ -195,3 +195,20 @@ package main
 // 		log.Warnf("%v: no way to send a message; ACTION: retry later.", worker.Description)
 // 	}
 // )
+
+/*
+set policy-options prefix-list AS{{.VI_INSIDE_RIGHT_AS}} {{.VI_INSIDE_LEFT_SUBNET}}
+set policy-options policy-statement pass_AS{{.VI_INSIDE_RIGHT_AS}} term ACCEPT from prefix-list-filter AS{{.VI_INSIDE_RIGHT_AS}} orlonger
+set policy-options policy-statement pass_AS{{.VI_INSIDE_RIGHT_AS}} term ACCEPT then next policy
+set policy-options policy-statement pass_AS{{.VI_INSIDE_RIGHT_AS}} term REJECT then reject
+set protocols bgp group AS4200000000 neighbor {{.VI_INSIDE_RIGHT_IP}} description {{.VI_OUTSIDE_LEFT_RI}}-{{.VI_OUTSIDE_RIGHT_RI}}-{{.VI_OUTSIDE_RIGHT_IF}}
+set protocols bgp group AS4200000000 neighbor {{.VI_INSIDE_RIGHT_IP}} local-address {{.VI_INSIDE_LEFT_IP}}
+set protocols bgp group AS4200000000 neighbor {{.VI_INSIDE_RIGHT_IP}} import filter_DE
+set protocols bgp group AS4200000000 neighbor {{.VI_INSIDE_RIGHT_IP}} import pass_AS{{.VI_INSIDE_RIGHT_AS}}
+set protocols bgp group AS4200000000 neighbor {{.VI_INSIDE_RIGHT_IP}} import import_1Mb
+set protocols bgp group AS4200000000 neighbor {{.VI_INSIDE_RIGHT_IP}} export aggregate
+set protocols bgp group AS4200000000 neighbor {{.VI_INSIDE_RIGHT_IP}} export aggregate_intranet
+set protocols bgp group AS4200000000 neighbor {{.VI_INSIDE_RIGHT_IP}} export filter_DE
+set protocols bgp group AS4200000000 neighbor {{.VI_INSIDE_RIGHT_IP}} export export_1Mb
+set protocols bgp group AS4200000000 neighbor {{.VI_INSIDE_RIGHT_IP}} peer-as {{.VI_INSIDE_RIGHT_AS}}
+*/

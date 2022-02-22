@@ -146,7 +146,10 @@ func db_parse(xml_db *sDB) (err error) {
 				)
 				outbound = make(map[_RI_Name]pDB_Peer_RI)
 				for _, ri_v := range value.RI {
-					_SZ_create(&v_SZ, ri_v.Name._SZ_Name(), pDB_Peer_Security_Zone_SZ{})
+					switch ri_v.Name == _juniper_mgmt_RI {
+					case false:
+						_SZ_create(&v_SZ, ri_v.Name._SZ_Name(), pDB_Peer_Security_Zone_SZ{})
+					}
 					outbound[ri_v.Name] = pDB_Peer_RI{
 						RT: func() (rt_o map[netip.Prefix]pDB_Peer_RI_RT) {
 							rt_o = make(map[netip.Prefix]pDB_Peer_RI_RT)
@@ -389,65 +392,6 @@ func db_parse(xml_db *sDB) (err error) {
 		for _, b := range value.Application {
 			_Application_create(b.Name, b.Term)
 		}
-		// for _, b := range value.AB {
-		// 	switch b.Set {
-		// 	case true:
-		// 		switch _AB_Set_create(b.Name) {
-		// 		case true:
-		// 			_v_AB_list[b.Name] = true
-		// 		}
-		// 	}
-		// 	for _, d := range b.Address {
-		// 		switch _AB_Address_add(true, true, b.Name, d.AB, d.FQDN, d.IPPrefix) {
-		// 		case true:
-		// 			_v_AB_list[b.Name] = true
-		// 		}
-		// 	}
-		// }
-		// for _, b := range value.Application {
-		// 	switch _Application_create(b.Name, b.Term) {
-		// 	case true:
-		// 		_v_Application_list[b.Name] = true
-		// 	}
-		// }
-		// for _, b := range value.NAT_Source {
-		// 	for _, d := range b.Rule_Set {
-		// 		for _, f := range d.Rule {
-		// 			for _, h := range f.Match {
-		// 				switch len(h.AB) == 0 {
-		// 				case false:
-		// 					_v_AB_list[h.AB] = true
-		// 				}
-		// 			}
-		// 		}
-		// 	}
-		// }
-		// for _, b := range value.Policies_Exact {
-		// 	for _, d := range b.Policy {
-		// 		for _, f := range d.Match {
-		// 			switch len(f.AB) == 0 {
-		// 			case false:
-		// 				_v_AB_list[f.AB] = true
-		// 			}
-		// 		}
-		// 	}
-		// }
-		// var (
-		// 	v_AB = func() (outbound map[_AB_Name]_Security_AB) {
-		// 		outbound = make(map[_AB_Name]_Security_AB)
-		// 		for h := range _AB_rparse(_v_AB_list) {
-		// 			outbound[h] = pdb_ab[h]
-		// 		}
-		// 		return
-		// 	}()
-		// 	v_Application = func() (outbound map[_Application_Name][]_Security_Application_Term) {
-		// 		outbound = make(map[_Application_Name][]_Security_Application_Term)
-		// 		for h := range _v_Application_list {
-		// 			outbound[h] = pdb_appl[h]
-		// 		}
-		// 		return
-		// 	}()
-		// )
 		pdb_peer[value.ASN] = pDB_Peer{
 			ASN:                 value.ASN,
 			ASN_PName:           v_ASN_PName,
@@ -625,7 +569,7 @@ func db_parse(xml_db *sDB) (err error) {
 					v_No_NAT = false
 				}
 				pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].RI._SZ_Name()].IF[value.Peer[peer_index].IF].Services[_service_ike] = true
-				pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].RI._SZ_Name()].IF[_IF_Name(v_Type.String()+"0."+value.ID.String())] = pDB_Peer_Security_Zone_SZ_IF{
+				pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].Inner_RI._SZ_Name()].IF[_IF_Name(v_Type.String()+"0."+value.ID.String())] = pDB_Peer_Security_Zone_SZ_IF{
 					_Host_Inbound_Traffic: _Host_Inbound_Traffic{
 						Services: map[_Service]bool{
 							_service_all:         false,
@@ -767,6 +711,7 @@ func config_upload() (err error) {
 		ordered []int
 	)
 	for index, value := range config {
+		// log.Errorf("\n\n%v\n\n", pdb_peer[index].SZ)
 		ordered = append(ordered, int(index))
 		var (
 			fn = fs_path["upload"] + "./AS" + index.String()
