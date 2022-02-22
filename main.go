@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/xml"
 	"errors"
-	"io/fs"
 	"io/ioutil"
 	"net/netip"
 	"os"
@@ -37,15 +36,6 @@ func db_read() (err error) {
 				log_setlevel(&xml_db.Verbosity)
 				set_vi_ipprefix(xml_db.VI_IPPrefix)
 				domain_name = xml_db.Domain_Name
-				// for _, peer := range xml_db.Peer {
-				// 	switch peer.ASN == 4200240062 {
-				// 	case true:
-				// 		log.Infof("'%+v'", peer.Secutiry)
-				// 	}
-				// }
-				// log.Infof("'%+v'", xml_db.AB)
-				// log.Infof("'%+v'", xml_db.Application)
-				// log.Exit(1)
 				switch len(xml_db.Upload_Path) == 0 {
 				case false:
 					fs_path["upload"] = xml_db.Upload_Path
@@ -54,40 +44,7 @@ func db_read() (err error) {
 				case false:
 					fs_path["templates"] = xml_db.Templates_Path
 				}
-				var (
-					dentry []fs.DirEntry
-				)
-				switch dentry, err = os.ReadDir(fs_path["templates"]); err == nil {
-				case true:
-					for _, fentry := range dentry {
-						switch fentry.Type().IsRegular() {
-						case true:
-							var (
-								fsplit = re_dot.Split(fentry.Name(), -1)
-							)
-							switch len(fsplit) < 1 {
-							case false:
-								switch fsplit[len(fsplit)-1] == "tmpl" {
-								case true:
-									var (
-										tname = _GT_Name(fentry.Name()[:len(fentry.Name())-5])
-									)
-									switch data, err = os.ReadFile(fs_path["templates"] + "/" + fentry.Name()); err == nil {
-									case true:
-										switch _, flag := pdb_gt[tname]; flag {
-										case true:
-											log.Warnf("template '%v' already exist; ACTION: skip.", tname)
-											continue
-										}
-										pdb_gt[tname] = pDB_GT{
-											Content: _GT_Content(data)._Sanitize(),
-										}
-									}
-								}
-							}
-						}
-					}
-				}
+				_Templates_read()
 				switch err = db_parse(&xml_db); err == nil {
 				case true:
 					log.Debugf("DB '%v' parsed.", xml_db.XMLName)
@@ -102,10 +59,21 @@ func db_read() (err error) {
 			log.Warnf("file '%v' read error: '%v'; ACTION: skip.", value, err)
 		}
 	}
-	return errors.New("no configuration found")
+	return errors.New("nothing to do")
 }
 func db_parse(xml_db *sDB) (err error) {
-	ab_create_set("OUTTER_LIST")
+	for _, b := range xml_db.AB {
+		switch b.Set {
+		case true:
+			_AB_Set_create(&b.Name)
+		}
+		for _, d := range b.Address {
+			_AB_Address_add(true, true, b.Name, d.AB, d.FQDN, d.IPPrefix)
+		}
+	}
+	for _, b := range xml_db.Application {
+		_Application_create(&b.Name, &b.Term)
+	}
 	for _, value := range xml_db.Peer {
 		switch _, flag := pdb_peer[value.ASN]; flag {
 		case true:
@@ -226,7 +194,7 @@ func db_parse(xml_db *sDB) (err error) {
 												Table:               gw_v.Table,
 												Discard:             gw_v.Discard,
 												Type:                gw_v.Type,
-												Route_Attributes:    gw_v.Route_Attributes,
+												_Route_Attributes:   gw_v._Route_Attributes,
 												_service_attributes: gw_v._service_attributes,
 											}
 										}
@@ -287,7 +255,7 @@ func db_parse(xml_db *sDB) (err error) {
 													log.Warnf("peer ASN '%v', router ID '%v' already defined; ACTION: skip.", value.ASN, vRouter_ID)
 												}
 											}
-											ab_add(true, false, "OUTTER_LIST", ip_v.IPPrefix.Addr(), ip_v.NAT)
+											_AB_Address_add(true, false, "OUTTER_LIST", ip_v.IPPrefix.Addr(), ip_v.NAT)
 											switch {
 											case ip_v.NAT.IsValid() && !ip_v.NAT.IsPrivate():
 												v_IP_List[parse_interface(ip_v.NAT.Prefix(32)).(netip.Prefix)] = true
@@ -321,7 +289,7 @@ func db_parse(xml_db *sDB) (err error) {
 												continue
 											}
 											vIP_IF[parp_i] = if_v.Name
-											ab_add(true, false, "OUTTER_LIST", parp_v.IPPrefix.Addr(), parp_v.NAT)
+											_AB_Address_add(true, false, "OUTTER_LIST", parp_v.IPPrefix.Addr(), parp_v.NAT)
 											parp_o[parp_v.IPPrefix.Addr()] = pDB_Peer_RI_IF_PARP{
 												IPPrefix:            parp_v.IPPrefix,
 												NAT:                 parp_v.NAT,
@@ -331,7 +299,7 @@ func db_parse(xml_db *sDB) (err error) {
 										return
 									}(),
 									Disable: if_v.Disable,
-									Host_Inbound_Traffic: Host_Inbound_Traffic{
+									_Host_Inbound_Traffic: _Host_Inbound_Traffic{
 										Services: map[_Service]bool{
 											_service_all:         false,
 											_service_any_service: false,
@@ -355,9 +323,9 @@ func db_parse(xml_db *sDB) (err error) {
 							}
 							return
 						}(),
-						IP_IF:                vIP_IF,
-						Policy:               ri_v.Policy._Sanitize(),
-						Host_Inbound_Traffic: Host_Inbound_Traffic{},
+						IP_IF:                 vIP_IF,
+						Policy:                ri_v.Policy._Sanitize(),
+						_Host_Inbound_Traffic: _Host_Inbound_Traffic{},
 						_service_attributes: _service_attributes{
 							Reserved: ri_v.Reserved,
 							Description: func() _Description {
@@ -608,25 +576,25 @@ func db_use() (err error) {
 					continue
 				}
 			}
-			var (
-				vGT_name = "AS" + value.ASN_PName.String() + "_GT_Patch"
-				vGT      *template.Template
-				vBuf     bytes.Buffer
-			)
-			switch vGT, err = template.New(vGT_name).Funcs(gt_fm).Parse(value.GT_Patch.String()); err == nil && vGT != nil {
-			// switch vGT, err = template.New("config.tmpl").Funcs(gt_fm).ParseFiles("config.tmpl"); err == nil && vGT != nil {
-			case true:
-				switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
-				case true:
-					config[index] = append(config[index], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
-				default:
-					log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
-					continue
-				}
-			default:
-				log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
-				continue
-			}
+			// var (
+			// 	vGT_name = "AS" + value.ASN_PName.String() + "_GT_Patch"
+			// 	vGT      *template.Template
+			// 	vBuf     bytes.Buffer
+			// )
+			// switch vGT, err = template.New(vGT_name).Funcs(gt_fm).Parse(value.GT_Patch.String()); err == nil && vGT != nil {
+			// // switch vGT, err = template.New("config.tmpl").Funcs(gt_fm).ParseFiles("config.tmpl"); err == nil && vGT != nil {
+			// case true:
+			// 	switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
+			// 	case true:
+			// 		config[index] = append(config[index], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
+			// 	default:
+			// 		log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
+			// 		continue
+			// 	}
+			// default:
+			// 	log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
+			// 	continue
+			// }
 		}
 	}
 	return

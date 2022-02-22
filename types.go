@@ -13,16 +13,22 @@ type _service_attributes struct {
 }
 
 type _AB_Type string
+type _AB_Name string
 type _AB struct {
 	Address  interface{}
 	Type     _AB_Type
 	AB       map[_AB_Name]bool
 	FQDN     map[_FQDN]bool
 	IPPrefix map[netip.Prefix]bool
+	_service_attributes
 }
-type _AB_Name string
-type _Application map[_Application_Name]string
 type _Application_Name string
+type _Application_Term struct {
+	Name             string `xml:"name,attr"`
+	Protocol         string `xml:"protocol,attr"`
+	Destination_Port uint16 `xml:"destination_port,attr"`
+	_service_attributes
+}
 type _ASN uint32
 type _ASN_PName string
 type _Description string
@@ -50,11 +56,11 @@ type _Pool_Name string
 type _Rule_Set_Name string
 type _Rule_Name string
 type _FQDN string
-type Host_Inbound_Traffic struct {
+type _Host_Inbound_Traffic struct {
 	Services  map[_Service]bool  `xml:"service,attr"`
 	Protocols map[_Protocol]bool `xml:"protocol,attr"`
 }
-type Route_Attributes struct {
+type _Route_Attributes struct {
 	QNH        bool `xml:"QNH,attr"`
 	Metric     uint `xml:"metric,attr"`
 	Preference uint `xml:"preference,attr"`
@@ -134,18 +140,18 @@ type sDB struct {
 	_service_attributes
 }
 type sDB_Peer struct {
-	ASN          _ASN                `xml:"ASN,attr"`
-	IFM          []sDB_Peer_IFM      `xml:"IFM"`
-	RI           []sDB_Peer_RI       `xml:"RI"`
-	Hostname     _FQDN               `xml:"hostname,attr"`
-	Domain_Name  _FQDN               `xml:"domain_name,attr"`
-	Version      string              `xml:"version,attr"`
-	Manufacturer string              `xml:"manufacturer,attr"`
-	Model        string              `xml:"model,attr"`
-	Serial       string              `xml:"serial,attr"`
-	Root         _Secret             `xml:"root,attr"`
-	GT_List      string              `xml:"GT_list,attr"`
-	Secutiry     []sDB_Peer_Security `xml:"Security"`
+	ASN          _ASN              `xml:"ASN,attr"`
+	IFM          []sDB_Peer_IFM    `xml:"IFM"`
+	RI           []sDB_Peer_RI     `xml:"RI"`
+	Hostname     _FQDN             `xml:"hostname,attr"`
+	Domain_Name  _FQDN             `xml:"domain_name,attr"`
+	Version      string            `xml:"version,attr"`
+	Manufacturer string            `xml:"manufacturer,attr"`
+	Model        string            `xml:"model,attr"`
+	Serial       string            `xml:"serial,attr"`
+	Root         _Secret           `xml:"root,attr"`
+	GT_List      string            `xml:"GT_list,attr"`
+	Security     sDB_Peer_Security `xml:"Security"`
 	_service_attributes
 }
 type sDB_Peer_Security struct {
@@ -169,14 +175,8 @@ type sDB_AB_Address struct {
 	_service_attributes
 }
 type sDB_Application struct {
-	Name _Application_Name      `xml:"name,attr"`
-	Term []sDB_Application_Term `xml:"Term"`
-	_service_attributes
-}
-type sDB_Application_Term struct {
-	Name             string `xml:"name,attr"`
-	Protocol         string `xml:"protocol,attr"`
-	Destination_Port uint16 `xml:"destination_port,attr"`
+	Name _Application_Name   `xml:"name,attr"`
+	Term []_Application_Term `xml:"Term"`
 	_service_attributes
 }
 type sDB_Peer_Security_Zone struct {
@@ -300,7 +300,7 @@ type sDB_Peer_RI_RT_GW struct {
 	Table   string     `xml:"table,attr"`
 	Discard bool       `xml:"discard,attr"`
 	Type    _GW_Type   `xml:"type,attr"`
-	Route_Attributes
+	_Route_Attributes
 	_service_attributes
 }
 type sDB_VI struct {
@@ -328,6 +328,8 @@ type pDB_Peer struct {
 	ASN           _ASN
 	ASN_PName     _ASN_PName
 	Router_ID     netip.Addr
+	AB            map[_AB_Name]_AB
+	Application   map[_Application_Name][]_Application_Term
 	IFM           map[_IFM_Name]pDB_Peer_IFM
 	RI            map[_RI_Name]pDB_Peer_RI
 	IF_RI         map[_IF_Name]_RI_Name
@@ -339,12 +341,10 @@ type pDB_Peer struct {
 	Manufacturer  string
 	Model         string
 	Serial        string
-	GT_Patch      _GT_Content
 	Root          _Secret
 	GT_List       []_GT_Name
 	VI            map[_VI_ID]pDB_Peer_VI
 	RM_ID         *_RM_ID
-	AB            map[_AB_Name]_AB
 	IPPrefix_List map[netip.Prefix]bool // true = public
 	_service_attributes
 }
@@ -353,7 +353,7 @@ type pDB_Peer_RI struct {
 	IF     map[_IF_Name]pDB_Peer_RI_IF
 	IP_IF  map[netip.Addr]_IF_Name
 	Policy _Policy
-	Host_Inbound_Traffic
+	_Host_Inbound_Traffic
 	_service_attributes
 }
 type pDB_Peer_RI_RT struct {
@@ -366,7 +366,7 @@ type pDB_Peer_RI_RT_GW struct {
 	Table   string     // name candidate priority 3
 	Discard bool       // name candidate priority 0
 	Type    _GW_Type   // fill type appropriately
-	Route_Attributes
+	_Route_Attributes
 	_service_attributes
 }
 type pDB_Peer_IFM struct {
@@ -381,7 +381,7 @@ type pDB_Peer_RI_IF struct {
 	IP            map[netip.Addr]pDB_Peer_RI_IF_IP
 	PARP          map[netip.Addr]pDB_Peer_RI_IF_PARP
 	Disable       bool
-	Host_Inbound_Traffic
+	_Host_Inbound_Traffic
 	_service_attributes
 }
 type pDB_Peer_RI_IF_IP struct {

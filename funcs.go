@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"net/netip"
+	"os"
 	"strconv"
 	"time"
 
@@ -128,20 +129,74 @@ func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 	}
 	return
 }
-func ab_create_set(inbound _AB_Name) {
-	switch _, flag := pdb_ab[inbound]; flag {
+
+func _Templates_read() {
+	var (
+		dentry []os.DirEntry
+		data   []byte
+		err    error
+	)
+	switch dentry, err = os.ReadDir(fs_path["templates"]); err == nil {
 	case true:
-		log.Warnf("AB '%v' already exist; ACTION: skip.", inbound)
+		for _, fentry := range dentry {
+			switch fentry.Type().IsRegular() {
+			case true:
+				var (
+					fsplit = re_dot.Split(fentry.Name(), -1)
+				)
+				switch len(fsplit) < 1 {
+				case false:
+					switch fsplit[len(fsplit)-1] == "tmpl" {
+					case true:
+						var (
+							tname = _GT_Name(fentry.Name()[:len(fentry.Name())-5])
+						)
+						switch data, err = os.ReadFile(fs_path["templates"] + "/" + fentry.Name()); err == nil {
+						case true:
+							switch _, flag := pdb_gt[tname]; flag {
+							case true:
+								log.Warnf("template '%v' already exist; ACTION: skip.", tname)
+								continue
+							}
+							pdb_gt[tname] = pDB_GT{
+								Content: _GT_Content(data)._Sanitize(),
+							}
+						}
+					}
+				}
+			}
+		}
 	}
-	pdb_ab[inbound] = _AB{
+}
+
+func _Application_create(ap_name *_Application_Name, term *[]_Application_Term) {
+	switch _, flag := pdb_appl[*ap_name]; flag {
+	case true:
+		log.Warnf("Application '%v' already exist; ACTION: skip.", *ap_name)
+	}
+	var (
+		c []_Application_Term
+	)
+	for _, b := range *term {
+		c = append(c, b)
+	}
+	pdb_appl[*ap_name] = c
+}
+
+func _AB_Set_create(inbound *_AB_Name) {
+	switch _, flag := pdb_ab[*inbound]; flag {
+	case true:
+		log.Warnf("AB '%v' already exist; ACTION: skip.", *inbound)
+		return
+	}
+	pdb_ab[*inbound] = _AB{
 		Type:     _AB_Type_set,
 		AB:       map[_AB_Name]bool{},
 		FQDN:     map[_FQDN]bool{},
 		IPPrefix: map[netip.Prefix]bool{},
 	}
 }
-
-func ab_add(public, private bool, ab_name _AB_Name, inbound ...interface{}) {
+func _AB_Address_add(public, private bool, ab_name _AB_Name, inbound ...interface{}) {
 	var (
 		interim []interface{}
 	)
@@ -169,8 +224,16 @@ func ab_add(public, private bool, ab_name _AB_Name, inbound ...interface{}) {
 			}
 			interim = append(interim, value)
 		case _FQDN:
+			switch len(value) == 0 {
+			case true:
+				continue
+			}
 			interim = append(interim, value)
 		case _AB_Name:
+			switch len(value) == 0 {
+			case true:
+				continue
+			}
 			interim = append(interim, value)
 		default:
 			log.Warnf("AB '%v', address '%v'; unknown address type; ACTION: skip.", ab_name, value)
@@ -186,10 +249,10 @@ func ab_add(public, private bool, ab_name _AB_Name, inbound ...interface{}) {
 				pdb_ab[ab_name].AB[value] = true
 			case _FQDN:
 				pdb_ab[ab_name].FQDN[value] = true
-				ab_add(true, true, _AB_Name(value.String()), value)
+				_AB_Address_add(true, true, _AB_Name(value.String()), value)
 			case netip.Prefix:
 				pdb_ab[ab_name].IPPrefix[value] = true
-				ab_add(true, true, _AB_Name(value.String()), value)
+				_AB_Address_add(true, true, _AB_Name(value.String()), value)
 			}
 		case flag:
 			log.Warnf("AB '%v', already exist; ACTION: skip.", ab_name)
