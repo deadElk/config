@@ -15,11 +15,12 @@ type _service_attributes struct {
 type _AB_Type string
 type _AB_Name string
 type _Security_AB struct {
-	Address  interface{}
-	Type     _AB_Type
-	AB       map[_AB_Name]bool
-	FQDN     map[_FQDN]bool
-	IPPrefix map[netip.Prefix]bool
+	Address   interface{}
+	Type      _AB_Type
+	Addresses map[_AB_Name]_AB_Type
+	// AB       map[_AB_Name]bool
+	// FQDN     map[_AB_Name]bool
+	// IPPrefix map[_AB_Name]bool
 	_service_attributes
 }
 type _Application_Name string

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/netip"
+	_ "net/netip"
 	"os"
 	"sort"
 	"strconv"
@@ -382,14 +383,23 @@ func db_parse(xml_db *sDB) (err error) {
 		for _, b := range value.AB {
 			switch b.Set {
 			case true:
-				_v_AB_list[b.Name] = _v_AB_list[b.Name] || _AB_Set_create(b.Name)
+				switch _AB_Set_create(b.Name) {
+				case true:
+					_v_AB_list[b.Name] = true
+				}
 			}
 			for _, d := range b.Address {
-				_v_AB_list[b.Name] = _v_AB_list[b.Name] || _AB_Address_add(true, true, b.Name, d.AB, d.FQDN, d.IPPrefix)
+				switch _AB_Address_add(true, true, b.Name, d.AB, d.FQDN, d.IPPrefix) {
+				case true:
+					_v_AB_list[b.Name] = true
+				}
 			}
 		}
 		for _, b := range value.Application {
-			_v_Application_list[b.Name] = _v_Application_list[b.Name] || _Application_create(b.Name, b.Term)
+			switch _Application_create(b.Name, b.Term) {
+			case true:
+				_v_Application_list[b.Name] = true
+			}
 		}
 		for _, b := range value.NAT_Source {
 			for _, d := range b.Rule_Set {
@@ -413,11 +423,6 @@ func db_parse(xml_db *sDB) (err error) {
 				}
 			}
 		}
-		for a, b := range _v_AB_list {
-			switch b && pdb_ab[a].Type == _AB_Type_set {
-			case true:
-			}
-		}
 		var (
 			// v_NAT_Source      = value.NAT_Source
 			// v_NAT_Destination = value.NAT_Destination
@@ -426,21 +431,15 @@ func db_parse(xml_db *sDB) (err error) {
 			// v_Policies_Global = value.Policies_Global
 			v_AB = func() (outbound map[_AB_Name]_Security_AB) {
 				outbound = make(map[_AB_Name]_Security_AB)
-				for h, flag := range _v_AB_list {
-					switch flag {
-					case true:
-						outbound[h] = pdb_ab[h]
-					}
+				for h := range _AB_rparse(_v_AB_list) {
+					outbound[h] = pdb_ab[h]
 				}
 				return
 			}()
 			v_Application = func() (outbound map[_Application_Name][]_Security_Application_Term) {
 				outbound = make(map[_Application_Name][]_Security_Application_Term)
-				for h, flag := range _v_Application_list {
-					switch flag {
-					case true:
-						outbound[h] = pdb_appl[h]
-					}
+				for h := range _v_Application_list {
+					outbound[h] = pdb_appl[h]
 				}
 				return
 			}()

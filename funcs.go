@@ -215,7 +215,7 @@ func _SZ_create(outbound *map[_SZ_Name]pDB_Peer_Security_Zone_SZ, sz_name _SZ_Na
 		}
 		return true
 	}
-	log.Warnf("don't know what to do with '%+s' and '%+s'; ACTION: skip.", inbound, outbound)
+	log.Warnf("don't know what to do with inbound '%+v'; ACTION: skip.", inbound)
 	return
 }
 
@@ -227,10 +227,10 @@ func _AB_Set_create(inbound _AB_Name) (ok bool) {
 	}
 	ok = true
 	pdb_ab[inbound] = _Security_AB{
-		Type:     _AB_Type_set,
-		AB:       map[_AB_Name]bool{},
-		FQDN:     map[_FQDN]bool{},
-		IPPrefix: map[netip.Prefix]bool{},
+		Address:             nil,
+		Type:                _AB_Type_set,
+		Addresses:           map[_AB_Name]_AB_Type{},
+		_service_attributes: _service_attributes{},
 	}
 	return
 }
@@ -239,9 +239,6 @@ func _AB_Address_add(public, private bool, ab_name _AB_Name, inbound ...interfac
 		interim []interface{}
 	)
 	for _, address := range inbound {
-		var (
-			bits = 32
-		)
 		switch value := (address).(type) {
 		case netip.Addr:
 			switch is_private, is_valid := value.IsPrivate(), value.IsValid(); !is_valid || (is_private && !private) || (!is_private && !public) {
@@ -249,6 +246,9 @@ func _AB_Address_add(public, private bool, ab_name _AB_Name, inbound ...interfac
 				log.Debugf("AB '%v', address '%v' is valid '%v' against public '%v' / private '%v': address not suitable; ACTION: skip.", ab_name, value, value.IsValid(), public, private)
 				continue
 			}
+			var (
+				bits = 32
+			)
 			switch value.Is6() {
 			case true:
 				bits = 128
@@ -285,18 +285,21 @@ func _AB_Address_add(public, private bool, ab_name _AB_Name, inbound ...interfac
 			switch value := (address).(type) {
 			case _AB_Name:
 				ok = true
-				pdb_ab[ab_name].AB[value] = true
+				pdb_ab[ab_name].Addresses[value] = _AB_Type_set
 			case _FQDN:
 				ok = true
-				pdb_ab[ab_name].FQDN[value] = true
-				_AB_Address_add(true, true, _AB_Name(value.String()), value)
+				pdb_ab[ab_name].Addresses[value._AB_Name()] = _AB_Type_fqdn
+				_AB_Address_add(true, true, value._AB_Name(), value)
 			case netip.Prefix:
+				var (
+					ab = _AB_Name(value.String())
+				)
 				ok = true
-				pdb_ab[ab_name].IPPrefix[value] = true
-				_AB_Address_add(true, true, _AB_Name(value.String()), value)
+				pdb_ab[ab_name].Addresses[ab] = _AB_Type_ipprefix
+				_AB_Address_add(true, true, ab, value)
 			}
 		case flag:
-			log.Warnf("AB '%v', already exist; ACTION: skip.", ab_name)
+			log.Warnf("AB '%v''%+v', already exist; ACTION: skip.", ab_name, pdb_ab[ab_name])
 			continue
 		default:
 			switch value := (address).(type) {
@@ -381,4 +384,29 @@ func parse_interface_error(inbound interface{}, skip interface{}) interface{} {
 		}
 	}
 	return inbound
+}
+
+func _AB_rparse(_v_AB_list map[_AB_Name]bool) (outbound map[_AB_Name]bool) {
+	outbound = make(map[_AB_Name]bool)
+	for a := range _v_AB_list {
+		switch {
+		case pdb_ab[a].Type != _AB_Type_set:
+			outbound[a] = true
+		default:
+			_AB_rparse_set(&outbound, a)
+		}
+	}
+	return
+}
+func _AB_rparse_set(_v_AB_list *map[_AB_Name]bool, a _AB_Name) (ok bool) {
+	(*_v_AB_list)[a] = true
+	for c, d := range pdb_ab[a].Addresses {
+		switch {
+		case d != _AB_Type_set:
+			(*_v_AB_list)[c] = true
+		case !(*_v_AB_list)[c]:
+			_AB_rparse_set(_v_AB_list, c)
+		}
+	}
+	return
 }
