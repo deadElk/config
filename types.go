@@ -12,9 +12,16 @@ type _Service_Attributes struct {
 	Reserved    bool         `xml:"reserved,attr"`
 	// Verbosity   string       `xml:"verbosity,attr"`
 }
+type _Host_Inbound_Traffic struct {
+	Services  map[_Service]bool  `xml:"service,attr"`
+	Protocols map[_Protocol]bool `xml:"protocol,attr"`
+}
+type _Route_Attributes struct {
+	QNH        bool `xml:"QNH,attr"`
+	Metric     uint `xml:"metric,attr"`
+	Preference uint `xml:"preference,attr"`
+}
 
-type _AB_Type string
-type _AB_Name string
 type _Security_AB struct {
 	Address   interface{}
 	Type      _AB_Type
@@ -24,7 +31,6 @@ type _Security_AB struct {
 	// IPPrefix map[_AB_Name]bool
 	_Service_Attributes
 }
-type _Application_Name string
 type _Security_Application_Term struct {
 	Name             string `xml:"name,attr"`
 	Protocol         string `xml:"protocol,attr"`
@@ -53,18 +59,18 @@ type _Security_NAT_Pool struct {
 	_Service_Attributes
 }
 type _Security_NAT_Rule_Set struct {
-	Name _Rule_Set_Name            `xml:"name,attr"`
-	From []_Security_NAT_Direction `xml:"From"`
-	To   []_Security_NAT_Direction `xml:"To"`
-	Rule []_Security_NAT_Rule      `xml:"Rule"`
+	Name _Rule_Set_Name        `xml:"name,attr"`
+	From []_Security_Direction `xml:"From"`
+	To   []_Security_Direction `xml:"To"`
+	Rule []_Security_Rule      `xml:"Rule"`
 	_Service_Attributes
 }
-type _Security_NAT_Direction struct {
+type _Security_Direction struct {
 	SZ _SZ_Name `xml:"SZ,attr"`
 	RI _RI_Name `xml:"RI,attr"`
 	_Service_Attributes
 }
-type _Security_NAT_Rule struct {
+type _Security_Rule struct {
 	Name  _Rule_Name        `xml:"name,attr"`
 	Match []_Security_Match `xml:"Match"`
 	Then  []_Security_Then  `xml:"Then"`
@@ -88,59 +94,42 @@ type _Security_Then struct {
 	_Service_Attributes
 }
 type _Security_Policies_Exact struct {
-	From   []_Security_Policies_Direction `xml:"From"`
-	To     []_Security_Policies_Direction `xml:"To"`
-	Policy []_Security_Policies_Policy    `xml:"Policy"`
-	_Service_Attributes
-}
-type _Security_Policies_Direction struct {
-	SZ _SZ_Name `xml:"SZ,attr"`
-	_Service_Attributes
-}
-type _Security_Policies_Policy struct {
-	Name  _Policy_Name      `xml:"name,attr"`
-	Match []_Security_Match `xml:"Match"`
-	Then  []_Security_Then  `xml:"Then"`
+	From   []_Security_Direction `xml:"From"`
+	To     []_Security_Direction `xml:"To"`
+	Policy []_Security_Rule      `xml:"Policy"`
 	_Service_Attributes
 }
 
+type _AB_Name string
+type _AB_Type string
 type _ASN uint32
 type _ASN_PName string
+type _Application_Name string
 type _Description string
+type _FQDN string
 type _GT_Content string
 type _GT_Name string
 type _GW_Name string
 type _GW_Type string
+type _IFM_Name string
 type _IF_Communication string
 type _IF_Mode string
 type _IF_Name string
-type _IFM_Name string
 type _Policy string
-type _Policy_Name string
+type _Pool_Name string
+type _Protocol string
 type _RI_Name string
+type _RM_ID [_rm_max + 1]uint32
+type _Rule_Name string
+type _Rule_Set_Name string
 type _SZ_Name string
 type _Screen_Name string
-type _RM_ID [_rm_max + 1]uint32
 type _Secret string
+type _Service string
 type _VI_ID uint
 type _VI_ID_PName string
 type _VI_Peer_ID uint
 type _VI_Type string
-type _Service string
-type _Protocol string
-type _Pool_Name string
-type _Rule_Set_Name string
-type _Rule_Name string
-type _FQDN string
-type _Host_Inbound_Traffic struct {
-	Services  map[_Service]bool  `xml:"service,attr"`
-	Protocols map[_Protocol]bool `xml:"protocol,attr"`
-}
-type _Route_Attributes struct {
-	QNH        bool `xml:"QNH,attr"`
-	Metric     uint `xml:"metric,attr"`
-	Preference uint `xml:"preference,attr"`
-}
 
 type sDB struct {
 	XMLName        xml.Name          `xml:"AS4200240XXX"`
@@ -173,7 +162,7 @@ type sDB_Peer struct {
 	NAT_Destination []_Security_NAT_Destination `xml:"Security>NAT>Destination"`
 	NAT_Static      []_Security_NAT_Static      `xml:"Security>NAT>Static"`
 	Policies_Exact  []_Security_Policies_Exact  `xml:"Security>Policies>Exact"`
-	Policies_Global []_Security_Policies_Policy `xml:"Security>Policies>Global"`
+	Policies_Global []_Security_Rule            `xml:"Security>Policies>Global"`
 	AB              []sDB_AB                    `xml:"Security>AB"`
 	Application     []sDB_Application           `xml:"Security>Application"`
 	_Service_Attributes
@@ -281,7 +270,7 @@ type pDB_Peer struct {
 	NAT_Destination []_Security_NAT_Destination
 	NAT_Static      []_Security_NAT_Static
 	Policies_Exact  []_Security_Policies_Exact
-	Policies_Global []_Security_Policies_Policy
+	Policies_Global []_Security_Rule
 	IFM             map[_IFM_Name]pDB_Peer_IFM
 	RI              map[_RI_Name]pDB_Peer_RI
 	IF_RI           map[_IF_Name]_RI_Name
