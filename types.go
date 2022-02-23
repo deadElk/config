@@ -11,7 +11,8 @@ type _Service_Attributes struct {
 	Description _Description `xml:"description,attr"`
 	Deactivate  bool         `xml:"deactivate,attr"`
 	Reserved    bool         `xml:"reserved,attr"`
-	// Verbosity   string       `xml:"verbosity,attr"`
+	Verbosity   string       `xml:"verbosity,attr"`
+	Patch       string       `xml:"patch,attr"`
 }
 type _Host_Inbound_Traffic struct {
 	Services  map[_Service]bool  `xml:"service,attr"`
@@ -144,7 +145,6 @@ type sDB struct {
 	GT_List        string            `xml:"GT_list,attr"`
 	Upload_Path    string            `xml:"upload_path,attr"`
 	Templates_Path string            `xml:"templates_path,attr"`
-	Verbosity      string            `xml:"verbosity,attr"`
 	_Service_Attributes
 }
 type sDB_Peer struct {
