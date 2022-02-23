@@ -6,6 +6,7 @@ import (
 )
 
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
+
 type _Service_Attributes struct {
 	Description _Description `xml:"description,attr"`
 	Deactivate  bool         `xml:"deactivate,attr"`
