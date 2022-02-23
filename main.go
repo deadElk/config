@@ -209,12 +209,12 @@ func db_parse(xml_db *sDB) (err error) {
 												Discard:             gw_v.Discard,
 												Type:                gw_v.Type,
 												_Route_Attributes:   gw_v._Route_Attributes,
-												_service_attributes: gw_v._service_attributes,
+												_Service_Attributes: gw_v._Service_Attributes,
 											}
 										}
 										return
 									}(),
-									_service_attributes: rt_v._service_attributes,
+									_Service_Attributes: rt_v._Service_Attributes,
 								}
 							}
 							return
@@ -286,7 +286,7 @@ func db_parse(xml_db *sDB) (err error) {
 												Preferred:           ip_v.Preferred,
 												NAT:                 ip_v.NAT,
 												DHCP:                ip_v.DHCP,
-												_service_attributes: ip_v._service_attributes,
+												_Service_Attributes: ip_v._Service_Attributes,
 											}
 										}
 										return
@@ -307,13 +307,13 @@ func db_parse(xml_db *sDB) (err error) {
 											parp_o[parp_v.IPPrefix.Addr()] = pDB_Peer_RI_IF_PARP{
 												IPPrefix:            parp_v.IPPrefix,
 												NAT:                 parp_v.NAT,
-												_service_attributes: parp_v._service_attributes,
+												_Service_Attributes: parp_v._Service_Attributes,
 											}
 										}
 										return
 									}(),
 									Disable:             if_v.Disable,
-									_service_attributes: if_v._service_attributes,
+									_Service_Attributes: if_v._Service_Attributes,
 								}
 								switch ri_v.Name == _juniper_mgmt_RI {
 								case false:
@@ -337,15 +337,16 @@ func db_parse(xml_db *sDB) (err error) {
 												_protocol_bgp: false,
 											},
 										},
-										_service_attributes: _service_attributes{},
+										_Service_Attributes: _Service_Attributes{},
 									}
 								}
 							}
 							return
 						}(),
 						IP_IF: vIP_IF,
-						_service_attributes: _service_attributes{
-							Reserved: ri_v.Reserved,
+						_Service_Attributes: _Service_Attributes{
+							Deactivate: ri_v.Deactivate,
+							Reserved:   ri_v.Reserved,
 							Description: func() _Description {
 								switch ri_v.Name == _juniper_mgmt_RI && len(ri_v.Description) == 0 {
 								case true:
@@ -365,7 +366,7 @@ func db_parse(xml_db *sDB) (err error) {
 					outbound[ifm_v.Name] = pDB_Peer_IFM{
 						Communication:       ifm_v.Communication,
 						Disable:             ifm_v.Disable,
-						_service_attributes: ifm_v._service_attributes,
+						_Service_Attributes: ifm_v._Service_Attributes,
 					}
 				}
 				return
@@ -418,7 +419,7 @@ func db_parse(xml_db *sDB) (err error) {
 			VI:                  map[_VI_ID]pDB_Peer_VI{},
 			RM_ID:               &rm_id,
 			IPPrefix_List:       v_IP_List,
-			_service_attributes: value._service_attributes,
+			_Service_Attributes: value._Service_Attributes,
 		}
 	}
 
@@ -603,7 +604,7 @@ func db_parse(xml_db *sDB) (err error) {
 							_protocol_bgp: true,
 						},
 					},
-					_service_attributes: _service_attributes{},
+					_Service_Attributes: _Service_Attributes{},
 				}
 				// pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].Inner_RI._SZ_Name()].IF[_IF_Name(v_Type.String()+"0."+value.ID.String())]._Defaults()
 				pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].Inner_RI._SZ_Name()].IF[_IF_Name(v_Type.String()+"0."+value.ID.String())].Protocols[_protocol_bgp] = true
@@ -650,7 +651,7 @@ func db_parse(xml_db *sDB) (err error) {
 				Right_Inner_RI:       value.Peer[1].Inner_RI._Sanitize(_juniper_mgmt_RI),
 				Right_Inner_IP:       v_Right_Inner_IPPrefix.Addr(),
 				Right_Inner_IPPrefix: v_Right_Inner_IPPrefix,
-				_service_attributes:  value._service_attributes,
+				_Service_Attributes:  value._Service_Attributes,
 			}
 			pdb_peer[value.Peer[1].ASN].VI[value.ID] = pDB_Peer_VI{
 				VI_ID_PName:          pdb_peer[value.Peer[0].ASN].VI[value.ID].VI_ID_PName,
@@ -683,7 +684,7 @@ func db_parse(xml_db *sDB) (err error) {
 				Right_Inner_RI:       pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_Inner_RI,
 				Right_Inner_IP:       pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_Inner_IP,
 				Right_Inner_IPPrefix: pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_Inner_IPPrefix,
-				_service_attributes:  pdb_peer[value.Peer[0].ASN].VI[value.ID]._service_attributes,
+				_Service_Attributes:  pdb_peer[value.Peer[0].ASN].VI[value.ID]._Service_Attributes,
 			}
 		}()
 	}

@@ -197,7 +197,7 @@ func _SZ_create(outbound *map[_SZ_Name]pDB_Peer_Security_Zone_SZ, sz_name _SZ_Na
 			Screen:                value.Screen,
 			IF:                    map[_IF_Name]pDB_Peer_Security_Zone_SZ_IF{},
 			_Host_Inbound_Traffic: _Host_Inbound_Traffic{},
-			_service_attributes:   value._service_attributes,
+			_Service_Attributes:   value._Service_Attributes,
 		}
 		return true
 	case pDB_Peer_Security_Zone_SZ:
@@ -210,7 +210,7 @@ func _SZ_create(outbound *map[_SZ_Name]pDB_Peer_Security_Zone_SZ, sz_name _SZ_Na
 			Screen:                "",
 			IF:                    map[_IF_Name]pDB_Peer_Security_Zone_SZ_IF{},
 			_Host_Inbound_Traffic: _Host_Inbound_Traffic{},
-			_service_attributes:   _service_attributes{},
+			_Service_Attributes:   _Service_Attributes{},
 		}
 		return true
 	}
@@ -229,7 +229,7 @@ func _AB_Set_create(inbound _AB_Name) (ok bool) {
 		Address:             nil,
 		Type:                _AB_Type_set,
 		Addresses:           map[_AB_Name]_AB_Type{},
-		_service_attributes: _service_attributes{},
+		_Service_Attributes: _Service_Attributes{},
 	}
 	return
 }
