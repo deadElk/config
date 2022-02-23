@@ -165,8 +165,8 @@ type sDB_Peer struct {
 	Serial       string                      `xml:"serial,attr"`
 	Root         _Secret                     `xml:"root,attr"`
 	GT_List      string                      `xml:"GT_list,attr"`
-	AB           []sDB_AB                    `xml:"Security>AB"`
-	Application  []sDB_Application           `xml:"Security>Application"`
+	AB           []sDB_AB                    `xml:"Vocabulary>AB"`
+	Application  []sDB_Application           `xml:"Vocabulary>Application"`
 	SZ           []sDB_Peer_Security_Zone_SZ `xml:"Security>Zone>SZ"`
 	NAT          _Security_NAT               `xml:"Security>NAT"`
 	SP           _Security_SP                `xml:"Security>SP"`
