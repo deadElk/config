@@ -200,10 +200,9 @@ type sDB_Peer_IFM struct {
 	_service_attributes
 }
 type sDB_Peer_RI struct {
-	Name   _RI_Name         `xml:"name,attr"`
-	RT     []sDB_Peer_RI_RT `xml:"RT"`
-	IF     []sDB_Peer_RI_IF `xml:"IF"`
-	Policy _Policy          `xml:"policy,attr"`
+	Name _RI_Name         `xml:"name,attr"`
+	RT   []sDB_Peer_RI_RT `xml:"RT"`
+	IF   []sDB_Peer_RI_IF `xml:"IF"`
 	_service_attributes
 }
 type sDB_Peer_RI_IF struct {
@@ -304,11 +303,9 @@ type pDB_Peer_Security_Zone_SZ_IF struct {
 	_service_attributes
 }
 type pDB_Peer_RI struct {
-	RT     map[netip.Prefix]pDB_Peer_RI_RT
-	IF     map[_IF_Name]pDB_Peer_RI_IF
-	IP_IF  map[netip.Addr]_IF_Name
-	Policy _Policy
-	_Host_Inbound_Traffic
+	RT    map[netip.Prefix]pDB_Peer_RI_RT
+	IF    map[_IF_Name]pDB_Peer_RI_IF
+	IP_IF map[netip.Addr]_IF_Name
 	_service_attributes
 }
 type pDB_Peer_RI_RT struct {
@@ -336,7 +333,6 @@ type pDB_Peer_RI_IF struct {
 	IP            map[netip.Addr]pDB_Peer_RI_IF_IP
 	PARP          map[netip.Addr]pDB_Peer_RI_IF_PARP
 	Disable       bool
-	_Host_Inbound_Traffic
 	_service_attributes
 }
 type pDB_Peer_RI_IF_IP struct {

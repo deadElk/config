@@ -343,9 +343,7 @@ func db_parse(xml_db *sDB) (err error) {
 							}
 							return
 						}(),
-						IP_IF:                 vIP_IF,
-						Policy:                ri_v.Policy._Sanitize(),
-						_Host_Inbound_Traffic: _Host_Inbound_Traffic{},
+						IP_IF: vIP_IF,
 						_service_attributes: _service_attributes{
 							Reserved: ri_v.Reserved,
 							Description: func() _Description {
@@ -607,7 +605,8 @@ func db_parse(xml_db *sDB) (err error) {
 					},
 					_service_attributes: _service_attributes{},
 				}
-
+				// pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].Inner_RI._SZ_Name()].IF[_IF_Name(v_Type.String()+"0."+value.ID.String())]._Defaults()
+				pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].Inner_RI._SZ_Name()].IF[_IF_Name(v_Type.String()+"0."+value.ID.String())].Protocols[_protocol_bgp] = true
 			}
 			var (
 				v_Metric = func() uint {
@@ -694,26 +693,28 @@ func db_use() (err error) {
 	for index, value := range pdb_peer {
 		switch value.Reserved {
 		case false:
-			for _, gt_v := range value.GT_List {
-				var (
-					vGT_name = gt_v.String()
-					vGT      *template.Template
-					vBuf     bytes.Buffer
-				)
-				switch vGT, err = template.New(vGT_name).Funcs(gt_fm).Parse(pdb_gt[_GT_Name(vGT_name)].Content.String()); err == nil && vGT != nil {
-				case true:
-					switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
+			func() {
+				for _, gt_v := range value.GT_List {
+					var (
+						vGT_name = gt_v.String()
+						vGT      *template.Template
+						vBuf     bytes.Buffer
+					)
+					switch vGT, err = template.New(vGT_name).Funcs(gt_fm).Parse(pdb_gt[_GT_Name(vGT_name)].Content.String()); err == nil && vGT != nil {
 					case true:
-						config[index] = append(config[index], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
+						switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
+						case true:
+							config[index] = append(config[index], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
+						default:
+							log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
+							return
+						}
 					default:
-						log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
-						continue
+						log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
+						return
 					}
-				default:
-					log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
-					continue
 				}
-			}
+			}()
 		}
 	}
 	return
