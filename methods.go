@@ -180,7 +180,7 @@ func (inbound _RI_Name) _SZ_Name() _SZ_Name {
 func (inbound _FQDN) _AB_Name() _AB_Name {
 	return _AB_Name(inbound.String())
 }
-func (inbound *_Host_Inbound_Traffic) _Defaults(enabled ...interface{}) _Host_Inbound_Traffic {
+func (inbound _Host_Inbound_Traffic) _Defaults(enabled ...interface{}) _Host_Inbound_Traffic {
 	return _Host_Inbound_Traffic{
 		Services: map[_Service]bool{
 			_service_all:         false,
