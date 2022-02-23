@@ -33,7 +33,7 @@ func (inbound _VI_ID) String() string {
 func (inbound _VI_ID_PName) String() string {
 	return string(inbound)
 }
-func (inbound _IF_Comm) _Sanitize(mode _IF_Mode) (outbound _IF_Comm) {
+func (inbound _IF_Communication) _Sanitize(mode _IF_Mode) (outbound _IF_Communication) {
 	switch mode {
 	case _if_mode_vi:
 		switch inbound {
@@ -57,7 +57,7 @@ func (inbound _IF_Comm) _Sanitize(mode _IF_Mode) (outbound _IF_Comm) {
 	log.Warnf("unknown IF Communication type '%v'; ACTION: use '%v'.", inbound, outbound)
 	return
 }
-func (inbound _Descr) _Sanitize(default_description _Descr) _Descr {
+func (inbound _Description) _Sanitize(default_description _Description) _Description {
 	switch len(inbound) == 0 {
 	case true:
 		return default_description
@@ -162,7 +162,7 @@ func (inbound _VI_Type) _Sanitize() _VI_Type {
 func (inbound _Service) String() string {
 	return string(inbound)
 }
-func (inbound _Proto) String() string {
+func (inbound _Protocol) String() string {
 	return string(inbound)
 }
 func (inbound _AB_Name) String() string {
@@ -176,9 +176,6 @@ func (inbound _FQDN) String() string {
 }
 func (inbound _RI_Name) _SZ_Name() _SZ_Name {
 	return _SZ_Name(inbound.String())
-}
-func (inbound _RG_Name) String() string {
-	return string(inbound)
 }
 func (inbound _SZ_Name) String() string {
 	return string(inbound)
@@ -204,7 +201,7 @@ func (inbound _Host_Inbound_Traffic) _Defaults(enabled ...interface{}) _Host_Inb
 			_service_ssh:         true,
 			_service_traceroute:  true,
 		},
-		Protocols: map[_Proto]bool{
+		Protocols: map[_Protocol]bool{
 			_protocol_all: false,
 			_protocol_bgp: false,
 		},

@@ -26,7 +26,7 @@ var (
 	vi_ipprefix netip.Prefix
 	vi_ip_shift _VI_ID
 	pdb_ab      = make(map[_AB_Name]_Security_AB)
-	pdb_appl    = make(map[_App_Name][]_Security_Application_Term)
+	pdb_appl    = make(map[_Application_Name][]_Security_Application_Term)
 	pdb_peer    = make(map[_ASN]pDB_Peer)
 	pdb_gt      = make(map[_GT_Name]pDB_GT)
 	config      = make(map[_ASN][]byte)

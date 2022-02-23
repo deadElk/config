@@ -1,7 +1,7 @@
 package main
 
 // type _Service_List map[_Service]bool
-// type _Protocol_List map[_Proto]bool
+// type _Protocol_List map[_Protocol]bool
 // type _Services struct {
 // 	All               bool
 // 	Any_Service       bool

@@ -173,7 +173,7 @@ func _Templates_read() {
 	}
 }
 
-func _Application_create(ap_name _App_Name, term []_Security_Application_Term) (ok bool) {
+func _Application_create(ap_name _Application_Name, term []_Security_Application_Term) (ok bool) {
 	switch _, flag := pdb_appl[ap_name]; flag {
 	case true:
 		log.Warnf("Application '%v' already exist; ACTION: skip.", ap_name)
@@ -201,7 +201,7 @@ func _SZ_create(outbound *map[_SZ_Name]pDB_Peer_Security_Zone_SZ, sz_name _SZ_Na
 			Screen:                value.Screen,
 			IF:                    map[_IF_Name]pDB_Peer_Security_Zone_SZ_IF{},
 			_Host_Inbound_Traffic: _Host_Inbound_Traffic{},
-			_Service_Attr:         value._Service_Attr,
+			_Service_Attributes:   value._Service_Attributes,
 		}
 		return true
 	case pDB_Peer_Security_Zone_SZ:
@@ -214,7 +214,7 @@ func _SZ_create(outbound *map[_SZ_Name]pDB_Peer_Security_Zone_SZ, sz_name _SZ_Na
 			Screen:                "",
 			IF:                    map[_IF_Name]pDB_Peer_Security_Zone_SZ_IF{},
 			_Host_Inbound_Traffic: _Host_Inbound_Traffic{},
-			_Service_Attr:         _Service_Attr{},
+			_Service_Attributes:   _Service_Attributes{},
 		}
 		return true
 	}
@@ -230,10 +230,10 @@ func _AB_Set_create(inbound _AB_Name) (ok bool) {
 	}
 	ok = true
 	pdb_ab[inbound] = _Security_AB{
-		Address:       nil,
-		Type:          _AB_Type_set,
-		Addresses:     map[_AB_Name]_AB_Type{},
-		_Service_Attr: _Service_Attr{},
+		Address:             nil,
+		Type:                _AB_Type_set,
+		Addresses:           map[_AB_Name]_AB_Type{},
+		_Service_Attributes: _Service_Attributes{},
 	}
 	return
 }

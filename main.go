@@ -90,7 +90,7 @@ func db_parse(xml_db *sDB) (err error) {
 
 		var (
 			// _v_AB_list          = make(map[_AB_Name]bool)
-			// _v_Application_list = make(map[_App_Name]bool)
+			// _v_Application_list = make(map[_Application_Name]bool)
 			v_IP_List   = make(map[netip.Prefix]bool)
 			v_ASN_PName = value.ASN._Sanitize()
 			v_Hostname  = func() (outbound _FQDN) {
@@ -203,18 +203,18 @@ func db_parse(xml_db *sDB) (err error) {
 												continue
 											}
 											gw_o[_GW_Name(gw_i)] = pDB_Peer_RI_RT_GW{
-												IP:                gw_v.IP,
-												IF:                gw_v.IF,
-												Table:             gw_v.Table,
-												Discard:           gw_v.Discard,
-												Type:              gw_v.Type,
-												_Route_Attributes: gw_v._Route_Attributes,
-												_Service_Attr:     gw_v._Service_Attr,
+												IP:                  gw_v.IP,
+												IF:                  gw_v.IF,
+												Table:               gw_v.Table,
+												Discard:             gw_v.Discard,
+												Type:                gw_v.Type,
+												_Route_Attributes:   gw_v._Route_Attributes,
+												_Service_Attributes: gw_v._Service_Attributes,
 											}
 										}
 										return
 									}(),
-									_Service_Attr: rt_v._Service_Attr,
+									_Service_Attributes: rt_v._Service_Attributes,
 								}
 							}
 							return
@@ -273,14 +273,14 @@ func db_parse(xml_db *sDB) (err error) {
 												v_IP_List[ip_v.IPPrefix] = false
 											}
 											ip_o[ip_i] = pDB_Peer_RI_IF_IP{
-												IPPrefix:      ip_v.IPPrefix,
-												Masked:        ip_v.IPPrefix.Masked(),
-												Router_ID:     ip_v.Router_ID,
-												Primary:       ip_v.Primary,
-												Preferred:     ip_v.Preferred,
-												NAT:           ip_v.NAT,
-												DHCP:          ip_v.DHCP,
-												_Service_Attr: ip_v._Service_Attr,
+												IPPrefix:            ip_v.IPPrefix,
+												Masked:              ip_v.IPPrefix.Masked(),
+												Router_ID:           ip_v.Router_ID,
+												Primary:             ip_v.Primary,
+												Preferred:           ip_v.Preferred,
+												NAT:                 ip_v.NAT,
+												DHCP:                ip_v.DHCP,
+												_Service_Attributes: ip_v._Service_Attributes,
 											}
 										}
 										return
@@ -299,15 +299,15 @@ func db_parse(xml_db *sDB) (err error) {
 											vIP_IF[parp_i] = if_v.Name
 											_AB_Address_add(true, false, "OUTTER_LIST", parp_v.IPPrefix.Addr(), parp_v.NAT)
 											parp_o[parp_v.IPPrefix.Addr()] = pDB_Peer_RI_IF_PARP{
-												IPPrefix:      parp_v.IPPrefix,
-												NAT:           parp_v.NAT,
-												_Service_Attr: parp_v._Service_Attr,
+												IPPrefix:            parp_v.IPPrefix,
+												NAT:                 parp_v.NAT,
+												_Service_Attributes: parp_v._Service_Attributes,
 											}
 										}
 										return
 									}(),
-									Disable:       if_v.Disable,
-									_Service_Attr: if_v._Service_Attr,
+									Disable:             if_v.Disable,
+									_Service_Attributes: if_v._Service_Attributes,
 								}
 								switch ri_v.Name == _juniper_mgmt_RI {
 								case false:
@@ -326,22 +326,22 @@ func db_parse(xml_db *sDB) (err error) {
 												_service_ssh:         true,
 												_service_traceroute:  true,
 											},
-											Protocols: map[_Proto]bool{
+											Protocols: map[_Protocol]bool{
 												_protocol_all: false,
 												_protocol_bgp: false,
 											},
 										},
-										_Service_Attr: _Service_Attr{},
+										_Service_Attributes: _Service_Attributes{},
 									}
 								}
 							}
 							return
 						}(),
 						IP_IF: vIP_IF,
-						_Service_Attr: _Service_Attr{
+						_Service_Attributes: _Service_Attributes{
 							Deactivate: ri_v.Deactivate,
 							Reserved:   ri_v.Reserved,
-							Description: func() _Descr {
+							Description: func() _Description {
 								switch ri_v.Name == _juniper_mgmt_RI && len(ri_v.Description) == 0 {
 								case true:
 									return _juniper_mgmt_Description
@@ -358,9 +358,9 @@ func db_parse(xml_db *sDB) (err error) {
 				outbound = make(map[_IFM_Name]pDB_Peer_IFM)
 				for _, ifm_v := range value.IFM {
 					outbound[ifm_v.Name] = pDB_Peer_IFM{
-						Communication: ifm_v.Communication,
-						Disable:       ifm_v.Disable,
-						_Service_Attr: ifm_v._Service_Attr,
+						Communication:       ifm_v.Communication,
+						Disable:             ifm_v.Disable,
+						_Service_Attributes: ifm_v._Service_Attributes,
 					}
 				}
 				return
@@ -390,7 +390,7 @@ func db_parse(xml_db *sDB) (err error) {
 			ASN_PName:   v_ASN_PName,
 			Router_ID:   v_Router_ID,
 			AB:          map[_AB_Name]_Security_AB{},
-			Application: map[_App_Name][]_Security_Application_Term{},
+			Application: map[_Application_Name][]_Security_Application_Term{},
 			SZ:          v_SZ,
 			_Security_NAT: _Security_NAT{
 				NAT_Source:      value.NAT.NAT_Source,
@@ -404,10 +404,10 @@ func db_parse(xml_db *sDB) (err error) {
 						for _, d := range b.To {
 							for _, f := range b.From {
 								outbound = append(outbound, _Security_Rule_Set{
-									From:          []_Security_Direction{f},
-									To:            []_Security_Direction{d},
-									Rule:          b.Rule,
-									_Service_Attr: b._Service_Attr,
+									From:                []_Security_Direction{f},
+									To:                  []_Security_Direction{d},
+									Rule:                b.Rule,
+									_Service_Attributes: b._Service_Attributes,
 								})
 							}
 						}
@@ -416,23 +416,23 @@ func db_parse(xml_db *sDB) (err error) {
 				}(),
 				SP_Global: value.SP.SP_Global,
 			},
-			IFM:           v_IFM,
-			RI:            v_RI,
-			IF_RI:         v_IF_RI,
-			Hostname:      v_Hostname,
-			Domain_Name:   v_Domain_Name,
-			Version:       value.Version,
-			Major:         v_Major,
-			IKE_GCM:       v_Major >= 12.3,
-			Manufacturer:  value.Manufacturer,
-			Model:         value.Model,
-			Serial:        value.Serial,
-			Root:          value.Root._Sanitize(16, "peer AS"+v_ASN_PName.String()+": root password is not acceptable"),
-			GT_List:       v_GT_List,
-			VI:            map[_VI_ID]pDB_Peer_VI{},
-			RM_ID:         &rm_id,
-			IPPrefix_List: v_IP_List,
-			_Service_Attr: value._Service_Attr,
+			IFM:                 v_IFM,
+			RI:                  v_RI,
+			IF_RI:               v_IF_RI,
+			Hostname:            v_Hostname,
+			Domain_Name:         v_Domain_Name,
+			Version:             value.Version,
+			Major:               v_Major,
+			IKE_GCM:             v_Major >= 12.3,
+			Manufacturer:        value.Manufacturer,
+			Model:               value.Model,
+			Serial:              value.Serial,
+			Root:                value.Root._Sanitize(16, "peer AS"+v_ASN_PName.String()+": root password is not acceptable"),
+			GT_List:             v_GT_List,
+			VI:                  map[_VI_ID]pDB_Peer_VI{},
+			RM_ID:               &rm_id,
+			IPPrefix_List:       v_IP_List,
+			_Service_Attributes: value._Service_Attributes,
 		}
 
 		b := pdb_peer[value.ASN]
@@ -441,7 +441,7 @@ func db_parse(xml_db *sDB) (err error) {
 	for _, value := range pdb_peer {
 		var (
 			_v_AB_list          = make(map[_AB_Name]bool)
-			_v_Application_list = make(map[_App_Name]bool)
+			_v_Application_list = make(map[_Application_Name]bool)
 		)
 		for _, b := range value.NAT_Source {
 			for _, d := range b.Rule_Set {
@@ -629,12 +629,12 @@ func db_parse(xml_db *sDB) (err error) {
 							_service_ssh:         true,
 							_service_traceroute:  true,
 						},
-						Protocols: map[_Proto]bool{
+						Protocols: map[_Protocol]bool{
 							_protocol_all: false,
 							_protocol_bgp: true,
 						},
 					},
-					_Service_Attr: _Service_Attr{},
+					_Service_Attributes: _Service_Attributes{},
 				}
 				// pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].Inner_RI._SZ_Name()].IF[_IF_Name(v_Type.String()+"0."+value.ID.String())]._Defaults()
 				pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].Inner_RI._SZ_Name()].IF[_IF_Name(v_Type.String()+"0."+value.ID.String())].Protocols[_protocol_bgp] = true
@@ -681,7 +681,7 @@ func db_parse(xml_db *sDB) (err error) {
 				Right_Inner_RI:       value.Peer[1].Inner_RI._Sanitize(_juniper_mgmt_RI),
 				Right_Inner_IP:       v_Right_Inner_IPPrefix.Addr(),
 				Right_Inner_IPPrefix: v_Right_Inner_IPPrefix,
-				_Service_Attr:        value._Service_Attr,
+				_Service_Attributes:  value._Service_Attributes,
 			}
 			pdb_peer[value.Peer[1].ASN].VI[value.ID] = pDB_Peer_VI{
 				VI_ID_PName:          pdb_peer[value.Peer[0].ASN].VI[value.ID].VI_ID_PName,
@@ -714,7 +714,7 @@ func db_parse(xml_db *sDB) (err error) {
 				Right_Inner_RI:       pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_Inner_RI,
 				Right_Inner_IP:       pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_Inner_IP,
 				Right_Inner_IPPrefix: pdb_peer[value.Peer[0].ASN].VI[value.ID].Left_Inner_IPPrefix,
-				_Service_Attr:        pdb_peer[value.Peer[0].ASN].VI[value.ID]._Service_Attr,
+				_Service_Attributes:  pdb_peer[value.Peer[0].ASN].VI[value.ID]._Service_Attributes,
 			}
 		}()
 	}
