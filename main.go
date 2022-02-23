@@ -386,19 +386,42 @@ func db_parse(xml_db *sDB) (err error) {
 			_Application_create(b.Name, b.Term)
 		}
 		pdb_peer[value.ASN] = pDB_Peer{
-			ASN:             value.ASN,
-			ASN_PName:       v_ASN_PName,
-			Router_ID:       v_Router_ID,
-			AB:              map[_AB_Name]_Security_AB{},
-			Application:     map[_Application_Name][]_Security_Application_Term{},
-			SZ:              v_SZ,
-			NAT_Source:      value.NAT_Source,
-			NAT_Destination: value.NAT_Destination,
-			NAT_Static:      value.NAT_Static,
+			ASN:         value.ASN,
+			ASN_PName:   v_ASN_PName,
+			Router_ID:   v_Router_ID,
+			AB:          map[_AB_Name]_Security_AB{},
+			Application: map[_Application_Name][]_Security_Application_Term{},
+			SZ:          v_SZ,
+			_Security_NAT: _Security_NAT{
+				NAT_Source:      value.NAT.NAT_Source,
+				NAT_Destination: value.NAT.NAT_Destination,
+				NAT_Static:      value.NAT.NAT_Static,
+			},
 			_Security_SP: _Security_SP{
 				SP_Default: value.SP.SP_Default._Sanitize(),
-				SP_Exact:   value.SP.SP_Exact,
-				SP_Global:  value.SP.SP_Global,
+				SP_Exact: func() (outbound []_Security_SP_Exact) {
+					for _, b := range value.SP.SP_Exact {
+						for _, d := range b.To {
+							for _, f := range b.From {
+								outbound = append(outbound, _Security_SP_Exact{
+									From:                f,
+									To:                  d,
+									SP:                  b.SP,
+									_Service_Attributes: b._Service_Attributes,
+								})
+							}
+						}
+					}
+					//  value.SP.SP_Exact
+					type _Security_SP_Exact struct {
+						From _Security_Direction
+						To   _Security_Direction
+						SP   []_Security_Rule
+						_Service_Attributes
+					}
+					return
+				}(),
+				SP_Global: value.SP.SP_Global,
 			},
 			IFM:                 v_IFM,
 			RI:                  v_RI,
