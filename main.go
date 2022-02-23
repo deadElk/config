@@ -386,16 +386,20 @@ func db_parse(xml_db *sDB) (err error) {
 			_Application_create(b.Name, b.Term)
 		}
 		pdb_peer[value.ASN] = pDB_Peer{
-			ASN:                 value.ASN,
-			ASN_PName:           v_ASN_PName,
-			Router_ID:           v_Router_ID,
-			AB:                  map[_AB_Name]_Security_AB{},
-			Application:         map[_Application_Name][]_Security_Application_Term{},
-			SZ:                  v_SZ,
-			NAT_Source:          value.NAT_Source,
-			NAT_Destination:     value.NAT_Destination,
-			NAT_Static:          value.NAT_Static,
-			SP:                  value.SP,
+			ASN:             value.ASN,
+			ASN_PName:       v_ASN_PName,
+			Router_ID:       v_Router_ID,
+			AB:              map[_AB_Name]_Security_AB{},
+			Application:     map[_Application_Name][]_Security_Application_Term{},
+			SZ:              v_SZ,
+			NAT_Source:      value.NAT_Source,
+			NAT_Destination: value.NAT_Destination,
+			NAT_Static:      value.NAT_Static,
+			_Security_SP: _Security_SP{
+				SP_Default: value.SP.SP_Default._Sanitize(),
+				SP_Exact:   value.SP.SP_Exact,
+				SP_Global:  value.SP.SP_Global,
+			},
 			IFM:                 v_IFM,
 			RI:                  v_RI,
 			IF_RI:               v_IF_RI,
@@ -453,7 +457,7 @@ func db_parse(xml_db *sDB) (err error) {
 				}
 			}
 		}
-		for _, b := range value.SP.Exact {
+		for _, b := range value.SP_Exact {
 			for _, x := range b.SP {
 				for _, z := range x.Match {
 					switch len(z.AB) == 0 {
@@ -467,7 +471,7 @@ func db_parse(xml_db *sDB) (err error) {
 				}
 			}
 		}
-		for _, x := range value.SP.Global {
+		for _, x := range value.SP_Global {
 			for _, z := range x.Match {
 				switch len(z.AB) == 0 {
 				case false:

@@ -128,9 +128,9 @@ type _Security_Then struct {
 	_Service_Attributes
 }
 type _Security_SP struct {
-	Default _SP_Type             `xml:"default_policy,attr"`
-	Exact   []_Security_SP_Exact `xml:"Exact"`
-	Global  []_Security_Rule     `xml:"Global"`
+	SP_Default _SP_Type             `xml:"default_policy,attr"`
+	SP_Exact   []_Security_SP_Exact `xml:"Exact"`
+	SP_Global  []_Security_Rule     `xml:"Global"`
 }
 type _Security_SP_Exact struct {
 	From []_Security_Direction `xml:"From"`
@@ -276,23 +276,23 @@ type pDB_Peer struct {
 	NAT_Source      []_Security_NAT_Source
 	NAT_Destination []_Security_NAT_Destination
 	NAT_Static      []_Security_NAT_Static
-	SP              _Security_SP
-	IFM             map[_IFM_Name]pDB_Peer_IFM
-	RI              map[_RI_Name]pDB_Peer_RI
-	IF_RI           map[_IF_Name]_RI_Name
-	Hostname        _FQDN
-	Domain_Name     _FQDN
-	Version         string
-	Major           float64
-	IKE_GCM         bool
-	Manufacturer    string
-	Model           string
-	Serial          string
-	Root            _Secret
-	GT_List         []_GT_Name
-	VI              map[_VI_ID]pDB_Peer_VI
-	RM_ID           *_RM_ID
-	IPPrefix_List   map[netip.Prefix]bool // true = public
+	_Security_SP
+	IFM           map[_IFM_Name]pDB_Peer_IFM
+	RI            map[_RI_Name]pDB_Peer_RI
+	IF_RI         map[_IF_Name]_RI_Name
+	Hostname      _FQDN
+	Domain_Name   _FQDN
+	Version       string
+	Major         float64
+	IKE_GCM       bool
+	Manufacturer  string
+	Model         string
+	Serial        string
+	Root          _Secret
+	GT_List       []_GT_Name
+	VI            map[_VI_ID]pDB_Peer_VI
+	RM_ID         *_RM_ID
+	IPPrefix_List map[netip.Prefix]bool // true = public
 	_Service_Attributes
 }
 type pDB_Peer_Security_Zone_SZ struct {
