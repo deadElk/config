@@ -31,30 +31,31 @@ type _Security_Application_Term struct {
 	_service_attributes
 }
 type _Security_NAT_Source struct {
-	Address_Persistent bool
-	Pool               []_Security_NAT_Pool
-	Rule_Set           []_Security_NAT_Rule_Set
+	Address_Persistent bool                     `xml:"address_persistent,attr"`
+	Pool               []_Security_NAT_Pool     `xml:"Pool"`
+	Rule_Set           []_Security_NAT_Rule_Set `xml:"Rule_Set"`
 	_service_attributes
 }
 type _Security_NAT_Destination struct {
-	Pool     []_Security_NAT_Pool
-	Rule_Set []_Security_NAT_Rule_Set
+	Pool     []_Security_NAT_Pool     `xml:"Pool"`
+	Rule_Set []_Security_NAT_Rule_Set `xml:"Rule_Set"`
 	_service_attributes
 }
 type _Security_NAT_Static struct {
 	_service_attributes
 }
 type _Security_NAT_Pool struct {
-	IPPrefix netip.Prefix
-	RI       _RI_Name
-	SZ       _SZ_Name
+	Name     _Pool_Name   `xml:"name,attr"`
+	IPPrefix netip.Prefix `xml:"IPprefix,attr"`
+	RI       _RI_Name     `xml:"RI,attr"`
+	SZ       _SZ_Name     `xml:"SZ,attr"`
 	_service_attributes
 }
 type _Security_NAT_Rule_Set struct {
-	Name _Rule_Set_Name
-	From []_Security_NAT_Direction
-	To   []_Security_NAT_Direction
-	Rule []_Security_NAT_Rule
+	Name _Rule_Set_Name            `xml:"name,attr"`
+	From []_Security_NAT_Direction `xml:"From"`
+	To   []_Security_NAT_Direction `xml:"To"`
+	Rule []_Security_NAT_Rule      `xml:"Rule"`
 	_service_attributes
 }
 type _Security_NAT_Direction struct {
@@ -72,6 +73,8 @@ type _Security_Match struct {
 	Source      bool              `xml:"source,attr"`
 	Destination bool              `xml:"destination,attr"`
 	Application _Application_Name `xml:"application,attr"`
+	From_SZ     _SZ_Name          `xml:"from_zone,attr"`
+	To_SZ       _SZ_Name          `xml:"to_zone,attr"`
 	AB          _AB_Name          `xml:"AB,attr"`
 	_service_attributes
 }
@@ -84,9 +87,13 @@ type _Security_Then struct {
 	_service_attributes
 }
 type _Security_Policies_Exact struct {
-	From   []_SZ_Name                  `xml:"From"`
-	To     []_SZ_Name                  `xml:"To"`
-	Policy []_Security_Policies_Policy `xml:"Policy"`
+	From   []_Security_Policies_Direction `xml:"From"`
+	To     []_Security_Policies_Direction `xml:"To"`
+	Policy []_Security_Policies_Policy    `xml:"Policy"`
+	_service_attributes
+}
+type _Security_Policies_Direction struct {
+	SZ _SZ_Name `xml:"SZ,attr"`
 	_service_attributes
 }
 type _Security_Policies_Policy struct {
