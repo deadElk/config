@@ -418,7 +418,6 @@ func db_parse(xml_db *sDB) (err error) {
 	}
 
 	for _, value := range pdb_peer {
-
 		var (
 			_v_AB_list          = make(map[_AB_Name]bool)
 			_v_Application_list = make(map[_Application_Name]bool)

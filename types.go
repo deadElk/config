@@ -66,9 +66,9 @@ type _Security_AB struct {
 	_Service_Attributes
 }
 type _Security_Application_Term struct {
-	Name             string `xml:"name,attr"`
-	Protocol         string `xml:"protocol,attr"`
-	Destination_Port uint16 `xml:"destination_port,attr"`
+	Name             string    `xml:"name,attr"`
+	Protocol         _Protocol `xml:"protocol,attr"`
+	Destination_Port uint16    `xml:"destination_port,attr"`
 	_Service_Attributes
 }
 type _Security_NAT_Source struct {
