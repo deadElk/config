@@ -62,9 +62,6 @@ type _Security_AB struct {
 	Address   interface{}
 	Type      _AB_Type
 	Addresses map[_AB_Name]_AB_Type
-	// AB       map[_AB_Name]bool
-	// FQDN     map[_AB_Name]bool
-	// IPPrefix map[_AB_Name]bool
 	_Service_Attributes
 }
 type _Security_Application_Term struct {
