@@ -114,8 +114,8 @@ type _Security_Match struct {
 	Source      bool              `xml:"source,attr"`
 	Destination bool              `xml:"destination,attr"`
 	Application _Application_Name `xml:"application,attr"`
-	From_SZ     _SZ_Name          `xml:"from_zone,attr"`
-	To_SZ       _SZ_Name          `xml:"to_zone,attr"`
+	From_SZ     _SZ_Name          `xml:"from_SZ,attr"`
+	To_SZ       _SZ_Name          `xml:"to_SZ,attr"`
 	AB          _AB_Name          `xml:"AB,attr"`
 	_Service_Attributes
 }
@@ -126,6 +126,11 @@ type _Security_Then struct {
 	Permit          bool       `xml:"permit,attr"`
 	Deny            bool       `xml:"deny,attr"`
 	_Service_Attributes
+}
+type _Security_Policies struct {
+	Default string                     `xml:"default_policy,attr"`
+	Exact   []_Security_Policies_Exact `xml:"Exact"`
+	Global  []_Security_Rule           `xml:"Global"`
 }
 type _Security_Policies_Exact struct {
 	From   []_Security_Direction `xml:"From"`
@@ -160,14 +165,13 @@ type sDB_Peer struct {
 	Serial          string                      `xml:"serial,attr"`
 	Root            _Secret                     `xml:"root,attr"`
 	GT_List         string                      `xml:"GT_list,attr"`
+	AB              []sDB_AB                    `xml:"Security>AB"`
+	Application     []sDB_Application           `xml:"Security>Application"`
 	SZ              []sDB_Peer_Security_Zone_SZ `xml:"Security>Zone>SZ"`
 	NAT_Source      []_Security_NAT_Source      `xml:"Security>NAT>Source"`
 	NAT_Destination []_Security_NAT_Destination `xml:"Security>NAT>Destination"`
 	NAT_Static      []_Security_NAT_Static      `xml:"Security>NAT>Static"`
-	Policies_Exact  []_Security_Policies_Exact  `xml:"Security>Policies>Exact"`
-	Policies_Global []_Security_Rule            `xml:"Security>Policies>Global"`
-	AB              []sDB_AB                    `xml:"Security>AB"`
-	Application     []sDB_Application           `xml:"Security>Application"`
+	Policies        _Security_Policies          `xml:"Security>Policies"`
 	_Service_Attributes
 }
 type sDB_AB struct {
@@ -272,8 +276,7 @@ type pDB_Peer struct {
 	NAT_Source      []_Security_NAT_Source
 	NAT_Destination []_Security_NAT_Destination
 	NAT_Static      []_Security_NAT_Static
-	Policies_Exact  []_Security_Policies_Exact
-	Policies_Global []_Security_Rule
+	Policies        _Security_Policies
 	IFM             map[_IFM_Name]pDB_Peer_IFM
 	RI              map[_RI_Name]pDB_Peer_RI
 	IF_RI           map[_IF_Name]_RI_Name
