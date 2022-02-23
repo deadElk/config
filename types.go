@@ -23,6 +23,39 @@ type _Route_Attributes struct {
 	Preference uint `xml:"preference,attr"`
 }
 
+type _AB_Name string
+type _AB_Type string
+type _ASN uint32
+type _ASN_PName string
+type _Application_Name string
+type _Description string
+type _FQDN string
+type _GT_Content string
+type _GT_Name string
+type _GW_Name string
+type _GW_Type string
+type _IFM_Name string
+type _IF_Communication string
+type _IF_Mode string
+type _IF_Name string
+type _IFsM_Name string
+type _Policy string
+type _Pool_Name string
+type _Protocol string
+type _RI_Name string
+type _RM_ID [_rm_max + 1]uint32
+type _Rule_Name string
+type _Rule_Set_Name string
+type _SZ_Name string
+type _Screen_Name string
+type _Secret string
+type _Service string
+type _Table_Name string
+type _VI_ID uint
+type _VI_ID_PName string
+type _VI_Peer_ID uint
+type _VI_Type string
+
 type _Security_AB struct {
 	Address   interface{}
 	Type      _AB_Type
@@ -100,37 +133,6 @@ type _Security_Policies_Exact struct {
 	Policy []_Security_Rule      `xml:"Policy"`
 	_Service_Attributes
 }
-
-type _AB_Name string
-type _AB_Type string
-type _ASN uint32
-type _ASN_PName string
-type _Application_Name string
-type _Description string
-type _FQDN string
-type _GT_Content string
-type _GT_Name string
-type _GW_Name string
-type _GW_Type string
-type _IFM_Name string
-type _IF_Communication string
-type _IF_Mode string
-type _IF_Name string
-type _Policy string
-type _Pool_Name string
-type _Protocol string
-type _RI_Name string
-type _RM_ID [_rm_max + 1]uint32
-type _Rule_Name string
-type _Rule_Set_Name string
-type _SZ_Name string
-type _Screen_Name string
-type _Secret string
-type _Service string
-type _VI_ID uint
-type _VI_ID_PName string
-type _VI_Peer_ID uint
-type _VI_Type string
 
 type sDB struct {
 	XMLName        xml.Name          `xml:"AS4200240XXX"`
@@ -231,11 +233,11 @@ type sDB_Peer_RI_RT struct {
 	_Service_Attributes
 }
 type sDB_Peer_RI_RT_GW struct {
-	IP      netip.Addr `xml:"IP,attr"`
-	IF      _IF_Name   `xml:"IF,attr"`
-	Table   string     `xml:"table,attr"`
-	Discard bool       `xml:"discard,attr"`
-	Type    _GW_Type   `xml:"type,attr"`
+	IP      netip.Addr  `xml:"IP,attr"`
+	IF      _IF_Name    `xml:"IF,attr"`
+	Table   _Table_Name `xml:"table,attr"`
+	Discard bool        `xml:"discard,attr"`
+	Type    _GW_Type    `xml:"type,attr"`
 	_Route_Attributes
 	_Service_Attributes
 }
@@ -311,11 +313,11 @@ type pDB_Peer_RI_RT struct {
 	_Service_Attributes
 }
 type pDB_Peer_RI_RT_GW struct {
-	IP      netip.Addr // name candidate priority 1
-	IF      _IF_Name   // name candidate priority 2
-	Table   string     // name candidate priority 3
-	Discard bool       // name candidate priority 0
-	Type    _GW_Type   // fill type appropriately
+	IP      netip.Addr  // name candidate priority 1
+	IF      _IF_Name    // name candidate priority 2
+	Table   _Table_Name // name candidate priority 3
+	Discard bool        // name candidate priority 0
+	Type    _GW_Type    // fill type appropriately
 	_Route_Attributes
 	_Service_Attributes
 }
@@ -326,8 +328,8 @@ type pDB_Peer_IFM struct {
 }
 type pDB_Peer_RI_IF struct {
 	Communication _IF_Communication
-	Major         string
-	Minor         string
+	IFM           _IFM_Name
+	IFsM          _IFsM_Name
 	IP            map[netip.Addr]pDB_Peer_RI_IF_IP
 	PARP          map[netip.Addr]pDB_Peer_RI_IF_PARP
 	Disable       bool

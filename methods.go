@@ -93,6 +93,9 @@ func (inbound _IF_Name) String() string {
 func (inbound _IFM_Name) String() string {
 	return string(inbound)
 }
+func (inbound _IFsM_Name) String() string {
+	return string(inbound)
+}
 func (inbound _GW_Type) String() string {
 	return string(inbound)
 }
@@ -169,6 +172,9 @@ func (inbound _Protocol) String() string {
 	return string(inbound)
 }
 func (inbound _AB_Name) String() string {
+	return string(inbound)
+}
+func (inbound _Table_Name) String() string {
 	return string(inbound)
 }
 func (inbound _FQDN) String() string {

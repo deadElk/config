@@ -174,7 +174,7 @@ func db_parse(xml_db *sDB) (err error) {
 											case gw_v.Type == _gw_interface && len(gw_v.IF) != 0:
 												gw_i += gw_v.IF.String()
 											case gw_v.Type == _gw_table && len(gw_v.Table) != 0:
-												gw_i += gw_v.Table
+												gw_i += gw_v.Table.String()
 											case len(gw_v.Type) == 0:
 												switch {
 												case gw_v.Discard:
@@ -187,7 +187,7 @@ func db_parse(xml_db *sDB) (err error) {
 													gw_i += gw_v.IF.String()
 													gw_v.Type = _gw_interface
 												case len(gw_v.Table) != 0:
-													gw_i += gw_v.Table
+													gw_i += gw_v.Table.String()
 													gw_v.Type = _gw_table
 												default:
 													log.Warnf("peer ASN '%v', RI '%v', route Identifier '%v', no gateway found; ACTION: skip.", value.ASN, ri_v.Name, rt_v.Identifier)
@@ -229,20 +229,14 @@ func db_parse(xml_db *sDB) (err error) {
 								}
 								v_IF_RI[if_v.Name] = ri_v.Name
 								var (
-									if_o_Major string
-									if_o_Minor string
+									IF_split  = re_dot.Split(if_v.Name.String(), -1)
+									if_o_IFM  = _IFM_Name(IF_split[0])
+									if_o_IFsM = _IFsM_Name(IF_split[1])
 								)
-								func() {
-									var (
-										interim = re_dot.Split(if_v.Name.String(), -1)
-									)
-									if_o_Major = interim[0]
-									if_o_Minor = interim[1]
-								}()
 								if_o[if_v.Name] = pDB_Peer_RI_IF{
 									Communication: if_v.Communication._Sanitize(_if_mode_link),
-									Major:         if_o_Major,
-									Minor:         if_o_Minor,
+									IFM:           if_o_IFM,
+									IFsM:          if_o_IFsM,
 									IP: func() (ip_o map[netip.Addr]pDB_Peer_RI_IF_IP) {
 										ip_o = make(map[netip.Addr]pDB_Peer_RI_IF_IP)
 										for _, ip_v := range if_v.IP {
