@@ -115,6 +115,10 @@ func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 			outbound += element
 		case _RI_Name:
 			outbound += element.String()
+		case _SZ_Name:
+			outbound += element.String()
+		case _Rule_Name:
+			outbound += element.String()
 		case uint:
 			outbound += strconv.FormatUint(uint64(element), 10)
 		case uint8:

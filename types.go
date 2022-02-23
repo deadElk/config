@@ -72,32 +72,27 @@ type _Security_Application_Term struct {
 	_Service_Attributes
 }
 type _Security_NAT struct {
-	NAT_Source      []_Security_NAT_Source      `xml:"Source"`
-	NAT_Destination []_Security_NAT_Destination `xml:"Destination"`
-	NAT_Static      []_Security_NAT_Static      `xml:"Static"`
+	NAT_Source      []_Security_NAT_SD     `xml:"Source"`
+	NAT_Destination []_Security_NAT_SD     `xml:"Destination"`
+	NAT_Static      []_Security_NAT_Static `xml:"Static"`
 }
-type _Security_NAT_Source struct {
-	Address_Persistent bool                     `xml:"address_persistent,attr"`
-	Pool               []_Security_NAT_Pool     `xml:"Pool"`
-	Rule_Set           []_Security_NAT_Rule_Set `xml:"Rule_Set"`
-	_Service_Attributes
-}
-type _Security_NAT_Destination struct {
-	Pool     []_Security_NAT_Pool     `xml:"Pool"`
-	Rule_Set []_Security_NAT_Rule_Set `xml:"Rule_Set"`
+type _Security_NAT_SD struct {
+	Address_Persistent bool                 `xml:"address_persistent,attr"`
+	Pool               []_Security_Pool     `xml:"Pool"`
+	Rule_Set           []_Security_Rule_Set `xml:"Rule_Set"`
 	_Service_Attributes
 }
 type _Security_NAT_Static struct {
 	_Service_Attributes
 }
-type _Security_NAT_Pool struct {
+type _Security_Pool struct {
 	Name     _Pool_Name   `xml:"name,attr"`
 	IPPrefix netip.Prefix `xml:"IPprefix,attr"`
 	RI       _RI_Name     `xml:"RI,attr"`
 	SZ       _SZ_Name     `xml:"SZ,attr"`
 	_Service_Attributes
 }
-type _Security_NAT_Rule_Set struct {
+type _Security_Rule_Set struct {
 	Name _Rule_Set_Name        `xml:"name,attr"`
 	From []_Security_Direction `xml:"From"`
 	To   []_Security_Direction `xml:"To"`
@@ -116,12 +111,11 @@ type _Security_Rule struct {
 	_Service_Attributes
 }
 type _Security_Match struct {
-	Source      bool              `xml:"source,attr"`
-	Destination bool              `xml:"destination,attr"`
-	Application _Application_Name `xml:"application,attr"`
-	From_SZ     _SZ_Name          `xml:"from_SZ,attr"`
-	To_SZ       _SZ_Name          `xml:"to_SZ,attr"`
-	AB          _AB_Name          `xml:"AB,attr"`
+	Source_AB      _AB_Name          `xml:"source_AB,attr"`
+	Destination_AB _AB_Name          `xml:"destination_AB,attr"`
+	Application    _Application_Name `xml:"application,attr"`
+	From_SZ        _SZ_Name          `xml:"from_SZ,attr"`
+	To_SZ          _SZ_Name          `xml:"to_SZ,attr"`
 	_Service_Attributes
 }
 type _Security_Then struct {
@@ -130,29 +124,13 @@ type _Security_Then struct {
 	Pool            _Pool_Name `xml:"pool,attr"`
 	Permit          bool       `xml:"permit,attr"`
 	Deny            bool       `xml:"deny,attr"`
-	_Service_Attributes
-}
-type sDB_Security_SP struct {
-	SP_Default _SP_Type                `xml:"default_policy,attr"`
-	SP_Exact   []sDB_Security_SP_Exact `xml:"Exact"`
-	SP_Global  []_Security_Rule        `xml:"Global"`
-}
-type sDB_Security_SP_Exact struct {
-	From []_Security_Direction `xml:"From"`
-	To   []_Security_Direction `xml:"To"`
-	SP   []_Security_Rule      `xml:"SP"`
+	Log             bool       `xml:"log,attr"`
 	_Service_Attributes
 }
 type _Security_SP struct {
-	SP_Default _SP_Type
-	SP_Exact   []_Security_SP_Exact
-	SP_Global  []_Security_Rule
-}
-type _Security_SP_Exact struct {
-	From _Security_Direction
-	To   _Security_Direction
-	SP   []_Security_Rule
-	_Service_Attributes
+	SP_Default _SP_Type             `xml:"default_policy,attr"`
+	SP_Exact   []_Security_Rule_Set `xml:"Exact"`
+	SP_Global  []_Security_Rule     `xml:"Global"`
 }
 
 type sDB struct {
@@ -185,10 +163,10 @@ type sDB_Peer struct {
 	Application  []sDB_Application           `xml:"Security>Application"`
 	SZ           []sDB_Peer_Security_Zone_SZ `xml:"Security>Zone>SZ"`
 	NAT          _Security_NAT               `xml:"Security>NAT"`
-	// NAT_Source      []_Security_NAT_Source      `xml:"Security>NAT>Source"`
+	// NAT_Source      []_Security_NAT_SD      `xml:"Security>NAT>Source"`
 	// NAT_Destination []_Security_NAT_Destination `xml:"Security>NAT>Destination"`
 	// NAT_Static      []_Security_NAT_Static      `xml:"Security>NAT>Static"`
-	SP sDB_Security_SP `xml:"Security>SP"`
+	SP _Security_SP `xml:"Security>SP"`
 	_Service_Attributes
 }
 type sDB_AB struct {

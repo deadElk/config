@@ -399,25 +399,18 @@ func db_parse(xml_db *sDB) (err error) {
 			},
 			_Security_SP: _Security_SP{
 				SP_Default: value.SP.SP_Default._Sanitize(),
-				SP_Exact: func() (outbound []_Security_SP_Exact) {
+				SP_Exact: func() (outbound []_Security_Rule_Set) {
 					for _, b := range value.SP.SP_Exact {
 						for _, d := range b.To {
 							for _, f := range b.From {
-								outbound = append(outbound, _Security_SP_Exact{
-									From:                f,
-									To:                  d,
-									SP:                  b.SP,
+								outbound = append(outbound, _Security_Rule_Set{
+									From:                []_Security_Direction{f},
+									To:                  []_Security_Direction{d},
+									Rule:                b.Rule,
 									_Service_Attributes: b._Service_Attributes,
 								})
 							}
 						}
-					}
-					//  value.SP.SP_Exact
-					type _Security_SP_Exact struct {
-						From _Security_Direction
-						To   _Security_Direction
-						SP   []_Security_Rule
-						_Service_Attributes
 					}
 					return
 				}(),
@@ -441,8 +434,10 @@ func db_parse(xml_db *sDB) (err error) {
 			IPPrefix_List:       v_IP_List,
 			_Service_Attributes: value._Service_Attributes,
 		}
-	}
 
+		b := pdb_peer[value.ASN]
+		b = b
+	}
 	for _, value := range pdb_peer {
 		var (
 			_v_AB_list          = make(map[_AB_Name]bool)
@@ -452,9 +447,13 @@ func db_parse(xml_db *sDB) (err error) {
 			for _, d := range b.Rule_Set {
 				for _, x := range d.Rule {
 					for _, z := range x.Match {
-						switch len(z.AB) == 0 {
+						switch len(z.Source_AB) == 0 {
 						case false:
-							_v_AB_list[z.AB] = true
+							_v_AB_list[z.Source_AB] = true
+						}
+						switch len(z.Destination_AB) == 0 {
+						case false:
+							_v_AB_list[z.Destination_AB] = true
 						}
 						switch len(z.Application) == 0 {
 						case false:
@@ -468,9 +467,13 @@ func db_parse(xml_db *sDB) (err error) {
 			for _, d := range b.Rule_Set {
 				for _, x := range d.Rule {
 					for _, z := range x.Match {
-						switch len(z.AB) == 0 {
+						switch len(z.Source_AB) == 0 {
 						case false:
-							_v_AB_list[z.AB] = true
+							_v_AB_list[z.Source_AB] = true
+						}
+						switch len(z.Destination_AB) == 0 {
+						case false:
+							_v_AB_list[z.Destination_AB] = true
 						}
 						switch len(z.Application) == 0 {
 						case false:
@@ -481,11 +484,15 @@ func db_parse(xml_db *sDB) (err error) {
 			}
 		}
 		for _, b := range value.SP_Exact {
-			for _, x := range b.SP {
+			for _, x := range b.Rule {
 				for _, z := range x.Match {
-					switch len(z.AB) == 0 {
+					switch len(z.Source_AB) == 0 {
 					case false:
-						_v_AB_list[z.AB] = true
+						_v_AB_list[z.Source_AB] = true
+					}
+					switch len(z.Destination_AB) == 0 {
+					case false:
+						_v_AB_list[z.Destination_AB] = true
 					}
 					switch len(z.Application) == 0 {
 					case false:
@@ -496,9 +503,13 @@ func db_parse(xml_db *sDB) (err error) {
 		}
 		for _, x := range value.SP_Global {
 			for _, z := range x.Match {
-				switch len(z.AB) == 0 {
+				switch len(z.Source_AB) == 0 {
 				case false:
-					_v_AB_list[z.AB] = true
+					_v_AB_list[z.Source_AB] = true
+				}
+				switch len(z.Destination_AB) == 0 {
+				case false:
+					_v_AB_list[z.Destination_AB] = true
 				}
 				switch len(z.Application) == 0 {
 				case false:
@@ -755,7 +766,7 @@ func config_upload() (err error) {
 		)
 		switch err_i := os.WriteFile(fn, value, 0600); err_i == nil {
 		case true:
-			log.Infof("OK '%v'", index)
+			log.Debugf("OK '%v'", index)
 		case false:
 			log.Errorf("Fail '%v' with error '%v'", index, err_i)
 		}
@@ -804,6 +815,6 @@ func config_upload() (err error) {
 		log.Errorf("Fail 'hosts.txt' with error '%v'", err_i)
 	}
 
-	log.Infof("\n%s\n", hosts)
+	log.Debugf("\n%s\n", hosts)
 	return
 }
