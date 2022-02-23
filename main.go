@@ -432,11 +432,15 @@ func db_parse(xml_db *sDB) (err error) {
 		)
 		for _, b := range value.NAT_Source {
 			for _, d := range b.Rule_Set {
-				for _, f := range d.Rule {
-					for _, h := range f.Match {
-						switch len(h.AB) == 0 {
+				for _, x := range d.Rule {
+					for _, z := range x.Match {
+						switch len(z.AB) == 0 {
 						case false:
-							_v_AB_list[h.AB] = true
+							_v_AB_list[z.AB] = true
+						}
+						switch len(z.Application) == 0 {
+						case false:
+							_v_Application_list[z.Application] = true
 						}
 					}
 				}
@@ -444,42 +448,54 @@ func db_parse(xml_db *sDB) (err error) {
 		}
 		for _, b := range value.NAT_Destination {
 			for _, d := range b.Rule_Set {
-				for _, f := range d.Rule {
-					for _, h := range f.Match {
-						switch len(h.AB) == 0 {
+				for _, x := range d.Rule {
+					for _, z := range x.Match {
+						switch len(z.AB) == 0 {
 						case false:
-							_v_AB_list[h.AB] = true
+							_v_AB_list[z.AB] = true
+						}
+						switch len(z.Application) == 0 {
+						case false:
+							_v_Application_list[z.Application] = true
 						}
 					}
 				}
 			}
 		}
 		for _, b := range value.Policies_Exact {
-			for _, d := range b.Policy {
-				for _, f := range d.Match {
-					switch len(f.AB) == 0 {
+			for _, x := range b.Policy {
+				for _, z := range x.Match {
+					switch len(z.AB) == 0 {
 					case false:
-						_v_AB_list[f.AB] = true
+						_v_AB_list[z.AB] = true
+					}
+					switch len(z.Application) == 0 {
+					case false:
+						_v_Application_list[z.Application] = true
 					}
 				}
 			}
 		}
-		for _, b := range value.Policies_Global {
-			for _, f := range b.Match {
-				switch len(f.AB) == 0 {
+		for _, x := range value.Policies_Global {
+			for _, z := range x.Match {
+				switch len(z.AB) == 0 {
 				case false:
-					_v_AB_list[f.AB] = true
+					_v_AB_list[z.AB] = true
+				}
+				switch len(z.Application) == 0 {
+				case false:
+					_v_Application_list[z.Application] = true
 				}
 			}
 		}
 
 		_v_AB_list = _AB_rparse(_v_AB_list)
 
-		for h := range _v_AB_list {
-			value.AB[h] = pdb_ab[h]
+		for a := range _v_AB_list {
+			value.AB[a] = pdb_ab[a]
 		}
-		for h := range _v_Application_list {
-			value.Application[h] = pdb_appl[h]
+		for a := range _v_Application_list {
+			value.Application[a] = pdb_appl[a]
 		}
 	}
 
