@@ -39,7 +39,6 @@ type _IF_Communication string
 type _IF_Mode string
 type _IF_Name string
 type _IFsM_Name string
-type _Policy string
 type _Pool_Name string
 type _Protocol string
 type _RI_Name string
@@ -55,6 +54,7 @@ type _VI_ID uint
 type _VI_ID_PName string
 type _VI_Peer_ID uint
 type _VI_Type string
+type _SP_Type string
 
 type _Security_AB struct {
 	Address   interface{}
@@ -127,15 +127,15 @@ type _Security_Then struct {
 	Deny            bool       `xml:"deny,attr"`
 	_Service_Attributes
 }
-type _Security_Policies struct {
-	Default string                     `xml:"default_policy,attr"`
-	Exact   []_Security_Policies_Exact `xml:"Exact"`
-	Global  []_Security_Rule           `xml:"Global"`
+type _Security_SP struct {
+	Default _SP_Type             `xml:"default_policy,attr"`
+	Exact   []_Security_SP_Exact `xml:"Exact"`
+	Global  []_Security_Rule     `xml:"Global"`
 }
-type _Security_Policies_Exact struct {
-	From   []_Security_Direction `xml:"From"`
-	To     []_Security_Direction `xml:"To"`
-	Policy []_Security_Rule      `xml:"Policy"`
+type _Security_SP_Exact struct {
+	From []_Security_Direction `xml:"From"`
+	To   []_Security_Direction `xml:"To"`
+	SP   []_Security_Rule      `xml:"SP"`
 	_Service_Attributes
 }
 
@@ -171,7 +171,7 @@ type sDB_Peer struct {
 	NAT_Source      []_Security_NAT_Source      `xml:"Security>NAT>Source"`
 	NAT_Destination []_Security_NAT_Destination `xml:"Security>NAT>Destination"`
 	NAT_Static      []_Security_NAT_Static      `xml:"Security>NAT>Static"`
-	Policies        _Security_Policies          `xml:"Security>Policies"`
+	SP              _Security_SP                `xml:"Security>SP"`
 	_Service_Attributes
 }
 type sDB_AB struct {
@@ -276,7 +276,7 @@ type pDB_Peer struct {
 	NAT_Source      []_Security_NAT_Source
 	NAT_Destination []_Security_NAT_Destination
 	NAT_Static      []_Security_NAT_Static
-	Policies        _Security_Policies
+	SP              _Security_SP
 	IFM             map[_IFM_Name]pDB_Peer_IFM
 	RI              map[_RI_Name]pDB_Peer_RI
 	IF_RI           map[_IF_Name]_RI_Name

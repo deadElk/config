@@ -39,9 +39,6 @@ const (
 	_if_mode_link             _IF_Mode          = "link"
 	_rm_bits                  uint              = 2
 	_rm_max                                     = 32/_rm_bits - 1
-	_policy_restrictive       _Policy           = "restrictive"
-	_policy_permissive        _Policy           = "permissive"
-	_default_policy                             = _policy_permissive
 	_service_all              _Service          = "all"
 	_service_any_service      _Service          = "any-service"
 	_service_bootp            _Service          = "bootp"
@@ -58,4 +55,7 @@ const (
 	_AB_Type_set              _AB_Type          = "set"
 	_AB_Type_ipprefix         _AB_Type          = "ipprefix"
 	_AB_Type_fqdn             _AB_Type          = "fqdn"
+	_SP_Type_permit           _SP_Type          = "permit-all"
+	_SP_Type_deny             _SP_Type          = "deny-all"
+	_default_SP_Type                            = _SP_Type_permit
 )

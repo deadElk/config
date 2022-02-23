@@ -54,7 +54,7 @@ func (inbound _IF_Communication) _Sanitize(mode _IF_Mode) (outbound _IF_Communic
 			outbound = _default_if_comm
 		}
 	}
-	log.Warnf("unknow IF Communication type '%v'; ACTION: use '%v'.", inbound, outbound)
+	log.Warnf("unknown IF Communication type '%v'; ACTION: use '%v'.", inbound, outbound)
 	return
 }
 func (inbound _Description) _Sanitize(default_description _Description) _Description {
@@ -87,6 +87,16 @@ func (inbound _RI_Name) _Sanitize(decline ..._RI_Name) (outbound _RI_Name) {
 	}
 	return inbound
 }
+func (inbound _SP_Type) _Sanitize() _SP_Type {
+	switch inbound {
+	case _SP_Type_permit, _SP_Type_deny:
+		return inbound
+	case "":
+	default:
+		log.Warnf("unknown SP type '%v'; ACTION: use '%v'.", inbound, _default_SP_Type)
+	}
+	return _default_SP_Type
+}
 func (inbound _IF_Name) String() string {
 	return string(inbound)
 }
@@ -103,22 +113,6 @@ func (inbound _GT_Name) String() string {
 	return string(inbound)
 }
 func (inbound _GT_Content) String() string {
-	return string(inbound)
-}
-func (inbound _Policy) _Sanitize() _Policy {
-	switch len(inbound) == 0 {
-	case true:
-		return _default_policy
-	}
-	switch inbound {
-	case _policy_restrictive, _policy_permissive:
-		return inbound
-	default:
-		log.Warnf("unknow security policy '%v'; ACTION: use default '%v'.", inbound, _default_policy)
-		return _default_policy
-	}
-}
-func (inbound _Policy) String() string {
 	return string(inbound)
 }
 func (inbound _Secret) _Sanitize(length uint, message ...string) _Secret {
@@ -161,7 +155,7 @@ func (inbound _VI_Type) _Sanitize() _VI_Type {
 		log.Errorf("unsupported VI type '%v'; ACTION: use default '%v'.", inbound, _default_vi)
 		return _default_vi
 	default:
-		log.Warnf("unknow VI type '%v'; ACTION: use default '%v'.", inbound, _default_vi)
+		log.Warnf("unknown VI type '%v'; ACTION: use default '%v'.", inbound, _default_vi)
 		return _default_vi
 	}
 }

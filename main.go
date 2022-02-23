@@ -395,7 +395,7 @@ func db_parse(xml_db *sDB) (err error) {
 			NAT_Source:          value.NAT_Source,
 			NAT_Destination:     value.NAT_Destination,
 			NAT_Static:          value.NAT_Static,
-			Policies:            value.Policies,
+			SP:                  value.SP,
 			IFM:                 v_IFM,
 			RI:                  v_RI,
 			IF_RI:               v_IF_RI,
@@ -453,8 +453,8 @@ func db_parse(xml_db *sDB) (err error) {
 				}
 			}
 		}
-		for _, b := range value.Policies.Exact {
-			for _, x := range b.Policy {
+		for _, b := range value.SP.Exact {
+			for _, x := range b.SP {
 				for _, z := range x.Match {
 					switch len(z.AB) == 0 {
 					case false:
@@ -467,7 +467,7 @@ func db_parse(xml_db *sDB) (err error) {
 				}
 			}
 		}
-		for _, x := range value.Policies.Global {
+		for _, x := range value.SP.Global {
 			for _, z := range x.Match {
 				switch len(z.AB) == 0 {
 				case false:
