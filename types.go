@@ -47,6 +47,7 @@ type _RM_ID [_rm_max + 1]uint32
 type _Rule_Name string
 type _Rule_Set_Name string
 type _SZ_Name string
+type _RG_Name string
 type _Screen_Name string
 type _Secret string
 type _Service string
@@ -73,17 +74,14 @@ type _Security_Application_Term struct {
 	_Service_Attributes
 }
 type _Security_NAT struct {
-	NAT_Source      []_Security_NAT_SD     `xml:"Source"`
-	NAT_Destination []_Security_NAT_SD     `xml:"Destination"`
-	NAT_Static      []_Security_NAT_Static `xml:"Static"`
+	NAT_Source      []_Security_NAT_SD `xml:"Source"`
+	NAT_Destination []_Security_NAT_SD `xml:"Destination"`
+	NAT_Static      []_Security_NAT_SD `xml:"Static"`
 }
 type _Security_NAT_SD struct {
 	Address_Persistent bool                 `xml:"address_persistent,attr"`
 	Pool               []_Security_Pool     `xml:"Pool"`
 	Rule_Set           []_Security_Rule_Set `xml:"Rule_Set"`
-	_Service_Attributes
-}
-type _Security_NAT_Static struct {
 	_Service_Attributes
 }
 type _Security_Pool struct {
@@ -101,8 +99,10 @@ type _Security_Rule_Set struct {
 	_Service_Attributes
 }
 type _Security_Direction struct {
+	IF _IF_Name `xml:"IF,attr"`
 	SZ _SZ_Name `xml:"SZ,attr"`
 	RI _RI_Name `xml:"RI,attr"`
+	RG _RG_Name `xml:"RG,attr"`
 	_Service_Attributes
 }
 type _Security_Rule struct {
@@ -112,20 +112,29 @@ type _Security_Rule struct {
 	_Service_Attributes
 }
 type _Security_Match struct {
-	Source_AB      _AB_Name          `xml:"source_AB,attr"`
-	Destination_AB _AB_Name          `xml:"destination_AB,attr"`
-	Application    _Application_Name `xml:"application,attr"`
-	From_SZ        _SZ_Name          `xml:"from_SZ,attr"`
-	To_SZ          _SZ_Name          `xml:"to_SZ,attr"`
+	Source_AB             _AB_Name          `xml:"source_AB,attr"`
+	Destination_AB        _AB_Name          `xml:"destination_AB,attr"`
+	Application           _Application_Name `xml:"application,attr"`
+	From_SZ               _SZ_Name          `xml:"from_SZ,attr"`
+	To_SZ                 _SZ_Name          `xml:"to_SZ,attr"`
+	From_RI               _RI_Name          `xml:"from_RI,attr"`
+	To_RI                 _RI_Name          `xml:"to_RI,attr"`
+	Source_Port_Low       uint16            `xml:"source_port_low,attr"`
+	Source_Port_High      uint16            `xml:"source_port_high,attr"`
+	Destination_Port_Low  uint16            `xml:"destination_port_low,attr"`
+	Destination_Port_High uint16            `xml:"destination_port_high,attr"`
 	_Service_Attributes
 }
 type _Security_Then struct {
-	Source_NAT      bool       `xml:"source_NAT,attr"`
-	Destination_NAT bool       `xml:"destination_NAT,attr"`
-	Pool            _Pool_Name `xml:"pool,attr"`
-	Permit          bool       `xml:"permit,attr"`
-	Deny            bool       `xml:"deny,attr"`
-	Log             bool       `xml:"log,attr"`
+	Source_NAT       bool       `xml:"source_NAT,attr"`
+	Destination_NAT  bool       `xml:"destination_NAT,attr"`
+	Static_NAT       bool       `xml:"static_NAT,attr"`
+	Pool             _Pool_Name `xml:"pool,attr"`
+	Permit           bool       `xml:"permit,attr"`
+	Deny             bool       `xml:"deny,attr"`
+	Log              bool       `xml:"log,attr"`
+	Mapped_Port_Low  uint16     `xml:"mapped_port_low,attr"`
+	Mapped_Port_High uint16     `xml:"mapped_port_high,attr"`
 	_Service_Attributes
 }
 type _Security_SP struct {
@@ -163,10 +172,7 @@ type sDB_Peer struct {
 	Application  []sDB_Application           `xml:"Security>Application"`
 	SZ           []sDB_Peer_Security_Zone_SZ `xml:"Security>Zone>SZ"`
 	NAT          _Security_NAT               `xml:"Security>NAT"`
-	// NAT_Source      []_Security_NAT_SD      `xml:"Security>NAT>Source"`
-	// NAT_Destination []_Security_NAT_Destination `xml:"Security>NAT>Destination"`
-	// NAT_Static      []_Security_NAT_Static      `xml:"Security>NAT>Static"`
-	SP _Security_SP `xml:"Security>SP"`
+	SP           _Security_SP                `xml:"Security>SP"`
 	_Service_Attributes
 }
 type sDB_AB struct {

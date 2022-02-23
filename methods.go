@@ -73,6 +73,9 @@ func (inbound _GT_Content) _Sanitize() (outbound _GT_Content) {
 func (inbound _RI_Name) String() string {
 	return string(inbound)
 }
+func (inbound _RG_Name) String() string {
+	return string(inbound)
+}
 func (inbound _RI_Name) _Sanitize(decline ..._RI_Name) (outbound _RI_Name) {
 	outbound = _juniper_default_RI
 	switch len(inbound) == 0 || inbound == _juniper_default_RI {
