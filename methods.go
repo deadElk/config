@@ -174,6 +174,9 @@ func (inbound _AB_Name) String() string {
 func (inbound _Table_Name) String() string {
 	return string(inbound)
 }
+func (inbound _Term_Name) String() string {
+	return string(inbound)
+}
 func (inbound _FQDN) String() string {
 	return string(inbound)
 }
@@ -186,10 +189,10 @@ func (inbound _SZ_Name) String() string {
 func (inbound _Rule_Name) String() string {
 	return string(inbound)
 }
-func (inbound _Policy_Statement_Protocol) String() string {
+func (inbound _PO_PS_Protocol) String() string {
 	return string(inbound)
 }
-func (inbound _Policy_Statement_Action) String() string {
+func (inbound _PO_PS_Action) String() string {
 	return string(inbound)
 }
 func (inbound _FQDN) _AB_Name() _AB_Name {

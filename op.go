@@ -390,10 +390,10 @@ func db_parse(xml_db *sDB) (err error) {
 			AB:          map[_AB_Name]_Security_AB{},
 			Application: map[_Application_Name][]_Security_Application_Term{},
 			SZ:          v_SZ,
-			_Security_NAT: _Security_NAT{
-				NAT_Source:      value.NAT.NAT_Source,
-				NAT_Destination: value.NAT.NAT_Destination,
-				NAT_Static:      value.NAT.NAT_Static,
+			_Security_NAT_List: _Security_NAT_List{
+				Source:      value.NAT.Source,
+				Destination: value.NAT.Destination,
+				Static:      value.NAT.Static,
 			},
 			_Security_SP: _Security_SP{
 				SP_Default: value.SP.SP_Default._Sanitize(),
@@ -441,7 +441,7 @@ func db_parse(xml_db *sDB) (err error) {
 			_v_AB_list          = make(map[_AB_Name]bool)
 			_v_Application_list = make(map[_Application_Name]bool)
 		)
-		for _, b := range value.NAT_Source {
+		for _, b := range value.Source {
 			for _, d := range b.Rule_Set {
 				for _, x := range d.Rule {
 					for _, z := range x.Match {
@@ -461,7 +461,7 @@ func db_parse(xml_db *sDB) (err error) {
 				}
 			}
 		}
-		for _, b := range value.NAT_Destination {
+		for _, b := range value.Destination {
 			for _, d := range b.Rule_Set {
 				for _, x := range d.Rule {
 					for _, z := range x.Match {
