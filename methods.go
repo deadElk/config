@@ -173,3 +173,18 @@ func (inbound _Action) _SP_Validate() _Action {
 	log.Warnf("unknown SP default action '%v'; ACTION: use default '%v'.", inbound, _Action_permit_all)
 	return _Action_permit_all
 }
+
+func (inbound _IPPrefix) String() string {
+	switch inbound.IsValid() {
+	case false:
+		return ""
+	}
+	return inbound.String()
+}
+func (inbound _IPAddr) String() string {
+	switch inbound.IsValid() {
+	case false:
+		return ""
+	}
+	return inbound.StringExpanded()
+}

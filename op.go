@@ -80,8 +80,6 @@ func db_parse(xml_db *sDB) (err error) {
 		}
 
 		var (
-			// _v_AB_list          = make(map[_Name]bool)
-			// _v_Application_list = make(map[_Name]bool)
 			v_IP_List   = make(map[netip.Prefix]bool)
 			v_ASN_PName = value.ASN._PName()
 			v_Hostname  = func() (outbound _FQDN) {
@@ -155,7 +153,10 @@ func db_parse(xml_db *sDB) (err error) {
 										gw_o = make(map[_Name]pDB_Peer_RI_RT_GW)
 										for _, gw_v := range rt_v.GW {
 											var (
-												gw_i = strconv.FormatUint(uint64(gw_v.Metric), 10) + "_"
+												gw_i  = strconv.FormatUint(uint64(gw_v.Metric), 10) + "_"
+												gw_IF _Name
+												gw_IP _IPAddr
+												gw_T  _Name
 											)
 											switch {
 											case gw_v.Action == _Action_discard:
@@ -163,52 +164,50 @@ func db_parse(xml_db *sDB) (err error) {
 												gw_v.Action = _Commands[gw_v.Action].(_Action)
 											case (gw_v.Action == _Action_qnh || gw_v.Action == _Action_hop) && gw_v.IP.IsValid():
 												gw_i += gw_v.IP.String()
+												gw_IP = gw_v.IP
 												gw_v.Action = _Commands[gw_v.Action].(_Action)
-											case (gw_v.Action == _Action_qnh || gw_v.Action == _Action_hop) && len(gw_v.IF) != 0:
+											case (gw_v.Action == _Action_qnh || gw_v.Action == _Action_hop || gw_v.Action == _Action_interface) && len(gw_v.IF) != 0:
 												gw_i += gw_v.IF.String()
+												gw_IF = gw_v.IF
 												gw_v.Action = _Commands[gw_v.Action].(_Action)
-
 											case gw_v.Action == _Action_hop && gw_v.IP.IsValid():
 												gw_i += gw_v.IP.String()
+												gw_IP = gw_v.IP
 												gw_v.Action = _Commands[gw_v.Action].(_Action)
 											case gw_v.Action == _Action_interface && len(gw_v.IF) != 0:
 												gw_i += gw_v.IF.String()
+												gw_IF = gw_v.IF
 												gw_v.Action = _Commands[gw_v.Action].(_Action)
-
 											case gw_v.Action == _Action_table && len(gw_v.Table) != 0:
 												gw_i += gw_v.Table.String()
+												gw_T = gw_v.Table
 												gw_v.Action = _Commands[gw_v.Action].(_Action)
-
-											case len(gw_v.Action) == 0:
-
-												switch {
-												case gw_v.IP.IsValid():
-													gw_i += gw_v.IP.String()
-													gw_v.Action = _Commands[_Action_hop].(_Action)
-												case len(gw_v.IF) != 0:
-													gw_i += gw_v.IF.String()
-													gw_v.Action = _Commands[_Action_interface].(_Action)
-												case len(gw_v.Table) != 0:
-													gw_i += gw_v.Table.String()
-													gw_v.Action = _Commands[_Action_table].(_Action)
-												default:
-													log.Warnf("peer ASN '%v', RI '%v', route Identifier '%v', no gateway found; ACTION: skip.", value.ASN, ri_v.Name, rt_v.Identifier)
-													continue
-												}
+											case len(gw_v.Action) == 0 && gw_v.IP.IsValid():
+												gw_i += gw_v.IP.String()
+												gw_IP = gw_v.IP
+												gw_v.Action = _Commands[_Action_hop].(_Action)
+											case len(gw_v.Action) == 0 && len(gw_v.IF) != 0:
+												gw_i += gw_v.IF.String()
+												gw_IF = gw_v.IF
+												gw_v.Action = _Commands[_Action_interface].(_Action)
+											case len(gw_v.Action) == 0 && len(gw_v.Table) != 0:
+												gw_i += gw_v.Table.String()
+												gw_T = gw_v.Table
+												gw_v.Action = _Commands[_Action_table].(_Action)
 											default:
-												log.Warnf("peer ASN '%v', RI '%v', route Identifier '%v', unknown gateway action '%v'; ACTION: skip.", value.ASN, ri_v.Name, rt_v.Identifier, gw_v.Action)
+												log.Warnf("peer ASN '%v', RI '%v', route Identifier '%v', no gateway found or unknown gateway action '%v'; ACTION: skip.", value.ASN, ri_v.Name, rt_v.Identifier, gw_v.Action)
+												gw_i += _Action_discard.String()
 												continue
 											}
-
 											switch _, flag := gw_o[_Name(gw_i)]; flag {
 											case true:
 												log.Warnf("peer ASN '%v', RI '%v', route Identifier '%v', gateway '%v' already defined; ACTION: skip.", value.ASN, ri_v.Name, rt_v.Identifier, gw_i)
 												continue
 											}
 											gw_o[_Name(gw_i)] = pDB_Peer_RI_RT_GW{
-												IP:                  gw_v.IP,
-												IF:                  gw_v.IF,
-												Table:               gw_v.Table,
+												IP:                  gw_IP,
+												IF:                  gw_IF,
+												Table:               gw_T,
 												Action:              gw_v.Action,
 												_Route_Attributes:   gw_v._Route_Attributes,
 												_Service_Attributes: gw_v._Service_Attributes,

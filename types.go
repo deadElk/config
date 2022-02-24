@@ -24,6 +24,13 @@ type _Route_Attributes struct {
 	Preference uint    `xml:"preference,attr"`
 }
 
+type _IPPrefix struct {
+	*netip.Prefix
+}
+type _IPAddr struct {
+	netip.Addr
+}
+
 type _ASN uint32
 type _Action string
 type _Communication string
@@ -255,10 +262,10 @@ type sDB_Peer_RI_RT struct {
 	_Service_Attributes
 }
 type sDB_Peer_RI_RT_GW struct {
-	IP     netip.Addr `xml:"IP,attr"`
-	IF     _Name      `xml:"IF,attr"`
-	Table  _Name      `xml:"table,attr"`
-	Action _Action    `xml:"action,attr"`
+	IP     _IPAddr `xml:"IP,attr"`
+	IF     _Name   `xml:"IF,attr"`
+	Table  _Name   `xml:"table,attr"`
+	Action _Action `xml:"action,attr"`
 	_Route_Attributes
 	_Service_Attributes
 }
@@ -330,10 +337,10 @@ type pDB_Peer_RI_RT struct {
 	_Service_Attributes
 }
 type pDB_Peer_RI_RT_GW struct {
-	IP     netip.Addr // name candidate priority 1
-	IF     _Name      // name candidate priority 2
-	Table  _Name      // name candidate priority 3
-	Action _Action    // fill action appropriately
+	IP     _IPAddr // name candidate priority 1
+	IF     _Name   // name candidate priority 2
+	Table  _Name   // name candidate priority 3
+	Action _Action // fill action appropriately
 	_Route_Attributes
 	_Service_Attributes
 }
