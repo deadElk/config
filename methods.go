@@ -186,6 +186,12 @@ func (inbound _SZ_Name) String() string {
 func (inbound _Rule_Name) String() string {
 	return string(inbound)
 }
+func (inbound _Policy_Statement_Protocol) String() string {
+	return string(inbound)
+}
+func (inbound _Policy_Statement_Action) String() string {
+	return string(inbound)
+}
 func (inbound _FQDN) _AB_Name() _AB_Name {
 	return _AB_Name(inbound.String())
 }
