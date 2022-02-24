@@ -40,18 +40,18 @@ func (inbound _IF_Communication) _Sanitize(mode _IF_Mode) (outbound _IF_Communic
 		case _if_comm_ptmp, _if_comm_ptp:
 			return inbound
 		case "":
-			return _default_vi_comm
+			return _vi_comm_
 		default:
-			outbound = _default_vi_comm
+			outbound = _vi_comm_
 		}
 	case _if_mode_link:
 		switch inbound {
 		case _if_comm_ptmp, _if_comm_ptp:
 			return inbound
 		case "":
-			return _default_if_comm
+			return _if_comm_
 		default:
-			outbound = _default_if_comm
+			outbound = _if_comm_
 		}
 	}
 	log.Warnf("unknown IF Communication type '%v'; ACTION: use '%v'.", inbound, outbound)
@@ -77,8 +77,8 @@ func (inbound _RG_Name) String() string {
 	return string(inbound)
 }
 func (inbound _RI_Name) _Sanitize(decline ..._RI_Name) (outbound _RI_Name) {
-	outbound = _juniper_default_RI
-	switch len(inbound) == 0 || inbound == _juniper_default_RI {
+	outbound = _juniper_RI_
+	switch len(inbound) == 0 || inbound == _juniper_RI_ {
 	case true:
 		return
 	}
@@ -96,9 +96,9 @@ func (inbound _SP_Type) _Sanitize() _SP_Type {
 		return inbound
 	case "":
 	default:
-		log.Warnf("unknown SP type '%v'; ACTION: use '%v'.", inbound, _default_SP_Type)
+		log.Warnf("unknown SP type '%v'; ACTION: use '%v'.", inbound, _SP_Type_)
 	}
-	return _default_SP_Type
+	return _SP_Type_
 }
 func (inbound _IF_Name) String() string {
 	return string(inbound)
@@ -149,17 +149,17 @@ func (inbound _VI_Type) String() string {
 func (inbound _VI_Type) _Sanitize() _VI_Type {
 	switch len(inbound) == 0 {
 	case true:
-		return _default_vi
+		return _vi_
 	}
 	switch inbound {
 	case _vi_st:
 		return inbound
 	case _vi_gr, _vi_lt:
-		log.Errorf("unsupported VI type '%v'; ACTION: use default '%v'.", inbound, _default_vi)
-		return _default_vi
+		log.Errorf("unsupported VI type '%v'; ACTION: use default '%v'.", inbound, _vi_)
+		return _vi_
 	default:
-		log.Warnf("unknown VI type '%v'; ACTION: use default '%v'.", inbound, _default_vi)
-		return _default_vi
+		log.Warnf("unknown VI type '%v'; ACTION: use default '%v'.", inbound, _vi_)
+		return _vi_
 	}
 }
 func (inbound _Service) String() string {

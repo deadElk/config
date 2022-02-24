@@ -57,6 +57,9 @@ type _VI_ID_PName string
 type _VI_Peer_ID uint
 type _VI_Type string
 type _SP_Type string
+type _Policy_Statement_Protocol string
+type _Policy_Statement_Measure string
+type _Policy_Statement_Action string
 
 type _Security_AB struct {
 	Address   interface{}
@@ -141,16 +144,16 @@ type _Security_SP struct {
 }
 
 type sDB struct {
-	XMLName        xml.Name          `xml:"AS4200240XXX"`
-	AB             []sDB_AB          `xml:"Security>AB_List>AB"`
-	Application    []sDB_Application `xml:"Security>Application_List>Application"`
-	Peer           []sDB_Peer        `xml:"Peer_List>Peer"`
-	VI             []sDB_VI          `xml:"VI_List>VI"`
-	Domain_Name    _FQDN             `xml:"domain_name,attr"`
-	VI_IPPrefix    netip.Prefix      `xml:"VI_IPprefix,attr"`
-	GT_List        string            `xml:"GT_list,attr"`
-	Upload_Path    string            `xml:"upload_path,attr"`
-	Templates_Path string            `xml:"templates_path,attr"`
+	XMLName     xml.Name          `xml:"AS4200240XXX"`
+	AB          []sDB_AB          `xml:"Vocabulary>AB_List>AB"`
+	Application []sDB_Application `xml:"Vocabulary>Application_List>Application"`
+	Peer        []sDB_Peer        `xml:"Peer_List>Peer"`
+	VI          []sDB_VI          `xml:"VI_List>VI"`
+	Domain_Name _FQDN             `xml:"domain_name,attr"`
+	VI_IPPrefix netip.Prefix      `xml:"VI_IPprefix,attr"`
+	GT_List     string            `xml:"GT_list,attr"`
+	Upload_Path string            `xml:"upload_path,attr"`
+	GT_Path     string            `xml:"GT_path,attr"`
 	_Service_Attributes
 }
 type sDB_Peer struct {

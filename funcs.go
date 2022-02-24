@@ -5,50 +5,10 @@ import (
 	"net/netip"
 	"os"
 	"strconv"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
 )
-
-func init() {
-	log.SetLevel(_loglevel)
-	log.SetFormatter(&log.TextFormatter{
-		DisableColors:    false,
-		FullTimestamp:    true,
-		PadLevelText:     true,
-		ForceQuote:       true,
-		QuoteEmptyFields: true,
-		TimestampFormat:  time.RFC3339Nano,
-	})
-	log.SetReportCaller(true)
-}
-func main() {
-	switch err := db_read(); err == nil {
-	case true:
-		switch err = db_use(); err == nil {
-		case true:
-			switch err = config_upload(); err == nil {
-			case true:
-				switch err = config_test(); err == nil {
-				case true:
-				default:
-					log.Fatalf("config test error: '%v'", err)
-					return
-				}
-			default:
-				log.Fatalf("config upload error: '%v'", err)
-				return
-			}
-		default:
-			log.Fatalf("DB use error: '%v'", err)
-			return
-		}
-	default:
-		log.Fatalf("DB read error: '%v'", err)
-		return
-	}
-}
 
 func tabber(inbound string, tabs int) string {
 	var (
@@ -83,7 +43,7 @@ func set_vi_ipprefix(inbound netip.Prefix) {
 	case true:
 		vi_ipprefix = inbound
 	default:
-		switch candidate, err := netip.ParsePrefix(_default_vi_ipprefix); err == nil {
+		switch candidate, err := netip.ParsePrefix(_vi_ipprefix_); err == nil {
 		case true:
 			vi_ipprefix = candidate
 		default:
@@ -134,13 +94,13 @@ func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 	return
 }
 
-func _Templates_read() {
+func _GT_read() {
 	var (
 		dentry []os.DirEntry
 		data   []byte
 		err    error
 	)
-	switch dentry, err = os.ReadDir(fs_path["templates"]); err == nil {
+	switch dentry, err = os.ReadDir(fs_path["GT"]); err == nil {
 	case true:
 		for _, fentry := range dentry {
 			switch fentry.Type().IsRegular() {
@@ -155,7 +115,7 @@ func _Templates_read() {
 						var (
 							tname = _GT_Name(fentry.Name()[:len(fentry.Name())-5])
 						)
-						switch data, err = os.ReadFile(fs_path["templates"] + "/" + fentry.Name()); err == nil {
+						switch data, err = os.ReadFile(fs_path["GT"] + "/" + fentry.Name()); err == nil {
 						case true:
 							switch _, flag := pdb_gt[tname]; flag {
 							case true:
@@ -222,14 +182,14 @@ func _SZ_create(outbound *map[_SZ_Name]pDB_Peer_Security_Zone_SZ, sz_name _SZ_Na
 	return
 }
 
-func _AB_Set_create(inbound _AB_Name) (ok bool) {
-	switch _, flag := pdb_ab[inbound]; flag {
+func _AB_Set_create(ab_name _AB_Name) (ok bool) {
+	switch _, flag := pdb_ab[ab_name]; flag {
 	case true:
-		log.Warnf("AB '%v' already exist; ACTION: skip.", inbound)
+		log.Warnf("AB '%+v''%+v', already exist; ACTION: skip.", ab_name, pdb_ab[ab_name])
 		return
 	}
 	ok = true
-	pdb_ab[inbound] = _Security_AB{
+	pdb_ab[ab_name] = _Security_AB{
 		Address:             nil,
 		Type:                _AB_Type_set,
 		Addresses:           map[_AB_Name]_AB_Type{},
@@ -302,7 +262,7 @@ func _AB_Address_add(public, private bool, ab_name _AB_Name, inbound ...interfac
 				_AB_Address_add(true, true, ab, value)
 			}
 		case flag:
-			log.Warnf("AB '%v''%+v', already exist; ACTION: skip.", ab_name, pdb_ab[ab_name])
+			log.Warnf("AB '%+v''%+v', already exist; ACTION: skip.", ab_name, pdb_ab[ab_name])
 			continue
 		default:
 			switch value := (address).(type) {
@@ -349,7 +309,7 @@ func log_setlevel(inbound ...*string) {
 		case true:
 			log.SetLevel(loglevel)
 		default:
-			log.SetLevel(_default_loglevel)
+			log.SetLevel(_loglevel_)
 			// log.Warnf("verbosity level '%v' is not supported; ACTION: use '%v'.", *inbound[0], log.GetLevel())
 		}
 	default:
