@@ -175,16 +175,8 @@ func (inbound _Action) _SP_Validate() _Action {
 }
 
 func (inbound _IPPrefix) String() string {
-	switch inbound.IsValid() {
-	case false:
-		return ""
-	}
-	return inbound.String()
+	return string(parse_interface(inbound.MarshalText()).([]byte))
 }
 func (inbound _IPAddr) String() string {
-	switch inbound.IsValid() {
-	case false:
-		return ""
-	}
-	return inbound.StringExpanded()
+	return string(parse_interface(inbound.MarshalText()).([]byte))
 }

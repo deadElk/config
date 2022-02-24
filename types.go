@@ -262,10 +262,10 @@ type sDB_Peer_RI_RT struct {
 	_Service_Attributes
 }
 type sDB_Peer_RI_RT_GW struct {
-	IP     _IPAddr `xml:"IP,attr"`
-	IF     _Name   `xml:"IF,attr"`
-	Table  _Name   `xml:"table,attr"`
-	Action _Action `xml:"action,attr"`
+	IP     netip.Addr `xml:"IP,attr"`
+	IF     _Name      `xml:"IF,attr"`
+	Table  _Name      `xml:"table,attr"`
+	Action _Action    `xml:"action,attr"`
 	_Route_Attributes
 	_Service_Attributes
 }
@@ -337,10 +337,10 @@ type pDB_Peer_RI_RT struct {
 	_Service_Attributes
 }
 type pDB_Peer_RI_RT_GW struct {
-	IP     _IPAddr // name candidate priority 1
-	IF     _Name   // name candidate priority 2
-	Table  _Name   // name candidate priority 3
-	Action _Action // fill action appropriately
+	IP     netip.Addr // name candidate priority 1
+	IF     _Name      // name candidate priority 2
+	Table  _Name      // name candidate priority 3
+	Action _Action    // fill action appropriately
 	_Route_Attributes
 	_Service_Attributes
 }

@@ -155,7 +155,7 @@ func db_parse(xml_db *sDB) (err error) {
 											var (
 												gw_i  = strconv.FormatUint(uint64(gw_v.Metric), 10) + "_"
 												gw_IF _Name
-												gw_IP _IPAddr
+												gw_IP netip.Addr
 												gw_T  _Name
 											)
 											switch {
