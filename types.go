@@ -64,6 +64,10 @@ type _PO_PS_Name string
 type _PO_PL_Name string
 type _Term_Name string
 type _NAT_Action string
+type _SP_Action string
+type _Action string
+type _Type string
+type _Default string
 
 type _Security_AB struct {
 	Address   interface{}
@@ -252,8 +256,8 @@ type sDB_Peer_RI struct {
 	_Service_Attributes
 }
 type _Routing_Options struct {
-	RI_Import _RI_Name `xml:"RI_import,attr"`
-	RI_Export _RI_Name `xml:"RI_export,attr"`
+	Import _PO_PS_Name `xml:"import,attr"`
+	Export _PO_PS_Name `xml:"export,attr"`
 	_Service_Attributes
 }
 type sDB_Peer_RI_IF struct {

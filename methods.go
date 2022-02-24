@@ -9,6 +9,19 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func (inbound _Action) String() string {
+	return string(inbound)
+}
+func (inbound _Type) String() string {
+	return string(inbound)
+}
+func (inbound _Service) String() string {
+	return string(inbound)
+}
+func (inbound _Protocol) String() string {
+	return string(inbound)
+}
+
 func (inbound _ASN) String() string {
 	return strconv.FormatUint(uint64(inbound), 10)
 }
@@ -31,6 +44,9 @@ func (inbound _VI_ID) String() string {
 	return strconv.FormatUint(uint64(inbound), 10)
 }
 func (inbound _VI_ID_PName) String() string {
+	return string(inbound)
+}
+func (inbound _Default) String() string {
 	return string(inbound)
 }
 func (inbound _IF_Communication) _Sanitize(mode _IF_Mode) (outbound _IF_Communication) {
@@ -161,12 +177,6 @@ func (inbound _VI_Type) _Sanitize() _VI_Type {
 		log.Warnf("unknown VI type '%v'; ACTION: use default '%v'.", inbound, _vi_)
 		return _vi_
 	}
-}
-func (inbound _Service) String() string {
-	return string(inbound)
-}
-func (inbound _Protocol) String() string {
-	return string(inbound)
 }
 func (inbound _AB_Name) String() string {
 	return string(inbound)
