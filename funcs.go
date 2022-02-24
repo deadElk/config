@@ -31,27 +31,28 @@ func tabber(inbound string, tabs int) string {
 		return inbound
 	}
 }
-func get_vi_ipprefix(vi_shift _VI_ID, peer_shift _VI_Peer_ID) netip.Prefix {
+
+func get_VI_IPPrefix(vi_id _VI_ID, peer_id _VI_Peer_ID) netip.Prefix {
 	var (
 		b = make([]byte, 4)
 	)
-	binary.BigEndian.PutUint32(b, uint32(vi_ip_shift+vi_shift*4)+uint32(peer_shift))
+	binary.BigEndian.PutUint32(b, vi_ipshift+uint32(vi_id*4)+uint32(peer_id))
 	return netip.PrefixFrom(parse_interface(netip.AddrFromSlice(b)).(netip.Addr), 30)
 }
-func set_vi_ipprefix(inbound netip.Prefix) {
-	switch inbound.IsValid() {
+func set_VI_IPPrefix(inbound ...netip.Prefix) {
+	switch len(inbound) == 1 && inbound[0].IsValid() {
 	case true:
-		vi_ipprefix = inbound
-	default:
-		switch candidate, err := netip.ParsePrefix(_vi_ipprefix_); err == nil {
-		case true:
-			vi_ipprefix = candidate
-		default:
-			return
-		}
+		_Defaults[_VI_IPPrefix] = inbound[0]
 	}
-	vi_ip_shift = _VI_ID(binary.BigEndian.Uint32(vi_ipprefix.Addr().AsSlice()))
+	vi_ipshift = binary.BigEndian.Uint32(_Defaults[_VI_IPPrefix].(netip.Prefix).Addr().AsSlice())
 }
+func set_Domain_Name(inbound ..._FQDN) {
+	switch len(inbound) == 1 && len(inbound[0]) != 0 {
+	case true:
+		_Defaults[_domain_name] = inbound[0]
+	}
+}
+
 func sum_uint32_gt_fm(inbound ...uint32) (outbound uint32) {
 	switch len(inbound) {
 	case 0:
@@ -73,11 +74,7 @@ func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 		switch element := value.(type) {
 		case string:
 			outbound += element
-		case _RI_Name:
-			outbound += element.String()
-		case _SZ_Name:
-			outbound += element.String()
-		case _Rule_Name:
+		case _Name:
 			outbound += element.String()
 		case uint:
 			outbound += strconv.FormatUint(uint64(element), 10)
@@ -100,7 +97,7 @@ func _GT_read() {
 		data   []byte
 		err    error
 	)
-	switch dentry, err = os.ReadDir(fs_path["GT"]); err == nil {
+	switch dentry, err = os.ReadDir(_Defaults[_path_GT].(string)); err == nil {
 	case true:
 		for _, fentry := range dentry {
 			switch fentry.Type().IsRegular() {
@@ -113,9 +110,9 @@ func _GT_read() {
 					switch fsplit[len(fsplit)-1] == "tmpl" {
 					case true:
 						var (
-							tname = _GT_Name(fentry.Name()[:len(fentry.Name())-5])
+							tname = _Name(fentry.Name()[:len(fentry.Name())-5])
 						)
-						switch data, err = os.ReadFile(fs_path["GT"] + "/" + fentry.Name()); err == nil {
+						switch data, err = os.ReadFile(_Defaults[_path_GT].(string) + "/" + fentry.Name()); err == nil {
 						case true:
 							switch _, flag := pdb_gt[tname]; flag {
 							case true:
@@ -123,7 +120,7 @@ func _GT_read() {
 								continue
 							}
 							pdb_gt[tname] = pDB_GT{
-								Content: _GT_Content(data)._Sanitize(),
+								Content: _Content(data)._Sanitize(),
 							}
 						}
 					}
@@ -133,7 +130,7 @@ func _GT_read() {
 	}
 }
 
-func _Application_create(ap_name _Application_Name, term []_Security_Application_Term) (ok bool) {
+func _Application_create(ap_name _Name, term []_Security_Application_Term) (ok bool) {
 	switch _, flag := pdb_appl[ap_name]; flag {
 	case true:
 		log.Warnf("Application '%v' already exist; ACTION: skip.", ap_name)
@@ -149,7 +146,7 @@ func _Application_create(ap_name _Application_Name, term []_Security_Application
 	return
 }
 
-func _SZ_create(outbound *map[_SZ_Name]pDB_Peer_Security_Zone_SZ, sz_name _SZ_Name, inbound interface{}) (ok bool) {
+func _SZ_create(outbound *map[_Name]pDB_Peer_Security_Zone_SZ, sz_name _Name, inbound interface{}) (ok bool) {
 	switch value := (inbound).(type) {
 	case sDB_Peer_Security_Zone_SZ:
 		switch _, flag := (*outbound)[value.Name]; flag {
@@ -159,7 +156,7 @@ func _SZ_create(outbound *map[_SZ_Name]pDB_Peer_Security_Zone_SZ, sz_name _SZ_Na
 		}
 		(*outbound)[value.Name] = pDB_Peer_Security_Zone_SZ{
 			Screen:                value.Screen,
-			IF:                    map[_IF_Name]pDB_Peer_Security_Zone_SZ_IF{},
+			IF:                    map[_Name]pDB_Peer_Security_Zone_SZ_IF{},
 			_Host_Inbound_Traffic: _Host_Inbound_Traffic{},
 			_Service_Attributes:   value._Service_Attributes,
 		}
@@ -172,7 +169,7 @@ func _SZ_create(outbound *map[_SZ_Name]pDB_Peer_Security_Zone_SZ, sz_name _SZ_Na
 		}
 		(*outbound)[sz_name] = pDB_Peer_Security_Zone_SZ{
 			Screen:                "",
-			IF:                    map[_IF_Name]pDB_Peer_Security_Zone_SZ_IF{},
+			IF:                    map[_Name]pDB_Peer_Security_Zone_SZ_IF{},
 			_Host_Inbound_Traffic: _Host_Inbound_Traffic{},
 			_Service_Attributes:   _Service_Attributes{},
 		}
@@ -182,7 +179,7 @@ func _SZ_create(outbound *map[_SZ_Name]pDB_Peer_Security_Zone_SZ, sz_name _SZ_Na
 	return
 }
 
-func _AB_Set_create(ab_name _AB_Name) (ok bool) {
+func _AB_Set_create(ab_name _Name) (ok bool) {
 	switch _, flag := pdb_ab[ab_name]; flag {
 	case true:
 		log.Warnf("AB '%+v''%+v', already exist; ACTION: skip.", ab_name, pdb_ab[ab_name])
@@ -191,13 +188,13 @@ func _AB_Set_create(ab_name _AB_Name) (ok bool) {
 	ok = true
 	pdb_ab[ab_name] = _Security_AB{
 		Address:             nil,
-		Type:                _AB_Type_set,
-		Addresses:           map[_AB_Name]_AB_Type{},
+		Type:                _Type_set,
+		Addresses:           map[_Name]_Type{},
 		_Service_Attributes: _Service_Attributes{},
 	}
 	return
 }
-func _AB_Address_add(public, private bool, ab_name _AB_Name, inbound ...interface{}) (ok bool) {
+func _AB_Address_add(public, private bool, ab_name _Name, inbound ...interface{}) (ok bool) {
 	var (
 		interim []interface{}
 	)
@@ -230,7 +227,7 @@ func _AB_Address_add(public, private bool, ab_name _AB_Name, inbound ...interfac
 				continue
 			}
 			interim = append(interim, value)
-		case _AB_Name:
+		case _Name:
 			switch len(value) == 0 {
 			case true:
 				continue
@@ -246,16 +243,16 @@ func _AB_Address_add(public, private bool, ab_name _AB_Name, inbound ...interfac
 		switch _, flag := pdb_ab[ab_name]; {
 		case flag && pdb_ab[ab_name].Type == _AB_Type_set:
 			switch value := (address).(type) {
-			case _AB_Name:
+			case _Name:
 				ok = true
 				pdb_ab[ab_name].Addresses[value] = _AB_Type_set
 			case _FQDN:
 				ok = true
-				pdb_ab[ab_name].Addresses[value._AB_Name()] = _AB_Type_fqdn
-				_AB_Address_add(true, true, value._AB_Name(), value)
+				pdb_ab[ab_name].Addresses[value._Name()] = _AB_Type_fqdn
+				_AB_Address_add(true, true, value._Name(), value)
 			case netip.Prefix:
 				var (
-					ab = _AB_Name(value.String())
+					ab = _Name(value.String())
 				)
 				ok = true
 				pdb_ab[ab_name].Addresses[ab] = _AB_Type_ipprefix
@@ -349,8 +346,8 @@ func parse_interface_error(inbound interface{}, skip interface{}) interface{} {
 	return inbound
 }
 
-func _AB_rparse(_v_AB_list map[_AB_Name]bool) (outbound map[_AB_Name]bool) {
-	outbound = make(map[_AB_Name]bool)
+func _AB_rparse(_v_AB_list map[_Name]bool) (outbound map[_Name]bool) {
+	outbound = make(map[_Name]bool)
 	for a := range _v_AB_list {
 		switch {
 		case pdb_ab[a].Type != _AB_Type_set:
@@ -361,7 +358,7 @@ func _AB_rparse(_v_AB_list map[_AB_Name]bool) (outbound map[_AB_Name]bool) {
 	}
 	return
 }
-func _AB_rparse_set(_v_AB_list *map[_AB_Name]bool, a _AB_Name) (ok bool) {
+func _AB_rparse_set(_v_AB_list *map[_Name]bool, a _Name) (ok bool) {
 	(*_v_AB_list)[a] = true
 	for c, d := range pdb_ab[a].Addresses {
 		switch {

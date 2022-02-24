@@ -16,32 +16,25 @@ import (
 
 func db_read() (err error) {
 	var (
-		configuration_files = []string{
-			"./" + _serviced + ".xml",
-			"/usr/local/opt/etc/" + _serviced + ".xml",
-			"/opt/etc/" + _serviced + ".xml",
-			"/usr/local/etc/" + _serviced + ".xml",
-			"/etc/" + _serviced + ".xml",
-		}
 		xml_db sDB
 		data   []byte
 	)
-	for _, value := range configuration_files {
+	for _, value := range _Defaults[_files_config].([]string) {
 		switch data, err = os.ReadFile(value); err == nil {
 		case true:
 			switch err = xml.Unmarshal(data, &xml_db); err == nil {
 			case true:
 				log.Debugf("configuration file '%v' loaded.", value)
 				log_setlevel(&xml_db.Verbosity)
-				set_vi_ipprefix(xml_db.VI_IPPrefix)
-				domain_name = xml_db.Domain_Name
+				set_VI_IPPrefix(xml_db.VI_IPPrefix)
+				set_Domain_Name(xml_db.Domain_Name)
 				switch len(xml_db.Upload_Path) == 0 {
 				case false:
-					fs_path["upload"] = xml_db.Upload_Path
+					_Defaults[_path_out] = xml_db.Upload_Path
 				}
 				switch len(xml_db.GT_Path) == 0 {
 				case false:
-					fs_path["GT"] = xml_db.GT_Path
+					_Defaults[_path_GT] = xml_db.GT_Path
 				}
 				_GT_read()
 				switch err = db_parse(&xml_db); err == nil {
@@ -80,17 +73,17 @@ func db_parse(xml_db *sDB) (err error) {
 			continue
 		}
 		var (
-			v_SZ = make(map[_SZ_Name]pDB_Peer_Security_Zone_SZ)
+			v_SZ = make(map[_Name]pDB_Peer_Security_Zone_SZ)
 		)
 		for _, b := range value.SZ {
 			_SZ_create(&v_SZ, "", b)
 		}
 
 		var (
-			// _v_AB_list          = make(map[_AB_Name]bool)
-			// _v_Application_list = make(map[_Application_Name]bool)
+			// _v_AB_list          = make(map[_Name]bool)
+			// _v_Application_list = make(map[_Name]bool)
 			v_IP_List   = make(map[netip.Prefix]bool)
-			v_ASN_PName = value.ASN._Sanitize()
+			v_ASN_PName = value.ASN._PName()
 			v_Hostname  = func() (outbound _FQDN) {
 				switch len(value.Hostname) == 0 {
 				case true:
@@ -100,7 +93,7 @@ func db_parse(xml_db *sDB) (err error) {
 				}
 				return value.Hostname
 			}()
-			v_GT_List = func() (outbound []_GT_Name) {
+			v_GT_List = func() (outbound []_Name) {
 				var (
 					interim string
 				)
@@ -114,11 +107,11 @@ func db_parse(xml_db *sDB) (err error) {
 					list = re_period.Split(interim, -1)
 				)
 				for _, list_v := range list {
-					switch _, flag := pdb_gt[_GT_Name(list_v)]; flag {
+					switch _, flag := pdb_gt[_Name(list_v)]; flag {
 					case true:
-						switch pdb_gt[_GT_Name(list_v)].Reserved {
+						switch pdb_gt[_Name(list_v)].Reserved {
 						case false:
-							outbound = append(outbound, _GT_Name(list_v))
+							outbound = append(outbound, _Name(list_v))
 						default:
 							log.Warnf("peer ASN '%v' reserved template '%v' cannot be used; ACTION: skip.", value.ASN, list_v)
 							continue
@@ -137,16 +130,16 @@ func db_parse(xml_db *sDB) (err error) {
 				return parse_interface(strconv.ParseFloat(interim[0], 64)).(float64)
 			}()
 			v_Router_ID netip.Addr
-			v_IF_RI     = make(map[_IF_Name]_RI_Name)
-			v_RI        = func() (outbound map[_RI_Name]pDB_Peer_RI) {
+			v_IF_RI     = make(map[_Name]_Name)
+			v_RI        = func() (outbound map[_Name]pDB_Peer_RI) {
 				var (
-					vIP_IF = make(map[netip.Addr]_IF_Name)
+					vIP_IF = make(map[netip.Addr]_Name)
 				)
-				outbound = make(map[_RI_Name]pDB_Peer_RI)
+				outbound = make(map[_Name]pDB_Peer_RI)
 				for _, ri_v := range value.RI {
 					switch ri_v.Name == _juniper_mgmt_RI {
 					case false:
-						_SZ_create(&v_SZ, ri_v.Name._SZ_Name(), pDB_Peer_Security_Zone_SZ{})
+						_SZ_create(&v_SZ, ri_v.Name, pDB_Peer_Security_Zone_SZ{})
 					}
 					outbound[ri_v.Name] = pDB_Peer_RI{
 						RT: func() (rt_o map[netip.Prefix]pDB_Peer_RI_RT) {
@@ -158,54 +151,65 @@ func db_parse(xml_db *sDB) (err error) {
 									continue
 								}
 								rt_o[rt_v.Identifier] = pDB_Peer_RI_RT{
-									GW: func() (gw_o map[_GW_Name]pDB_Peer_RI_RT_GW) {
-										gw_o = make(map[_GW_Name]pDB_Peer_RI_RT_GW)
+									GW: func() (gw_o map[_Name]pDB_Peer_RI_RT_GW) {
+										gw_o = make(map[_Name]pDB_Peer_RI_RT_GW)
 										for _, gw_v := range rt_v.GW {
 											var (
 												gw_i = strconv.FormatUint(uint64(gw_v.Metric), 10) + "_"
 											)
 											switch {
-											case gw_v.Type == _gw_discard:
-												gw_i += _gw_discard.String()
-											case gw_v.Type == _gw_hop && gw_v.IP.IsValid():
+											case gw_v.Action == _Action_discard:
+												gw_i += _Action_discard.String()
+												gw_v.Action = _Commands[gw_v.Action].(_Action)
+											case (gw_v.Action == _Action_qnh || gw_v.Action == _Action_hop) && gw_v.IP.IsValid():
 												gw_i += gw_v.IP.String()
-											case gw_v.Type == _gw_interface && len(gw_v.IF) != 0:
+												gw_v.Action = _Commands[gw_v.Action].(_Action)
+											case (gw_v.Action == _Action_qnh || gw_v.Action == _Action_hop) && len(gw_v.IF) != 0:
 												gw_i += gw_v.IF.String()
-											case gw_v.Type == _gw_table && len(gw_v.Table) != 0:
+												gw_v.Action = _Commands[gw_v.Action].(_Action)
+
+											case gw_v.Action == _Action_hop && gw_v.IP.IsValid():
+												gw_i += gw_v.IP.String()
+												gw_v.Action = _Commands[gw_v.Action].(_Action)
+											case gw_v.Action == _Action_interface && len(gw_v.IF) != 0:
+												gw_i += gw_v.IF.String()
+												gw_v.Action = _Commands[gw_v.Action].(_Action)
+
+											case gw_v.Action == _Action_table && len(gw_v.Table) != 0:
 												gw_i += gw_v.Table.String()
-											case len(gw_v.Type) == 0:
+												gw_v.Action = _Commands[gw_v.Action].(_Action)
+
+											case len(gw_v.Action) == 0:
+
 												switch {
-												case gw_v.Discard:
-													gw_i += _gw_discard.String()
-													gw_v.Type = _gw_discard
 												case gw_v.IP.IsValid():
 													gw_i += gw_v.IP.String()
-													gw_v.Type = _gw_hop
+													gw_v.Action = _Commands[_Action_hop].(_Action)
 												case len(gw_v.IF) != 0:
 													gw_i += gw_v.IF.String()
-													gw_v.Type = _gw_interface
+													gw_v.Action = _Commands[_Action_interface].(_Action)
 												case len(gw_v.Table) != 0:
 													gw_i += gw_v.Table.String()
-													gw_v.Type = _gw_table
+													gw_v.Action = _Commands[_Action_table].(_Action)
 												default:
 													log.Warnf("peer ASN '%v', RI '%v', route Identifier '%v', no gateway found; ACTION: skip.", value.ASN, ri_v.Name, rt_v.Identifier)
 													continue
 												}
 											default:
-												log.Warnf("peer ASN '%v', RI '%v', route Identifier '%v', unknown gateway type '%v'; ACTION: skip.", value.ASN, ri_v.Name, rt_v.Identifier, gw_v.Type)
+												log.Warnf("peer ASN '%v', RI '%v', route Identifier '%v', unknown gateway action '%v'; ACTION: skip.", value.ASN, ri_v.Name, rt_v.Identifier, gw_v.Action)
 												continue
 											}
-											switch _, flag := gw_o[_GW_Name(gw_i)]; flag {
+
+											switch _, flag := gw_o[_Name(gw_i)]; flag {
 											case true:
 												log.Warnf("peer ASN '%v', RI '%v', route Identifier '%v', gateway '%v' already defined; ACTION: skip.", value.ASN, ri_v.Name, rt_v.Identifier, gw_i)
 												continue
 											}
-											gw_o[_GW_Name(gw_i)] = pDB_Peer_RI_RT_GW{
+											gw_o[_Name(gw_i)] = pDB_Peer_RI_RT_GW{
 												IP:                  gw_v.IP,
 												IF:                  gw_v.IF,
 												Table:               gw_v.Table,
-												Discard:             gw_v.Discard,
-												Type:                gw_v.Type,
+												Action:              gw_v.Action,
 												_Route_Attributes:   gw_v._Route_Attributes,
 												_Service_Attributes: gw_v._Service_Attributes,
 											}
@@ -217,8 +221,8 @@ func db_parse(xml_db *sDB) (err error) {
 							}
 							return
 						}(),
-						IF: func() (if_o map[_IF_Name]pDB_Peer_RI_IF) {
-							if_o = make(map[_IF_Name]pDB_Peer_RI_IF)
+						IF: func() (if_o map[_Name]pDB_Peer_RI_IF) {
+							if_o = make(map[_Name]pDB_Peer_RI_IF)
 							for _, if_v := range ri_v.IF {
 								switch if_ri_v, flag := v_IF_RI[if_v.Name]; flag {
 								case true:
@@ -228,8 +232,8 @@ func db_parse(xml_db *sDB) (err error) {
 								v_IF_RI[if_v.Name] = ri_v.Name
 								var (
 									IF_split  = re_dot.Split(if_v.Name.String(), -1)
-									if_o_IFM  = _IFM_Name(IF_split[0])
-									if_o_IFsM = _IFsM_Name(IF_split[1])
+									if_o_IFM  = _Name(IF_split[0])
+									if_o_IFsM = _Name(IF_split[1])
 								)
 								if_o[if_v.Name] = pDB_Peer_RI_IF{
 									Communication: if_v.Communication._Sanitize(_if_mode_link),
@@ -309,7 +313,7 @@ func db_parse(xml_db *sDB) (err error) {
 								}
 								switch ri_v.Name == _juniper_mgmt_RI {
 								case false:
-									v_SZ[ri_v.Name._SZ_Name()].IF[if_v.Name] = pDB_Peer_Security_Zone_SZ_IF{
+									v_SZ[ri_v.Name].IF[if_v.Name] = pDB_Peer_Security_Zone_SZ_IF{
 										_Host_Inbound_Traffic: _Host_Inbound_Traffic{
 											Services: map[_Service]bool{
 												_service_ping:       true,
@@ -341,8 +345,8 @@ func db_parse(xml_db *sDB) (err error) {
 				}
 				return
 			}()
-			v_IFM = func() (outbound map[_IFM_Name]pDB_Peer_IFM) {
-				outbound = make(map[_IFM_Name]pDB_Peer_IFM)
+			v_IFM = func() (outbound map[_Name]pDB_Peer_IFM) {
+				outbound = make(map[_Name]pDB_Peer_IFM)
 				for _, ifm_v := range value.IFM {
 					outbound[ifm_v.Name] = pDB_Peer_IFM{
 						Communication:       ifm_v.Communication,
@@ -355,7 +359,7 @@ func db_parse(xml_db *sDB) (err error) {
 			v_Domain_Name = func() _FQDN {
 				switch len(value.Domain_Name) == 0 {
 				case true:
-					return domain_name
+					return _Defaults[_domain_name].(_FQDN)
 				}
 				return value.Domain_Name
 			}()
@@ -376,8 +380,8 @@ func db_parse(xml_db *sDB) (err error) {
 			ASN:         value.ASN,
 			ASN_PName:   v_ASN_PName,
 			Router_ID:   v_Router_ID,
-			AB:          map[_AB_Name]_Security_AB{},
-			Application: map[_Application_Name][]_Security_Application_Term{},
+			AB:          map[_Name]_Security_AB{},
+			Application: map[_Name][]_Security_Application_Term{},
 			SZ:          v_SZ,
 			_Security_NAT_List: _Security_NAT_List{
 				Source:      value.NAT.Source,
@@ -385,7 +389,7 @@ func db_parse(xml_db *sDB) (err error) {
 				Static:      value.NAT.Static,
 			},
 			_Security_SP: _Security_SP{
-				SP_Default: value.SP.SP_Default._Sanitize(),
+				SP_Default: value.SP.SP_Default._SP_Validate(),
 				SP_Exact: func() (outbound []_Security_Rule_Set) {
 					for _, b := range value.SP.SP_Exact {
 						for _, d := range b.To {
@@ -417,7 +421,6 @@ func db_parse(xml_db *sDB) (err error) {
 			Root:                value.Root._Sanitize(16, "peer AS"+v_ASN_PName.String()+": root password is not acceptable"),
 			GT_List:             v_GT_List,
 			VI:                  map[_VI_ID]pDB_Peer_VI{},
-			RM_ID:               &rm_id,
 			IPPrefix_List:       v_IP_List,
 			_Service_Attributes: value._Service_Attributes,
 		}
@@ -427,8 +430,8 @@ func db_parse(xml_db *sDB) (err error) {
 	}
 	for _, value := range pdb_peer {
 		var (
-			_v_AB_list          = make(map[_AB_Name]bool)
-			_v_Application_list = make(map[_Application_Name]bool)
+			_v_AB_list          = make(map[_Name]bool)
+			_v_Application_list = make(map[_Name]bool)
 		)
 		for _, b := range value.Source {
 			for _, d := range b.Rule_Set {
@@ -532,7 +535,7 @@ func db_parse(xml_db *sDB) (err error) {
 			var (
 				v_No_NAT = true
 				v_NAT    = make([]netip.Addr, peers)
-				v_Type   = value.Type._Sanitize()
+				v_Type   = value.Type._VI_Sanitize()
 			)
 			for peer_index := range value.Peer {
 				switch _, flag := pdb_peer[value.Peer[peer_index].ASN]; flag {
@@ -545,13 +548,13 @@ func db_parse(xml_db *sDB) (err error) {
 					log.Warnf("VI '%v', ASN '%v', peer '%v' reserved; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, peer_index)
 					return
 				}
-				value.Peer[peer_index].RI = value.Peer[peer_index].RI._Sanitize(_juniper_mgmt_RI)
+				value.Peer[peer_index].RI = value.Peer[peer_index].RI._Validate(_juniper_mgmt_RI)
 				switch _, flag := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].RI]; flag {
 				case false:
 					log.Warnf("VI '%v', ASN '%v', RI '%v' not defined; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, value.Peer[peer_index].RI)
 					return
 				}
-				value.Peer[peer_index].Inner_RI = value.Peer[peer_index].Inner_RI._Sanitize(_juniper_mgmt_RI)
+				value.Peer[peer_index].Inner_RI = value.Peer[peer_index].Inner_RI._Validate(_juniper_mgmt_RI)
 				switch _, flag := pdb_peer[value.Peer[peer_index].ASN].RI[value.Peer[peer_index].Inner_RI]; flag {
 				case false:
 					log.Warnf("VI '%v', ASN '%v', inner RI '%v' not defined; ACTION: skip.", value.ID, value.Peer[peer_index].ASN, value.Peer[peer_index].Inner_RI)
@@ -600,8 +603,8 @@ func db_parse(xml_db *sDB) (err error) {
 					log.Warnf("VI '%v', peer '%v' no public outter IP found; ACTION: use IKE NAT traversal.", value.ID, peer_index)
 					v_No_NAT = false
 				}
-				pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].RI._SZ_Name()].IF[value.Peer[peer_index].IF].Services[_service_ike] = true
-				pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].Inner_RI._SZ_Name()].IF[_IF_Name(v_Type.String()+"0."+value.ID.String())] = pDB_Peer_Security_Zone_SZ_IF{
+				pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].RI].IF[value.Peer[peer_index].IF].Services[_service_ike] = true
+				pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].Inner_RI].IF[_Name(v_Type.String()+"0."+value.ID.String())] = pDB_Peer_Security_Zone_SZ_IF{
 					_Host_Inbound_Traffic: _Host_Inbound_Traffic{
 						Services: map[_Service]bool{
 							_service_ping:       true,
@@ -614,8 +617,8 @@ func db_parse(xml_db *sDB) (err error) {
 					},
 					_Service_Attributes: _Service_Attributes{},
 				}
-				// pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].Inner_RI._SZ_Name()].IF[_IF_Name(v_Type.String()+"0."+value.ID.String())]._Defaults()
-				pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].Inner_RI._SZ_Name()].IF[_IF_Name(v_Type.String()+"0."+value.ID.String())].Protocols[_protocol_bgp] = true
+				// pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].Inner_RI].IF[_Name(v_Type.String()+"0."+value.ID.String())]._Defaults()
+				pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].Inner_RI].IF[_Name(v_Type.String()+"0."+value.ID.String())].Protocols[_protocol_bgp] = true
 			}
 			var (
 				v_Metric = func() uint {
@@ -625,16 +628,16 @@ func db_parse(xml_db *sDB) (err error) {
 					}
 					return _rm_max - value.Route_Metric
 				}()
-				v_Left_Inner_IPPrefix  = get_vi_ipprefix(value.ID, 1)
-				v_Right_Inner_IPPrefix = get_vi_ipprefix(value.ID, 2)
+				v_Left_Inner_IPPrefix  = get_VI_IPPrefix(value.ID, 1)
+				v_Right_Inner_IPPrefix = get_VI_IPPrefix(value.ID, 2)
 			)
 			pdb_peer[value.Peer[0].ASN].VI[value.ID] = pDB_Peer_VI{
-				VI_ID_PName:          value.ID._Sanitize(),
+				VI_ID_PName:          value.ID._PName(),
 				Type:                 v_Type,
 				Communication:        value.Communication._Sanitize(_if_mode_vi),
 				PSK:                  value.PSK._Sanitize(64),
 				Route_Metric:         v_Metric,
-				IPPrefix:             get_vi_ipprefix(value.ID, 0),
+				IPPrefix:             get_VI_IPPrefix(value.ID, 0),
 				No_NAT:               v_No_NAT,
 				IKE_GCM:              pdb_peer[value.Peer[0].ASN].IKE_GCM && pdb_peer[value.Peer[1].ASN].IKE_GCM,
 				Left_ASN:             value.Peer[0].ASN,
@@ -644,8 +647,7 @@ func db_parse(xml_db *sDB) (err error) {
 				Left_NAT:             v_NAT[0],
 				Left_Local_Address:   len(pdb_peer[value.Peer[0].ASN].RI[value.Peer[0].RI].IF[value.Peer[0].IF].IP) > 1,
 				Left_Dynamic:         value.Peer[0].Dynamic,
-				Left_Hub:             value.Peer[0].Hub,
-				Left_Inner_RI:        value.Peer[0].Inner_RI._Sanitize(_juniper_mgmt_RI),
+				Left_Inner_RI:        value.Peer[0].Inner_RI._Validate(_juniper_mgmt_RI),
 				Left_Inner_IP:        v_Left_Inner_IPPrefix.Addr(),
 				Left_Inner_IPPrefix:  v_Left_Inner_IPPrefix,
 				Right_ASN:            value.Peer[1].ASN,
@@ -655,8 +657,7 @@ func db_parse(xml_db *sDB) (err error) {
 				Right_NAT:            v_NAT[1],
 				Right_Local_Address:  len(pdb_peer[value.Peer[1].ASN].RI[value.Peer[1].RI].IF[value.Peer[1].IF].IP) > 1,
 				Right_Dynamic:        value.Peer[1].Dynamic,
-				Right_Hub:            value.Peer[1].Hub,
-				Right_Inner_RI:       value.Peer[1].Inner_RI._Sanitize(_juniper_mgmt_RI),
+				Right_Inner_RI:       value.Peer[1].Inner_RI._Validate(_juniper_mgmt_RI),
 				Right_Inner_IP:       v_Right_Inner_IPPrefix.Addr(),
 				Right_Inner_IPPrefix: v_Right_Inner_IPPrefix,
 				_Service_Attributes:  value._Service_Attributes,
@@ -705,21 +706,20 @@ func db_use() (err error) {
 			func() {
 				for _, gt_v := range value.GT_List {
 					var (
-						vGT_name = gt_v.String()
-						vGT      *template.Template
-						vBuf     bytes.Buffer
+						vGT  *template.Template
+						vBuf bytes.Buffer
 					)
-					switch vGT, err = template.New(vGT_name).Funcs(gt_fm).Parse(pdb_gt[_GT_Name(vGT_name)].Content.String()); err == nil && vGT != nil {
+					switch vGT, err = template.New(gt_v.String()).Funcs(gt_fm).Parse(pdb_gt[gt_v].Content.String()); err == nil && vGT != nil {
 					case true:
 						switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
 						case true:
 							config[index] = append(config[index], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
 						default:
-							log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
+							log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), gt_v, err)
 							return
 						}
 					default:
-						log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: skip.", index.String(), vGT_name, err)
+						log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: skip.", index.String(), gt_v, err)
 						return
 					}
 				}
@@ -740,7 +740,7 @@ func config_upload() (err error) {
 		// log.Errorf("\n\n%v\n\n", pdb_peer[index].SZ)
 		ordered = append(ordered, int(index))
 		var (
-			fn = fs_path["upload"] + "./AS" + index.String()
+			fn = _Defaults[_path_out].(string) + "./AS" + index.String()
 		)
 		switch err_i := os.WriteFile(fn, value, 0600); err_i == nil {
 		case true:
@@ -786,7 +786,7 @@ func config_upload() (err error) {
 		}()
 	}
 
-	switch err_i := os.WriteFile(fs_path["upload"]+"./hosts.txt", []byte(hosts), 0600); err_i == nil {
+	switch err_i := os.WriteFile(_Defaults[_path_out].(string)+"./hosts.txt", []byte(hosts), 0600); err_i == nil {
 	case true:
 		log.Infof("OK 'hosts.txt'")
 	case false:

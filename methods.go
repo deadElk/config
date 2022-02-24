@@ -25,31 +25,31 @@ func (inbound _Protocol) String() string {
 func (inbound _ASN) String() string {
 	return strconv.FormatUint(uint64(inbound), 10)
 }
-func (inbound _ASN) _Sanitize() _ASN_PName {
+func (inbound _ASN) _PName() _PName {
 	var (
 		interim = "0000000000" + strconv.FormatUint(uint64(inbound), 10)
 	)
-	return _ASN_PName(interim[len(interim)-10:])
+	return _PName(interim[len(interim)-10:])
 }
-func (inbound _ASN_PName) String() string {
-	return string(inbound)
-}
-func (inbound _VI_ID) _Sanitize() _VI_ID_PName {
+func (inbound _VI_ID) _PName() _PName {
 	var (
 		interim = "00000" + strconv.FormatUint(uint64(inbound), 10)
 	)
-	return _VI_ID_PName(interim[len(interim)-5:])
+	return _PName(interim[len(interim)-5:])
 }
 func (inbound _VI_ID) String() string {
 	return strconv.FormatUint(uint64(inbound), 10)
 }
-func (inbound _VI_ID_PName) String() string {
-	return string(inbound)
-}
 func (inbound _Default) String() string {
 	return string(inbound)
 }
-func (inbound _IF_Communication) _Sanitize(mode _IF_Mode) (outbound _IF_Communication) {
+func (inbound _Name) String() string {
+	return string(inbound)
+}
+func (inbound _Mask) String() string {
+	return string(inbound)
+}
+func (inbound _Communication) _Sanitize(mode _Mode) (outbound _Communication) {
 	switch mode {
 	case _if_mode_vi:
 		switch inbound {
@@ -73,26 +73,20 @@ func (inbound _IF_Communication) _Sanitize(mode _IF_Mode) (outbound _IF_Communic
 	log.Warnf("unknown IF Communication type '%v'; ACTION: use '%v'.", inbound, outbound)
 	return
 }
-func (inbound _Description) _Sanitize(default_description _Description) _Description {
+func (inbound _Description) _Validate(default_description _Description) _Description {
 	switch len(inbound) == 0 {
 	case true:
 		return default_description
 	}
 	return inbound
 }
-func (inbound _GT_Content) _Sanitize() (outbound _GT_Content) {
+func (inbound _Content) _Sanitize() (outbound _Content) {
 	for _, value := range strings.Split(string(inbound), "\n") {
-		outbound += _GT_Content(strings.TrimSpace(value) + "\n")
+		outbound += _Content(strings.TrimSpace(value) + "\n")
 	}
 	return
 }
-func (inbound _RI_Name) String() string {
-	return string(inbound)
-}
-func (inbound _RG_Name) String() string {
-	return string(inbound)
-}
-func (inbound _RI_Name) _Sanitize(decline ..._RI_Name) (outbound _RI_Name) {
+func (inbound _Name) _Validate(decline ..._Name) (outbound _Name) {
 	outbound = _juniper_RI_
 	switch len(inbound) == 0 || inbound == _juniper_RI_ {
 	case true:
@@ -106,32 +100,7 @@ func (inbound _RI_Name) _Sanitize(decline ..._RI_Name) (outbound _RI_Name) {
 	}
 	return inbound
 }
-func (inbound _SP_Type) _Sanitize() _SP_Type {
-	switch inbound {
-	case _SP_Type_permit, _SP_Type_deny:
-		return inbound
-	case "":
-	default:
-		log.Warnf("unknown SP type '%v'; ACTION: use '%v'.", inbound, _SP_Type_)
-	}
-	return _SP_Type_
-}
-func (inbound _IF_Name) String() string {
-	return string(inbound)
-}
-func (inbound _IFM_Name) String() string {
-	return string(inbound)
-}
-func (inbound _IFsM_Name) String() string {
-	return string(inbound)
-}
-func (inbound _GW_Type) String() string {
-	return string(inbound)
-}
-func (inbound _GT_Name) String() string {
-	return string(inbound)
-}
-func (inbound _GT_Content) String() string {
+func (inbound _Content) String() string {
 	return string(inbound)
 }
 func (inbound _Secret) _Sanitize(length uint, message ...string) _Secret {
@@ -140,75 +109,51 @@ func (inbound _Secret) _Sanitize(length uint, message ...string) _Secret {
 		return inbound
 	}
 	var (
-		ret = make([]byte, length)
+		interim = make([]byte, length)
 	)
 	for i := 0; i < int(length); i++ {
 		switch next, err := rand.Int(rand.Reader, big.NewInt(int64(len(_passwd)))); err == nil && next != nil {
 		case true:
-			ret[i] = _passwd[next.Int64()]
+			interim[i] = _passwd[next.Int64()]
 		default:
 			log.Panicf("rand.Int error: %#v", err)
 		}
 	}
 	switch len(message) > 0 {
 	case true:
-		log.Warnf("%v; ACTION: new value is '%v'.", message[0], string(ret))
+		log.Warnf("%v; ACTION: new value is '%v'.", message[0], string(interim))
 	}
-	return _Secret(ret)
+	return _Secret(interim)
 }
 func (inbound _Secret) String() string {
 	return string(inbound)
 }
-func (inbound _VI_Type) String() string {
-	return string(inbound)
-}
-func (inbound _VI_Type) _Sanitize() _VI_Type {
-	switch len(inbound) == 0 {
-	case true:
-		return _vi_
-	}
+
+func (inbound _Type) _VI_Sanitize() _Type {
 	switch inbound {
-	case _vi_st:
+	case _Type_st, "":
 		return inbound
-	case _vi_gr, _vi_lt:
-		log.Errorf("unsupported VI type '%v'; ACTION: use default '%v'.", inbound, _vi_)
-		return _vi_
+	case _Type_gr, _Type_lt:
+		log.Errorf("unsupported VI type '%v'; ACTION: use default '%v'.", inbound, _Type_st)
+		return _Type_st
 	default:
-		log.Warnf("unknown VI type '%v'; ACTION: use default '%v'.", inbound, _vi_)
-		return _vi_
+		log.Warnf("unknown VI type '%v'; ACTION: use default '%v'.", inbound, _Type_st)
+		return _Type_st
 	}
 }
-func (inbound _AB_Name) String() string {
+func (inbound _PName) String() string {
 	return string(inbound)
 }
-func (inbound _Table_Name) String() string {
-	return string(inbound)
-}
-func (inbound _Term_Name) String() string {
+func (inbound _Mode) String() string {
 	return string(inbound)
 }
 func (inbound _FQDN) String() string {
 	return string(inbound)
 }
-func (inbound _RI_Name) _SZ_Name() _SZ_Name {
-	return _SZ_Name(inbound.String())
+func (inbound _FQDN) _Name() _Name {
+	return _Name(inbound.String())
 }
-func (inbound _SZ_Name) String() string {
-	return string(inbound)
-}
-func (inbound _Rule_Name) String() string {
-	return string(inbound)
-}
-func (inbound _PO_PS_Protocol) String() string {
-	return string(inbound)
-}
-func (inbound _PO_PS_Action) String() string {
-	return string(inbound)
-}
-func (inbound _FQDN) _AB_Name() _AB_Name {
-	return _AB_Name(inbound.String())
-}
-func (inbound _Host_Inbound_Traffic) _Defaults(enabled ...interface{}) _Host_Inbound_Traffic {
+func (inbound _Host_Inbound_Traffic) _Defaults() _Host_Inbound_Traffic {
 	return _Host_Inbound_Traffic{
 		Services: map[_Service]bool{
 			_service_ping:       true,
@@ -217,4 +162,14 @@ func (inbound _Host_Inbound_Traffic) _Defaults(enabled ...interface{}) _Host_Inb
 		},
 		Protocols: map[_Protocol]bool{},
 	}
+}
+func (inbound _Action) _SP_Validate() _Action {
+	switch inbound {
+	case _Action_permit_all, _Action_deny_all:
+		return inbound
+	case "":
+		return _Action_permit_all
+	}
+	log.Warnf("unknown SP default action '%v'; ACTION: use default '%v'.", inbound, _Action_permit_all)
+	return _Action_permit_all
 }

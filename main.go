@@ -21,6 +21,8 @@ func init() {
 	log.SetReportCaller(true)
 }
 func main() {
+	set_VI_IPPrefix()
+	set_Domain_Name()
 	switch err := db_read(); err == nil {
 	case true:
 		switch err = db_use(); err == nil {

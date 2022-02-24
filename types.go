@@ -19,66 +19,39 @@ type _Host_Inbound_Traffic struct {
 	Protocols map[_Protocol]bool `xml:"protocol,attr"`
 }
 type _Route_Attributes struct {
-	QNH        bool `xml:"QNH,attr"`
-	Metric     uint `xml:"metric,attr"`
-	Preference uint `xml:"preference,attr"`
+	Action     _Action `xml:"action,attr"`
+	Metric     uint    `xml:"metric,attr"`
+	Preference uint    `xml:"preference,attr"`
 }
 
-type _AB_Name string
-type _AB_Type string
 type _ASN uint32
-type _ASN_PName string
-type _Application_Name string
+type _Action string
+type _Communication string
+type _Default string
 type _Description string
 type _FQDN string
-type _GT_Content string
-type _GT_Name string
-type _GW_Name string
-type _GW_Type string
-type _IFM_Name string
-type _IF_Communication string
-type _IF_Mode string
-type _IF_Name string
-type _IFsM_Name string
-type _Pool_Name string
+type _Content string
+type _Mask string
+type _Mode string
+type _Name string
+type _PName string
 type _Protocol string
-type _RI_Name string
-type _RM_ID [_rm_max + 1]uint32
-type _Rule_Name string
-type _Rule_Set_Name string
-type _SZ_Name string
-type _RG_Name string
-type _Screen_Name string
 type _Secret string
 type _Service string
-type _Table_Name string
-type _VI_ID uint
-type _VI_ID_PName string
-type _VI_Peer_ID uint
-type _VI_Type string
-type _SP_Type string
-type _PO_PS_Protocol string
-type _PO_PS_Measure string
-type _PO_PS_Action string
-type _PO_PS_Name string
-type _PO_PL_Name string
-type _Term_Name string
-type _NAT_Action string
-type _SP_Action string
-type _Action string
 type _Type string
-type _Default string
+type _VI_ID uint32
+type _VI_Peer_ID uint
 
 type _Security_AB struct {
 	Address   interface{}
-	Type      _AB_Type
-	Addresses map[_AB_Name]_AB_Type
+	Type      _Type
+	Addresses map[_Name]_Type
 	_Service_Attributes
 }
 type _Security_Application_Term struct {
-	Name             _Term_Name `xml:"name,attr"`
-	Protocol         _Protocol  `xml:"protocol,attr"`
-	Destination_Port uint16     `xml:"destination_port,attr"`
+	Name             _Name     `xml:"name,attr"`
+	Protocol         _Protocol `xml:"protocol,attr"`
+	Destination_Port uint16    `xml:"destination_port,attr"`
 	_Service_Attributes
 }
 type _Security_NAT_List struct {
@@ -93,111 +66,105 @@ type _Security_NAT struct {
 	_Service_Attributes
 }
 type _Security_Pool struct {
-	Name     _Pool_Name   `xml:"name,attr"`
+	Name     _Name        `xml:"name,attr"`
 	IPPrefix netip.Prefix `xml:"IPprefix,attr"`
-	RI       _RI_Name     `xml:"RI,attr"`
-	SZ       _SZ_Name     `xml:"SZ,attr"`
+	RI       _Name        `xml:"RI,attr"`
+	SZ       _Name        `xml:"SZ,attr"`
 	_Service_Attributes
 }
 type _Security_Rule_Set struct {
-	Name _Rule_Set_Name        `xml:"name,attr"`
+	Name _Name                 `xml:"name,attr"`
 	From []_Security_Direction `xml:"From"`
 	To   []_Security_Direction `xml:"To"`
 	Rule []_Security_Rule      `xml:"Rule"`
 	_Service_Attributes
 }
 type _Security_Direction struct {
-	IF _IF_Name `xml:"IF,attr"`
-	SZ _SZ_Name `xml:"SZ,attr"`
-	RI _RI_Name `xml:"RI,attr"`
-	RG _RG_Name `xml:"RG,attr"`
+	IF _Name `xml:"IF,attr"`
+	SZ _Name `xml:"SZ,attr"`
+	RI _Name `xml:"RI,attr"`
+	RG _Name `xml:"RG,attr"`
 	_Service_Attributes
 }
 type _Security_Rule struct {
-	Name  _Rule_Name        `xml:"name,attr"`
+	Name  _Name             `xml:"name,attr"`
 	Match []_Security_Match `xml:"Match"`
 	Then  []_Security_Then  `xml:"Then"`
 	_Service_Attributes
 }
 type _Security_Match struct {
-	Source_AB             _AB_Name          `xml:"source_AB,attr"`
-	Destination_AB        _AB_Name          `xml:"destination_AB,attr"`
-	Application           _Application_Name `xml:"application,attr"`
-	From_SZ               _SZ_Name          `xml:"from_SZ,attr"`
-	To_SZ                 _SZ_Name          `xml:"to_SZ,attr"`
-	From_RI               _RI_Name          `xml:"from_RI,attr"`
-	To_RI                 _RI_Name          `xml:"to_RI,attr"`
-	Source_Port_Low       uint16            `xml:"source_port_low,attr"`
-	Source_Port_High      uint16            `xml:"source_port_high,attr"`
-	Destination_Port_Low  uint16            `xml:"destination_port_low,attr"`
-	Destination_Port_High uint16            `xml:"destination_port_high,attr"`
+	Source_AB             _Name  `xml:"source_AB,attr"`
+	Destination_AB        _Name  `xml:"destination_AB,attr"`
+	Application           _Name  `xml:"application,attr"`
+	From_SZ               _Name  `xml:"from_SZ,attr"`
+	To_SZ                 _Name  `xml:"to_SZ,attr"`
+	From_RI               _Name  `xml:"from_RI,attr"`
+	To_RI                 _Name  `xml:"to_RI,attr"`
+	Source_Port_Low       uint16 `xml:"source_port_low,attr"`
+	Source_Port_High      uint16 `xml:"source_port_high,attr"`
+	Destination_Port_Low  uint16 `xml:"destination_port_low,attr"`
+	Destination_Port_High uint16 `xml:"destination_port_high,attr"`
 	_Service_Attributes
 }
 type _Security_Then struct {
-	Action           _NAT_Action `xml:"action,attr"`
-	Source_NAT       bool        `xml:"source_NAT,attr"`
-	Destination_NAT  bool        `xml:"destination_NAT,attr"`
-	Static_NAT       bool        `xml:"static_NAT,attr"`
-	Pool             _Pool_Name  `xml:"pool,attr"`
-	Permit           bool        `xml:"permit,attr"`
-	Deny             bool        `xml:"deny,attr"`
-	Log              bool        `xml:"log,attr"`
-	AB               _AB_Name    `xml:"AB,attr"`
-	RI               _RI_Name    `xml:"RI,attr"`
-	Mapped_Port_Low  uint16      `xml:"mapped_port_low,attr"`
-	Mapped_Port_High uint16      `xml:"mapped_port_high,attr"`
+	Action           _Action `xml:"action,attr"`
+	Pool             _Name   `xml:"pool,attr"`
+	AB               _Name   `xml:"AB,attr"`
+	RI               _Name   `xml:"RI,attr"`
+	Mapped_Port_Low  uint16  `xml:"mapped_port_low,attr"`
+	Mapped_Port_High uint16  `xml:"mapped_port_high,attr"`
 	_Service_Attributes
 }
 type _Security_SP struct {
-	SP_Default _SP_Type             `xml:"default_policy,attr"`
+	SP_Default _Action              `xml:"default_policy,attr"`
 	SP_Exact   []_Security_Rule_Set `xml:"Exact"`
 	SP_Global  []_Security_Rule     `xml:"Global"`
 	_Service_Attributes
 }
 
 type sDB_PO_PL struct {
-	Name     _PO_PL_Name  `xml:"name,attr"`
+	Name     _Name        `xml:"name,attr"`
 	IPPrefix netip.Prefix `xml:"IPprefix,attr"`
 	_Service_Attributes
 }
 type _PO_PS struct {
-	Name _PO_PS_Name `xml:"name,attr"`
+	Name _Name       `xml:"name,attr"`
 	Term _PO_PS_Term `xml:"Term"`
 	_Service_Attributes
 }
 type _PO_PS_Term struct {
-	Name _Term_Name    `xml:"name,attr"`
+	Name _Name         `xml:"name,attr"`
 	From []_PO_PS_From `xml:"From,attr"`
 	Then []_PO_PS_Then `xml:"Then,attr"`
 	_Service_Attributes
 }
 type _PO_PS_From struct {
-	Protocol _PO_PS_Protocol `xml:"protocl,attr"`
-	PO_PL    _PO_PL_Name     `xml:"prefix-list-filter,attr"`
-	Measure  _PO_PS_Measure  `xml:"measure,attr"`
+	Protocol _Protocol `xml:"protocol,attr"`
+	PO_PL    _Name     `xml:"prefix-list-filter,attr"`
+	Measure  _Mask     `xml:"measure,attr"`
 	_Service_Attributes
 }
 type _PO_PS_Then struct {
-	Action _PO_PS_Action `xml:"action,attr"`
+	Action _Action `xml:"action,attr"`
 	_Service_Attributes
 }
 type _PO struct {
-	PL map[_PO_PL_Name]map[netip.Prefix]bool
-	PS map[_PO_PS_Name][]_PO_PS_Term
+	PL map[_Name]map[netip.Prefix]bool
+	PS map[_Name][]_PO_PS_Term
 }
 type sDB struct {
-	XMLName          xml.Name          `xml:"AS4200240XXX"`
-	AB               []sDB_AB          `xml:"Vocabulary>AB_List>AB"`
-	Application      []sDB_Application `xml:"Vocabulary>Application_List>Application"`
-	Prefix_List      []sDB_PO_PL       `xml:"Vocabulary>Policy_Options>Prefix_List"`
-	Policy_Statement []_PO_PS          `xml:"Vocabulary>Policy_Options>Policy_Statement"`
-	Peer             []sDB_Peer        `xml:"Peer_List>Peer"`
-	VI               []sDB_VI          `xml:"VI_List>VI"`
-	Domain_Name      _FQDN             `xml:"domain_name,attr"`
-	VI_IPPrefix      netip.Prefix      `xml:"VI_IPprefix,attr"`
-	GT_List          string            `xml:"GT_list,attr"`
-	Upload_Path      string            `xml:"upload_path,attr"`
-	GT_Path          string            `xml:"GT_path,attr"`
+	XMLName     xml.Name          `xml:"AS4200240XXX"`
+	AB          []sDB_AB          `xml:"Vocabulary>AB_List>AB"`
+	Application []sDB_Application `xml:"Vocabulary>Application_List>Application"`
+	PL          []sDB_PO_PL       `xml:"Vocabulary>PO>PL"`
+	PS          []_PO_PS          `xml:"Vocabulary>PO>PS"`
+	Peer        []sDB_Peer        `xml:"Peer_List>Peer"`
+	VI          []sDB_VI          `xml:"VI_List>VI"`
+	Domain_Name _FQDN             `xml:"domain_name,attr"`
+	VI_IPPrefix netip.Prefix      `xml:"VI_IPprefix,attr"`
+	GT_List     string            `xml:"GT_list,attr"`
+	Upload_Path string            `xml:"upload_path,attr"`
+	GT_Path     string            `xml:"GT_path,attr"`
 	_Service_Attributes
 }
 type sDB_Peer struct {
@@ -220,49 +187,49 @@ type sDB_Peer struct {
 	_Service_Attributes
 }
 type sDB_AB struct {
-	Name    _AB_Name         `xml:"name,attr"`
+	Name    _Name            `xml:"name,attr"`
 	Set     bool             `xml:"set,attr"`
 	Address []sDB_AB_Address `xml:"Address"`
 	_Service_Attributes
 }
 type sDB_AB_Address struct {
-	AB       _AB_Name     `xml:"AB,attr"`
+	AB       _Name        `xml:"AB,attr"`
 	IPPrefix netip.Prefix `xml:"IPprefix,attr"`
 	FQDN     _FQDN        `xml:"FQDN,attr"`
 	_Service_Attributes
 }
 type sDB_Application struct {
-	Name _Application_Name            `xml:"name,attr"`
+	Name _Name                        `xml:"name,attr"`
 	Term []_Security_Application_Term `xml:"Term"`
 	_Service_Attributes
 }
 type sDB_Peer_Security_Zone_SZ struct {
-	Name   _SZ_Name     `xml:"name,attr"`
-	Screen _Screen_Name `xml:"screen,attr"`
+	Name   _Name `xml:"name,attr"`
+	Screen _Name `xml:"screen,attr"`
 	_Service_Attributes
 }
 
 type sDB_Peer_IFM struct {
-	Name          _IFM_Name         `xml:"name,attr"`
-	Communication _IF_Communication `xml:"communication,attr"`
-	Disable       bool              `xml:"disable,attr"`
+	Name          _Name          `xml:"name,attr"`
+	Communication _Communication `xml:"communication,attr"`
+	Disable       bool           `xml:"disable,attr"`
 	_Service_Attributes
 }
 type sDB_Peer_RI struct {
-	Name            _RI_Name           `xml:"name,attr"`
+	Name            _Name              `xml:"name,attr"`
 	RT              []sDB_Peer_RI_RT   `xml:"RT"`
 	IF              []sDB_Peer_RI_IF   `xml:"IF"`
 	Routing_Options []_Routing_Options `xml:"Routing_Options"`
 	_Service_Attributes
 }
 type _Routing_Options struct {
-	Import _PO_PS_Name `xml:"import,attr"`
-	Export _PO_PS_Name `xml:"export,attr"`
+	Import _Name `xml:"import,attr"`
+	Export _Name `xml:"export,attr"`
 	_Service_Attributes
 }
 type sDB_Peer_RI_IF struct {
-	Name          _IF_Name              `xml:"name,attr"`
-	Communication _IF_Communication     `xml:"communication,attr"`
+	Name          _Name                 `xml:"name,attr"`
+	Communication _Communication        `xml:"communication,attr"`
 	IP            []sDB_Peer_RI_IF_IP   `xml:"IP"`
 	PARP          []sDB_Peer_RI_IF_PARP `xml:"PARP"`
 	Disable       bool                  `xml:"disable,attr"`
@@ -288,48 +255,46 @@ type sDB_Peer_RI_RT struct {
 	_Service_Attributes
 }
 type sDB_Peer_RI_RT_GW struct {
-	IP      netip.Addr  `xml:"IP,attr"`
-	IF      _IF_Name    `xml:"IF,attr"`
-	Table   _Table_Name `xml:"table,attr"`
-	Discard bool        `xml:"discard,attr"`
-	Type    _GW_Type    `xml:"type,attr"`
+	IP     netip.Addr `xml:"IP,attr"`
+	IF     _Name      `xml:"IF,attr"`
+	Table  _Name      `xml:"table,attr"`
+	Action _Action    `xml:"action,attr"`
 	_Route_Attributes
 	_Service_Attributes
 }
 type sDB_VI struct {
-	ID            _VI_ID            `xml:"index,attr"`
-	Type          _VI_Type          `xml:"type,attr"`
-	Communication _IF_Communication `xml:"communication,attr"`
-	Route_Metric  uint              `xml:"route_metric,attr"`
-	Peer          []sDB_VI_Peer     `xml:"Peer"`
-	PSK           _Secret           `xml:"PSK,attr"`
+	ID            _VI_ID         `xml:"index,attr"`
+	Type          _Type          `xml:"type,attr"`
+	Communication _Communication `xml:"communication,attr"`
+	Route_Metric  uint           `xml:"route_metric,attr"`
+	Peer          []sDB_VI_Peer  `xml:"Peer"`
+	PSK           _Secret        `xml:"PSK,attr"`
 	_Service_Attributes
 }
 type sDB_VI_Peer struct {
 	ID       _VI_Peer_ID `xml:"index,attr"`
 	ASN      _ASN        `xml:"ASN,attr"`
-	RI       _RI_Name    `xml:"RI,attr"`
-	IF       _IF_Name    `xml:"IF,attr"`
+	RI       _Name       `xml:"RI,attr"`
+	IF       _Name       `xml:"IF,attr"`
 	IP       netip.Addr  `xml:"IP,attr"`
 	Dynamic  bool        `xml:"dynamic,attr"`
-	Hub      bool        `xml:"hub,attr"`
-	Inner_RI _RI_Name    `xml:"inner_RI,attr"`
+	Inner_RI _Name       `xml:"inner_RI,attr"`
 	_Service_Attributes
 }
 
 type pDB_Peer struct {
 	ASN         _ASN
-	ASN_PName   _ASN_PName
+	ASN_PName   _PName
 	Router_ID   netip.Addr
-	AB          map[_AB_Name]_Security_AB
-	Application map[_Application_Name][]_Security_Application_Term
-	SZ          map[_SZ_Name]pDB_Peer_Security_Zone_SZ
+	AB          map[_Name]_Security_AB
+	Application map[_Name][]_Security_Application_Term
+	SZ          map[_Name]pDB_Peer_Security_Zone_SZ
 	_Security_NAT_List
 	_Security_SP
 	_PO
-	IFM           map[_IFM_Name]pDB_Peer_IFM
-	RI            map[_RI_Name]pDB_Peer_RI
-	IF_RI         map[_IF_Name]_RI_Name
+	IFM           map[_Name]pDB_Peer_IFM
+	RI            map[_Name]pDB_Peer_RI
+	IF_RI         map[_Name]_Name
 	Hostname      _FQDN
 	Domain_Name   _FQDN
 	Version       string
@@ -339,15 +304,14 @@ type pDB_Peer struct {
 	Model         string
 	Serial        string
 	Root          _Secret
-	GT_List       []_GT_Name
+	GT_List       []_Name
 	VI            map[_VI_ID]pDB_Peer_VI
-	RM_ID         *_RM_ID
 	IPPrefix_List map[netip.Prefix]bool // true = public
 	_Service_Attributes
 }
 type pDB_Peer_Security_Zone_SZ struct {
-	Screen _Screen_Name
-	IF     map[_IF_Name]pDB_Peer_Security_Zone_SZ_IF
+	Screen _Name
+	IF     map[_Name]pDB_Peer_Security_Zone_SZ_IF
 	_Host_Inbound_Traffic
 	_Service_Attributes
 }
@@ -357,32 +321,31 @@ type pDB_Peer_Security_Zone_SZ_IF struct {
 }
 type pDB_Peer_RI struct {
 	RT    map[netip.Prefix]pDB_Peer_RI_RT
-	IF    map[_IF_Name]pDB_Peer_RI_IF
-	IP_IF map[netip.Addr]_IF_Name
+	IF    map[_Name]pDB_Peer_RI_IF
+	IP_IF map[netip.Addr]_Name
 	_Service_Attributes
 }
 type pDB_Peer_RI_RT struct {
-	GW map[_GW_Name]pDB_Peer_RI_RT_GW
+	GW map[_Name]pDB_Peer_RI_RT_GW
 	_Service_Attributes
 }
 type pDB_Peer_RI_RT_GW struct {
-	IP      netip.Addr  // name candidate priority 1
-	IF      _IF_Name    // name candidate priority 2
-	Table   _Table_Name // name candidate priority 3
-	Discard bool        // name candidate priority 0
-	Type    _GW_Type    // fill type appropriately
+	IP     netip.Addr // name candidate priority 1
+	IF     _Name      // name candidate priority 2
+	Table  _Name      // name candidate priority 3
+	Action _Action    // fill action appropriately
 	_Route_Attributes
 	_Service_Attributes
 }
 type pDB_Peer_IFM struct {
-	Communication _IF_Communication
+	Communication _Communication
 	Disable       bool
 	_Service_Attributes
 }
 type pDB_Peer_RI_IF struct {
-	Communication _IF_Communication
-	IFM           _IFM_Name
-	IFsM          _IFsM_Name
+	Communication _Communication
+	IFM           _Name
+	IFsM          _Name
 	IP            map[netip.Addr]pDB_Peer_RI_IF_IP
 	PARP          map[netip.Addr]pDB_Peer_RI_IF_PARP
 	Disable       bool
@@ -404,39 +367,39 @@ type pDB_Peer_RI_IF_PARP struct {
 	_Service_Attributes
 }
 type pDB_Peer_VI struct {
-	VI_ID_PName          _VI_ID_PName
-	Type                 _VI_Type
-	Communication        _IF_Communication
+	VI_ID_PName          _PName
+	Type                 _Type
+	Communication        _Communication
 	PSK                  _Secret
 	Route_Metric         uint
 	IPPrefix             netip.Prefix
 	No_NAT               bool
 	IKE_GCM              bool
 	Left_ASN             _ASN
-	Left_RI              _RI_Name
-	Left_IF              _IF_Name
+	Left_RI              _Name
+	Left_IF              _Name
 	Left_IP              netip.Addr
 	Left_NAT             netip.Addr
 	Left_Local_Address   bool
 	Left_Dynamic         bool
 	Left_Hub             bool
-	Left_Inner_RI        _RI_Name
+	Left_Inner_RI        _Name
 	Left_Inner_IP        netip.Addr
 	Left_Inner_IPPrefix  netip.Prefix
 	Right_ASN            _ASN
-	Right_RI             _RI_Name
-	Right_IF             _IF_Name
+	Right_RI             _Name
+	Right_IF             _Name
 	Right_IP             netip.Addr
 	Right_NAT            netip.Addr
 	Right_Local_Address  bool
 	Right_Dynamic        bool
 	Right_Hub            bool
-	Right_Inner_RI       _RI_Name
+	Right_Inner_RI       _Name
 	Right_Inner_IP       netip.Addr
 	Right_Inner_IPPrefix netip.Prefix
 	_Service_Attributes
 }
 type pDB_GT struct {
-	Content _GT_Content
+	Content _Content
 	_Service_Attributes
 }
