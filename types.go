@@ -63,6 +63,7 @@ type _PO_PS_Action string
 type _PO_PS_Name string
 type _PO_PL_Name string
 type _Term_Name string
+type _NAT_Action string
 
 type _Security_AB struct {
 	Address   interface{}
@@ -129,15 +130,18 @@ type _Security_Match struct {
 	_Service_Attributes
 }
 type _Security_Then struct {
-	Source_NAT       bool       `xml:"source_NAT,attr"`
-	Destination_NAT  bool       `xml:"destination_NAT,attr"`
-	Static_NAT       bool       `xml:"static_NAT,attr"`
-	Pool             _Pool_Name `xml:"pool,attr"`
-	Permit           bool       `xml:"permit,attr"`
-	Deny             bool       `xml:"deny,attr"`
-	Log              bool       `xml:"log,attr"`
-	Mapped_Port_Low  uint16     `xml:"mapped_port_low,attr"`
-	Mapped_Port_High uint16     `xml:"mapped_port_high,attr"`
+	Action           _NAT_Action `xml:"action,attr"`
+	Source_NAT       bool        `xml:"source_NAT,attr"`
+	Destination_NAT  bool        `xml:"destination_NAT,attr"`
+	Static_NAT       bool        `xml:"static_NAT,attr"`
+	Pool             _Pool_Name  `xml:"pool,attr"`
+	Permit           bool        `xml:"permit,attr"`
+	Deny             bool        `xml:"deny,attr"`
+	Log              bool        `xml:"log,attr"`
+	AB               _AB_Name    `xml:"AB,attr"`
+	RI               _RI_Name    `xml:"RI,attr"`
+	Mapped_Port_Low  uint16      `xml:"mapped_port_low,attr"`
+	Mapped_Port_High uint16      `xml:"mapped_port_high,attr"`
 	_Service_Attributes
 }
 type _Security_SP struct {

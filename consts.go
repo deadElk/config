@@ -67,4 +67,7 @@ const (
 	_PO_PS_Action_reject                  _PO_PS_Action     = "reject"
 	_PO_PS_Action_next_policy             _PO_PS_Action     = "next policy"
 	_PO_PS_Action_load_balance_per_packet _PO_PS_Action     = "load-balance per-packet"
+	_NAT_Action_source_nat                _NAT_Action       = "source-nat"
+	_NAT_Action_destination_nat           _NAT_Action       = "destination-nat"
+	_NAT_Action_static_nat                _NAT_Action       = "static-nat"
 )

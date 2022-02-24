@@ -312,22 +312,11 @@ func db_parse(xml_db *sDB) (err error) {
 									v_SZ[ri_v.Name._SZ_Name()].IF[if_v.Name] = pDB_Peer_Security_Zone_SZ_IF{
 										_Host_Inbound_Traffic: _Host_Inbound_Traffic{
 											Services: map[_Service]bool{
-												_service_all:         false,
-												_service_any_service: false,
-												_service_bootp:       false,
-												_service_dhcp:        false,
-												_service_dhcpv6:      false,
-												_service_ike:         false,
-												_service_ping:        true,
-												_service_snmp:        false,
-												_service_snmp_trap:   false,
-												_service_ssh:         true,
-												_service_traceroute:  true,
+												_service_ping:       true,
+												_service_ssh:        true,
+												_service_traceroute: true,
 											},
-											Protocols: map[_Protocol]bool{
-												_protocol_all: false,
-												_protocol_bgp: false,
-											},
+											Protocols: map[_Protocol]bool{},
 										},
 										_Service_Attributes: _Service_Attributes{},
 									}
@@ -615,20 +604,11 @@ func db_parse(xml_db *sDB) (err error) {
 				pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].Inner_RI._SZ_Name()].IF[_IF_Name(v_Type.String()+"0."+value.ID.String())] = pDB_Peer_Security_Zone_SZ_IF{
 					_Host_Inbound_Traffic: _Host_Inbound_Traffic{
 						Services: map[_Service]bool{
-							_service_all:         false,
-							_service_any_service: false,
-							_service_bootp:       false,
-							_service_dhcp:        false,
-							_service_dhcpv6:      false,
-							_service_ike:         false,
-							_service_ping:        true,
-							_service_snmp:        false,
-							_service_snmp_trap:   false,
-							_service_ssh:         true,
-							_service_traceroute:  true,
+							_service_ping:       true,
+							_service_ssh:        true,
+							_service_traceroute: true,
 						},
 						Protocols: map[_Protocol]bool{
-							_protocol_all: false,
 							_protocol_bgp: true,
 						},
 					},

@@ -201,21 +201,10 @@ func (inbound _FQDN) _AB_Name() _AB_Name {
 func (inbound _Host_Inbound_Traffic) _Defaults(enabled ...interface{}) _Host_Inbound_Traffic {
 	return _Host_Inbound_Traffic{
 		Services: map[_Service]bool{
-			_service_all:         false,
-			_service_any_service: false,
-			_service_bootp:       false,
-			_service_dhcp:        false,
-			_service_dhcpv6:      false,
-			_service_ike:         false,
-			_service_ping:        true,
-			_service_snmp:        false,
-			_service_snmp_trap:   false,
-			_service_ssh:         true,
-			_service_traceroute:  true,
+			_service_ping:       true,
+			_service_ssh:        true,
+			_service_traceroute: true,
 		},
-		Protocols: map[_Protocol]bool{
-			_protocol_all: false,
-			_protocol_bgp: false,
-		},
+		Protocols: map[_Protocol]bool{},
 	}
 }
