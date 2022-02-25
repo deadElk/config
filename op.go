@@ -44,7 +44,7 @@ func op() (err error) {
 				log.Warnf("templates read error; ACTION: skip.")
 				continue
 			}
-			switch err = parse_db(&xml_db); err == nil {
+			switch err = parse_DB(&xml_db); err == nil {
 			case false:
 				log.Warnf("configuration file '%v' DB parse error: '%v'; ACTION: skip.", value, err)
 				continue
@@ -75,7 +75,7 @@ func op() (err error) {
 	// }
 	return errors.New("nothing to do")
 }
-func parse_db(xml_db *cDB) (err error) {
+func parse_DB(xml_db *cDB) (err error) {
 	_ = parse_interface(nil, parse_AB(&xml_db.AB))
 	_ = parse_interface(nil, parse_JA(&xml_db.JA))
 	return

@@ -155,15 +155,19 @@ func parse_AB(ab *[]cDB_AB) (ok bool) {
 	for _, b := range *ab {
 		switch b.Set {
 		case true:
-			create_AB(b.Name, b._Service_Attributes)
+			switch create_AB(b.Name, &b._Service_Attributes) {
+			case false:
+				continue
+			}
 		}
+		ok = true
 		for _, d := range b.Address {
-			_AB_Address_add(true, true, b.Name, d.AB, d.FQDN, d.IPPrefix)
+			add_2_AB(true, true, b.Name, d.AB, d.FQDN, d.IPPrefix)
 		}
 	}
-	return true
+	return
 }
-func create_AB(ab_name _Name, sa _Service_Attributes) (ok bool) {
+func create_AB(ab_name _Name, sa *_Service_Attributes) (ok bool) {
 	switch _, flag := i_ab[ab_name]; flag {
 	case true:
 		log.Warnf("AB '%+v', already exist; ACTION: skip.", ab_name)
@@ -173,12 +177,12 @@ func create_AB(ab_name _Name, sa _Service_Attributes) (ok bool) {
 		Type:                _Type_set,
 		Address:             nil,
 		Addresses:           map[_Name]_Type{},
-		_Service_Attributes: sa,
+		_Service_Attributes: *sa,
 	}
-	return
+	return true
 }
 
-func _AB_Address_add(public, private bool, ab_name _Name, inbound ...interface{}) (ok bool) {
+func add_2_AB(public, private bool, ab_name _Name, inbound ...interface{}) (ok bool) {
 	var (
 		interim []interface{}
 	)
@@ -224,39 +228,39 @@ func _AB_Address_add(public, private bool, ab_name _Name, inbound ...interface{}
 	}
 
 	for _, address := range interim {
-		switch _, flag := pdb_ab[ab_name]; {
-		case flag && pdb_ab[ab_name].Type == _AB_Type_set:
+		switch _, flag := i_ab[ab_name]; {
+		case flag && i_ab[ab_name].Type == _Type_set:
 			switch value := (address).(type) {
 			case _Name:
 				ok = true
-				pdb_ab[ab_name].Addresses[value] = _AB_Type_set
+				i_ab[ab_name].Addresses[value] = _Type_set
 			case _FQDN:
 				ok = true
-				pdb_ab[ab_name].Addresses[value._Name()] = _AB_Type_fqdn
-				_AB_Address_add(true, true, value._Name(), value)
+				i_ab[ab_name].Addresses[value._Name()] = _Type_fqdn
+				add_2_AB(true, true, value._Name(), value)
 			case netip.Prefix:
 				var (
 					ab = _Name(value.String())
 				)
 				ok = true
-				pdb_ab[ab_name].Addresses[ab] = _AB_Type_ipprefix
-				_AB_Address_add(true, true, ab, value)
+				i_ab[ab_name].Addresses[ab] = _Type_ipprefix
+				add_2_AB(true, true, ab, value)
 			}
 		case flag:
-			log.Warnf("AB '%+v''%+v', already exist; ACTION: skip.", ab_name, pdb_ab[ab_name])
+			log.Warnf("AB '%+v''%+v', already exist; ACTION: skip.", ab_name, i_ab[ab_name])
 			continue
 		default:
 			switch value := (address).(type) {
 			case _FQDN:
 				ok = true
-				pdb_ab[ab_name] = _Security_AB{
-					Type:    _AB_Type_fqdn,
+				i_ab[ab_name] = i_AB{
+					Type:    _Type_fqdn,
 					Address: value,
 				}
 			case netip.Prefix:
 				ok = true
-				pdb_ab[ab_name] = _Security_AB{
-					Type:    _AB_Type_ipprefix,
+				i_ab[ab_name] = i_AB{
+					Type:    _Type_ipprefix,
 					Address: value,
 				}
 			}

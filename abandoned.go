@@ -277,6 +277,92 @@ func _Application_create(ap_name _Name, term []_Security_Application_Term) (ok b
 	pdb_appl[ap_name] = c
 	return
 }
+func _AB_Address_add(public, private bool, ab_name _Name, inbound ...interface{}) (ok bool) {
+	var (
+		interim []interface{}
+	)
+	for _, address := range inbound {
+		switch value := (address).(type) {
+		case netip.Addr:
+			switch is_private, is_valid := value.IsPrivate(), value.IsValid(); !is_valid || (is_private && !private) || (!is_private && !public) {
+			case true:
+				log.Debugf("AB '%v', address '%v' is valid '%v' against public '%v' / private '%v': address not suitable; ACTION: skip.", ab_name, value, value.IsValid(), public, private)
+				continue
+			}
+			var (
+				bits = 32
+			)
+			switch value.Is6() {
+			case true:
+				bits = 128
+			}
+			interim = append(interim, parse_interface(value.Prefix(bits)).(netip.Prefix))
+		case netip.Prefix:
+			switch is_private, is_valid := value.Masked().Addr().IsPrivate(), value.IsValid(); !is_valid || (is_private && !private) || (!is_private && !public) {
+			case true:
+				log.Debugf("AB '%v', address '%v' is valid '%v' against public '%v' / private '%v': address not suitable; ACTION: skip.", ab_name, value, value.IsValid(), public, private)
+				continue
+			}
+			interim = append(interim, value)
+		case _FQDN:
+			switch len(value) == 0 {
+			case true:
+				continue
+			}
+			interim = append(interim, value)
+		case _Name:
+			switch len(value) == 0 {
+			case true:
+				continue
+			}
+			interim = append(interim, value)
+		default:
+			log.Warnf("AB '%v', address '%v'; unknown address type; ACTION: skip.", ab_name, value)
+			continue
+		}
+	}
+
+	for _, address := range interim {
+		switch _, flag := pdb_ab[ab_name]; {
+		case flag && pdb_ab[ab_name].Type == _AB_Type_set:
+			switch value := (address).(type) {
+			case _Name:
+				ok = true
+				pdb_ab[ab_name].Addresses[value] = _AB_Type_set
+			case _FQDN:
+				ok = true
+				pdb_ab[ab_name].Addresses[value._Name()] = _AB_Type_fqdn
+				_AB_Address_add(true, true, value._Name(), value)
+			case netip.Prefix:
+				var (
+					ab = _Name(value.String())
+				)
+				ok = true
+				pdb_ab[ab_name].Addresses[ab] = _AB_Type_ipprefix
+				_AB_Address_add(true, true, ab, value)
+			}
+		case flag:
+			log.Warnf("AB '%+v''%+v', already exist; ACTION: skip.", ab_name, pdb_ab[ab_name])
+			continue
+		default:
+			switch value := (address).(type) {
+			case _FQDN:
+				ok = true
+				pdb_ab[ab_name] = _Security_AB{
+					Type:    _AB_Type_fqdn,
+					Address: value,
+				}
+			case netip.Prefix:
+				ok = true
+				pdb_ab[ab_name] = _Security_AB{
+					Type:    _AB_Type_ipprefix,
+					Address: value,
+				}
+			}
+		}
+	}
+	return
+}
 
 func _SZ_create(outbound *map[_Name]pDB_Peer_Security_Zone_SZ, sz_name _Name, inbound interface{}) (ok bool) {
 	switch value := (inbound).(type) {
