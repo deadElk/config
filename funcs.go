@@ -81,43 +81,48 @@ func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 	return
 }
 
-func _GT_read() {
+func _GT_read() (err error) {
 	var (
 		dentry []os.DirEntry
 		data   []byte
-		err    error
 	)
 	switch dentry, err = os.ReadDir(_Defaults[_path_GT].(string)); err == nil {
-	case true:
-		for _, fentry := range dentry {
-			switch fentry.Type().IsRegular() {
-			case true:
-				var (
-					fsplit = re_dot.Split(fentry.Name(), -1)
-				)
-				switch len(fsplit) < 1 {
-				case false:
-					switch fsplit[len(fsplit)-1] == "tmpl" {
-					case true:
-						var (
-							tname = _Name(fentry.Name()[:len(fentry.Name())-5])
-						)
-						switch data, err = os.ReadFile(_Defaults[_path_GT].(string) + "/" + fentry.Name()); err == nil {
-						case true:
-							switch _, flag := pdb_gt[tname]; flag {
-							case true:
-								log.Warnf("template '%v' already exist; ACTION: skip.", tname)
-								continue
-							}
-							pdb_gt[tname] = pDB_GT{
-								Content: _Content(data)._Sanitize(),
-							}
-						}
-					}
-				}
-			}
+	case false:
+		return err
+	}
+	for _, fentry := range dentry {
+		switch fentry.Type().IsRegular() {
+		case false:
+			continue
+		}
+		var (
+			fsplit = re_dot.Split(fentry.Name(), -1)
+		)
+		switch len(fsplit) < 1 {
+		case true:
+			continue
+		}
+		switch fsplit[len(fsplit)-1] == "tmpl" {
+		case false:
+			continue
+		}
+		var (
+			tname = _Name(fentry.Name()[:len(fentry.Name())-5])
+		)
+		switch data, err = os.ReadFile(_Defaults[_path_GT].(string) + "/" + fentry.Name()); err == nil {
+		case false:
+			continue
+		}
+		switch _, flag := pdb_gt[tname]; flag {
+		case true:
+			log.Warnf("template '%v' already exist; ACTION: skip.", tname)
+			continue
+		}
+		pdb_gt[tname] = pDB_GT{
+			Content: _Content(data)._Sanitize(),
 		}
 	}
+	return
 }
 
 func _Application_create(ap_name _Name, term []_Security_Application_Term) (ok bool) {

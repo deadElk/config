@@ -22,24 +22,5 @@ func init() {
 func main() {
 	set_VI_IPPrefix()
 	set_Domain_Name()
-	switch err := db_read(); err == nil {
-	case false:
-		log.Fatalf("DB read error: '%v'", err)
-		return
-	}
-	switch err := db_use(); err == nil {
-	case false:
-		log.Fatalf("DB use error: '%v'", err)
-		return
-	}
-	switch err := config_upload(); err == nil {
-	case false:
-		log.Fatalf("config upload error: '%v'", err)
-		return
-	}
-	switch err := config_test(); err == nil {
-	case false:
-		log.Fatalf("config test error: '%v'", err)
-		return
-	}
+	_ = op()
 }

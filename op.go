@@ -14,7 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func db_read() (err error) {
+func op() (err error) {
 	var (
 		xml_db cDB
 		data   []byte
@@ -51,6 +51,21 @@ func db_read() (err error) {
 		default:
 			log.Warnf("file '%v' read error: '%v'; ACTION: skip.", value, err)
 		}
+	}
+	switch err := db_use(); err == nil {
+	case false:
+		log.Fatalf("DB use error: '%v'", err)
+		return
+	}
+	switch err := config_upload(); err == nil {
+	case false:
+		log.Fatalf("config upload error: '%v'", err)
+		return
+	}
+	switch err := config_test(); err == nil {
+	case false:
+		log.Fatalf("config test error: '%v'", err)
+		return
 	}
 	return errors.New("nothing to do")
 }
