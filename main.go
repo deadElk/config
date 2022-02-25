@@ -18,8 +18,11 @@ func init() {
 		TimestampFormat:  time.RFC3339Nano,
 	})
 	log.SetReportCaller(true)
-	set_VI_IPPrefix()
 }
 func main() {
-	_ = op()
+	set_VI_IPPrefix()
+	switch err := op(); err == nil {
+	case false:
+		log.Fatalf("error: '%v'.", err)
+	}
 }

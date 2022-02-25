@@ -208,6 +208,7 @@ type i_JA struct {
 	_Service_Attributes
 }
 type i_JA_Term struct {
+	Name             _Name
 	Protocol         _Protocol
 	Destination_Port _Port
 	_Service_Attributes

@@ -52,7 +52,6 @@ func set_Domain_Name(inbound ..._FQDN) {
 		_Defaults[_domain_name] = inbound[0]
 	}
 }
-
 func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 	switch len(inbound) {
 	case 0:
@@ -80,7 +79,6 @@ func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 	}
 	return
 }
-
 func read_GT() (err error) {
 	var (
 		dentry []os.DirEntry
@@ -115,82 +113,71 @@ func read_GT() (err error) {
 			log.Warnf("template '%v' read error '%v'; ACTION: skip.", tname, err)
 			continue
 		}
-		switch _, flag := pdb_gt[tname]; flag {
+		switch _, flag := i_gt[tname]; flag {
 		case true:
 			log.Warnf("template '%v' already exist; ACTION: skip.", tname)
 			continue
 		}
-		pdb_gt[tname] = pDB_GT{
-			Content: _Content(data)._Sanitize(),
+		i_gt[tname] = i_GT{
+			Content: _Content(data).trim_space(),
 		}
 	}
 	return
 }
-
-func _Application_create(ap_name _Name, term []_Security_Application_Term) (ok bool) {
-	switch _, flag := pdb_appl[ap_name]; flag {
-	case true:
-		log.Warnf("Application '%v' already exist; ACTION: skip.", ap_name)
-	}
-	var (
-		c []_Security_Application_Term
-	)
-	for _, b := range term {
-		c = append(c, b)
-	}
-	ok = true
-	pdb_appl[ap_name] = c
-	return
-}
-
-func _SZ_create(outbound *map[_Name]pDB_Peer_Security_Zone_SZ, sz_name _Name, inbound interface{}) (ok bool) {
-	switch value := (inbound).(type) {
-	case sDB_Peer_Security_Zone_SZ:
-		switch _, flag := (*outbound)[value.Name]; flag {
+func parse_JA(ja *[]cDB_JA) (ok bool) {
+	for _, b := range *ja {
+		switch _, flag := i_ja[b.Name]; flag {
 		case true:
-			log.Warnf("SZ '%v' already defined; ACTION: skip.", value.Name)
+			log.Warnf("Application '%v' already exist; ACTION: skip.", b.Name)
+			continue
+		}
+		i_ja[b.Name] = func() (outbound i_JA) {
+			outbound = i_JA{
+				Term: func() (outbound []i_JA_Term) {
+					for _, d := range b.Term {
+						outbound = append(outbound, i_JA_Term{
+							Name:                d.Name,
+							Protocol:            d.Protocol,
+							Destination_Port:    d.Destination_Port,
+							_Service_Attributes: d._Service_Attributes,
+						})
+					}
+					return
+				}(),
+				_Service_Attributes: _Service_Attributes{},
+			}
 			return
-		}
-		(*outbound)[value.Name] = pDB_Peer_Security_Zone_SZ{
-			Screen:                value.Screen,
-			IF:                    map[_Name]pDB_Peer_Security_Zone_SZ_IF{},
-			_Host_Inbound_Traffic: _Host_Inbound_Traffic{},
-			_Service_Attributes:   value._Service_Attributes,
-		}
-		return true
-	case pDB_Peer_Security_Zone_SZ:
-		switch _, flag := (*outbound)[sz_name]; flag {
-		case true:
-			log.Warnf("SZ '%v' already defined; ACTION: skip.", sz_name)
-			return
-		}
-		(*outbound)[sz_name] = pDB_Peer_Security_Zone_SZ{
-			Screen:                "",
-			IF:                    map[_Name]pDB_Peer_Security_Zone_SZ_IF{},
-			_Host_Inbound_Traffic: _Host_Inbound_Traffic{},
-			_Service_Attributes:   _Service_Attributes{},
-		}
-		return true
+		}()
 	}
-	log.Warnf("don't know what to do with inbound '%+v'; ACTION: skip.", inbound)
-	return
+	return true
 }
-
-func _AB_Set_create(ab_name _Name) (ok bool) {
-	switch _, flag := pdb_ab[ab_name]; flag {
+func parse_AB(ab *[]cDB_AB) (ok bool) {
+	for _, b := range *ab {
+		switch b.Set {
+		case true:
+			create_AB(b.Name, b._Service_Attributes)
+		}
+		for _, d := range b.Address {
+			_AB_Address_add(true, true, b.Name, d.AB, d.FQDN, d.IPPrefix)
+		}
+	}
+	return true
+}
+func create_AB(ab_name _Name, sa _Service_Attributes) (ok bool) {
+	switch _, flag := i_ab[ab_name]; flag {
 	case true:
-		log.Warnf("AB '%+v''%+v', already exist; ACTION: skip.", ab_name, pdb_ab[ab_name])
+		log.Warnf("AB '%+v', already exist; ACTION: skip.", ab_name)
 		return
 	}
-	ok = true
-	pdb_ab[ab_name] = _Security_AB{
-		Address:             nil,
+	i_ab[ab_name] = i_AB{
 		Type:                _Type_set,
+		Address:             nil,
 		Addresses:           map[_Name]_Type{},
-		_Service_Attributes: _Service_Attributes{},
+		_Service_Attributes: sa,
 	}
 	return
 }
+
 func _AB_Address_add(public, private bool, ab_name _Name, inbound ...interface{}) (ok bool) {
 	var (
 		interim []interface{}

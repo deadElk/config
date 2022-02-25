@@ -89,7 +89,7 @@ func (inbound _Description) _Validate(default_description _Description) _Descrip
 	}
 	return inbound
 }
-func (inbound _Content) _Sanitize() (outbound _Content) {
+func (inbound _Content) trim_space() (outbound _Content) {
 	for _, value := range strings.Split(string(inbound), "\n") {
 		outbound += _Content(strings.TrimSpace(value) + "\n")
 	}
