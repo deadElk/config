@@ -10,6 +10,7 @@ type _i_pl map[_Name]i_PO_PL
 type _i_ps map[_Name]i_PO_PS
 type _i_peer map[_ASN]i_Peer
 type _i_vi map[_VI_ID]i_VI
+type _i_vi_peer map[_VI_ID]map[_VI_Peer_ID]i_VI_Peer
 type _i_gt map[_Name]i_GT
 type _i_config map[_ASN][]byte
 
@@ -21,26 +22,29 @@ type i_GT struct {
 
 // Peer
 type i_Peer struct {
-	IF_2_RI      map[_Name]_Name // interface to RI mapping. interfaces within one peer must be unique.
-	IFM          map[_Name]i_Peer_IFM
-	RI           map[_Name]i_Peer_RI
-	Hostname     _FQDN
-	Domain_Name  _FQDN
-	Version      string
-	Manufacturer string
-	Model        string
-	Serial       string
-	Root         _Secret
-	GT_List      string
-	SZ           map[_Name]i_SZ
-	NAT_Source   map[_Type]i_NAT
-	SP_Options   i_SP_Options
-	SP_Exact     []i_Rule_Set
-	SP_Global    []i_Rule
-	AB           _i_ab
-	JA           _i_ja
-	PL           _i_pl
-	PS           _i_ps
+	IF_2_RI       map[_Name]_Name // interface to RI mapping. interfaces within one peer must be unique.
+	VI            map[_VI_ID]*i_VI
+	VI_Peer_Left  map[_VI_ID]*i_VI_Peer
+	VI_Peer_Right map[_VI_ID]*i_VI_Peer
+	IFM           map[_Name]i_Peer_IFM
+	RI            map[_Name]i_Peer_RI
+	Hostname      _FQDN
+	Domain_Name   _FQDN
+	Version       string
+	Manufacturer  string
+	Model         string
+	Serial        string
+	Root          _Secret
+	GT_List       string
+	SZ            map[_Name]i_SZ
+	NAT_Source    map[_Type]i_NAT
+	SP_Exact      []i_Rule_Set
+	SP_Global     []i_Rule
+	AB            map[_Name]*i_AB
+	JA            map[_Name]*i_JA
+	PL            map[_Name]*i_PO_PL
+	PS            map[_Name]*i_PO_PS
+	i_SP_Options
 	_Service_Attributes
 }
 type i_Peer_IFM struct {
@@ -96,20 +100,28 @@ type i_Peer_RI_RO_Leak_FromTo struct {
 
 // Virtual Interfaces
 type i_VI struct {
+	PName         _PName
+	IPPrefix      netip.Prefix
+	IKE_No_NAT    bool
+	IKE_GCM       bool
 	Type          _Type
 	Communication _Communication
 	Route_Metric  _Route_Weight
-	Peer          map[_VI_Peer_ID]i_VI_Peer
-	PSK           _Secret
+	// Peer          map[_VI_Peer_ID]i_VI_Peer
+	PSK _Secret
 	_Service_Attributes
 }
 type i_VI_Peer struct {
-	ASN      _ASN
-	RI       _Name
-	IF       _Name
-	IP       netip.Addr
-	Dynamic  bool
-	Inner_RI _Name
+	ASN            _ASN
+	RI             _Name
+	IF             _Name
+	IP             netip.Addr
+	NAT            netip.Addr
+	Local_Address  bool
+	Dynamic        bool
+	Inner_RI       _Name
+	Inner_IP       netip.Addr
+	Inner_IPPrefix netip.Prefix
 	_Service_Attributes
 }
 
@@ -146,6 +158,7 @@ type i_FromTo struct {
 	_Service_Attributes
 }
 type i_Rule struct {
+	Name  _Name // used only within security policies
 	Match []i_Match
 	Then  []i_Then
 	_Service_Attributes
@@ -235,6 +248,5 @@ type i_PO_PS_Then struct {
 
 // Security Policies
 type i_SP_Options struct {
-	Default_Policy _Action
-	_Service_Attributes
+	SP_Default_Policy _Action
 }
