@@ -108,8 +108,7 @@ type i_VI struct {
 	Type          _Type
 	Communication _Communication
 	Route_Metric  _Route_Weight
-	// Peer          map[_VI_Peer_ID]i_VI_Peer
-	PSK _Secret
+	PSK           _Secret
 	_Service_Attributes
 }
 type i_VI_Peer struct {
