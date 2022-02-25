@@ -31,6 +31,7 @@ type cDB_Vocabulary struct {
 // Peer
 type cDB_Peer struct {
 	ASN             _ASN           `xml:"ASN,attr"`
+	Router_ID       netip.Addr     `xml:"router_ID,attr"`
 	IFM             []cDB_Peer_IFM `xml:"IFM"`
 	RI              []cDB_Peer_RI  `xml:"RI"`
 	Hostname        _FQDN          `xml:"hostname,attr"`

@@ -1,21 +1,16 @@
 package main
 
-import (
-	log "github.com/sirupsen/logrus"
-)
-
 const (
-	default_loglevel        = log.InfoLevel
-	_service         string = "config"
-	_serviced               = _service /*+ "d"*/
-	_SERVICE         string = "CONFIG"
-	_SERVICED               = _SERVICE /*+ "D"*/
-	_hash_Size       int    = 512 / 8
-	_passwd_Z        string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	_passwd_z        string = "abcdefghijklmnopqrstuvwxyz"
-	_passwd_0        string = "0123456789"
-	_passwd_oops     string = "_" // carefully with special symbols
-	_passwd                 = _passwd_Z + _passwd_z + _passwd_0 + _passwd_oops
+	_service     string = "config"
+	_serviced           = _service /*+ "d"*/
+	_SERVICE     string = "CONFIG"
+	_SERVICED           = _SERVICE /*+ "D"*/
+	_hash_Size   int    = 512 / 8
+	_passwd_Z    string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	_passwd_z    string = "abcdefghijklmnopqrstuvwxyz"
+	_passwd_0    string = "0123456789"
+	_passwd_oops string = "_" // carefully with special symbols
+	_passwd             = _passwd_Z + _passwd_z + _passwd_0 + _passwd_oops
 
 	_Action_accept             _Action        = "accept"
 	_Action_add                _Action        = "add"
@@ -71,15 +66,20 @@ const (
 	_Type_fqdn                 _Type          = "fqdn"
 	_Type_from                 _Type          = "from"
 	_Type_gr                   _Type          = "gr"
+	_Type_interface            _Type          = "interface"
 	_Type_ipprefix             _Type          = "ipprefix"
 	_Type_link                 _Type          = "link"
 	_Type_lt                   _Type          = "lt"
+	_Type_routing_group        _Type          = "routing-group"
+	_Type_routing_instance     _Type          = "routing-instance"
+	_Type_security_zone        _Type          = "security-zone"
 	_Type_set                  _Type          = "set"
 	_Type_source               _Type          = "source"
 	_Type_st                   _Type          = "st"
 	_Type_static               _Type          = "static"
 	_Type_to                   _Type          = "to"
 	_Type_vi                   _Type          = "vi"
+	_Type_zone                 _Type          = "zone"
 
 	_loglevel         _Default = "default_loglevel"
 	_comm_if          _Default = "default_comm_if"

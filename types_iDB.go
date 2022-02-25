@@ -22,6 +22,8 @@ type i_GT struct {
 
 // Peer
 type i_Peer struct {
+	PName         _PName
+	Router_ID     netip.Addr
 	IF_2_RI       map[_Name]_Name // interface to RI mapping. interfaces within one peer must be unique.
 	VI            map[_VI_ID]*i_VI
 	VI_Peer_Left  map[_VI_ID]*i_VI_Peer
@@ -68,7 +70,6 @@ type i_Peer_RI_IF struct {
 }
 type i_Peer_RI_IF_IP struct {
 	IPPrefix  netip.Prefix
-	Router_ID bool
 	Primary   bool
 	Preferred bool
 	NAT       netip.Addr
