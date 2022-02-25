@@ -18,9 +18,8 @@ func init() {
 		TimestampFormat:  time.RFC3339Nano,
 	})
 	log.SetReportCaller(true)
+	set_VI_IPPrefix()
 }
 func main() {
-	set_VI_IPPrefix()
-	set_Domain_Name()
 	_ = op()
 }

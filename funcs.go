@@ -81,14 +81,15 @@ func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 	return
 }
 
-func _GT_read() (err error) {
+func read_GT() (err error) {
 	var (
 		dentry []os.DirEntry
 		data   []byte
 	)
 	switch dentry, err = os.ReadDir(_Defaults[_path_GT].(string)); err == nil {
 	case false:
-		return err
+		log.Warnf("template director '%v' read error '%v'; ACTION: skip.", _Defaults[_path_GT], err)
+		return
 	}
 	for _, fentry := range dentry {
 		switch fentry.Type().IsRegular() {
@@ -111,6 +112,7 @@ func _GT_read() (err error) {
 		)
 		switch data, err = os.ReadFile(_Defaults[_path_GT].(string) + "/" + fentry.Name()); err == nil {
 		case false:
+			log.Warnf("template '%v' read error '%v'; ACTION: skip.", tname, err)
 			continue
 		}
 		switch _, flag := pdb_gt[tname]; flag {
