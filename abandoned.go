@@ -212,3 +212,40 @@ set protocols bgp group AS4200000000 neighbor {{.VI_INSIDE_RIGHT_IP}} export fil
 set protocols bgp group AS4200000000 neighbor {{.VI_INSIDE_RIGHT_IP}} export export_1Mb
 set protocols bgp group AS4200000000 neighbor {{.VI_INSIDE_RIGHT_IP}} peer-as {{.VI_INSIDE_RIGHT_AS}}
 */
+
+const (
+	_juniper_RI_              _Name          = "master"
+	_juniper_mgmt_RI          _Name          = "mgmt_junos"
+	_juniper_mgmt_Description _Description   = "MANAGEMENT-INSTANCE"
+	_if_comm_ptp              _Communication = "ptp"
+	_if_comm_ptmp             _Communication = "ptmp"
+	_vi_comm_                                = _if_comm_ptp
+	_if_comm_                                = _if_comm_ptmp
+	_if_mode_vi               _Mode          = "vi"
+	_if_mode_link             _Mode          = "link"
+	_service_ike              _Service       = "ike"
+	_service_ping             _Service       = "ping"
+	_service_ssh              _Service       = "ssh"
+	_service_traceroute       _Service       = "traceroute"
+	_protocol_bgp             _Protocol      = "bgp"
+	_AB_Type_set              _Type          = "set"
+	_AB_Type_ipprefix         _Type          = "ipprefix"
+	_AB_Type_fqdn             _Type          = "fqdn"
+)
+
+var (
+// _loglevel = default_loglevel
+)
+
+func sum_uint32_gt_fm(inbound ...uint32) (outbound uint32) {
+	switch len(inbound) {
+	case 0:
+		return 0
+	case 1:
+		return inbound[0]
+	}
+	for index := 0; index < len(inbound); index++ {
+		outbound += inbound[index]
+	}
+	return
+}

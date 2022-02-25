@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"sync"
 	"text/template"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -13,16 +15,14 @@ var (
 	re_dot     = regexp.MustCompile(`\.`)
 	re_period  = regexp.MustCompile(`,`)
 	gt_fm      = template.FuncMap{
-		"sum_uint32": sum_uint32_gt_fm,
+		// "sum_uint32": sum_uint32_gt_fm,
 		"sum_string": sum_string_gt_fm,
 	}
-	_loglevel  = _loglevel_
-	vi_ipshift uint32
-	pdb_ab     = make(map[_Name]_Security_AB)
-	pdb_appl   = make(map[_Name][]_Security_Application_Term)
-	pdb_peer   = make(map[_ASN]pDB_Peer)
-	pdb_gt     = make(map[_Name]pDB_GT)
-	config     = make(map[_ASN][]byte)
+	pdb_ab   = make(map[_Name]_Security_AB)
+	pdb_appl = make(map[_Name][]_Security_Application_Term)
+	pdb_peer = make(map[_ASN]pDB_Peer)
+	pdb_gt   = make(map[_Name]pDB_GT)
+	config   = make(map[_ASN][]byte)
 )
 
 var (
@@ -85,13 +85,19 @@ var (
 		_Type_vi:                   _Type_vi,
 	}
 	_Defaults = map[interface{}]interface{}{
+		_loglevel:         log.InfoLevel,
 		_comm_if:          _Type_ptmp,
 		_comm_vi:          _Type_ptp,
 		_VI_IPPrefix:      parse_interface(netip.ParsePrefix("10.90.0.0/16")).(netip.Prefix),
+		_VI_IPShift:       uint32(0),
 		_RI:               _Name("master"),
 		_mgmt_RI:          _Name("mgmt_junos"),
 		_mgmt_IF:          _Name("fxp0.0"),
 		_mgmt_Description: _Description("MANAGEMENT-INSTANCE"),
+		_domain_name:      _FQDN("example.com"),
+		_ps_bits_per_rm:   uint32(2),        // ____
+		_ps_max_rms:       uint32(32/2 - 1), // ^^^^
+		_GT_list:          "",
 		_path_GT:          "./templates",
 		_path_out:         "./tmp",
 		_files_config: []string{
@@ -101,8 +107,5 @@ var (
 			"/usr/local/etc/" + _serviced + ".xml",
 			"/etc/" + _serviced + ".xml",
 		},
-		_domain_name:    _FQDN("example.com"),
-		_ps_bits_per_rm: uint32(2),        // ____
-		_ps_max_rms:     uint32(32/2 - 1), // ^^^^
 	}
 )

@@ -12,18 +12,18 @@ import (
 
 func tabber(inbound string, tabs int) string {
 	var (
-		in_lenght  = len(inbound)
-		tab_lenght = 8
-		max_lenght = tabs*tab_lenght - 1
+		in_length  = len(inbound)
+		tab_length = 8
+		max_length = tabs*tab_length - 1
 	)
 	switch {
-	case in_lenght > max_lenght:
-		return inbound[:max_lenght]
-	case in_lenght < max_lenght:
+	case in_length > max_length:
+		return inbound[:max_length]
+	case in_length < max_length:
 		var (
 			add_tabs string
 		)
-		for counter := max_lenght - in_lenght - tab_lenght; counter >= 0; counter -= tab_lenght {
+		for counter := max_length - in_length - tab_length; counter >= 0; counter -= tab_length {
 			add_tabs += "\t"
 		}
 		return inbound + add_tabs
@@ -36,7 +36,7 @@ func get_VI_IPPrefix(vi_id _VI_ID, peer_id _VI_Peer_ID) netip.Prefix {
 	var (
 		b = make([]byte, 4)
 	)
-	binary.BigEndian.PutUint32(b, vi_ipshift+uint32(vi_id*4)+uint32(peer_id))
+	binary.BigEndian.PutUint32(b, _Defaults[_VI_IPShift].(uint32)+uint32(vi_id*4)+uint32(peer_id))
 	return netip.PrefixFrom(parse_interface(netip.AddrFromSlice(b)).(netip.Addr), 30)
 }
 func set_VI_IPPrefix(inbound ...netip.Prefix) {
@@ -44,7 +44,7 @@ func set_VI_IPPrefix(inbound ...netip.Prefix) {
 	case true:
 		_Defaults[_VI_IPPrefix] = inbound[0]
 	}
-	vi_ipshift = binary.BigEndian.Uint32(_Defaults[_VI_IPPrefix].(netip.Prefix).Addr().AsSlice())
+	_Defaults[_VI_IPShift] = binary.BigEndian.Uint32(_Defaults[_VI_IPPrefix].(netip.Prefix).Addr().AsSlice())
 }
 func set_Domain_Name(inbound ..._FQDN) {
 	switch len(inbound) == 1 && len(inbound[0]) != 0 {
@@ -53,18 +53,6 @@ func set_Domain_Name(inbound ..._FQDN) {
 	}
 }
 
-func sum_uint32_gt_fm(inbound ...uint32) (outbound uint32) {
-	switch len(inbound) {
-	case 0:
-		return 0
-	case 1:
-		return inbound[0]
-	}
-	for index := 0; index < len(inbound); index++ {
-		outbound += inbound[index]
-	}
-	return
-}
 func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 	switch len(inbound) {
 	case 0:
@@ -75,6 +63,8 @@ func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 		case string:
 			outbound += element
 		case _Name:
+			outbound += element.String()
+		case _PName:
 			outbound += element.String()
 		case uint:
 			outbound += strconv.FormatUint(uint64(element), 10)
@@ -299,18 +289,18 @@ func hash(inbound *string) (outbound _ID) {
 	}
 	return
 }
-func log_setlevel(inbound ...*string) {
-	switch len(inbound) > 0 {
+func set_loglevel(inbound ...string) {
+	switch len(inbound) == 1 {
 	case true:
-		switch loglevel, err := log.ParseLevel(*inbound[0]); err == nil {
+		switch loglevel, err := log.ParseLevel(inbound[0]); err == nil {
 		case true:
 			log.SetLevel(loglevel)
 		default:
-			log.SetLevel(_loglevel_)
+			log.SetLevel(_Defaults[loglevel].(log.Level))
 			// log.Warnf("verbosity level '%v' is not supported; ACTION: use '%v'.", *inbound[0], log.GetLevel())
 		}
 	default:
-		log.SetLevel(_loglevel)
+		log.SetLevel(_Defaults[_loglevel].(log.Level))
 	}
 }
 func parse_interface(inbound interface{}, skip interface{}) interface{} {

@@ -25,9 +25,10 @@ func db_read() (err error) {
 			switch err = xml.Unmarshal(data, &xml_db); err == nil {
 			case true:
 				log.Debugf("configuration file '%v' loaded.", value)
-				log_setlevel(&xml_db.Verbosity)
+				set_loglevel(xml_db.Verbosity)
 				set_VI_IPPrefix(xml_db.VI_IPPrefix)
 				set_Domain_Name(xml_db.Domain_Name)
+				_Defaults[_GT_list] = xml_db.GT_List
 				switch len(xml_db.Upload_Path) == 0 {
 				case false:
 					_Defaults[_path_out] = xml_db.Upload_Path
@@ -37,7 +38,6 @@ func db_read() (err error) {
 					_Defaults[_path_GT] = xml_db.GT_Path
 				}
 				_GT_read()
-				// log.Errorf("%+v", xml_db)
 				// switch err = db_parse(&xml_db); err == nil {
 				// case true:
 				// 	log.Debugf("DB '%v' parsed.", xml_db.XMLName)

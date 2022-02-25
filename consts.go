@@ -5,35 +5,17 @@ import (
 )
 
 const (
-	_loglevel_          = log.InfoLevel
-	_service     string = "config"
-	_serviced           = _service /*+ "d"*/
-	_SERVICE     string = "CONFIG"
-	_SERVICED           = _SERVICE /*+ "D"*/
-	_hash_Size   int    = 512 / 8
-	_passwd_Z    string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	_passwd_z    string = "abcdefghijklmnopqrstuvwxyz"
-	_passwd_0    string = "0123456789"
-	_passwd_oops string = "_" // carefully with special symbols
-	_passwd             = _passwd_Z + _passwd_z + _passwd_0 + _passwd_oops
-
-	_juniper_RI_              _Name          = "master"
-	_juniper_mgmt_RI          _Name          = "mgmt_junos"
-	_juniper_mgmt_Description _Description   = "MANAGEMENT-INSTANCE"
-	_if_comm_ptp              _Communication = "ptp"
-	_if_comm_ptmp             _Communication = "ptmp"
-	_vi_comm_                                = _if_comm_ptp
-	_if_comm_                                = _if_comm_ptmp
-	_if_mode_vi               _Mode          = "vi"
-	_if_mode_link             _Mode          = "link"
-	_service_ike              _Service       = "ike"
-	_service_ping             _Service       = "ping"
-	_service_ssh              _Service       = "ssh"
-	_service_traceroute       _Service       = "traceroute"
-	_protocol_bgp             _Protocol      = "bgp"
-	_AB_Type_set              _Type          = "set"
-	_AB_Type_ipprefix         _Type          = "ipprefix"
-	_AB_Type_fqdn             _Type          = "fqdn"
+	default_loglevel        = log.InfoLevel
+	_service         string = "config"
+	_serviced               = _service /*+ "d"*/
+	_SERVICE         string = "CONFIG"
+	_SERVICED               = _SERVICE /*+ "D"*/
+	_hash_Size       int    = 512 / 8
+	_passwd_Z        string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	_passwd_z        string = "abcdefghijklmnopqrstuvwxyz"
+	_passwd_0        string = "0123456789"
+	_passwd_oops     string = "_" // carefully with special symbols
+	_passwd                 = _passwd_Z + _passwd_z + _passwd_0 + _passwd_oops
 
 	_Action_accept             _Action   = "accept"
 	_Action_add                _Action   = "add"
@@ -92,19 +74,20 @@ const (
 	_Type_st                   _Type     = "st"
 	_Type_vi                   _Type     = "vi"
 
+	_loglevel         _Default = "default_loglevel"
 	_comm_if          _Default = "default_comm_if"
 	_comm_vi          _Default = "default_comm_vi"
+	_VI_IPPrefix      _Default = "default_VI_IPprefix"
+	_VI_IPShift       _Default = "default_VI_IPshift"
 	_RI               _Default = "default_RI"
 	_mgmt_RI          _Default = "default_mgmt_RI"
 	_mgmt_IF          _Default = "default_mgmt_IF"
-	_mgmt_Description _Default = "default_mgmt_Description"
-	_VI_IPPrefix      _Default = "default_VI_IPprefix"
+	_mgmt_Description _Default = "default_mgmt_description"
+	_domain_name      _Default = "default_domain_name"
+	_ps_bits_per_rm   _Default = "default_ps_bits_per_rm"
+	_ps_max_rms       _Default = "default_ps_max_rms"
+	_GT_list          _Default = "default_GT_list"
 	_path_GT          _Default = "default_path_GT"
 	_path_out         _Default = "default_path_out"
 	_files_config     _Default = "default_files_config"
-	_domain_name      _Default = "default_domain_name"
-	_ps_bits_per_rm   _Default = "default__ps_bits_per_rm"
-	_ps_max_rms       _Default = "default_ps_max_rms"
-
-	_VI_IPShift _Default = "default_VI_IPshift"
 )
