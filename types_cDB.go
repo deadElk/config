@@ -79,12 +79,13 @@ type cDB_Peer_RI_RO_RT struct {
 	GW         []cDB_Peer_RI_RO_RT_GW `xml:"GW"`
 }
 type cDB_Peer_RI_RO_RT_GW struct {
-	IP         netip.Addr    `xml:"IP,attr"`
-	IF         _Name         `xml:"IF,attr"`
-	Table      _Name         `xml:"table,attr"`
-	Action     _Action       `xml:"action,attr"`
-	Metric     _Route_Weight `xml:"metric,attr"`
-	Preference _Route_Weight `xml:"preference,attr"`
+	IP          netip.Addr    `xml:"IP,attr"`
+	IF          _Name         `xml:"IF,attr"`
+	Table       _Name         `xml:"table,attr"`
+	Action      _Action       `xml:"action,attr"`
+	Action_Flag _Action       `xml:"action_flag,attr"`
+	Metric      _Route_Weight `xml:"metric,attr"`
+	Preference  _Route_Weight `xml:"preference,attr"`
 }
 type cDB_Peer_RI_RO_Leak_FromTo struct {
 	PL _Name `xml:"PL,attr"`
@@ -168,12 +169,13 @@ type cDB_Match_FromTo struct {
 	Port_High _Port `xml:"port_high,attr"`
 }
 type cDB_Then struct {
-	Action    _Action `xml:"action,attr"`
-	Pool      _Name   `xml:"pool,attr"`
-	AB        _Name   `xml:"AB,attr"`
-	RI        _Name   `xml:"RI,attr"`
-	Port_Low  _Port   `xml:"low,attr"`
-	Port_High _Port   `xml:"high,attr"`
+	Action      _Action `xml:"action,attr"`
+	Action_Flag _Action `xml:"action_flag,attr"`
+	Pool        _Name   `xml:"pool,attr"`
+	AB          _Name   `xml:"AB,attr"`
+	RI          _Name   `xml:"RI,attr"`
+	Port_Low    _Port   `xml:"low,attr"`
+	Port_High   _Port   `xml:"high,attr"`
 }
 
 // Address Book
@@ -223,8 +225,9 @@ type cDB_PO_PS_From struct {
 	Mask       _Mask     `xml:"mask,attr"`
 }
 type cDB_PO_PS_Then struct {
-	Action _Action       `xml:"action,attr"`
-	Metric _Route_Weight `xml:"metric,attr"`
+	Action      _Action       `xml:"action,attr"`
+	Action_Flag _Action       `xml:"action_flag,attr"`
+	Metric      _Route_Weight `xml:"metric,attr"`
 }
 
 // Security Policies
