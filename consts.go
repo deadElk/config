@@ -96,5 +96,5 @@ const (
 	_GT_list          _Default = "default_GT_list"
 	_path_GT          _Default = "default_path_GT"
 	_path_out         _Default = "default_path_out"
-	_files_config     _Default = "default_files_config"
+	_file_list_config _Default = "default_files_config"
 )

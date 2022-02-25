@@ -19,7 +19,7 @@ func db_read() (err error) {
 		xml_db cDB
 		data   []byte
 	)
-	for _, value := range _Defaults[_files_config].([]string) {
+	for _, value := range _Defaults[_file_list_config].([]string) {
 		switch data, err = os.ReadFile(value); err == nil {
 		case true:
 			switch err = xml.Unmarshal(data, &xml_db); err == nil {

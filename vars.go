@@ -111,8 +111,8 @@ var (
 	}
 	_Defaults = map[interface{}]interface{}{
 		_loglevel:         log.InfoLevel,
-		_comm_if:          _Type_ptmp,
-		_comm_vi:          _Type_ptp,
+		_comm_if:          _Communication_ptmp,
+		_comm_vi:          _Communication_ptp,
 		_VI_IPPrefix:      parse_interface(netip.ParsePrefix("10.90.0.0/16")).(netip.Prefix),
 		_VI_IPShift:       uint32(0),
 		_RI:               _Name("master"),
@@ -125,7 +125,7 @@ var (
 		_GT_list:          "",
 		_path_GT:          "./templates",
 		_path_out:         "./tmp",
-		_files_config: []string{
+		_file_list_config: []string{
 			"./" + _serviced + ".xml",
 			"/usr/local/opt/etc/" + _serviced + ".xml",
 			"/opt/etc/" + _serviced + ".xml",
