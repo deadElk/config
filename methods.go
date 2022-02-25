@@ -40,6 +40,15 @@ func (inbound _VI_ID) _PName() _PName {
 func (inbound _VI_ID) String() string {
 	return strconv.FormatUint(uint64(inbound), 10)
 }
+func (inbound _VI_Peer_ID) String() string {
+	return strconv.FormatUint(uint64(inbound), 10)
+}
+func (inbound _Port) String() string {
+	return strconv.FormatUint(uint64(inbound), 10)
+}
+func (inbound _Route_Weight) String() string {
+	return strconv.FormatUint(uint64(inbound), 10)
+}
 func (inbound _Default) String() string {
 	return string(inbound)
 }

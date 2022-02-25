@@ -7,6 +7,13 @@ import (
 
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
 
+type _IPPrefix struct {
+	*netip.Prefix
+}
+type _IPAddr struct {
+	netip.Addr
+}
+
 type _Service_Attributes struct {
 	Description _Description `xml:"description,attr"`
 	Deactivate  bool         `xml:"deactivate,attr"`
@@ -24,13 +31,6 @@ type _Route_Attributes struct {
 	Preference uint    `xml:"preference,attr"`
 }
 
-type _IPPrefix struct {
-	*netip.Prefix
-}
-type _IPAddr struct {
-	netip.Addr
-}
-
 type _ASN uint32
 type _Action string
 type _Communication string
@@ -46,8 +46,10 @@ type _Protocol string
 type _Secret string
 type _Service string
 type _Type string
-type _VI_ID uint32
-type _VI_Peer_ID uint
+type _VI_ID uint16
+type _VI_Peer_ID uint16
+type _Port uint16
+type _Route_Weight uint32
 
 type _Security_AB struct {
 	Address   interface{}
@@ -273,7 +275,7 @@ type sDB_VI struct {
 	ID            _VI_ID         `xml:"index,attr"`
 	Type          _Type          `xml:"type,attr"`
 	Communication _Communication `xml:"communication,attr"`
-	Route_Metric  uint           `xml:"route_metric,attr"`
+	Route_Metric  uint32         `xml:"route_metric,attr"`
 	Peer          []sDB_VI_Peer  `xml:"Peer"`
 	PSK           _Secret        `xml:"PSK,attr"`
 	_Service_Attributes
@@ -378,7 +380,7 @@ type pDB_Peer_VI struct {
 	Type                 _Type
 	Communication        _Communication
 	PSK                  _Secret
-	Route_Metric         uint
+	Route_Metric         uint32
 	IPPrefix             netip.Prefix
 	No_NAT               bool
 	IKE_GCM              bool

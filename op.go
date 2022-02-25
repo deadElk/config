@@ -16,7 +16,7 @@ import (
 
 func db_read() (err error) {
 	var (
-		xml_db sDB
+		xml_db cDB
 		data   []byte
 	)
 	for _, value := range _Defaults[_files_config].([]string) {
@@ -37,13 +37,14 @@ func db_read() (err error) {
 					_Defaults[_path_GT] = xml_db.GT_Path
 				}
 				_GT_read()
-				switch err = db_parse(&xml_db); err == nil {
-				case true:
-					log.Debugf("DB '%v' parsed.", xml_db.XMLName)
-					return nil
-				case false:
-					log.Warnf("configuration file '%v' DB parse error: '%v'; ACTION: skip.", value, err)
-				}
+				// log.Errorf("%+v", xml_db)
+				// switch err = db_parse(&xml_db); err == nil {
+				// case true:
+				// 	log.Debugf("DB '%v' parsed.", xml_db.XMLName)
+				// 	return nil
+				// case false:
+				// 	log.Warnf("configuration file '%v' DB parse error: '%v'; ACTION: skip.", value, err)
+				// }
 			default:
 				log.Warnf("configuration file '%v' parse error: '%v'; ACTION: skip.", value, err)
 			}
@@ -620,12 +621,12 @@ func db_parse(xml_db *sDB) (err error) {
 				pdb_peer[value.Peer[peer_index].ASN].SZ[value.Peer[peer_index].Inner_RI].IF[_Name(v_Type.String()+"0."+value.ID.String())].Protocols[_protocol_bgp] = true
 			}
 			var (
-				v_Metric = func() uint {
-					switch value.Route_Metric > _rm_max {
+				v_Metric = func() uint32 {
+					switch value.Route_Metric > _Defaults[_ps_max_rms].(uint32) {
 					case true:
 						return 0
 					}
-					return _rm_max - value.Route_Metric
+					return _Defaults[_ps_max_rms].(uint32) - value.Route_Metric
 				}()
 				v_Left_Inner_IPPrefix  = get_VI_IPPrefix(value.ID, 1)
 				v_Right_Inner_IPPrefix = get_VI_IPPrefix(value.ID, 2)
