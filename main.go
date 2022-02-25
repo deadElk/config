@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "net/netip"
 	"time"
 
 	log "github.com/sirupsen/logrus"
