@@ -27,25 +27,32 @@ type cDB_Vocabulary struct {
 
 // Peer
 type cDB_Peer struct {
-	ASN          _ASN           `xml:"ASN,attr"`
-	IFM          []cDB_Peer_IFM `xml:"IFM"`
-	RI           []cDB_Peer_RI  `xml:"RI"`
-	Hostname     _FQDN          `xml:"hostname,attr"`
-	Domain_Name  _FQDN          `xml:"domain_name,attr"`
-	Version      string         `xml:"version,attr"`
-	Manufacturer string         `xml:"manufacturer,attr"`
-	Model        string         `xml:"model,attr"`
-	Serial       string         `xml:"serial,attr"`
-	Root         _Secret        `xml:"root,attr"`
-	GT_List      string         `xml:"GT_list,attr"`
+	ASN             _ASN             `xml:"ASN,attr"`
+	IFM             []cDB_Peer_IFM   `xml:"IFM"`
+	RI              []cDB_Peer_RI    `xml:"RI"`
+	Hostname        _FQDN            `xml:"hostname,attr"`
+	Domain_Name     _FQDN            `xml:"domain_name,attr"`
+	Version         string           `xml:"version,attr"`
+	Manufacturer    string           `xml:"manufacturer,attr"`
+	Model           string           `xml:"model,attr"`
+	Serial          string           `xml:"serial,attr"`
+	Root            _Secret          `xml:"root,attr"`
+	GT_List         string           `xml:"GT_list,attr"`
+	SZ              []cDB_SZ         `xml:"Security>Zone>SZ"`
+	NAT_Source      []cDB_NAT        `xml:"Security>NAT>Source"`
+	NAT_Destination []cDB_NAT        `xml:"Security>NAT>Destination"`
+	NAT_Static      []cDB_NAT        `xml:"Security>NAT>Static"`
+	SP_Options      []cDB_SP_Options `xml:"Security>SP>Options"`
+	SP_Exact        []cDB_Rule_Set   `xml:"Security>SP>Exact"`
+	SP_Global       []cDB_Rule       `xml:"Security>SP>Global"`
 	cDB_Vocabulary
-	cDB_Security
+	// cDB_Security
 }
 type cDB_Peer_RI struct {
 	Name _Name                 `xml:"name,attr"`
 	IF   []cDB_Peer_RI_IF      `xml:"IF"`
-	RT   []cDB_Peer_RI_RO_RT   `xml:"RT"`
-	Leak []cDB_Peer_RI_RO_Leak `xml:"Leak"`
+	RT   []cDB_Peer_RI_RO_RT   `xml:"RO>RT"`
+	Leak []cDB_Peer_RI_RO_Leak `xml:"RO>Leak"`
 }
 type cDB_Peer_RI_IF struct {
 	Name          _Name                 `xml:"name,attr"`
@@ -78,8 +85,8 @@ type cDB_Peer_RI_RO_RT_GW struct {
 	cDB_Route_Attributes
 }
 type cDB_Peer_RI_RO struct {
-	RT   []cDB_Peer_RI_RO_RT   `xml:"RT"`
-	Leak []cDB_Peer_RI_RO_Leak `xml:"Leak"`
+	RT   []cDB_Peer_RI_RO_RT   `xml:"RO>RT"`
+	Leak []cDB_Peer_RI_RO_Leak `xml:"RO>Leak"`
 }
 type cDB_Peer_RI_RO_Leak struct {
 	Ixport _Name `xml:"import,attr"`
