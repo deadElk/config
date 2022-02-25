@@ -78,13 +78,13 @@ type cDB_Peer_RI_IF_IP struct {
 	Router_ID bool         `xml:"router_ID,attr"`
 	Primary   bool         `xml:"primary,attr"`
 	Preferred bool         `xml:"preferred,attr"`
-	NAT       netip.Addr   `xml:"NAT,attr"`
+	NAT       netip.Prefix `xml:"NAT,attr"`
 	DHCP      bool         `xml:"DHCP,attr"`
 	_Service_Attributes
 }
 type cDB_Peer_RI_IF_PARP struct {
 	IPPrefix netip.Prefix `xml:"IPprefix,attr"`
-	NAT      netip.Addr   `xml:"NAT,attr"`
+	NAT      netip.Prefix `xml:"NAT,attr"`
 	_Service_Attributes
 }
 type cDB_Peer_RI_RO_RT struct {
