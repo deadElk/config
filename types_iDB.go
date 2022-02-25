@@ -21,9 +21,9 @@ type i_GT struct {
 
 // Peer
 type i_Peer struct {
+	IF_2_RI      map[_Name]_Name // interface to RI mapping. interfaces within one peer must be unique.
 	IFM          map[_Name]i_Peer_IFM
 	RI           map[_Name]i_Peer_RI
-	IF_2_RI      map[_Name]_Name // interface to RI mapping. interfaces within one peer must be unique.
 	Hostname     _FQDN
 	Domain_Name  _FQDN
 	Version      string
@@ -48,13 +48,15 @@ type i_Peer_IFM struct {
 	_Service_Attributes
 }
 type i_Peer_RI struct {
+	IP_2_IF map[netip.Addr]_Name // interface's ip address to interface mapping. ip addresses within one RI must be unique.
 	IF      map[_Name]i_Peer_RI_IF
 	RT      map[netip.Prefix]i_Peer_RI_RO_RT
 	Leak    map[_Action]i_Peer_RI_RO_Leak_FromTo
-	IP_2_IF map[netip.Addr]_Name // interface's ip address to interface mapping. ip addresses within one RI must be unique.
 	_Service_Attributes
 }
 type i_Peer_RI_IF struct {
+	IFM           _Name
+	IFsM          _Name
 	Communication _Communication
 	IP            map[_Name]i_Peer_RI_IF_IP
 	PARP          map[netip.Prefix]i_Peer_RI_IF_PARP

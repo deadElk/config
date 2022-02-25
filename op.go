@@ -162,39 +162,39 @@ func db_parse(xml_db *sDB) (err error) {
 											switch {
 											case gw_v.Action == _Action_discard:
 												gw_i += _Action_discard.String()
-												gw_v.Action = _Commands[gw_v.Action].(_Action)
+												gw_v.Action = c_Action[gw_v.Action]
 											case (gw_v.Action == _Action_qnh || gw_v.Action == _Action_hop) && gw_v.IP.IsValid():
 												gw_i += gw_v.IP.String()
 												gw_IP = gw_v.IP
-												gw_v.Action = _Commands[gw_v.Action].(_Action)
+												gw_v.Action = c_Action[gw_v.Action]
 											case (gw_v.Action == _Action_qnh || gw_v.Action == _Action_hop || gw_v.Action == _Action_interface) && len(gw_v.IF) != 0:
 												gw_i += gw_v.IF.String()
 												gw_IF = gw_v.IF
-												gw_v.Action = _Commands[gw_v.Action].(_Action)
+												gw_v.Action = c_Action[gw_v.Action]
 											case gw_v.Action == _Action_hop && gw_v.IP.IsValid():
 												gw_i += gw_v.IP.String()
 												gw_IP = gw_v.IP
-												gw_v.Action = _Commands[gw_v.Action].(_Action)
+												gw_v.Action = c_Action[gw_v.Action]
 											case gw_v.Action == _Action_interface && len(gw_v.IF) != 0:
 												gw_i += gw_v.IF.String()
 												gw_IF = gw_v.IF
-												gw_v.Action = _Commands[gw_v.Action].(_Action)
+												gw_v.Action = c_Action[gw_v.Action]
 											case gw_v.Action == _Action_table && len(gw_v.Table) != 0:
 												gw_i += gw_v.Table.String()
 												gw_T = gw_v.Table
-												gw_v.Action = _Commands[gw_v.Action].(_Action)
+												gw_v.Action = c_Action[gw_v.Action]
 											case len(gw_v.Action) == 0 && gw_v.IP.IsValid():
 												gw_i += gw_v.IP.String()
 												gw_IP = gw_v.IP
-												gw_v.Action = _Commands[_Action_hop].(_Action)
+												gw_v.Action = c_Action[_Action_hop]
 											case len(gw_v.Action) == 0 && len(gw_v.IF) != 0:
 												gw_i += gw_v.IF.String()
 												gw_IF = gw_v.IF
-												gw_v.Action = _Commands[_Action_interface].(_Action)
+												gw_v.Action = c_Action[_Action_interface]
 											case len(gw_v.Action) == 0 && len(gw_v.Table) != 0:
 												gw_i += gw_v.Table.String()
 												gw_T = gw_v.Table
-												gw_v.Action = _Commands[_Action_table].(_Action)
+												gw_v.Action = c_Action[_Action_table]
 											default:
 												log.Warnf("peer ASN '%v', RI '%v', route Identifier '%v', no gateway found or unknown gateway action '%v'; ACTION: skip.", value.ASN, ri_v.Name, rt_v.Identifier, gw_v.Action)
 												gw_i += _Action_discard.String()
