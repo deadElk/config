@@ -7,7 +7,7 @@ import (
 
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
 
-// return String() "invalid ID" what for????
+// Why return String() "invalid ID"???? What for???? Why not just return an empty String() "" ????
 type _netip_Prefix struct {
 	netip.Prefix
 }
@@ -21,6 +21,7 @@ type _Service_Attributes struct {
 	Reserved    bool         `xml:"reserved,attr"`
 	Verbosity   string       `xml:"verbosity,attr"`
 	Patch       string       `xml:"patch,attr"`
+	Disable     bool         `xml:"disable,attr"`
 }
 type _Host_Inbound_Traffic struct {
 	Services  map[_Service]bool  `xml:"service,attr"`

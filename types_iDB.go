@@ -5,10 +5,11 @@ import (
 )
 
 type _i_ab map[_Name]i_AB
-type _i_ja map[_Name]map[_Name]i_JA_Term
-type _i_pl map[_Name][]netip.Prefix
-type _i_ps map[_Name][]i_PO_PS_Term
+type _i_ja map[_Name]i_JA
+type _i_pl map[_Name]i_PO_PL
+type _i_ps map[_Name]i_PO_PS
 type _i_peer map[_ASN]i_Peer
+type _i_vi map[_VI_ID]i_VI
 type _i_gt map[_Name]i_GT
 type _i_config map[_ASN][]byte
 
@@ -22,6 +23,7 @@ type i_GT struct {
 type i_Peer struct {
 	IFM          map[_Name]i_Peer_IFM
 	RI           map[_Name]i_Peer_RI
+	IF_2_RI      map[_Name]_Name // interface to RI mapping. interfaces within one peer must be unique.
 	Hostname     _FQDN
 	Domain_Name  _FQDN
 	Version      string
@@ -35,29 +37,27 @@ type i_Peer struct {
 	SP_Options   i_SP_Options
 	SP_Exact     []i_Rule_Set
 	SP_Global    []i_Rule
-	AB           *_i_ab
-	JA           *_i_ja
-	PL           *_i_pl
-	PS           *_i_ps
-	_Service_Attributes
-}
-type i_Peer_RI struct {
-	IF   map[_Name]i_Peer_RI_IF
-	RT   map[netip.Prefix]map[_Name]i_Peer_RI_RO_RT_GW
-	From []_Name
-	To   []_Name
+	AB           _i_ab
+	JA           _i_ja
+	PL           _i_pl
+	PS           _i_ps
 	_Service_Attributes
 }
 type i_Peer_IFM struct {
 	Communication _Communication
-	Disable       bool
+	_Service_Attributes
+}
+type i_Peer_RI struct {
+	IF      map[_Name]i_Peer_RI_IF
+	RT      map[netip.Prefix]i_Peer_RI_RO_RT
+	Leak    map[_Action]i_Peer_RI_RO_Leak_FromTo
+	IP_2_IF map[netip.Addr]_Name // interface's ip address to interface mapping. ip addresses within one RI must be unique.
 	_Service_Attributes
 }
 type i_Peer_RI_IF struct {
 	Communication _Communication
-	IP            []i_Peer_RI_IF_IP
-	PARP          []i_Peer_RI_IF_PARP
-	Disable       bool
+	IP            map[_Name]i_Peer_RI_IF_IP
+	PARP          map[netip.Prefix]i_Peer_RI_IF_PARP
 	_Service_Attributes
 }
 type i_Peer_RI_IF_IP struct {
@@ -70,13 +70,11 @@ type i_Peer_RI_IF_IP struct {
 	_Service_Attributes
 }
 type i_Peer_RI_IF_PARP struct {
-	IPPrefix netip.Prefix
-	NAT      netip.Addr
+	NAT netip.Addr
 	_Service_Attributes
 }
 type i_Peer_RI_RO_RT struct {
-	Identifier netip.Prefix
-	GW         []i_Peer_RI_RO_RT_GW
+	GW map[_Name]i_Peer_RI_RO_RT_GW
 	_Service_Attributes
 }
 type i_Peer_RI_RO_RT_GW struct {
@@ -96,16 +94,14 @@ type i_Peer_RI_RO_Leak_FromTo struct {
 
 // Virtual Interfaces
 type i_VI struct {
-	ID            _VI_ID
 	Type          _Type
 	Communication _Communication
 	Route_Metric  _Route_Weight
-	Peer          []i_VI_Peer
+	Peer          map[_VI_Peer_ID]i_VI_Peer
 	PSK           _Secret
 	_Service_Attributes
 }
 type i_VI_Peer struct {
-	ID       _VI_Peer_ID
 	ASN      _ASN
 	RI       _Name
 	IF       _Name
@@ -193,7 +189,6 @@ type i_AB_Address struct {
 
 // Junos Applications
 type i_JA struct {
-	Name _Name
 	Term []i_JA_Term
 	_Service_Attributes
 }
@@ -205,7 +200,6 @@ type i_JA_Term struct {
 
 // Policy Options
 type i_PO_PL struct {
-	Name  _Name
 	Match []i_PO_PL_Match
 	_Service_Attributes
 }
@@ -214,7 +208,6 @@ type i_PO_PL_Match struct {
 	_Service_Attributes
 }
 type i_PO_PS struct {
-	Name _Name
 	Term []i_PO_PS_Term
 	_Service_Attributes
 }

@@ -28,6 +28,7 @@ var (
 	i_ja   = make(_i_ja)
 	i_pl   = make(_i_pl)
 	i_ps   = make(_i_ps)
+	i_vi   = make(_i_vi)
 	i_peer = make(_i_peer)
 	i_gt   = make(_i_gt)
 )
@@ -59,6 +60,8 @@ var (
 		_Action_source_nat:         _Action_source_nat,
 		_Action_static_nat:         _Action_static_nat,
 		_Action_table:              _Action_next_table,
+		_Action_import:             _Action_import,
+		_Action_export:             _Action_export,
 		_Mask_exact:                _Mask_exact,
 		_Mask_longer:               _Mask_longer,
 		_Mask_orlonger:             _Mask_orlonger,
@@ -93,6 +96,8 @@ var (
 		_Type_source:               _Type_source,
 		_Type_destination:          _Type_destination,
 		_Type_static:               _Type_static,
+		_Type_from:                 _Type_from,
+		_Type_to:                   _Type_to,
 	}
 	_Defaults = map[interface{}]interface{}{
 		_loglevel:         log.InfoLevel,

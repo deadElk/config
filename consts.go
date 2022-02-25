@@ -42,6 +42,8 @@ const (
 	_Action_source_nat         _Action   = "source-nat"
 	_Action_static_nat         _Action   = "static-nat"
 	_Action_table              _Action   = "table"
+	_Action_import             _Action   = "import"
+	_Action_export             _Action   = "export"
 	_Mask_exact                _Mask     = "exact"
 	_Mask_longer               _Mask     = "longer"
 	_Mask_orlonger             _Mask     = "orlonger"
@@ -76,6 +78,8 @@ const (
 	_Type_source               _Type     = "source"
 	_Type_destination          _Type     = "destination"
 	_Type_static               _Type     = "static"
+	_Type_from                 _Type     = "from"
+	_Type_to                   _Type     = "to"
 
 	_loglevel         _Default = "default_loglevel"
 	_comm_if          _Default = "default_comm_if"

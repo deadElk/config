@@ -52,6 +52,11 @@ type cDB_Peer struct {
 	// cDB_Security
 	_Service_Attributes
 }
+type cDB_Peer_IFM struct {
+	Name          _Name          `xml:"name,attr"`
+	Communication _Communication `xml:"communication,attr"`
+	_Service_Attributes
+}
 type cDB_Peer_RI struct {
 	Name _Name                        `xml:"name,attr"`
 	IF   []cDB_Peer_RI_IF             `xml:"IF"`
@@ -60,18 +65,11 @@ type cDB_Peer_RI struct {
 	To   []cDB_Peer_RI_RO_Leak_FromTo `xml:"RO>Leak>To"`
 	_Service_Attributes
 }
-type cDB_Peer_IFM struct {
-	Name          _Name          `xml:"name,attr"`
-	Communication _Communication `xml:"communication,attr"`
-	Disable       bool           `xml:"disable,attr"`
-	_Service_Attributes
-}
 type cDB_Peer_RI_IF struct {
 	Name          _Name                 `xml:"name,attr"`
 	Communication _Communication        `xml:"communication,attr"`
 	IP            []cDB_Peer_RI_IF_IP   `xml:"IP"`
 	PARP          []cDB_Peer_RI_IF_PARP `xml:"PARP"`
-	Disable       bool                  `xml:"disable,attr"`
 	_Service_Attributes
 }
 type cDB_Peer_RI_IF_IP struct {
