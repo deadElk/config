@@ -73,6 +73,9 @@ const (
 	_Type_set                  _Type     = "set"
 	_Type_st                   _Type     = "st"
 	_Type_vi                   _Type     = "vi"
+	_Type_source               _Type     = "source"
+	_Type_destination          _Type     = "destination"
+	_Type_static               _Type     = "static"
 
 	_loglevel         _Default = "default_loglevel"
 	_comm_if          _Default = "default_comm_if"

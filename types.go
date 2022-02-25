@@ -7,10 +7,11 @@ import (
 
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
 
-type _IPPrefix struct {
-	*netip.Prefix
+// return String() "invalid ID" what for????
+type _netip_Prefix struct {
+	netip.Prefix
 }
-type _IPAddr struct {
+type _netip_Addr struct {
 	netip.Addr
 }
 

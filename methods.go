@@ -183,9 +183,9 @@ func (inbound _Action) _SP_Validate() _Action {
 	return _Action_permit_all
 }
 
-func (inbound _IPPrefix) String() string {
+func (inbound _netip_Prefix) String() string {
 	return string(parse_interface(inbound.MarshalText()).([]byte))
 }
-func (inbound _IPAddr) String() string {
+func (inbound _netip_Addr) String() string {
 	return string(parse_interface(inbound.MarshalText()).([]byte))
 }

@@ -22,7 +22,14 @@ var (
 	pdb_appl = make(map[_Name][]_Security_Application_Term)
 	pdb_peer = make(map[_ASN]pDB_Peer)
 	pdb_gt   = make(map[_Name]pDB_GT)
-	config   = make(map[_ASN][]byte)
+
+	config = make(_i_config)
+	i_ab   = make(_i_ab)
+	i_ja   = make(_i_ja)
+	i_pl   = make(_i_pl)
+	i_ps   = make(_i_ps)
+	i_peer = make(_i_peer)
+	i_gt   = make(_i_gt)
 )
 
 var (
@@ -83,6 +90,9 @@ var (
 		_Type_set:                  _Type_set,
 		_Type_st:                   _Type_st + "0",
 		_Type_vi:                   _Type_vi,
+		_Type_source:               _Type_source,
+		_Type_destination:          _Type_destination,
+		_Type_static:               _Type_static,
 	}
 	_Defaults = map[interface{}]interface{}{
 		_loglevel:         log.InfoLevel,
