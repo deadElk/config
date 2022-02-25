@@ -64,20 +64,20 @@ type i_Peer_RI_IF struct {
 	IFM           _Name
 	IFsM          _Name
 	Communication _Communication
-	IP            map[_Name]i_Peer_RI_IF_IP
+	IP            map[netip.Prefix]i_Peer_RI_IF_IP
 	PARP          map[netip.Prefix]i_Peer_RI_IF_PARP
 	_Service_Attributes
 }
 type i_Peer_RI_IF_IP struct {
-	IPPrefix  netip.Prefix
+	Masked    netip.Prefix
 	Primary   bool
 	Preferred bool
-	NAT       netip.Addr
+	NAT       netip.Prefix
 	DHCP      bool
 	_Service_Attributes
 }
 type i_Peer_RI_IF_PARP struct {
-	NAT netip.Addr
+	NAT netip.Prefix
 	_Service_Attributes
 }
 type i_Peer_RI_RO_RT struct {
