@@ -49,10 +49,11 @@ type cDB_Peer struct {
 	// cDB_Security
 }
 type cDB_Peer_RI struct {
-	Name _Name                 `xml:"name,attr"`
-	IF   []cDB_Peer_RI_IF      `xml:"IF"`
-	RT   []cDB_Peer_RI_RO_RT   `xml:"RO>RT"`
-	Leak []cDB_Peer_RI_RO_Leak `xml:"RO>Leak"`
+	Name _Name                        `xml:"name,attr"`
+	IF   []cDB_Peer_RI_IF             `xml:"IF"`
+	RT   []cDB_Peer_RI_RO_RT          `xml:"RO>RT"`
+	From []cDB_Peer_RI_RO_Leak_FromTo `xml:"RO>Leak>From"`
+	To   []cDB_Peer_RI_RO_Leak_FromTo `xml:"RO>Leak>To"`
 }
 type cDB_Peer_RI_IF struct {
 	Name          _Name                 `xml:"name,attr"`
@@ -78,24 +79,15 @@ type cDB_Peer_RI_RO_RT struct {
 	GW         []cDB_Peer_RI_RO_RT_GW `xml:"GW"`
 }
 type cDB_Peer_RI_RO_RT_GW struct {
-	IP     netip.Addr `xml:"IP,attr"`
-	IF     _Name      `xml:"IF,attr"`
-	Table  _Name      `xml:"table,attr"`
-	Action _Action    `xml:"action,attr"`
-	cDB_Route_Attributes
-}
-type cDB_Peer_RI_RO struct {
-	RT   []cDB_Peer_RI_RO_RT   `xml:"RO>RT"`
-	Leak []cDB_Peer_RI_RO_Leak `xml:"RO>Leak"`
-}
-type cDB_Peer_RI_RO_Leak struct {
-	Ixport _Name `xml:"import,attr"`
-	Export _Name `xml:"export,attr"`
-}
-type cDB_Route_Attributes struct {
+	IP         netip.Addr    `xml:"IP,attr"`
+	IF         _Name         `xml:"IF,attr"`
+	Table      _Name         `xml:"table,attr"`
 	Action     _Action       `xml:"action,attr"`
 	Metric     _Route_Weight `xml:"metric,attr"`
 	Preference _Route_Weight `xml:"preference,attr"`
+}
+type cDB_Peer_RI_RO_Leak_FromTo struct {
+	PL _Name `xml:"PL,attr"`
 }
 
 type cDB_Peer_IFM struct {
@@ -147,12 +139,12 @@ type cDB_Pool struct {
 	SZ       _Name        `xml:"SZ,attr"`
 }
 type cDB_Rule_Set struct {
-	Name _Name           `xml:"name,attr"`
-	From []cDB_Direction `xml:"From"`
-	To   []cDB_Direction `xml:"To"`
-	Rule []cDB_Rule      `xml:"Rule"`
+	Name _Name        `xml:"name,attr"`
+	From []cDB_FromTo `xml:"From"`
+	To   []cDB_FromTo `xml:"To"`
+	Rule []cDB_Rule   `xml:"Rule"`
 }
-type cDB_Direction struct {
+type cDB_FromTo struct {
 	IF _Name `xml:"IF,attr"`
 	SZ _Name `xml:"SZ,attr"`
 	RI _Name `xml:"RI,attr"`
@@ -164,25 +156,24 @@ type cDB_Rule struct {
 	Then  []cDB_Then  `xml:"Then"`
 }
 type cDB_Match struct {
-	Source_AB             _Name `xml:"source_AB,attr"`
-	Destination_AB        _Name `xml:"destination_AB,attr"`
-	Application           _Name `xml:"application,attr"`
-	From_SZ               _Name `xml:"from_SZ,attr"`
-	To_SZ                 _Name `xml:"to_SZ,attr"`
-	From_RI               _Name `xml:"from_RI,attr"`
-	To_RI                 _Name `xml:"to_RI,attr"`
-	Source_Port_Low       _Port `xml:"source_port_low,attr"`
-	Source_Port_High      _Port `xml:"source_port_high,attr"`
-	Destination_Port_Low  _Port `xml:"destination_port_low,attr"`
-	Destination_Port_High _Port `xml:"destination_port_high,attr"`
+	Application _Name              `xml:"application,attr"`
+	From        []cDB_Match_FromTo `xml:"From"`
+	To          []cDB_Match_FromTo `xml:"To"`
+}
+type cDB_Match_FromTo struct {
+	SZ        _Name `xml:"SZ,attr"`
+	AB        _Name `xml:"AB,attr"`
+	RI        _Name `xml:"RI,attr"`
+	Port_Low  _Port `xml:"port_low,attr"`
+	Port_High _Port `xml:"port_high,attr"`
 }
 type cDB_Then struct {
-	Action           _Action `xml:"action,attr"`
-	Pool             _Name   `xml:"pool,attr"`
-	AB               _Name   `xml:"AB,attr"`
-	RI               _Name   `xml:"RI,attr"`
-	Mapped_Port_Low  _Port   `xml:"mapped_port_low,attr"`
-	Mapped_Port_High _Port   `xml:"mapped_port_high,attr"`
+	Action    _Action `xml:"action,attr"`
+	Pool      _Name   `xml:"pool,attr"`
+	AB        _Name   `xml:"AB,attr"`
+	RI        _Name   `xml:"RI,attr"`
+	Port_Low  _Port   `xml:"low,attr"`
+	Port_High _Port   `xml:"high,attr"`
 }
 
 // Address Book
