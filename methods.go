@@ -103,8 +103,8 @@ func (inbound _Content) trim_space() (outbound _Content) {
 	return
 }
 func (inbound _Name) _Validate(decline ..._Name) (outbound _Name) {
-	outbound = _juniper_RI_
-	switch len(inbound) == 0 || inbound == _juniper_RI_ {
+	outbound = _juniper_RI
+	switch len(inbound) == 0 || inbound == _juniper_RI {
 	case true:
 		return
 	}
@@ -204,4 +204,21 @@ func (inbound _Version) _Major(re *regexp.Regexp) float64 {
 		interim = re.Split(inbound.String(), -1)
 	)
 	return parse_interface(strconv.ParseFloat(interim[0], 64)).(float64)
+}
+func (inbound _Name) _Validate_RI(decline ..._Name) (outbound _Name) {
+	outbound = _Defaults[_RI].(_Name)
+	switch len(inbound) == 0 || inbound == outbound {
+	case true:
+		return
+	}
+	for _, interim := range decline {
+		switch inbound == interim {
+		case true:
+			return
+		}
+	}
+	return inbound
+}
+func (inbound _Name) _Find_RI(decline ..._Name) (outbound _Name) {
+	return
 }

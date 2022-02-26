@@ -54,34 +54,14 @@ func op() (ok bool) {
 			return
 		}
 	}()
-	// switch err == nil {
-	// case false:
-	// 	log.Fatalf("cannot continue, error: '%v'; ACTION: exit.", err)
-	// 	return
-	// }
-	// switch err = db_use(); err == nil {
-	// case false:
-	// 	log.Fatalf("DB use error: '%v'", err)
-	// 	return
-	// }
-	// switch err = config_upload(); err == nil {
-	// case false:
-	// 	log.Fatalf("config upload error: '%v'", err)
-	// 	return
-	// }
-	// switch err = config_test(); err == nil {
-	// case false:
-	// 	log.Fatalf("config test error: '%v'", err)
-	// 	return
-	// }
 	return err == nil
 }
 func parse_DB(xml_db *cDB) (ok bool) {
-	_ = parse_interface(nil, parse_AB(&xml_db.AB))
-	_ = parse_interface(nil, parse_JA(&xml_db.JA))
-	_ = parse_interface(nil, parse_PL(&xml_db.PL))
-	_ = parse_interface(nil, parse_PS(&xml_db.PS))
-	_ = parse_interface(nil, parse_Peer(&xml_db.Peer))
-	_ = parse_interface(nil, parse_VI(&xml_db.VI))
-	return true
+	ok = ok || parse_AB(&xml_db.AB)
+	ok = ok || parse_JA(&xml_db.JA)
+	ok = ok || parse_PL(&xml_db.PL)
+	ok = ok || parse_PS(&xml_db.PS)
+	ok = ok || parse_Peer(&xml_db.Peer)
+	ok = ok || parse_VI(&xml_db.VI)
+	return
 }

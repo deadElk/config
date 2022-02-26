@@ -226,7 +226,7 @@ set protocols bgp group AS4200000000 neighbor {{.VI_INSIDE_RIGHT_IP}} peer-as {{
 */
 
 const (
-	_juniper_RI_              _Name          = "master"
+	_juniper_RI               _Name          = "master"
 	_juniper_mgmt_RI          _Name          = "mgmt_junos"
 	_juniper_mgmt_Description _Description   = "MANAGEMENT-INSTANCE"
 	_if_comm_ptp              _Communication = "ptp"
