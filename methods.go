@@ -9,22 +9,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (inbound _Action) String() string {
-	return string(inbound)
-}
-func (inbound _Type) String() string {
-	return string(inbound)
-}
-func (inbound _Service) String() string {
-	return string(inbound)
-}
-func (inbound _Protocol) String() string {
-	return string(inbound)
-}
-
-func (inbound _ASN) String() string {
-	return strconv.FormatUint(uint64(inbound), 10)
-}
 func (inbound _ASN) _PName(length int) _PName {
 	var (
 		interim = strconv.FormatUint(uint64(inbound), 10)
@@ -42,27 +26,6 @@ func (inbound _VI_ID) _PName(length int) _PName {
 		interim = "0" + interim
 	}
 	return _PName(interim)
-}
-func (inbound _VI_ID) String() string {
-	return strconv.FormatUint(uint64(inbound), 10)
-}
-func (inbound _VI_Peer_ID) String() string {
-	return strconv.FormatUint(uint64(inbound), 10)
-}
-func (inbound _Port) String() string {
-	return strconv.FormatUint(uint64(inbound), 10)
-}
-func (inbound _Route_Weight) String() string {
-	return strconv.FormatUint(uint64(inbound), 10)
-}
-func (inbound _Default) String() string {
-	return string(inbound)
-}
-func (inbound _Name) String() string {
-	return string(inbound)
-}
-func (inbound _Mask) String() string {
-	return string(inbound)
 }
 func (inbound _Communication) _Sanitize(mode _Mode) (outbound _Communication) {
 	switch mode {
@@ -115,9 +78,6 @@ func (inbound _Name) _Validate(decline ..._Name) (outbound _Name) {
 	}
 	return inbound
 }
-func (inbound _Content) String() string {
-	return string(inbound)
-}
 func (inbound _Secret) _Sanitize(length uint, message ...string) _Secret {
 	switch len(inbound) >= int(length) {
 	case true:
@@ -140,10 +100,6 @@ func (inbound _Secret) _Sanitize(length uint, message ...string) _Secret {
 	}
 	return _Secret(interim)
 }
-func (inbound _Secret) String() string {
-	return string(inbound)
-}
-
 func (inbound _Type) _VI_Sanitize() _Type {
 	switch inbound {
 	case _Type_st, "":
@@ -155,15 +111,6 @@ func (inbound _Type) _VI_Sanitize() _Type {
 		log.Warnf("unknown VI type '%v'; ACTION: use default '%v'.", inbound, _Type_st)
 		return _Type_st
 	}
-}
-func (inbound _PName) String() string {
-	return string(inbound)
-}
-func (inbound _Mode) String() string {
-	return string(inbound)
-}
-func (inbound _FQDN) String() string {
-	return string(inbound)
 }
 func (inbound _FQDN) _Name() _Name {
 	return _Name(inbound.String())
@@ -189,12 +136,6 @@ func (inbound _Action) _SP_Validate() _Action {
 	return _Action_permit_all
 }
 
-func (inbound _netip_Prefix) String() string {
-	return string(parse_interface(inbound.MarshalText()).([]byte))
-}
-func (inbound _netip_Addr) String() string {
-	return string(parse_interface(inbound.MarshalText()).([]byte))
-}
 func (inbound _Name) _Validate_RI(decline ..._Name) (outbound _Name) {
 	outbound = _Defaults[_RI].(_Name)
 	switch len(inbound) == 0 || inbound == outbound {
