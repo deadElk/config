@@ -364,6 +364,31 @@ func _AB_Address_add(public, private bool, ab_name _Name, inbound ...interface{}
 	return
 }
 
+func _AB_rparse(_v_AB_list map[_Name]bool) (outbound map[_Name]bool) {
+	outbound = make(map[_Name]bool)
+	for a := range _v_AB_list {
+		switch {
+		case pdb_ab[a].Type != _AB_Type_set:
+			outbound[a] = true
+		default:
+			_AB_rparse_set(&outbound, a)
+		}
+	}
+	return
+}
+func _AB_rparse_set(_v_AB_list *map[_Name]bool, a _Name) (ok bool) {
+	(*_v_AB_list)[a] = true
+	for c, d := range pdb_ab[a].Addresses {
+		switch {
+		case d != _AB_Type_set:
+			(*_v_AB_list)[c] = true
+		case !(*_v_AB_list)[c]:
+			_AB_rparse_set(_v_AB_list, c)
+		}
+	}
+	return
+}
+
 func _SZ_create(outbound *map[_Name]pDB_Peer_Security_Zone_SZ, sz_name _Name, inbound interface{}) (ok bool) {
 	switch value := (inbound).(type) {
 	case sDB_Peer_Security_Zone_SZ:
@@ -440,7 +465,7 @@ func db_parse(xml_db *sDB) (err error) {
 
 		var (
 			v_IP_List   = make(map[netip.Prefix]bool)
-			v_ASN_PName = value.ASN._PName()
+			v_ASN_PName = value.ASN._PName(10)
 			v_Hostname  = func() (outbound _FQDN) {
 				switch len(value.Hostname) == 0 {
 				case true:
@@ -482,7 +507,7 @@ func db_parse(xml_db *sDB) (err error) {
 			}()
 			v_Major = func() float64 {
 				var (
-					interim = re_caps.Split(value.Version, -1)
+					interim = re_caps.Split(value.Version.String(), -1)
 				)
 				return parse_interface(strconv.ParseFloat(interim[0], 64)).(float64)
 			}()
@@ -990,7 +1015,7 @@ func db_parse(xml_db *sDB) (err error) {
 				v_Right_Inner_IPPrefix = get_VI_IPPrefix(value.ID, 2)
 			)
 			pdb_peer[value.Peer[0].ASN].VI[value.ID] = pDB_Peer_VI{
-				VI_ID_PName:          value.ID._PName(),
+				VI_ID_PName:          value.ID._PName(5),
 				Type:                 v_Type,
 				Communication:        value.Communication._Sanitize(_if_mode_vi),
 				PSK:                  value.PSK._Sanitize(64),

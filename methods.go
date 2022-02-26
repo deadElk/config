@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"math/big"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -25,17 +26,23 @@ func (inbound _Protocol) String() string {
 func (inbound _ASN) String() string {
 	return strconv.FormatUint(uint64(inbound), 10)
 }
-func (inbound _ASN) _PName() _PName {
+func (inbound _ASN) _PName(length int) _PName {
 	var (
-		interim = "0000000000" + strconv.FormatUint(uint64(inbound), 10)
+		interim = strconv.FormatUint(uint64(inbound), 10)
 	)
-	return _PName(interim[len(interim)-10:])
+	for a := 0; a < length-len(interim); a++ {
+		interim = "0" + interim
+	}
+	return _PName(interim)
 }
-func (inbound _VI_ID) _PName() _PName {
+func (inbound _VI_ID) _PName(length int) _PName {
 	var (
-		interim = "00000" + strconv.FormatUint(uint64(inbound), 10)
+		interim = strconv.FormatUint(uint64(inbound), 10)
 	)
-	return _PName(interim[len(interim)-5:])
+	for a := 0; a < length-len(interim); a++ {
+		interim = "0" + interim
+	}
+	return _PName(interim)
 }
 func (inbound _VI_ID) String() string {
 	return strconv.FormatUint(uint64(inbound), 10)
@@ -188,4 +195,13 @@ func (inbound _netip_Prefix) String() string {
 }
 func (inbound _netip_Addr) String() string {
 	return string(parse_interface(inbound.MarshalText()).([]byte))
+}
+func (inbound _Version) String() string {
+	return string(inbound)
+}
+func (inbound _Version) _Major(re *regexp.Regexp) float64 {
+	var (
+		interim = re.Split(inbound.String(), -1)
+	)
+	return parse_interface(strconv.ParseFloat(interim[0], 64)).(float64)
 }

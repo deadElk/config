@@ -2,13 +2,15 @@ package main
 
 import (
 	"encoding/xml"
-	"errors"
 	"os"
 
 	log "github.com/sirupsen/logrus"
 )
 
-func op() (err error) {
+func op() (ok bool) {
+	var (
+		err error
+	)
 	func() {
 		var (
 			xml_db cDB
@@ -26,30 +28,29 @@ func op() (err error) {
 				continue
 			}
 			log.Debugf("configuration file '%v' loaded.", value)
-			set_loglevel(xml_db.Verbosity)
-			set_VI_IPPrefix(xml_db.VI_IPPrefix)
-			set_Domain_Name(xml_db.Domain_Name)
-			_Defaults[_GT_list] = xml_db.GT_List
-
-			switch len(xml_db.Upload_Path) == 0 {
-			case false:
-				_Defaults[_path_out] = xml_db.Upload_Path
-			}
 			switch len(xml_db.GT_Path) == 0 {
 			case false:
 				_Defaults[_path_GT] = xml_db.GT_Path
 			}
-			switch err = read_GT(); err == nil {
+			switch read_GT() {
 			case false:
 				log.Warnf("templates read error; ACTION: skip.")
 				continue
 			}
-			switch err = parse_DB(&xml_db); err == nil {
+			set_loglevel(xml_db.Verbosity)
+			set_VI_IPPrefix(xml_db.VI_IPPrefix)
+			set_Domain_Name(xml_db.Domain_Name)
+			_Defaults[_GT_list] = xml_db.GT_List
+			switch len(xml_db.Upload_Path) == 0 {
+			case false:
+				_Defaults[_path_out] = xml_db.Upload_Path
+			}
+			switch parse_DB(&xml_db) {
 			case false:
 				log.Warnf("configuration file '%v' DB parse error: '%v'; ACTION: skip.", value, err)
 				continue
 			}
-			log.Debugf("DB '%v' parsed.", xml_db.XMLName)
+			log.Infof("DB '%v' parsed.", xml_db.XMLName.Local)
 			return
 		}
 	}()
@@ -73,10 +74,14 @@ func op() (err error) {
 	// 	log.Fatalf("config test error: '%v'", err)
 	// 	return
 	// }
-	return errors.New("nothing to do")
+	return err == nil
 }
-func parse_DB(xml_db *cDB) (err error) {
+func parse_DB(xml_db *cDB) (ok bool) {
 	_ = parse_interface(nil, parse_AB(&xml_db.AB))
 	_ = parse_interface(nil, parse_JA(&xml_db.JA))
-	return
+	_ = parse_interface(nil, parse_PL(&xml_db.PL))
+	_ = parse_interface(nil, parse_PS(&xml_db.PS))
+	_ = parse_interface(nil, parse_Peer(&xml_db.Peer))
+	_ = parse_interface(nil, parse_VI(&xml_db.VI))
+	return true
 }

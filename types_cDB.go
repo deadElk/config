@@ -36,7 +36,7 @@ type cDB_Peer struct {
 	RI              []cDB_Peer_RI  `xml:"RI"`
 	Hostname        _FQDN          `xml:"hostname,attr"`
 	Domain_Name     _FQDN          `xml:"domain_name,attr"`
-	Version         string         `xml:"version,attr"`
+	Version         _Version       `xml:"version,attr"`
 	Manufacturer    string         `xml:"manufacturer,attr"`
 	Model           string         `xml:"model,attr"`
 	Serial          string         `xml:"serial,attr"`

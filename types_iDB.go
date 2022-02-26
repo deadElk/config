@@ -32,7 +32,8 @@ type i_Peer struct {
 	RI            map[_Name]i_Peer_RI
 	Hostname      _FQDN
 	Domain_Name   _FQDN
-	Version       string
+	Version       _Version
+	Major         float64
 	Manufacturer  string
 	Model         string
 	Serial        string
@@ -112,16 +113,16 @@ type i_VI struct {
 	_Service_Attributes
 }
 type i_VI_Peer struct {
-	ASN            _ASN
-	RI             _Name
-	IF             _Name
-	IP             netip.Addr
-	NAT            netip.Addr
-	Local_Address  bool
-	Dynamic        bool
-	Inner_RI       _Name
-	Inner_IP       netip.Addr
-	Inner_IPPrefix netip.Prefix
+	ASN               _ASN
+	RI                _Name
+	IF                _Name
+	IP                netip.Addr
+	NAT               netip.Addr
+	IKE_Local_Address bool
+	Dynamic           bool
+	Inner_RI          _Name
+	Inner_IP          netip.Addr
+	Inner_IPPrefix    netip.Prefix
 	_Service_Attributes
 }
 

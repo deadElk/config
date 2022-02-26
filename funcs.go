@@ -10,6 +10,73 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+func hash(inbound *string) (outbound _ID) {
+	var (
+		value, flag = hash_cache.Load(*inbound)
+	)
+	switch {
+	case flag && value.([_hash_Size]uint8) != outbound:
+		return value.([_hash_Size]uint8)
+	case flag:
+		log.Warnf("Daemon: hash error - zero result from hash_cache.Load(%+v); ACTION: try to recover.", inbound)
+	}
+	switch value = sha3.Sum512([]uint8(*inbound)); value.([_hash_Size]uint8) != outbound {
+	case true:
+		hash_cache.Store(*inbound, value.([_hash_Size]uint8))
+		return value.([_hash_Size]uint8)
+	default:
+		log.Panicf("Daemon: hash error - zero result from hash(%+v); ACTION: panic.", []uint8(*inbound))
+	}
+	return
+}
+func set_loglevel(inbound ...string) {
+	switch len(inbound) == 0 {
+	case false:
+		switch loglevel, err := log.ParseLevel(inbound[0]); err == nil {
+		case true:
+			log.SetLevel(loglevel)
+		default:
+			log.SetLevel(_Defaults[_loglevel].(log.Level))
+			// log.Warnf("verbosity level '%v' is not supported; ACTION: use '%v'.", *inbound[0], log.GetLevel())
+		}
+	default:
+		log.SetLevel(_Defaults[_loglevel].(log.Level))
+	}
+}
+
+func parse_interface(inbound interface{}, skip interface{}) interface{} {
+	switch value := skip.(type) {
+	case error:
+		switch value == nil {
+		case false:
+			log.Debugf("'%v'", skip)
+		}
+	case bool:
+		switch value {
+		case false:
+			log.Debugf("'%v'", skip)
+		}
+	}
+	return inbound
+}
+func parse_interface_error(inbound interface{}, skip interface{}) interface{} {
+	switch value := skip.(type) {
+	case error:
+		switch value == nil {
+		case false:
+			log.Debugf("'%v'", skip)
+			return nil
+		}
+	case bool:
+		switch value {
+		case false:
+			log.Debugf("'%v'", skip)
+			return nil
+		}
+	}
+	return inbound
+}
+
 func tabber(inbound string, tabs int) string {
 	var (
 		in_length  = len(inbound)
@@ -79,10 +146,11 @@ func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 	}
 	return
 }
-func read_GT() (err error) {
+func read_GT() (ok bool) {
 	var (
 		dentry []os.DirEntry
 		data   []byte
+		err    error
 	)
 	switch dentry, err = os.ReadDir(_Defaults[_path_GT].(string)); err == nil {
 	case false:
@@ -122,55 +190,12 @@ func read_GT() (err error) {
 			Content: _Content(data).trim_space(),
 		}
 	}
-	return
-}
-func parse_JA(ja *[]cDB_JA) (ok bool) {
-	for _, b := range *ja {
-		switch _, flag := i_ja[b.Name]; flag {
-		case true:
-			log.Warnf("Application '%v' already exist; ACTION: skip.", b.Name)
-			continue
-		}
-		i_ja[b.Name] = func() (outbound i_JA) {
-			outbound = i_JA{
-				Term: func() (outbound []i_JA_Term) {
-					for _, d := range b.Term {
-						outbound = append(outbound, i_JA_Term{
-							Name:                d.Name,
-							Protocol:            d.Protocol,
-							Destination_Port:    d.Destination_Port,
-							_Service_Attributes: d._Service_Attributes,
-						})
-					}
-					return
-				}(),
-				_Service_Attributes: _Service_Attributes{},
-			}
-			return
-		}()
-	}
-	return true
-}
-func parse_AB(ab *[]cDB_AB) (ok bool) {
-	for _, b := range *ab {
-		switch b.Set {
-		case true:
-			switch create_AB(b.Name, &b._Service_Attributes) {
-			case false:
-				continue
-			}
-		}
-		ok = true
-		for _, d := range b.Address {
-			add_2_AB(true, true, b.Name, d.AB, d.FQDN, d.IPPrefix)
-		}
-	}
-	return
+	return err == nil
 }
 func create_AB(ab_name _Name, sa *_Service_Attributes) (ok bool) {
 	switch _, flag := i_ab[ab_name]; flag {
 	case true:
-		log.Warnf("AB '%+v', already exist; ACTION: skip.", ab_name)
+		log.Warnf("Address Book '%+v', already exist; ACTION: skip.", ab_name)
 		return
 	}
 	i_ab[ab_name] = i_AB{
@@ -181,7 +206,6 @@ func create_AB(ab_name _Name, sa *_Service_Attributes) (ok bool) {
 	}
 	return true
 }
-
 func add_2_AB(public, private bool, ab_name _Name, inbound ...interface{}) (ok bool) {
 	var (
 		interim []interface{}
@@ -268,93 +292,211 @@ func add_2_AB(public, private bool, ab_name _Name, inbound ...interface{}) (ok b
 	}
 	return
 }
-func hash(inbound *string) (outbound _ID) {
-	var (
-		value, flag = hash_cache.Load(*inbound)
-	)
-	switch {
-	case flag && value.([_hash_Size]uint8) != outbound:
-		return value.([_hash_Size]uint8)
-	case flag:
-		log.Warnf("Daemon: hash error - zero result from hash_cache.Load(%+v); ACTION: try to recover.", inbound)
-	}
-	switch value = sha3.Sum512([]uint8(*inbound)); value.([_hash_Size]uint8) != outbound {
-	case true:
-		hash_cache.Store(*inbound, value.([_hash_Size]uint8))
-		return value.([_hash_Size]uint8)
-	default:
-		log.Panicf("Daemon: hash error - zero result from hash(%+v); ACTION: panic.", []uint8(*inbound))
-	}
-	return
-}
-func set_loglevel(inbound ...string) {
-	switch len(inbound) == 1 {
-	case true:
-		switch loglevel, err := log.ParseLevel(inbound[0]); err == nil {
-		case true:
-			log.SetLevel(loglevel)
-		default:
-			log.SetLevel(_Defaults[loglevel].(log.Level))
-			// log.Warnf("verbosity level '%v' is not supported; ACTION: use '%v'.", *inbound[0], log.GetLevel())
-		}
-	default:
-		log.SetLevel(_Defaults[_loglevel].(log.Level))
-	}
-}
-func parse_interface(inbound interface{}, skip interface{}) interface{} {
-	switch value := skip.(type) {
-	case error:
-		switch value == nil {
-		case false:
-			log.Debugf("'%v'", skip)
-		}
-	case bool:
-		switch value {
-		case false:
-			log.Debugf("'%v'", skip)
-		}
-	}
-	return inbound
-}
-func parse_interface_error(inbound interface{}, skip interface{}) interface{} {
-	switch value := skip.(type) {
-	case error:
-		switch value == nil {
-		case false:
-			log.Debugf("'%v'", skip)
-			return nil
-		}
-	case bool:
-		switch value {
-		case false:
-			log.Debugf("'%v'", skip)
-			return nil
-		}
-	}
-	return inbound
-}
 
-func _AB_rparse(_v_AB_list map[_Name]bool) (outbound map[_Name]bool) {
-	outbound = make(map[_Name]bool)
-	for a := range _v_AB_list {
-		switch {
-		case pdb_ab[a].Type != _AB_Type_set:
-			outbound[a] = true
-		default:
-			_AB_rparse_set(&outbound, a)
+func parse_JA(inbound *[]cDB_JA) (ok bool) {
+	for _, b := range *inbound {
+		switch _, flag := i_ja[b.Name]; flag {
+		case true:
+			log.Warnf("Application '%v' already exist; ACTION: skip.", b.Name)
+			continue
 		}
+		i_ja[b.Name] = func() (outbound i_JA) {
+			outbound = i_JA{
+				Term: func() (outbound []i_JA_Term) {
+					for _, d := range b.Term {
+						outbound = append(outbound, i_JA_Term{
+							Name:                d.Name,
+							Protocol:            d.Protocol,
+							Destination_Port:    d.Destination_Port,
+							_Service_Attributes: d._Service_Attributes,
+						})
+					}
+					return
+				}(),
+				_Service_Attributes: b._Service_Attributes,
+			}
+			return
+		}()
 	}
-	return
+	return true
 }
-func _AB_rparse_set(_v_AB_list *map[_Name]bool, a _Name) (ok bool) {
-	(*_v_AB_list)[a] = true
-	for c, d := range pdb_ab[a].Addresses {
-		switch {
-		case d != _AB_Type_set:
-			(*_v_AB_list)[c] = true
-		case !(*_v_AB_list)[c]:
-			_AB_rparse_set(_v_AB_list, c)
+func parse_AB(inbound *[]cDB_AB) (ok bool) {
+	for _, b := range *inbound {
+		switch b.Set {
+		case true:
+			switch create_AB(b.Name, &b._Service_Attributes); {
+			case false:
+				continue
+			}
+		}
+		for _, d := range b.Address {
+			add_2_AB(true, true, b.Name, d.AB, d.FQDN, d.IPPrefix)
 		}
 	}
-	return
+	return true
+}
+func parse_PL(inbound *[]cDB_PO_PL) (ok bool) {
+	for _, b := range *inbound {
+		switch _, flag := i_pl[b.Name]; flag {
+		case true:
+			log.Warnf("Policy List '%v' already exist; ACTION: skip.", b.Name)
+			continue
+		}
+		i_pl[b.Name] = func() (outbound i_PO_PL) {
+			outbound = i_PO_PL{
+				Match: func() (outbound []i_PO_PL_Match) {
+					for _, d := range b.Match {
+						outbound = append(outbound, i_PO_PL_Match{
+							IPPrefix:            d.IPPrefix,
+							_Service_Attributes: d._Service_Attributes,
+						})
+					}
+					return
+				}(),
+				_Service_Attributes: b._Service_Attributes,
+			}
+			return
+		}()
+	}
+	return true
+}
+func parse_PS(inbound *[]cDB_PO_PS) (ok bool) {
+	for _, b := range *inbound {
+		switch _, flag := i_ps[b.Name]; flag {
+		case true:
+			log.Warnf("Policy Statement '%v' already exist; ACTION: skip.", b.Name)
+			continue
+		}
+		i_ps[b.Name] = func() (outbound i_PO_PS) {
+			outbound = i_PO_PS{
+				Term: func() (outbound []i_PO_PS_Term) {
+					for _, d := range b.Term {
+						outbound = append(outbound, i_PO_PS_Term{
+							Name: d.Name,
+							From: func() (outbound []i_PO_PS_From) {
+								for _, f := range d.From {
+									outbound = append(outbound, i_PO_PS_From{
+										Protocol:            f.Protocol,
+										Route_Type:          f.Route_Type,
+										PL:                  f.PL,
+										Mask:                f.Mask,
+										_Service_Attributes: f._Service_Attributes,
+									})
+								}
+								return
+							}(),
+							Then: func() (outbound []i_PO_PS_Then) {
+								for _, f := range d.Then {
+									outbound = append(outbound, i_PO_PS_Then{
+										Action:              f.Action,
+										Action_Flag:         f.Action_Flag,
+										Metric:              f.Metric,
+										_Service_Attributes: f._Service_Attributes,
+									})
+								}
+								return
+							}(),
+							_Service_Attributes: d._Service_Attributes,
+						})
+					}
+					return
+				}(),
+				_Service_Attributes: b._Service_Attributes,
+			}
+			return
+		}()
+	}
+	return true
+}
+func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
+	for _, b := range *inbound {
+		switch _, flag := i_peer[b.ASN]; flag {
+		case true:
+			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ASN._PName(10))
+			continue
+		}
+		i_peer[b.ASN] = func() (outbound i_Peer) {
+			outbound = i_Peer{
+				PName:         b.ASN._PName(10),
+				Router_ID:     b.Router_ID,
+				IF_2_RI:       map[_Name]_Name{},
+				VI:            map[_VI_ID]*i_VI{},
+				VI_Peer_Left:  map[_VI_ID]*i_VI_Peer{},
+				VI_Peer_Right: map[_VI_ID]*i_VI_Peer{},
+				IFM:           map[_Name]i_Peer_IFM{},
+				RI:            map[_Name]i_Peer_RI{},
+				Hostname:      b.Hostname,
+				Domain_Name:   b.Domain_Name,
+				Version:       b.Version,
+				Major:         b.Version._Major(re_caps),
+				Manufacturer:  b.Manufacturer,
+				Model:         b.Model,
+				Serial:        b.Serial,
+				Root:          b.Root._Sanitize(16),
+				GT_List:       b.GT_List,
+				SZ:            map[_Name]i_SZ{},
+				NAT_Source:    map[_Type]i_NAT{},
+				SP_Exact:      []i_Rule_Set{},
+				SP_Global:     []i_Rule{},
+				AB:            map[_Name]*i_AB{},
+				JA:            map[_Name]*i_JA{},
+				PL:            map[_Name]*i_PO_PL{},
+				PS:            map[_Name]*i_PO_PS{},
+				i_SP_Options: i_SP_Options{
+					SP_Default_Policy: b.SP_Options.Default_Policy,
+				},
+				_Service_Attributes: b._Service_Attributes,
+			}
+			return
+		}()
+	}
+	return true
+}
+func parse_VI(inbound *[]cDB_VI) (ok bool) {
+	for _, b := range *inbound {
+		switch _, flag := i_vi[b.ID]; flag {
+		case true:
+			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ID._PName(5))
+			continue
+		}
+		i_vi[b.ID] = func() (outbound i_VI) {
+			outbound = i_VI{
+				PName:               b.ID._PName(5),
+				IPPrefix:            get_VI_IPPrefix(b.ID, 0),
+				IKE_No_NAT:          false,
+				IKE_GCM:             false,
+				Type:                b.Type,
+				Communication:       b.Communication,
+				Route_Metric:        b.Route_Metric,
+				PSK:                 b.PSK._Sanitize(64),
+				_Service_Attributes: b._Service_Attributes,
+			}
+			return
+		}()
+		i_vi_peer[b.ID] = func() (outbound map[_VI_Peer_ID]i_VI_Peer) {
+			outbound = make(map[_VI_Peer_ID]i_VI_Peer)
+			for _, d := range b.Peer {
+				switch _, flag := outbound[d.ID]; flag {
+				case true:
+					log.Warnf("VI '%v', Peer '%v' already exist; ACTION: skip.", b.ID._PName(5), d.ID.String())
+					continue
+				}
+				outbound[d.ID] = i_VI_Peer{
+					ASN:                 d.ASN,
+					RI:                  d.RI,
+					IF:                  d.IF,
+					IP:                  d.IP,
+					NAT:                 netip.Addr{},
+					IKE_Local_Address:   false,
+					Dynamic:             false,
+					Inner_RI:            d.Inner_RI,
+					Inner_IP:            get_VI_IPPrefix(b.ID, d.ID+1).Addr(),
+					Inner_IPPrefix:      get_VI_IPPrefix(b.ID, d.ID+1),
+					_Service_Attributes: d._Service_Attributes,
+				}
+			}
+			return
+		}()
+	}
+	return true
 }
