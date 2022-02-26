@@ -146,6 +146,80 @@ func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 	}
 	return
 }
+func parse_Router_ID(peer *cDB_Peer) (outbound netip.Addr) {
+	switch peer.Router_ID.IsValid() {
+	case false:
+		log.Warnf("Peer '%v', Router_ID '%v' is invalid; ACTION: take lo0.0 first address.", peer.ASN, peer.Router_ID)
+	}
+	return
+}
+
+func parse_Peer_IFM(peer *cDB_Peer) (_ifm map[_Name]i_Peer_IFM) {
+	_ifm = make(map[_Name]i_Peer_IFM)
+	for _, b := range peer.IFM {
+		_ifm[b.Name] = i_Peer_IFM{
+			Communication:       b.Communication,
+			_Service_Attributes: b._Service_Attributes,
+		}
+	}
+	return
+}
+func parse_Peer_RI(peer *cDB_Peer) (outbound map[_Name]i_Peer_RI) {
+	outbound = make(map[_Name]i_Peer_RI)
+	for _, b := range peer.RI {
+		var (
+			v_IP_2_IF = func() (outbound map[netip.Addr]_Name) {
+				outbound = make(map[netip.Addr]_Name)
+				return
+			}()
+			v_IF = func() (outbound map[_Name]i_Peer_RI_IF) {
+				outbound = make(map[_Name]i_Peer_RI_IF)
+				return
+			}()
+			v_RT = func() (outbound map[netip.Prefix]i_Peer_RI_RO_RT) {
+				outbound = make(map[netip.Prefix]i_Peer_RI_RO_RT)
+				return
+			}()
+			v_Leak = map[_Action]i_Peer_RI_RO_Leak_FromTo{
+				_Action_import: {
+					PL: func() (outbound []_Name) {
+						for _, d := range b.From {
+							outbound = append(outbound, d.PL)
+						}
+						return
+					}(),
+					_Service_Attributes: b._Service_Attributes,
+				},
+				_Action_export: {
+					PL: func() (outbound []_Name) {
+						for _, d := range b.To {
+							outbound = append(outbound, d.PL)
+						}
+						return
+					}(),
+					_Service_Attributes: b._Service_Attributes,
+				},
+			}
+		)
+		outbound[b.Name] = i_Peer_RI{
+			IP_2_IF:             v_IP_2_IF,
+			IF:                  v_IF,
+			RT:                  v_RT,
+			Leak:                v_Leak,
+			_Service_Attributes: b._Service_Attributes,
+		}
+	}
+	return
+}
+func parse_Peer_Hostname(peer *cDB_Peer) (outbound _FQDN) {
+	switch len(peer.Hostname) == 0 {
+	case true:
+		outbound = "gw_as" + _FQDN(peer.ASN._PName(10))
+		log.Warnf("Peer '%v', Hostname '%v' is invalid; ACTION: use '%v'.", peer.ASN, peer.Router_ID, outbound)
+	}
+	return
+}
+
 func read_GT() (ok bool) {
 	var (
 		dentry []os.DirEntry
@@ -418,14 +492,14 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 		i_peer[b.ASN] = func() (outbound i_Peer) {
 			outbound = i_Peer{
 				PName:         b.ASN._PName(10),
-				Router_ID:     b.Router_ID,
+				Router_ID:     parse_Router_ID(&b),
 				IF_2_RI:       map[_Name]_Name{},
 				VI:            map[_VI_ID]*i_VI{},
 				VI_Peer_Left:  map[_VI_ID]*i_VI_Peer{},
 				VI_Peer_Right: map[_VI_ID]*i_VI_Peer{},
-				IFM:           map[_Name]i_Peer_IFM{},
-				RI:            map[_Name]i_Peer_RI{},
-				Hostname:      b.Hostname,
+				IFM:           parse_Peer_IFM(&b),
+				RI:            parse_Peer_RI(&b),
+				Hostname:      parse_Peer_Hostname(&b),
 				Domain_Name:   b.Domain_Name,
 				Version:       b.Version,
 				Major:         b.Version._Major(re_caps),
