@@ -25,7 +25,7 @@ func main() {
 	case false:
 		log.Fatalf("something wrong ....")
 	}
-	log.Errorf("\n\n%v\n\n", i_ab)
+	// log.Errorf("\n\n%v\n\n", i_ab)
 	// log.Errorf("\n\n%v\n\n", i_ja)
 	// log.Errorf("\n\n%v\n\n", i_ps)
 	// log.Errorf("\n\n%v\n\n", i_ps)
