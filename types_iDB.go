@@ -96,7 +96,7 @@ type i_Peer_RI_RO_RT_GW struct {
 	_Service_Attributes
 }
 type i_Peer_RI_RO_Leak_FromTo struct {
-	PL _Name
+	PL []_Name
 	_Service_Attributes
 }
 
