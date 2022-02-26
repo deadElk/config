@@ -129,18 +129,21 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ASN)
 			continue
 		}
+		var (
+			v_PName   = pad(&b.ASN, 10)
+			v_Version string
+			v_Major   string
+		)
+		create_AB("O_AS"+_Name(v_PName), &_Service_Attributes{})
+		create_AB("I_AS"+_Name(v_PName), &_Service_Attributes{})
 		parse_AB(&b.AB)
 		parse_JA(&b.JA)
 		parse_PL(&b.PL)
 		parse_PS(&b.PS)
-		var (
-			v_Version string
-			v_Major   string
-		)
 		split_2_string(&b.Version, re_caps, &v_Version, &v_Major)
 		i_peer[b.ASN] = func() (outbound i_Peer) {
 			outbound = i_Peer{
-				PName:         pad(&b.ASN, 10),
+				PName:         v_PName,
 				Router_ID:     parse_Router_ID(&b),
 				IF_2_RI:       map[_Name]_Name{},
 				VI:            map[_VI_ID]*i_VI{},
@@ -284,15 +287,14 @@ func parse_Peer_RI(peer *cDB_Peer) (outbound map[_Name]i_Peer_RI) {
 						continue
 					}
 					var (
-						v_IFM  string
-						v_IFsM string
+						v_IF_IFM  string
+						v_IF_IFsM string
 					)
-					split_2_string(&d.Name, re_dot, &v_IFM, &v_IFsM)
+					split_2_string(&d.Name, re_dot, &v_IF_IFM, &v_IF_IFsM)
 					outbound[d.Name] = i_Peer_RI_IF{
-						IFM:           _Name(v_IFM),
-						IFsM:          _Name(v_IFsM),
+						IFM:           _Name(v_IF_IFM),
+						IFsM:          _Name(v_IF_IFsM),
 						Communication: d.Communication,
-						// IP:                  map[netip.Prefix]i_Peer_RI_IF_IP{},
 						IP: func() (outbound map[netip.Prefix]i_Peer_RI_IF_IP) {
 							outbound = make(map[netip.Prefix]i_Peer_RI_IF_IP)
 							for _, f := range d.IP {
@@ -304,7 +306,7 @@ func parse_Peer_RI(peer *cDB_Peer) (outbound map[_Name]i_Peer_RI) {
 										continue
 									}
 									switch value, flag := v_IP_2_IF[f.IPPrefix.Addr()]; flag {
-									case false:
+									case true:
 										log.Warnf("Peer '%v', RI '%v', IF '%v', duplicate IP '%v' on IF '%v'; ACTION: ignore.", peer.ASN, b.Name, d.Name, f.IPPrefix, value)
 										continue
 									}
@@ -322,7 +324,29 @@ func parse_Peer_RI(peer *cDB_Peer) (outbound map[_Name]i_Peer_RI) {
 							}
 							return
 						}(),
-						PARP:                map[netip.Prefix]i_Peer_RI_IF_PARP{},
+						// PARP: map[netip.Prefix]i_Peer_RI_IF_PARP{},
+						PARP: func() (outbound map[netip.Addr]i_Peer_RI_IF_PARP) {
+							outbound = make(map[netip.Addr]i_Peer_RI_IF_PARP)
+							for _, f := range d.PARP {
+								switch f.IP.IsValid() {
+								case false:
+									log.Warnf("Peer '%v', RI '%v', IF '%v', invalid PARP IP '%v'; ACTION: ignore.", peer.ASN, b.Name, d.Name, f.IP)
+									continue
+								}
+								switch value, flag := v_IP_2_IF[f.IP]; flag {
+								case true:
+									log.Warnf("Peer '%v', RI '%v', IF '%v', duplicate IP '%v' on IF '%v'; ACTION: ignore.", peer.ASN, b.Name, d.Name, f.IP, value)
+									continue
+								}
+								v_IP_2_IF[f.IP] = d.Name
+								add_2_AB(true, false, "OUTTER_LIST", f.IP, f.NAT)
+								outbound[f.IP] = i_Peer_RI_IF_PARP{
+									NAT:                 f.NAT,
+									_Service_Attributes: f._Service_Attributes,
+								}
+							}
+							return
+						}(),
 						_Service_Attributes: d._Service_Attributes,
 					}
 				}
@@ -340,11 +364,18 @@ func parse_Peer_RI(peer *cDB_Peer) (outbound map[_Name]i_Peer_RI) {
 						GW: func() (outbound map[_Name]i_Peer_RI_RO_RT_GW) {
 							outbound = make(map[_Name]i_Peer_RI_RO_RT_GW)
 							for _, f := range d.GW {
-								outbound[f.IF] = i_Peer_RI_RO_RT_GW{
-									IP:                  f.IP,
-									IF:                  f.IF,
-									Table:               f.Table,
-									Action:              f.Action,
+								var (
+									v_Name      _Name
+									v_RT_IP     netip.Addr
+									v_RT_IF     _Name
+									v_RT_Table  _Name
+									v_RT_Action _Action
+								)
+								outbound[v_Name] = i_Peer_RI_RO_RT_GW{
+									IP:                  v_RT_IP,
+									IF:                  v_RT_IF,
+									Table:               v_RT_Table,
+									Action:              v_RT_Action,
 									Action_Flag:         f.Action_Flag,
 									Metric:              f.Metric,
 									Preference:          f.Preference,

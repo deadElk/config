@@ -66,7 +66,7 @@ type i_Peer_RI_IF struct {
 	IFsM          _Name
 	Communication _Communication
 	IP            map[netip.Prefix]i_Peer_RI_IF_IP
-	PARP          map[netip.Prefix]i_Peer_RI_IF_PARP
+	PARP          map[netip.Addr]i_Peer_RI_IF_PARP
 	_Service_Attributes
 }
 type i_Peer_RI_IF_IP struct {
@@ -78,7 +78,7 @@ type i_Peer_RI_IF_IP struct {
 	_Service_Attributes
 }
 type i_Peer_RI_IF_PARP struct {
-	NAT netip.Prefix
+	NAT netip.Addr
 	_Service_Attributes
 }
 type i_Peer_RI_RO_RT struct {

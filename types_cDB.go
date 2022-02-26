@@ -83,8 +83,8 @@ type cDB_Peer_RI_IF_IP struct {
 	_Service_Attributes
 }
 type cDB_Peer_RI_IF_PARP struct {
-	IPPrefix netip.Prefix `xml:"IPprefix,attr"`
-	NAT      netip.Prefix `xml:"NAT,attr"`
+	IP  netip.Addr `xml:"IP,attr"`
+	NAT netip.Addr `xml:"NAT,attr"`
 	_Service_Attributes
 }
 type cDB_Peer_RI_RO_RT struct {

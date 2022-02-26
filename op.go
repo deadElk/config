@@ -62,11 +62,17 @@ func op() (ok bool) {
 	return err == nil
 }
 func parse_DB(xml_db *cDB) (ok bool) {
+	create_AB("OUTTER_LIST", &_Service_Attributes{})
 	parse_AB(&xml_db.AB)
 	parse_JA(&xml_db.JA)
 	parse_PL(&xml_db.PL)
 	parse_PS(&xml_db.PS)
 	parse_Peer(&xml_db.Peer)
 	parse_VI(&xml_db.VI)
+
+	// TODO:
+	//   add_2_AB(true, false, "O_AS"+_Name(v_PName), f.IPPrefix.Addr(), f.NAT)
+	//	 add_2_AB(false, true, "I_AS"+_Name(v_PName), f.IPPrefix.Addr(), f.NAT)
+
 	return
 }
