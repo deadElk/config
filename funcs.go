@@ -178,6 +178,82 @@ func parse_Peer_RI(peer *cDB_Peer) (outbound map[_Name]i_Peer_RI) {
 			}()
 			v_RT = func() (outbound map[netip.Prefix]i_Peer_RI_RO_RT) {
 				outbound = make(map[netip.Prefix]i_Peer_RI_RO_RT)
+				for _, d := range b.RT {
+					switch d.Identifier.IsValid() {
+					case false:
+						log.Warnf("Peer '%v', RI '%v', route Identifier '%v' is invalid; ACTION: ignore.", peer.ASN, b.Name, d.Identifier)
+						continue
+					}
+					outbound[d.Identifier] = i_Peer_RI_RO_RT{
+						GW: func() (outbound map[_Name]i_Peer_RI_RO_RT_GW) {
+							outbound = make(map[_Name]i_Peer_RI_RO_RT_GW)
+							for _, f := range d.GW {
+								var (
+									gw_i  = strconv.FormatUint(uint64(gw_v.Metric), 10) + "_"
+									gw_IF _Name
+									gw_IP netip.Addr
+									gw_T  _Name
+								)
+								switch {
+								case gw_v.Action == _Action_discard:
+									gw_i += _Action_discard.String()
+									gw_v.Action = c_Action[gw_v.Action]
+								case (gw_v.Action == _Action_qnh || gw_v.Action == _Action_hop) && gw_v.IP.IsValid():
+									gw_i += gw_v.IP.String()
+									gw_IP = gw_v.IP
+									gw_v.Action = c_Action[gw_v.Action]
+								case (gw_v.Action == _Action_qnh || gw_v.Action == _Action_hop || gw_v.Action == _Action_interface) && len(gw_v.IF) != 0:
+									gw_i += gw_v.IF.String()
+									gw_IF = gw_v.IF
+									gw_v.Action = c_Action[gw_v.Action]
+								case gw_v.Action == _Action_hop && gw_v.IP.IsValid():
+									gw_i += gw_v.IP.String()
+									gw_IP = gw_v.IP
+									gw_v.Action = c_Action[gw_v.Action]
+								case gw_v.Action == _Action_interface && len(gw_v.IF) != 0:
+									gw_i += gw_v.IF.String()
+									gw_IF = gw_v.IF
+									gw_v.Action = c_Action[gw_v.Action]
+								case gw_v.Action == _Action_table && len(gw_v.Table) != 0:
+									gw_i += gw_v.Table.String()
+									gw_T = gw_v.Table
+									gw_v.Action = c_Action[gw_v.Action]
+								case len(gw_v.Action) == 0 && gw_v.IP.IsValid():
+									gw_i += gw_v.IP.String()
+									gw_IP = gw_v.IP
+									gw_v.Action = c_Action[_Action_hop]
+								case len(gw_v.Action) == 0 && len(gw_v.IF) != 0:
+									gw_i += gw_v.IF.String()
+									gw_IF = gw_v.IF
+									gw_v.Action = c_Action[_Action_interface]
+								case len(gw_v.Action) == 0 && len(gw_v.Table) != 0:
+									gw_i += gw_v.Table.String()
+									gw_T = gw_v.Table
+									gw_v.Action = c_Action[_Action_table]
+								default:
+									log.Warnf("peer ASN '%v', RI '%v', route Identifier '%v', no gateway found or unknown gateway action '%v'; ACTION: skip.", value.ASN, ri_v.Name, rt_v.Identifier, gw_v.Action)
+									gw_i += _Action_discard.String()
+									continue
+								}
+								switch _, flag := gw_o[_Name(gw_i)]; flag {
+								case true:
+									log.Warnf("peer ASN '%v', RI '%v', route Identifier '%v', gateway '%v' already defined; ACTION: skip.", value.ASN, ri_v.Name, rt_v.Identifier, gw_i)
+									continue
+								}
+								gw_o[_Name(gw_i)] = pDB_Peer_RI_RT_GW{
+									IP:                  gw_IP,
+									IF:                  gw_IF,
+									Table:               gw_T,
+									Action:              gw_v.Action,
+									_Route_Attributes:   gw_v._Route_Attributes,
+									_Service_Attributes: gw_v._Service_Attributes,
+								}
+							}
+							return
+						}(),
+						_Service_Attributes: d._Service_Attributes,
+					}
+				}
 				return
 			}()
 			v_Leak = map[_Action]i_Peer_RI_RO_Leak_FromTo{
