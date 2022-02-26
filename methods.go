@@ -3,7 +3,6 @@ package main
 import (
 	"crypto/rand"
 	"math/big"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -195,15 +194,6 @@ func (inbound _netip_Prefix) String() string {
 }
 func (inbound _netip_Addr) String() string {
 	return string(parse_interface(inbound.MarshalText()).([]byte))
-}
-func (inbound _Version) String() string {
-	return string(inbound)
-}
-func (inbound _Version) _Major(re *regexp.Regexp) float64 {
-	var (
-		interim = re.Split(inbound.String(), -1)
-	)
-	return parse_interface(strconv.ParseFloat(interim[0], 64)).(float64)
 }
 func (inbound _Name) _Validate_RI(decline ..._Name) (outbound _Name) {
 	outbound = _Defaults[_RI].(_Name)

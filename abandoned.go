@@ -507,7 +507,7 @@ func db_parse(xml_db *sDB) (err error) {
 			}()
 			v_Major = func() float64 {
 				var (
-					interim = re_caps.Split(value.Version.String(), -1)
+					interim = re_caps.Split(value.Version, -1)
 				)
 				return parse_interface(strconv.ParseFloat(interim[0], 64)).(float64)
 			}()

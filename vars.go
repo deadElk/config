@@ -128,7 +128,7 @@ var (
 		_domain_name:      _FQDN("example.com"),
 		_ps_bits_per_rm:   uint32(2),        // ____
 		_ps_max_rms:       uint32(32/2 - 1), // ^^^^
-		_GT_list:          "",
+		_GT_list:          []_Name{},
 		_path_GT:          "./templates",
 		_path_out:         "./tmp",
 		_file_list_config: []string{

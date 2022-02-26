@@ -40,7 +40,12 @@ func op() (ok bool) {
 			set_loglevel(xml_db.Verbosity)
 			set_VI_IPPrefix(xml_db.VI_IPPrefix)
 			set_Domain_Name(xml_db.Domain_Name)
-			_Defaults[_GT_list] = xml_db.GT_List
+
+			_Defaults[_GT_list] = []_Name{}
+			for _, b := range re_period.Split(xml_db.GT_List, -1) {
+				_Defaults[_GT_list] = append(_Defaults[_GT_list].([]_Name), _Name(b))
+			}
+
 			switch len(xml_db.Upload_Path) == 0 {
 			case false:
 				_Defaults[_path_out] = xml_db.Upload_Path
@@ -57,11 +62,11 @@ func op() (ok bool) {
 	return err == nil
 }
 func parse_DB(xml_db *cDB) (ok bool) {
-	ok = ok || parse_AB(&xml_db.AB)
-	ok = ok || parse_JA(&xml_db.JA)
-	ok = ok || parse_PL(&xml_db.PL)
-	ok = ok || parse_PS(&xml_db.PS)
-	ok = ok || parse_Peer(&xml_db.Peer)
-	ok = ok || parse_VI(&xml_db.VI)
+	parse_AB(&xml_db.AB)
+	parse_JA(&xml_db.JA)
+	parse_PL(&xml_db.PL)
+	parse_PS(&xml_db.PS)
+	parse_Peer(&xml_db.Peer)
+	parse_VI(&xml_db.VI)
 	return
 }

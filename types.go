@@ -52,7 +52,6 @@ type _VI_ID uint16
 type _VI_Peer_ID uint16
 type _Port uint16
 type _Route_Weight uint32
-type _Version string
 
 type _Security_AB struct {
 	Address   interface{}
@@ -185,7 +184,7 @@ type sDB_Peer struct {
 	RI           []sDB_Peer_RI               `xml:"RI"`
 	Hostname     _FQDN                       `xml:"hostname,attr"`
 	Domain_Name  _FQDN                       `xml:"domain_name,attr"`
-	Version      _Version                    `xml:"version,attr"`
+	Version      string                      `xml:"version,attr"`
 	Manufacturer string                      `xml:"manufacturer,attr"`
 	Model        string                      `xml:"model,attr"`
 	Serial       string                      `xml:"serial,attr"`
@@ -309,7 +308,7 @@ type pDB_Peer struct {
 	IF_RI         map[_Name]_Name
 	Hostname      _FQDN
 	Domain_Name   _FQDN
-	Version       _Version
+	Version       string
 	Major         float64
 	IKE_GCM       bool
 	Manufacturer  string

@@ -32,13 +32,13 @@ type i_Peer struct {
 	RI            map[_Name]i_Peer_RI
 	Hostname      _FQDN
 	Domain_Name   _FQDN
-	Version       _Version
+	Version       string
 	Major         float64
 	Manufacturer  string
 	Model         string
 	Serial        string
 	Root          _Secret
-	GT_List       string
+	GT_List       []_Name
 	SZ            map[_Name]i_SZ
 	NAT_Source    map[_Type]i_NAT
 	SP_Exact      []i_Rule_Set
@@ -82,7 +82,7 @@ type i_Peer_RI_IF_PARP struct {
 	_Service_Attributes
 }
 type i_Peer_RI_RO_RT struct {
-	GW map[_Name]i_Peer_RI_RO_RT_GW
+	GW []i_Peer_RI_RO_RT_GW
 	_Service_Attributes
 }
 type i_Peer_RI_RO_RT_GW struct {
