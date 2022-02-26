@@ -3,30 +3,10 @@ package main
 import (
 	"crypto/rand"
 	"math/big"
-	"strconv"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
 
-func (inbound _ASN) _PName(length int) _PName {
-	var (
-		interim = strconv.FormatUint(uint64(inbound), 10)
-	)
-	for a := 0; a < length-len(interim); a++ {
-		interim = "0" + interim
-	}
-	return _PName(interim)
-}
-func (inbound _VI_ID) _PName(length int) _PName {
-	var (
-		interim = strconv.FormatUint(uint64(inbound), 10)
-	)
-	for a := 0; a < length-len(interim); a++ {
-		interim = "0" + interim
-	}
-	return _PName(interim)
-}
 func (inbound _Communication) _Sanitize(mode _Mode) (outbound _Communication) {
 	switch mode {
 	case _if_mode_vi:
@@ -57,12 +37,6 @@ func (inbound _Description) _Validate(default_description _Description) _Descrip
 		return default_description
 	}
 	return inbound
-}
-func (inbound _Content) trim_space() (outbound _Content) {
-	for _, value := range strings.Split(string(inbound), "\n") {
-		outbound += _Content(strings.TrimSpace(value) + "\n")
-	}
-	return
 }
 func (inbound _Name) _Validate(decline ..._Name) (outbound _Name) {
 	outbound = _juniper_RI
@@ -115,7 +89,7 @@ func (inbound _Type) _VI_Sanitize() _Type {
 func (inbound _FQDN) _Name() _Name {
 	return _Name(inbound.String())
 }
-func (inbound _Host_Inbound_Traffic) _Defaults() _Host_Inbound_Traffic {
+func (inbound *_Host_Inbound_Traffic) _Defaults() _Host_Inbound_Traffic {
 	return _Host_Inbound_Traffic{
 		Services: map[_Service]bool{
 			_service_ping:       true,

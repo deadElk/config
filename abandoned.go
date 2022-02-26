@@ -465,7 +465,7 @@ func db_parse(xml_db *sDB) (err error) {
 
 		var (
 			v_IP_List   = make(map[netip.Prefix]bool)
-			v_ASN_PName = value.ASN._PName(10)
+			v_ASN_PName = pad(&value.ASN, 10)
 			v_Hostname  = func() (outbound _FQDN) {
 				switch len(value.Hostname) == 0 {
 				case true:
@@ -1015,7 +1015,7 @@ func db_parse(xml_db *sDB) (err error) {
 				v_Right_Inner_IPPrefix = get_VI_IPPrefix(value.ID, 2)
 			)
 			pdb_peer[value.Peer[0].ASN].VI[value.ID] = pDB_Peer_VI{
-				VI_ID_PName:          value.ID._PName(5),
+				VI_ID_PName:          pad(&value.ID, 5),
 				Type:                 v_Type,
 				Communication:        value.Communication._Sanitize(_if_mode_vi),
 				PSK:                  value.PSK._Sanitize(64),

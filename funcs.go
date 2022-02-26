@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
@@ -98,6 +99,88 @@ func tabber(inbound string, tabs int) string {
 	default:
 		return inbound
 	}
+}
+
+func convert_2_string(inbound interface{}) string {
+	switch value := (inbound).(type) {
+	case *string:
+		return *value
+	case *_Name:
+		return (*value).String()
+	case *_PName:
+		return (*value).String()
+	case *_VI_ID:
+		return (*value).String()
+	case *_VI_Peer_ID:
+		return (*value).String()
+	case *_ASN:
+		return (*value).String()
+	case *_Content:
+		return (*value).String()
+	case *[]byte:
+		return string(*value)
+	case *uint:
+		return strconv.FormatUint(uint64(*value), 10)
+	case *uint8:
+		return strconv.FormatUint(uint64(*value), 10)
+	case *uint16:
+		return strconv.FormatUint(uint64(*value), 10)
+	case *uint32:
+		return strconv.FormatUint(uint64(*value), 10)
+	case *uint64:
+		return strconv.FormatUint(*value, 10)
+	// case string:
+	// 	return value
+	// case _Name:
+	// 	return value.String()
+	// case _PName:
+	// 	return value.String()
+	// case _VI_ID:
+	// 	return value.String()
+	// case _VI_Peer_ID:
+	// 	return value.String()
+	// case _ASN:
+	// 	return value.String()
+	// case _Content:
+	// 	return value.String()
+	// case []byte:
+	// 	return string(value)
+	// case uint:
+	// 	return strconv.FormatUint(uint64(value), 10)
+	// case uint8:
+	// 	return strconv.FormatUint(uint64(value), 10)
+	// case uint16:
+	// 	return strconv.FormatUint(uint64(value), 10)
+	// case uint32:
+	// 	return strconv.FormatUint(uint64(value), 10)
+	// case uint64:
+	// 	return strconv.FormatUint(value, 10)
+	default:
+		log.Fatalf("unsupported type of '%v'; ACTION: fatal.", inbound)
+		return ""
+	}
+}
+func pad(inbound interface{}, length int) _PName {
+	var (
+		padding string
+		interim = convert_2_string(inbound)
+	)
+	switch c := length - len(interim); c > 0 {
+	case true:
+		for a := 0; a < c; a++ {
+			padding += "0"
+		}
+	}
+	return _PName(padding + interim)
+}
+func trim_space(inbound interface{}) _Content {
+	var (
+		interim string
+	)
+	for _, value := range strings.Split(convert_2_string(inbound), "\n") {
+		interim += strings.TrimSpace(value) + "\n"
+	}
+	return _Content(interim)
 }
 
 func split_string(inbound string, re *regexp.Regexp, target ...interface{}) {
@@ -266,7 +349,7 @@ func parse_Peer_RI(peer *cDB_Peer) (outbound map[_Name]i_Peer_RI) {
 func parse_Peer_Hostname(peer *cDB_Peer) (outbound _FQDN) {
 	switch len(peer.Hostname) == 0 {
 	case true:
-		outbound = "gw_as" + _FQDN(peer.ASN._PName(10))
+		outbound = "gw_as" + _FQDN(pad(&peer.ASN, 10))
 		log.Warnf("Peer '%v', Hostname '%v' is invalid; ACTION: use '%v'.", peer.ASN, peer.Router_ID, outbound)
 	}
 	return
@@ -323,7 +406,7 @@ func read_GT() (ok bool) {
 			continue
 		}
 		i_gt[tname] = i_GT{
-			Content: _Content(data).trim_space(),
+			Content: trim_space(&data),
 		}
 	}
 	return err == nil
@@ -548,7 +631,7 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 	for _, b := range *inbound {
 		switch _, flag := i_peer[b.ASN]; flag {
 		case true:
-			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ASN._PName(10))
+			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ASN)
 			continue
 		}
 		parse_AB(&b.AB)
@@ -563,7 +646,7 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 		log.Errorf("%v")
 		i_peer[b.ASN] = func() (outbound i_Peer) {
 			outbound = i_Peer{
-				PName:         b.ASN._PName(10),
+				PName:         pad(&b.ASN, 10),
 				Router_ID:     parse_Router_ID(&b),
 				IF_2_RI:       map[_Name]_Name{},
 				VI:            map[_VI_ID]*i_VI{},
@@ -602,13 +685,13 @@ func parse_VI(inbound *[]cDB_VI) (ok bool) {
 	for _, b := range *inbound {
 		switch _, flag := i_vi[b.ID]; flag {
 		case true:
-			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ID._PName(5))
+			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ID)
 			continue
 		}
 		var (
 			v_vi = func() (outbound i_VI) {
 				outbound = i_VI{
-					PName:               b.ID._PName(5),
+					PName:               pad(&b.ID, 5),
 					IPPrefix:            get_VI_IPPrefix(b.ID, 0),
 					IKE_No_NAT:          false,
 					IKE_GCM:             false,
@@ -625,7 +708,7 @@ func parse_VI(inbound *[]cDB_VI) (ok bool) {
 				for _, d := range b.Peer {
 					switch _, flag := outbound[d.ID]; flag {
 					case true:
-						log.Warnf("VI '%v', Peer '%v' already exist; ACTION: skip.", b.ID._PName(5), d.ID.String())
+						log.Warnf("VI '%v', Peer '%v' already exist; ACTION: skip.", b.ID, d.ID)
 						continue
 					}
 					var (
