@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"net/netip"
 	"os"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -156,7 +157,7 @@ func convert_2_string(inbound interface{}) string {
 	// case uint64:
 	// 	return strconv.FormatUint(value, 10)
 	default:
-		log.Fatalf("unsupported type of '%v'; ACTION: fatal.", inbound)
+		log.Fatalf("unsupported type '%v'; ACTION: fatal.", reflect.TypeOf(inbound))
 		return ""
 	}
 }
@@ -182,13 +183,12 @@ func trim_space(inbound interface{}) _Content {
 	}
 	return _Content(interim)
 }
-
-func split_string(inbound string, re *regexp.Regexp, target ...interface{}) {
+func split_2_string(inbound interface{}, re *regexp.Regexp, target ...*string) {
 	var (
-		interim = re.Split(inbound, -1)
+		interim = re.Split(convert_2_string(inbound), -1)
 	)
 	for a := 0; a < len(interim) && a < len(target); a++ {
-		target[a] = interim[a]
+		*target[a] = interim[a]
 	}
 }
 

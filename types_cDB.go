@@ -78,7 +78,7 @@ type cDB_Peer_RI_IF_IP struct {
 	Router_ID bool         `xml:"router_ID,attr"`
 	Primary   bool         `xml:"primary,attr"`
 	Preferred bool         `xml:"preferred,attr"`
-	NAT       netip.Prefix `xml:"NAT,attr"`
+	NAT       netip.Addr   `xml:"NAT,attr"`
 	DHCP      bool         `xml:"DHCP,attr"`
 	_Service_Attributes
 }

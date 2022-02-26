@@ -137,7 +137,7 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 			v_Version string
 			v_Major   string
 		)
-		split_string(b.Version, re_caps, v_Version, v_Major)
+		split_2_string(&b.Version, re_caps, &v_Version, &v_Major)
 		i_peer[b.ASN] = func() (outbound i_Peer) {
 			outbound = i_Peer{
 				PName:         pad(&b.ASN, 10),
@@ -275,11 +275,7 @@ func parse_Peer_RI(peer *cDB_Peer) (outbound map[_Name]i_Peer_RI) {
 	for _, b := range peer.RI {
 		var (
 			v_IP_2_IF = make(map[netip.Addr]_Name)
-			// v_IP_2_IF = func() (outbound map[netip.Addr]_Name) {
-			// 	outbound = make(map[netip.Addr]_Name)
-			// 	return
-			// }()
-			v_IF = func() (outbound map[_Name]i_Peer_RI_IF) {
+			v_IF      = func() (outbound map[_Name]i_Peer_RI_IF) {
 				outbound = make(map[_Name]i_Peer_RI_IF)
 				for _, d := range b.IF {
 					switch _, flag := outbound[d.Name]; flag {
@@ -287,11 +283,45 @@ func parse_Peer_RI(peer *cDB_Peer) (outbound map[_Name]i_Peer_RI) {
 						log.Warnf("Peer '%v', RI '%v', IF '%v' already exist; ACTION: ignore.", peer.ASN, b.Name, d.Name)
 						continue
 					}
+					var (
+						v_IFM  string
+						v_IFsM string
+					)
+					split_2_string(&d.Name, re_dot, &v_IFM, &v_IFsM)
 					outbound[d.Name] = i_Peer_RI_IF{
-						IFM:                 "",
-						IFsM:                "",
-						Communication:       d.Communication,
-						IP:                  map[netip.Prefix]i_Peer_RI_IF_IP{},
+						IFM:           _Name(v_IFM),
+						IFsM:          _Name(v_IFsM),
+						Communication: d.Communication,
+						// IP:                  map[netip.Prefix]i_Peer_RI_IF_IP{},
+						IP: func() (outbound map[netip.Prefix]i_Peer_RI_IF_IP) {
+							outbound = make(map[netip.Prefix]i_Peer_RI_IF_IP)
+							for _, f := range d.IP {
+								switch f.DHCP {
+								case false:
+									switch f.IPPrefix.IsValid() {
+									case false:
+										log.Warnf("Peer '%v', RI '%v', IF '%v', invalid IP '%v'; ACTION: ignore.", peer.ASN, b.Name, d.Name, f.IPPrefix)
+										continue
+									}
+									switch value, flag := v_IP_2_IF[f.IPPrefix.Addr()]; flag {
+									case false:
+										log.Warnf("Peer '%v', RI '%v', IF '%v', duplicate IP '%v' on IF '%v'; ACTION: ignore.", peer.ASN, b.Name, d.Name, f.IPPrefix, value)
+										continue
+									}
+									v_IP_2_IF[f.IPPrefix.Addr()] = d.Name
+								}
+								add_2_AB(true, false, "OUTTER_LIST", f.IPPrefix.Addr(), f.NAT)
+								outbound[f.IPPrefix] = i_Peer_RI_IF_IP{
+									Masked:              f.IPPrefix.Masked(),
+									Primary:             f.Primary,
+									Preferred:           f.Preferred,
+									NAT:                 f.NAT,
+									DHCP:                f.DHCP,
+									_Service_Attributes: f._Service_Attributes,
+								}
+							}
+							return
+						}(),
 						PARP:                map[netip.Prefix]i_Peer_RI_IF_PARP{},
 						_Service_Attributes: d._Service_Attributes,
 					}
@@ -307,9 +337,10 @@ func parse_Peer_RI(peer *cDB_Peer) (outbound map[_Name]i_Peer_RI) {
 						continue
 					}
 					outbound[d.Identifier] = i_Peer_RI_RO_RT{
-						GW: func() (outbound []i_Peer_RI_RO_RT_GW) {
+						GW: func() (outbound map[_Name]i_Peer_RI_RO_RT_GW) {
+							outbound = make(map[_Name]i_Peer_RI_RO_RT_GW)
 							for _, f := range d.GW {
-								outbound = append(outbound, i_Peer_RI_RO_RT_GW{
+								outbound[f.IF] = i_Peer_RI_RO_RT_GW{
 									IP:                  f.IP,
 									IF:                  f.IF,
 									Table:               f.Table,
@@ -318,7 +349,7 @@ func parse_Peer_RI(peer *cDB_Peer) (outbound map[_Name]i_Peer_RI) {
 									Metric:              f.Metric,
 									Preference:          f.Preference,
 									_Service_Attributes: f._Service_Attributes,
-								})
+								}
 							}
 							return
 						}(),

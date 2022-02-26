@@ -73,7 +73,7 @@ type i_Peer_RI_IF_IP struct {
 	Masked    netip.Prefix
 	Primary   bool
 	Preferred bool
-	NAT       netip.Prefix
+	NAT       netip.Addr
 	DHCP      bool
 	_Service_Attributes
 }
@@ -82,7 +82,7 @@ type i_Peer_RI_IF_PARP struct {
 	_Service_Attributes
 }
 type i_Peer_RI_RO_RT struct {
-	GW []i_Peer_RI_RO_RT_GW
+	GW map[_Name]i_Peer_RI_RO_RT_GW
 	_Service_Attributes
 }
 type i_Peer_RI_RO_RT_GW struct {
