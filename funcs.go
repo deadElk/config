@@ -303,7 +303,7 @@ func create_AB(ab_name _Name, sa *_Service_Attributes) (ok bool) {
 	i_ab[ab_name] = i_AB{
 		Type:                _Type_set,
 		Address:             nil,
-		Addresses:           map[_Name]_Type{},
+		Address_Set:         map[_Name]_Type{},
 		_Service_Attributes: *sa,
 	}
 	return true
@@ -359,17 +359,17 @@ func add_2_AB(public, private bool, ab_name _Name, inbound ...interface{}) (ok b
 			switch value := (address).(type) {
 			case _Name:
 				ok = true
-				i_ab[ab_name].Addresses[value] = _Type_set
+				i_ab[ab_name].Address_Set[value] = _Type_set
 			case _FQDN:
 				ok = true
-				i_ab[ab_name].Addresses[value._Name()] = _Type_fqdn
+				i_ab[ab_name].Address_Set[value._Name()] = _Type_fqdn
 				add_2_AB(true, true, value._Name(), value)
 			case netip.Prefix:
 				var (
 					ab = _Name(value.String())
 				)
 				ok = true
-				i_ab[ab_name].Addresses[ab] = _Type_ipprefix
+				i_ab[ab_name].Address_Set[ab] = _Type_ipprefix
 				add_2_AB(true, true, ab, value)
 			}
 		case flag:

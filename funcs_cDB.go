@@ -130,68 +130,61 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 			continue
 		}
 		var (
-			v_PName             = pad(&b.ASN, 10)
-			v_Version           string
-			v_Major             string
-			v_Hostname          = parse_Peer_Hostname(&b)
-			v_GT_List           = parse_Peer_GT_List(&b)
-			v_IFM               = parse_Peer_IFM(&b)
-			v_SP_Default_Policy = parse_Peer_SP_Options_Default_Policy(&b)
+			v_Peer = i_Peer{
+				PName:         pad(&b.ASN, 10),
+				Router_ID:     netip.Addr{},
+				IF_2_RI:       nil,
+				VI:            map[_VI_ID]*i_VI{},
+				VI_Peer_Left:  map[_VI_ID]*i_VI_Peer{},
+				VI_Peer_Right: map[_VI_ID]*i_VI_Peer{},
+				IFM:           parse_Peer_IFM(&b),
+				RI:            parse_Peer_RI(&b),
+				Hostname:      parse_Peer_Hostname(&b),
+				Domain_Name:   b.Domain_Name,
+				Version:       b.Version,
+				Major:         0,
+				Manufacturer:  b.Manufacturer,
+				Model:         b.Model,
+				Serial:        b.Serial,
+				Root:          "",
+				GT_List:       parse_Peer_GT_List(&b),
+				SZ:            nil,
+				NAT_Source:    nil,
+				SP_Exact:      nil,
+				SP_Global:     nil,
+				AB:            nil,
+				JA:            nil,
+				PL:            nil,
+				PS:            nil,
+				i_SP_Options: i_SP_Options{
+					SP_Default_Policy: parse_Peer_SP_Options_Default_Policy(&b),
+				},
+				_Service_Attributes: b._Service_Attributes,
+			}
+			v_Major string
 		)
-		create_AB("O_AS"+_Name(v_PName), &_Service_Attributes{})
-		create_AB("I_AS"+_Name(v_PName), &_Service_Attributes{})
+		create_AB("O_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
+		create_AB("I_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
+		split_2_string(&b.Version, re_caps, &v_Major)
+		v_Peer.Major = parse_interface(strconv.ParseFloat(v_Major, 64)).(float64)
+
+		v_Peer.IF_2_RI = map[_Name]_Name{}
+		v_Peer.Router_ID = parse_Router_ID(&b)
+		v_Peer.SZ = parse_Peer_SZ(&b)
+		v_Peer.NAT_Source = map[_Type]i_NAT{}
+		v_Peer.NAT_Destination = map[_Type]i_NAT{}
+		v_Peer.NAT_Static = map[_Type]i_NAT{}
+		v_Peer.SP_Exact = []i_Rule_Set{}
+		v_Peer.SP_Global = []i_Rule{}
+		v_Peer.AB = map[_Name]*i_AB{}
+		v_Peer.JA = map[_Name]*i_JA{}
+		v_Peer.PL = map[_Name]*i_PO_PL{}
+		v_Peer.PS = map[_Name]*i_PO_PS{}
 		parse_AB(&b.AB)
 		parse_JA(&b.JA)
 		parse_PL(&b.PL)
 		parse_PS(&b.PS)
-		split_2_string(&b.Version, re_caps, &v_Version, &v_Major)
-		var (
-			v_RI         = parse_Peer_RI(&b)
-			v_IF_2_RI    map[_Name]_Name
-			v_Router_ID  = parse_Router_ID(&b)
-			v_SZ         = parse_Peer_SZ(&b)
-			v_NAT_Source map[_Type]i_NAT
-			v_SP_Exact   []i_Rule_Set
-			v_SP_Global  []i_Rule
-			v_AB         map[_Name]*i_AB
-			v_JA         map[_Name]*i_JA
-			v_PL         map[_Name]*i_PO_PL
-			v_PS         map[_Name]*i_PO_PS
-		)
-		i_peer[b.ASN] = func() (outbound i_Peer) {
-			outbound = i_Peer{
-				PName:         v_PName,
-				Router_ID:     v_Router_ID,
-				IF_2_RI:       v_IF_2_RI,
-				VI:            map[_VI_ID]*i_VI{},
-				VI_Peer_Left:  map[_VI_ID]*i_VI_Peer{},
-				VI_Peer_Right: map[_VI_ID]*i_VI_Peer{},
-				IFM:           v_IFM,
-				RI:            v_RI,
-				Hostname:      v_Hostname,
-				Domain_Name:   b.Domain_Name,
-				Version:       v_Version,
-				Major:         parse_interface(strconv.ParseFloat(v_Major, 64)).(float64),
-				Manufacturer:  b.Manufacturer,
-				Model:         b.Model,
-				Serial:        b.Serial,
-				Root:          b.Root._Sanitize(16),
-				GT_List:       v_GT_List,
-				SZ:            v_SZ,
-				NAT_Source:    v_NAT_Source,
-				SP_Exact:      v_SP_Exact,
-				SP_Global:     v_SP_Global,
-				AB:            v_AB,
-				JA:            v_JA,
-				PL:            v_PL,
-				PS:            v_PS,
-				i_SP_Options: i_SP_Options{
-					SP_Default_Policy: v_SP_Default_Policy,
-				},
-				_Service_Attributes: b._Service_Attributes,
-			}
-			return
-		}()
+		i_peer[b.ASN] = v_Peer
 	}
 	return true
 }
@@ -478,8 +471,8 @@ func parse_Peer_SZ(peer *cDB_Peer) (outbound map[_Name]i_SZ) {
 		case len(b.Screen) == 0:
 		}
 		outbound[b.Name] = i_SZ{
-			Screen:              b.Screen,
-			IF:                  nil,
+			Screen: b.Screen,
+			// todo:			IF:                  nil,
 			_Service_Attributes: b._Service_Attributes,
 		}
 	}
