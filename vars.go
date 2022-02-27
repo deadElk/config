@@ -117,6 +117,7 @@ var (
 	}
 	_Defaults = map[interface{}]interface{}{
 		_loglevel:         log.InfoLevel,
+		_sp_efault_policy: _Action_permit_all,
 		_comm_if:          _Communication_ptmp,
 		_comm_vi:          _Communication_ptp,
 		_VI_IPPrefix:      parse_interface(netip.ParsePrefix("10.90.0.0/16")).(netip.Prefix),

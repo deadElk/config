@@ -2,9 +2,9 @@ package main
 
 import (
 	"encoding/binary"
+	"fmt"
 	"net/netip"
 	"os"
-	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -106,63 +106,64 @@ func tabber(inbound string, tabs int) string {
 }
 
 func convert_2_string(inbound interface{}) string {
-	switch value := (inbound).(type) {
-	case *string:
-		return *value
-	case *_Name:
-		return (*value).String()
-	case *_PName:
-		return (*value).String()
-	case *_VI_ID:
-		return (*value).String()
-	case *_VI_Peer_ID:
-		return (*value).String()
-	case *_ASN:
-		return (*value).String()
-	case *_Content:
-		return (*value).String()
-	case *[]byte:
-		return string(*value)
-	case *uint:
-		return strconv.FormatUint(uint64(*value), 10)
-	case *uint8:
-		return strconv.FormatUint(uint64(*value), 10)
-	case *uint16:
-		return strconv.FormatUint(uint64(*value), 10)
-	case *uint32:
-		return strconv.FormatUint(uint64(*value), 10)
-	case *uint64:
-		return strconv.FormatUint(*value, 10)
-	// case string:
-	// 	return value
-	// case _Name:
-	// 	return value.String()
-	// case _PName:
-	// 	return value.String()
-	// case _VI_ID:
-	// 	return value.String()
-	// case _VI_Peer_ID:
-	// 	return value.String()
-	// case _ASN:
-	// 	return value.String()
-	// case _Content:
-	// 	return value.String()
-	// case []byte:
-	// 	return string(value)
-	// case uint:
-	// 	return strconv.FormatUint(uint64(value), 10)
-	// case uint8:
-	// 	return strconv.FormatUint(uint64(value), 10)
-	// case uint16:
-	// 	return strconv.FormatUint(uint64(value), 10)
-	// case uint32:
-	// 	return strconv.FormatUint(uint64(value), 10)
-	// case uint64:
-	// 	return strconv.FormatUint(value, 10)
-	default:
-		log.Fatalf("unsupported type '%v'; ACTION: fatal.", reflect.TypeOf(inbound))
-		return ""
-	}
+	return fmt.Sprintf("%s", inbound)
+	// switch value := (inbound).(type) {
+	// case *string:
+	// 	return *value
+	// case *_Name:
+	// 	return (*value).String()
+	// case *_PName:
+	// 	return (*value).String()
+	// case *_VI_ID:
+	// 	return (*value).String()
+	// case *_VI_Peer_ID:
+	// 	return (*value).String()
+	// case *_ASN:
+	// 	return (*value).String()
+	// case *_Content:
+	// 	return (*value).String()
+	// case *[]byte:
+	// 	return string(*value)
+	// case *uint:
+	// 	return strconv.FormatUint(uint64(*value), 10)
+	// case *uint8:
+	// 	return strconv.FormatUint(uint64(*value), 10)
+	// case *uint16:
+	// 	return strconv.FormatUint(uint64(*value), 10)
+	// case *uint32:
+	// 	return strconv.FormatUint(uint64(*value), 10)
+	// case *uint64:
+	// 	return strconv.FormatUint(*value, 10)
+	// // case string:
+	// // 	return value
+	// // case _Name:
+	// // 	return value.String()
+	// // case _PName:
+	// // 	return value.String()
+	// // case _VI_ID:
+	// // 	return value.String()
+	// // case _VI_Peer_ID:
+	// // 	return value.String()
+	// // case _ASN:
+	// // 	return value.String()
+	// // case _Content:
+	// // 	return value.String()
+	// // case []byte:
+	// // 	return string(value)
+	// // case uint:
+	// // 	return strconv.FormatUint(uint64(value), 10)
+	// // case uint8:
+	// // 	return strconv.FormatUint(uint64(value), 10)
+	// // case uint16:
+	// // 	return strconv.FormatUint(uint64(value), 10)
+	// // case uint32:
+	// // 	return strconv.FormatUint(uint64(value), 10)
+	// // case uint64:
+	// // 	return strconv.FormatUint(value, 10)
+	// default:
+	// 	log.Fatalf("unsupported type '%v'; ACTION: fatal.", reflect.TypeOf(inbound))
+	// 	return ""
+	// }
 }
 func pad(inbound interface{}, length int) _PName {
 	var (

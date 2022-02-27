@@ -129,6 +129,7 @@ type i_VI_Peer struct {
 // Security
 type i_SZ struct {
 	Screen _Name
+	IF     map[_Name]_Name
 	_Service_Attributes
 }
 type i_NAT struct {

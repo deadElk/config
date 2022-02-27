@@ -130,9 +130,13 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 			continue
 		}
 		var (
-			v_PName   = pad(&b.ASN, 10)
-			v_Version string
-			v_Major   string
+			v_PName             = pad(&b.ASN, 10)
+			v_Version           string
+			v_Major             string
+			v_Hostname          = parse_Peer_Hostname(&b)
+			v_GT_List           = parse_Peer_GT_List(&b)
+			v_IFM               = parse_Peer_IFM(&b)
+			v_SP_Default_Policy = parse_Peer_SP_Options_Default_Policy(&b)
 		)
 		create_AB("O_AS"+_Name(v_PName), &_Service_Attributes{})
 		create_AB("I_AS"+_Name(v_PName), &_Service_Attributes{})
@@ -141,17 +145,30 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 		parse_PL(&b.PL)
 		parse_PS(&b.PS)
 		split_2_string(&b.Version, re_caps, &v_Version, &v_Major)
+		var (
+			v_RI         = parse_Peer_RI(&b)
+			v_IF_2_RI    map[_Name]_Name
+			v_Router_ID  = parse_Router_ID(&b)
+			v_SZ         = parse_Peer_SZ(&b)
+			v_NAT_Source map[_Type]i_NAT
+			v_SP_Exact   []i_Rule_Set
+			v_SP_Global  []i_Rule
+			v_AB         map[_Name]*i_AB
+			v_JA         map[_Name]*i_JA
+			v_PL         map[_Name]*i_PO_PL
+			v_PS         map[_Name]*i_PO_PS
+		)
 		i_peer[b.ASN] = func() (outbound i_Peer) {
 			outbound = i_Peer{
 				PName:         v_PName,
-				Router_ID:     parse_Router_ID(&b),
-				IF_2_RI:       map[_Name]_Name{},
+				Router_ID:     v_Router_ID,
+				IF_2_RI:       v_IF_2_RI,
 				VI:            map[_VI_ID]*i_VI{},
 				VI_Peer_Left:  map[_VI_ID]*i_VI_Peer{},
 				VI_Peer_Right: map[_VI_ID]*i_VI_Peer{},
-				IFM:           parse_Peer_IFM(&b),
-				RI:            parse_Peer_RI(&b),
-				Hostname:      parse_Peer_Hostname(&b),
+				IFM:           v_IFM,
+				RI:            v_RI,
+				Hostname:      v_Hostname,
 				Domain_Name:   b.Domain_Name,
 				Version:       v_Version,
 				Major:         parse_interface(strconv.ParseFloat(v_Major, 64)).(float64),
@@ -159,17 +176,17 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 				Model:         b.Model,
 				Serial:        b.Serial,
 				Root:          b.Root._Sanitize(16),
-				GT_List:       parse_Peer_GT_List(&b),
-				SZ:            map[_Name]i_SZ{},
-				NAT_Source:    map[_Type]i_NAT{},
-				SP_Exact:      []i_Rule_Set{},
-				SP_Global:     []i_Rule{},
-				AB:            map[_Name]*i_AB{},
-				JA:            map[_Name]*i_JA{},
-				PL:            map[_Name]*i_PO_PL{},
-				PS:            map[_Name]*i_PO_PS{},
+				GT_List:       v_GT_List,
+				SZ:            v_SZ,
+				NAT_Source:    v_NAT_Source,
+				SP_Exact:      v_SP_Exact,
+				SP_Global:     v_SP_Global,
+				AB:            v_AB,
+				JA:            v_JA,
+				PL:            v_PL,
+				PS:            v_PS,
 				i_SP_Options: i_SP_Options{
-					SP_Default_Policy: b.SP_Options.Default_Policy,
+					SP_Default_Policy: v_SP_Default_Policy,
 				},
 				_Service_Attributes: b._Service_Attributes,
 			}
@@ -263,10 +280,10 @@ func parse_Router_ID(peer *cDB_Peer) (outbound netip.Addr) {
 	}
 	return
 }
-func parse_Peer_IFM(peer *cDB_Peer) (_ifm map[_Name]i_Peer_IFM) {
-	_ifm = make(map[_Name]i_Peer_IFM)
+func parse_Peer_IFM(peer *cDB_Peer) (outbound map[_Name]i_Peer_IFM) {
+	outbound = make(map[_Name]i_Peer_IFM)
 	for _, b := range peer.IFM {
-		_ifm[b.Name] = i_Peer_IFM{
+		outbound[b.Name] = i_Peer_IFM{
 			Communication:       b.Communication,
 			_Service_Attributes: b._Service_Attributes,
 		}
@@ -307,7 +324,7 @@ func parse_Peer_RI(peer *cDB_Peer) (outbound map[_Name]i_Peer_RI) {
 									}
 									switch value, flag := v_IP_2_IF[f.IPPrefix.Addr()]; flag {
 									case true:
-										log.Warnf("Peer '%v', RI '%v', IF '%v', duplicate IP '%v' on IF '%v'; ACTION: ignore.", peer.ASN, b.Name, d.Name, f.IPPrefix, value)
+										log.Warnf("Peer '%v', RI '%v', IF '%v', duplicate IP '%v' with IF '%v'; ACTION: ignore.", peer.ASN, b.Name, d.Name, f.IPPrefix, value)
 										continue
 									}
 									v_IP_2_IF[f.IPPrefix.Addr()] = d.Name
@@ -324,7 +341,6 @@ func parse_Peer_RI(peer *cDB_Peer) (outbound map[_Name]i_Peer_RI) {
 							}
 							return
 						}(),
-						// PARP: map[netip.Prefix]i_Peer_RI_IF_PARP{},
 						PARP: func() (outbound map[netip.Addr]i_Peer_RI_IF_PARP) {
 							outbound = make(map[netip.Addr]i_Peer_RI_IF_PARP)
 							for _, f := range d.PARP {
@@ -365,42 +381,54 @@ func parse_Peer_RI(peer *cDB_Peer) (outbound map[_Name]i_Peer_RI) {
 							outbound = make(map[_Name]i_Peer_RI_RO_RT_GW)
 							for _, f := range d.GW {
 								var (
-									v_Name           = _Name("_" + strconv.FormatUint(uint64(f.Metric), 10) + "_" + strconv.FormatUint(uint64(f.Preference), 10) + "_")
 									v_RT_IP          netip.Addr
 									v_RT_IF          _Name
 									v_RT_Table       _Name
-									v_RT_Action      _Action
+									v_RT_Action      = c_Action[f.Action]
 									v_RT_Action_Flag _Action
 								)
-								outbound[v_Name] = i_Peer_RI_RO_RT_GW{
-									IP:                  v_RT_IP,
-									IF:                  v_RT_IF,
-									Table:               v_RT_Table,
-									Action:              v_RT_Action,
-									Action_Flag:         v_RT_Action_Flag,
-									Metric:              f.Metric,
-									Preference:          f.Preference,
-									_Service_Attributes: f._Service_Attributes,
+								switch v_RT_Action = c_Action[f.Action]; {
+								case v_RT_Action == _Action_discard:
+								case v_RT_Action == _Action_next_table && len(f.Table) != 0:
+									v_RT_Table = f.Table
+								case (v_RT_Action == _Action_next_hop || v_RT_Action == _Action_qualified_next_hop) && len(f.IF) != 0:
+									v_RT_IF = f.IF
+								case (v_RT_Action == _Action_next_hop || v_RT_Action == _Action_qualified_next_hop) && f.IP.IsValid():
+									v_RT_IP = f.IP
+								case len(v_RT_Action) == 0 && len(f.Table) != 0:
+									v_RT_Action = _Action_next_table
+									v_RT_Table = f.Table
+								case len(v_RT_Action) == 0 && len(f.IF) != 0:
+									v_RT_Action = _Action_next_hop
+									v_RT_IF = f.IF
+								case len(v_RT_Action) == 0 && f.IP.IsValid():
+									v_RT_Action = _Action_next_hop
+									v_RT_IP = f.IP
+								case len(v_RT_Action) == 0:
+									v_RT_Action = _Action_discard
+								default:
+									log.Warnf("Peer '%v', RI '%v', Identifier '%v', invalid GW '%v'; ACTION: ignore.", peer.ASN, b.Name, d.Identifier, f)
+									continue
 								}
-
-								// switch value := _Defaults[f.Action].(_Action); value {
-								switch _, flag := _Defaults[f.Action].(_Action); flag || len(f.Action) == 0 {
-								case false:
-									log.Warnf("Peer '%v', RI '%v', Identifier '%v', route action '%v' is invalid; ACTION: ignore.", peer.ASN, b.Name, d.Identifier, f.Action)
-								}
-								switch _Defaults[f.Action].(_Action) {
-								case _Action_discard, _Action_next_hop, _Action_qualified_next_hop, _Action_next_table, "":
-									outbound[_Name(hash(f).String())] = i_Peer_RI_RO_RT_GW{
-										IP:                  f.IP,
-										IF:                  f.IF,
-										Table:               f.Table,
-										Action:              f.Action,
-										Action_Flag:         f.Action_Flag,
+								var (
+									v_GW = i_Peer_RI_RO_RT_GW{
+										IP:                  v_RT_IP,
+										IF:                  v_RT_IF,
+										Table:               v_RT_Table,
+										Action:              v_RT_Action,
+										Action_Flag:         v_RT_Action_Flag,
 										Metric:              f.Metric,
 										Preference:          f.Preference,
 										_Service_Attributes: f._Service_Attributes,
 									}
+									v_Name = _Name(hash(&v_GW).String())
+								)
+								switch _, flag := outbound[v_Name]; flag {
+								case true:
+									log.Warnf("Peer '%v', RI '%v', Identifier '%v', GW '%v' already exist; ACTION: ignore.", peer.ASN, b.Name, d.Identifier, f)
+									continue
 								}
+								outbound[v_Name] = v_GW
 							}
 							return
 						}(),
@@ -439,4 +467,32 @@ func parse_Peer_RI(peer *cDB_Peer) (outbound map[_Name]i_Peer_RI) {
 		}
 	}
 	return
+}
+func parse_Peer_SZ(peer *cDB_Peer) (outbound map[_Name]i_SZ) {
+	outbound = make(map[_Name]i_SZ)
+	for _, b := range peer.SZ {
+		switch {
+		case b.Name == _Defaults[_mgmt_RI].(_Name):
+			log.Warnf("Peer '%v', SZ '%v' cannot be defined; ACTION: ignore.", peer.ASN, b.Name)
+			continue
+		case len(b.Screen) == 0:
+		}
+		outbound[b.Name] = i_SZ{
+			Screen:              b.Screen,
+			IF:                  nil,
+			_Service_Attributes: b._Service_Attributes,
+		}
+	}
+	return
+}
+func parse_Peer_SP_Options_Default_Policy(peer *cDB_Peer) (outbound _Action) {
+	switch value := peer.SP_Options.Default_Policy; value {
+	case _Action_permit_all, _Action_deny_all:
+		return value
+	case "":
+		return _Defaults[_sp_efault_policy].(_Action)
+	default:
+		log.Warnf("Peer '%v', unknown default security policy '%v'; ACTION: use '%v'.", peer.ASN, value, _Defaults[_sp_efault_policy])
+		return _Defaults[_sp_efault_policy].(_Action)
+	}
 }

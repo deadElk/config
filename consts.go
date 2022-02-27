@@ -82,6 +82,7 @@ const (
 	_Type_zone                 _Type          = "zone"
 
 	_loglevel         _Default = "default_loglevel"
+	_sp_efault_policy _Default = "default_sp_efault_policy"
 	_comm_if          _Default = "default_comm_if"
 	_comm_vi          _Default = "default_comm_vi"
 	_VI_IPPrefix      _Default = "default_VI_IPprefix"
