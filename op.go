@@ -28,28 +28,6 @@ func op() (ok bool) {
 				continue
 			}
 			log.Debugf("configuration file '%v' loaded.", value)
-			switch len(xml_db.GT_Path) == 0 {
-			case false:
-				_Defaults[_path_GT] = xml_db.GT_Path
-			}
-			switch read_GT() {
-			case false:
-				log.Warnf("templates read error; ACTION: skip.")
-				continue
-			}
-			set_loglevel(xml_db.Verbosity)
-			set_VI_IPPrefix(xml_db.VI_IPPrefix)
-			set_Domain_Name(xml_db.Domain_Name)
-
-			_Defaults[_GT_list] = []_Name{}
-			for _, b := range re_period.Split(xml_db.GT_List, -1) {
-				_Defaults[_GT_list] = append(_Defaults[_GT_list].([]_Name), _Name(b))
-			}
-
-			switch len(xml_db.Upload_Path) == 0 {
-			case false:
-				_Defaults[_path_out] = xml_db.Upload_Path
-			}
 			switch parse_DB(&xml_db) {
 			case false:
 				log.Warnf("configuration file '%v' DB parse error: '%v'; ACTION: skip.", value, err)
@@ -62,7 +40,28 @@ func op() (ok bool) {
 	return err == nil
 }
 func parse_DB(xml_db *cDB) (ok bool) {
+	set_loglevel(xml_db.Verbosity)
+	switch len(xml_db.GT_Path) == 0 {
+	case false:
+		_Defaults[_path_GT] = xml_db.GT_Path
+	}
+	switch read_GT() {
+	case false:
+		log.Warnf("templates read error; ACTION: skip.")
+		return
+	}
+	set_VI_IPPrefix(xml_db.VI_IPPrefix)
+	set_Domain_Name(xml_db.Domain_Name)
+	_Defaults[_GT_list] = []_Name{}
+	for _, b := range re_period.Split(xml_db.GT_List, -1) {
+		_Defaults[_GT_list] = append(_Defaults[_GT_list].([]_Name), _Name(b))
+	}
+	switch len(xml_db.Upload_Path) == 0 {
+	case false:
+		_Defaults[_path_out] = xml_db.Upload_Path
+	}
 	create_AB("OUTTER_LIST", &_Service_Attributes{})
+
 	parse_AB(&xml_db.AB)
 	parse_JA(&xml_db.JA)
 	parse_PL(&xml_db.PL)
@@ -74,5 +73,5 @@ func parse_DB(xml_db *cDB) (ok bool) {
 	//   add_2_AB(true, false, "O_AS"+_Name(v_PName), f.IPPrefix.Addr(), f.NAT)
 	//	 add_2_AB(false, true, "I_AS"+_Name(v_PName), f.IPPrefix.Addr(), f.NAT)
 
-	return
+	return true
 }
