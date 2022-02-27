@@ -32,11 +32,12 @@ func hash(inbound *string) (outbound _ID) {
 	}
 	return
 }
-func set_loglevel(inbound ...string) {
+func set_loglevel(inbound ...string) (ok bool) {
 	switch len(inbound) == 0 {
 	case false:
 		switch loglevel, err := log.ParseLevel(inbound[0]); err == nil {
 		case true:
+			ok = true
 			log.SetLevel(loglevel)
 		default:
 			log.SetLevel(_Defaults[_loglevel].(log.Level))
@@ -45,6 +46,7 @@ func set_loglevel(inbound ...string) {
 	default:
 		log.SetLevel(_Defaults[_loglevel].(log.Level))
 	}
+	return
 }
 
 func parse_interface(inbound interface{}, skip interface{}) interface{} {
@@ -199,18 +201,22 @@ func get_VI_IPPrefix(vi_id _VI_ID, peer_id _VI_Peer_ID) netip.Prefix {
 	binary.BigEndian.PutUint32(b, _Defaults[_VI_IPShift].(uint32)+uint32(vi_id*4)+uint32(peer_id))
 	return netip.PrefixFrom(parse_interface(netip.AddrFromSlice(b)).(netip.Addr), 30)
 }
-func set_VI_IPPrefix(inbound ...netip.Prefix) {
+func set_VI_IPPrefix(inbound ...netip.Prefix) (ok bool) {
 	switch len(inbound) == 1 && inbound[0].IsValid() {
 	case true:
 		_Defaults[_VI_IPPrefix] = inbound[0]
+		ok = true
 	}
 	_Defaults[_VI_IPShift] = binary.BigEndian.Uint32(_Defaults[_VI_IPPrefix].(netip.Prefix).Addr().AsSlice())
+	return
 }
-func set_Domain_Name(inbound ..._FQDN) {
+func set_Domain_Name(inbound ..._FQDN) (ok bool) {
 	switch len(inbound) == 1 && len(inbound[0]) != 0 {
 	case true:
 		_Defaults[_domain_name] = inbound[0]
+		ok = true
 	}
+	return
 }
 func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 	switch len(inbound) {
