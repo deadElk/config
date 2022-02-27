@@ -52,10 +52,10 @@ func (inbound _Name) _Validate(decline ..._Name) (outbound _Name) {
 	}
 	return inbound
 }
-func (inbound _Secret) _Sanitize(length uint, message ...string) _Secret {
-	switch len(inbound) >= int(length) {
+func (inbound *_Secret) _Validate(length uint, message ...string) _Secret {
+	switch len(*inbound) >= int(length) {
 	case true:
-		return inbound
+		return *inbound
 	}
 	var (
 		interim = make([]byte, length)
