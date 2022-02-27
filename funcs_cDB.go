@@ -147,7 +147,7 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 				Model:           b.Model,
 				Serial:          b.Serial,
 				Root:            "",
-				GT_List:         []_Name,
+				GT_List:         []_Name{},
 				SZ:              nil,
 				NAT_Source:      nil,
 				NAT_Destination: nil,
@@ -166,9 +166,9 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 			v_Major string
 		)
 		parse_Peer_Hostname(&b, &v_Peer)
-		parse_Peer_GT_List(&b, &v_Peer),
+		parse_Peer_GT_List(&b, &v_Peer)
 
-			 create_AB("O_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
+		create_AB("O_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
 		create_AB("I_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
 		split_2_string(&b.Version, re_caps, &v_Major)
 		v_Peer.Major = parse_interface(strconv.ParseFloat(v_Major, 64)).(float64)
