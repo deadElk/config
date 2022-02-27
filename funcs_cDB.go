@@ -137,8 +137,8 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 				VI:              map[_VI_ID]*i_VI{},
 				VI_Peer_Left:    map[_VI_ID]*i_VI_Peer{},
 				VI_Peer_Right:   map[_VI_ID]*i_VI_Peer{},
-				IFM:             parse_Peer_IFM(&b, nil),
-				RI:              parse_Peer_RI(&b, nil),
+				IFM:             map[_Name]i_Peer_IFM{},
+				RI:              map[_Name]i_Peer_RI{},
 				Hostname:        "",
 				Domain_Name:     b.Domain_Name,
 				Version:         b.Version,
@@ -166,6 +166,8 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 			v_Major string
 		)
 		parse_Peer_Hostname(&b, &v_Peer)
+		parse_Peer_IFM(&b, &v_Peer)
+		parse_Peer_RI(&b, &v_Peer)
 		parse_Peer_GT_List(&b, &v_Peer)
 
 		create_AB("O_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
@@ -174,7 +176,7 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 		v_Peer.Major = parse_interface(strconv.ParseFloat(v_Major, 64)).(float64)
 
 		v_Peer.IF_2_RI = map[_Name]_Name{}
-		v_Peer.Router_ID = parse_Router_ID(&b, &v_Peer)
+		parse_Router_ID(&b, &v_Peer)
 		v_Peer.SZ = parse_Peer_SZ(&b, nil)
 		v_Peer.NAT_Source = map[_Type]i_NAT{}
 		v_Peer.NAT_Destination = map[_Type]i_NAT{}
@@ -258,51 +260,46 @@ func parse_Peer_Hostname(peer *cDB_Peer, v_Peer *i_Peer) {
 	case true:
 		v_Peer.Hostname = "gw_as" + _FQDN(pad(&peer.ASN, 10))
 		log.Warnf("Peer '%v', Hostname '%v' is invalid; ACTION: use '%v'.", peer.ASN, peer.Router_ID, v_Peer.Hostname)
-		return
+	default:
+		v_Peer.Hostname = peer.Hostname
 	}
-	v_Peer.Hostname = peer.Hostname
 }
 func parse_Peer_GT_List(peer *cDB_Peer, v_Peer *i_Peer) {
 	switch len(peer.GT_List) == 0 {
-	case true:
-		v_Peer.GT_List = _Defaults[_GT_list].([]_Name)
-		return
-	}
-	for _, b := range peer.GT_List {
-		v_Peer.GT_List = append(v_Peer.GT_List, _Name(b))
-	}
-}
-
-func parse_Router_ID(peer *cDB_Peer, v_Peer *i_Peer) (outbound netip.Addr) {
-	switch peer.Router_ID.IsValid() {
 	case false:
-		var (
-			interim = func() netip.Addr {
-				for a := range v_Peer.RI["master"].IF["lo0.0"].IP {
-					switch a.IsValid() {
-					case true:
-						return a.Addr()
-					}
-				}
-				return parse_interface(netip.ParseAddr("192.0.2.0")).(netip.Addr)
-			}()
-		)
-		log.Warnf("Peer '%v', invalid Router_ID '%v'; ACTION: use '%v'.", peer.ASN, peer.Router_ID, interim)
+		for _, b := range peer.GT_List {
+			v_Peer.GT_List = append(v_Peer.GT_List, _Name(b))
+		}
+	default:
+		v_Peer.GT_List = _Defaults[_GT_list].([]_Name)
 	}
-	return
 }
-func parse_Peer_IFM(peer *cDB_Peer, v_Peer *i_Peer) (outbound map[_Name]i_Peer_IFM) {
-	outbound = make(map[_Name]i_Peer_IFM)
+func parse_Router_ID(peer *cDB_Peer, v_Peer *i_Peer) {
+	switch peer.Router_ID.IsValid() {
+	case true:
+		v_Peer.Router_ID = peer.Router_ID
+	default:
+		v_Peer.Router_ID = func() netip.Addr {
+			for a := range v_Peer.RI["master"].IF["lo0.0"].IP {
+				switch a.IsValid() {
+				case true:
+					return a.Addr()
+				}
+			}
+			return parse_interface(netip.ParseAddr("192.0.2.0")).(netip.Addr)
+		}()
+		log.Warnf("Peer '%v', invalid Router_ID '%v'; ACTION: use '%v'.", peer.ASN, peer.Router_ID, v_Peer.Router_ID)
+	}
+}
+func parse_Peer_IFM(peer *cDB_Peer, v_Peer *i_Peer) {
 	for _, b := range peer.IFM {
-		outbound[b.Name] = i_Peer_IFM{
-			Communication:       b.Communication,
+		v_Peer.IFM[b.Name] = i_Peer_IFM{
+			Communication:       parse_Communication(&peer.ASN, &b.Name, &b.Communication),
 			_Service_Attributes: b._Service_Attributes,
 		}
 	}
-	return
 }
-func parse_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (outbound map[_Name]i_Peer_RI) {
-	outbound = make(map[_Name]i_Peer_RI)
+func parse_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) {
 	for _, b := range peer.RI {
 		var (
 			v_IP_2_IF = make(map[netip.Addr]_Name)
@@ -322,7 +319,7 @@ func parse_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (outbound map[_Name]i_Peer_RI
 					outbound[d.Name] = i_Peer_RI_IF{
 						IFM:           _Name(v_IF_IFM),
 						IFsM:          _Name(v_IF_IFsM),
-						Communication: d.Communication,
+						Communication: parse_Communication(&peer.ASN, &d.Name, &d.Communication),
 						IP: func() (outbound map[netip.Prefix]i_Peer_RI_IF_IP) {
 							outbound = make(map[netip.Prefix]i_Peer_RI_IF_IP)
 							for _, f := range d.IP {
@@ -469,7 +466,7 @@ func parse_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (outbound map[_Name]i_Peer_RI
 				},
 			}
 		)
-		outbound[b.Name] = i_Peer_RI{
+		v_Peer.RI[b.Name] = i_Peer_RI{
 			IP_2_IF:             v_IP_2_IF,
 			IF:                  v_IF,
 			RT:                  v_RT,

@@ -248,6 +248,18 @@ func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 	return
 }
 
+func parse_Communication(_peer *_ASN, _if *_Name, inbound *_Communication) _Communication {
+	switch {
+	case *inbound == _Communication_ptp || *inbound == _Communication_ptmp:
+		return *inbound
+	case len(*inbound) != 0:
+		log.Warnf("Peer '%v', IF '%v', invalid Communication type '%v'; ACTION: use '%v'.", _peer, _if, *inbound, _Defaults[_comm_if].(_Communication))
+		fallthrough
+	default:
+		return _Defaults[_comm_if].(_Communication)
+	}
+}
+
 func read_GT() (ok bool) {
 	var (
 		dentry []os.DirEntry
