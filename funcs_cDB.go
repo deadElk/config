@@ -365,21 +365,41 @@ func parse_Peer_RI(peer *cDB_Peer) (outbound map[_Name]i_Peer_RI) {
 							outbound = make(map[_Name]i_Peer_RI_RO_RT_GW)
 							for _, f := range d.GW {
 								var (
-									v_Name      _Name
-									v_RT_IP     netip.Addr
-									v_RT_IF     _Name
-									v_RT_Table  _Name
-									v_RT_Action _Action
+									v_Name           = _Name("_" + strconv.FormatUint(uint64(f.Metric), 10) + "_" + strconv.FormatUint(uint64(f.Preference), 10) + "_")
+									v_RT_IP          netip.Addr
+									v_RT_IF          _Name
+									v_RT_Table       _Name
+									v_RT_Action      _Action
+									v_RT_Action_Flag _Action
 								)
 								outbound[v_Name] = i_Peer_RI_RO_RT_GW{
 									IP:                  v_RT_IP,
 									IF:                  v_RT_IF,
 									Table:               v_RT_Table,
 									Action:              v_RT_Action,
-									Action_Flag:         f.Action_Flag,
+									Action_Flag:         v_RT_Action_Flag,
 									Metric:              f.Metric,
 									Preference:          f.Preference,
 									_Service_Attributes: f._Service_Attributes,
+								}
+
+								// switch value := _Defaults[f.Action].(_Action); value {
+								switch _, flag := _Defaults[f.Action].(_Action); flag || len(f.Action) == 0 {
+								case false:
+									log.Warnf("Peer '%v', RI '%v', Identifier '%v', route action '%v' is invalid; ACTION: ignore.", peer.ASN, b.Name, d.Identifier, f.Action)
+								}
+								switch _Defaults[f.Action].(_Action) {
+								case _Action_discard, _Action_next_hop, _Action_qualified_next_hop, _Action_next_table, "":
+									outbound[_Name(hash(f).String())] = i_Peer_RI_RO_RT_GW{
+										IP:                  f.IP,
+										IF:                  f.IF,
+										Table:               f.Table,
+										Action:              f.Action,
+										Action_Flag:         f.Action_Flag,
+										Metric:              f.Metric,
+										Preference:          f.Preference,
+										_Service_Attributes: f._Service_Attributes,
+									}
 								}
 							}
 							return

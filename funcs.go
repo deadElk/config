@@ -13,22 +13,23 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-func hash(inbound *string) (outbound _ID) {
+func hash(inbound interface{}) (outbound _ID) {
 	var (
-		value, flag = hash_cache.Load(*inbound)
+		interim     = convert_2_string(inbound)
+		value, flag = hash_cache.Load(interim)
 	)
 	switch {
 	case flag && value.([_hash_Size]uint8) != outbound:
 		return value.([_hash_Size]uint8)
 	case flag:
-		log.Warnf("Daemon: hash error - zero result from hash_cache.Load(%+v); ACTION: try to recover.", inbound)
+		log.Warnf("Daemon: hash error - zero result from hash_cache.Load(%+v); ACTION: try to recover.", interim)
 	}
-	switch value = sha3.Sum512([]uint8(*inbound)); value.([_hash_Size]uint8) != outbound {
+	switch value = sha3.Sum512([]uint8(interim)); value.([_hash_Size]uint8) != outbound {
 	case true:
-		hash_cache.Store(*inbound, value.([_hash_Size]uint8))
+		hash_cache.Store(interim, value.([_hash_Size]uint8))
 		return value.([_hash_Size]uint8)
 	default:
-		log.Panicf("Daemon: hash error - zero result from hash(%+v); ACTION: panic.", []uint8(*inbound))
+		log.Panicf("Daemon: hash error - zero result from hash(%+v); ACTION: panic.", []uint8(interim))
 	}
 	return
 }

@@ -1,9 +1,14 @@
 package main
 
 import (
+	"encoding/hex"
 	"strconv"
+	"strings"
 )
 
+func (inbound _ID) String() string {
+	return strings.ToUpper(hex.EncodeToString(inbound[:]))
+}
 func (inbound _Action) String() string {
 	return string(inbound)
 }
