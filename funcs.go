@@ -6,7 +6,6 @@ import (
 	"net/netip"
 	"os"
 	"regexp"
-	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -226,24 +225,7 @@ func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
 		return
 	}
 	for _, value := range inbound {
-		switch element := value.(type) {
-		case string:
-			outbound += element
-		case _Name:
-			outbound += element.String()
-		case _PName:
-			outbound += element.String()
-		case uint:
-			outbound += strconv.FormatUint(uint64(element), 10)
-		case uint8:
-			outbound += strconv.FormatUint(uint64(element), 10)
-		case uint16:
-			outbound += strconv.FormatUint(uint64(element), 10)
-		case uint32:
-			outbound += strconv.FormatUint(uint64(element), 10)
-		case uint64:
-			outbound += strconv.FormatUint(element, 10)
-		}
+		outbound += convert_2_string(value)
 	}
 	return
 }
@@ -258,6 +240,21 @@ func parse_Communication(_peer *_ASN, _if *_Name, inbound *_Communication) _Comm
 	default:
 		return _Defaults[_comm_if].(_Communication)
 	}
+}
+func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound _Host_Inbound_Traffic) {
+	outbound = _Host_Inbound_Traffic{
+		Services:  map[_Service]bool{},
+		Protocols: map[_Protocol]bool{},
+	}
+	for _, b := range enabled {
+		switch value := b.(type) {
+		case _Service:
+			outbound.Services[value] = true
+		case _Protocol:
+			outbound.Protocols[value] = true
+		}
+	}
+	return
 }
 
 func read_GT() (ok bool) {
