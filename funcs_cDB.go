@@ -131,31 +131,33 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 		}
 		var (
 			v_Peer = i_Peer{
-				PName:         pad(&b.ASN, 10),
-				Router_ID:     netip.Addr{},
-				IF_2_RI:       nil,
-				VI:            map[_VI_ID]*i_VI{},
-				VI_Peer_Left:  map[_VI_ID]*i_VI_Peer{},
-				VI_Peer_Right: map[_VI_ID]*i_VI_Peer{},
-				IFM:           parse_Peer_IFM(&b, nil),
-				RI:            parse_Peer_RI(&b, nil),
-				Hostname:      parse_Peer_Hostname(&b, nil),
-				Domain_Name:   b.Domain_Name,
-				Version:       b.Version,
-				Major:         0,
-				Manufacturer:  b.Manufacturer,
-				Model:         b.Model,
-				Serial:        b.Serial,
-				Root:          "",
-				GT_List:       parse_Peer_GT_List(&b, nil),
-				SZ:            nil,
-				NAT_Source:    nil,
-				SP_Exact:      nil,
-				SP_Global:     nil,
-				AB:            nil,
-				JA:            nil,
-				PL:            nil,
-				PS:            nil,
+				PName:           pad(&b.ASN, 10),
+				Router_ID:       netip.Addr{},
+				IF_2_RI:         nil,
+				VI:              map[_VI_ID]*i_VI{},
+				VI_Peer_Left:    map[_VI_ID]*i_VI_Peer{},
+				VI_Peer_Right:   map[_VI_ID]*i_VI_Peer{},
+				IFM:             parse_Peer_IFM(&b, nil),
+				RI:              parse_Peer_RI(&b, nil),
+				Hostname:        "",
+				Domain_Name:     b.Domain_Name,
+				Version:         b.Version,
+				Major:           0,
+				Manufacturer:    b.Manufacturer,
+				Model:           b.Model,
+				Serial:          b.Serial,
+				Root:            "",
+				GT_List:         []_Name,
+				SZ:              nil,
+				NAT_Source:      nil,
+				NAT_Destination: nil,
+				NAT_Static:      nil,
+				SP_Exact:        nil,
+				SP_Global:       nil,
+				AB:              nil,
+				JA:              nil,
+				PL:              nil,
+				PS:              nil,
 				i_SP_Options: i_SP_Options{
 					SP_Default_Policy: parse_Peer_SP_Options_Default_Policy(&b, nil),
 				},
@@ -163,7 +165,10 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 			}
 			v_Major string
 		)
-		create_AB("O_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
+		parse_Peer_Hostname(&b, &v_Peer)
+		parse_Peer_GT_List(&b, &v_Peer),
+
+			 create_AB("O_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
 		create_AB("I_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
 		split_2_string(&b.Version, re_caps, &v_Major)
 		v_Peer.Major = parse_interface(strconv.ParseFloat(v_Major, 64)).(float64)
@@ -248,24 +253,26 @@ func parse_VI(inbound *[]cDB_VI) (ok bool) {
 	return true
 }
 
-func parse_Peer_Hostname(peer *cDB_Peer, v_Peer *i_Peer) (outbound _FQDN) {
+func parse_Peer_Hostname(peer *cDB_Peer, v_Peer *i_Peer) {
 	switch len(peer.Hostname) == 0 {
 	case true:
-		outbound = "gw_as" + _FQDN(pad(&peer.ASN, 10))
-		log.Warnf("Peer '%v', Hostname '%v' is invalid; ACTION: use '%v'.", peer.ASN, peer.Router_ID, outbound)
+		v_Peer.Hostname = "gw_as" + _FQDN(pad(&peer.ASN, 10))
+		log.Warnf("Peer '%v', Hostname '%v' is invalid; ACTION: use '%v'.", peer.ASN, peer.Router_ID, v_Peer.Hostname)
+		return
 	}
-	return
+	v_Peer.Hostname = peer.Hostname
 }
-func parse_Peer_GT_List(peer *cDB_Peer, v_Peer *i_Peer) (outbound []_Name) {
+func parse_Peer_GT_List(peer *cDB_Peer, v_Peer *i_Peer) {
 	switch len(peer.GT_List) == 0 {
 	case true:
-		return _Defaults[_GT_list].([]_Name)
+		v_Peer.GT_List = _Defaults[_GT_list].([]_Name)
+		return
 	}
 	for _, b := range peer.GT_List {
-		outbound = append(outbound, _Name(b))
+		v_Peer.GT_List = append(v_Peer.GT_List, _Name(b))
 	}
-	return
 }
+
 func parse_Router_ID(peer *cDB_Peer, v_Peer *i_Peer) (outbound netip.Addr) {
 	switch peer.Router_ID.IsValid() {
 	case false:
