@@ -319,22 +319,23 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			continue
 		}
 		switch _, flag := i_ps["redistribute_"+b.Name]; flag {
-		case false:
-			i_ps["redistribute_"+b.Name] = &i_PO_PS{
-				Term: []i_PO_PS_Term{
-					0: {
-						Name: "PERMIT",
-						From: []i_PO_PS_From{
-							0: {RI: b.Name, _Service_Attributes: _Service_Attributes{}},
-						},
-						Then: []i_PO_PS_Then{
-							0: {Action: _Action_accept, _Service_Attributes: _Service_Attributes{}},
-						},
-						_Service_Attributes: _Service_Attributes{},
+		case true:
+			continue
+		}
+		i_ps["redistribute_"+b.Name] = &i_PO_PS{
+			Term: []i_PO_PS_Term{
+				0: {
+					Name: "PERMIT",
+					From: []i_PO_PS_From{
+						0: {RI: b.Name, _Service_Attributes: _Service_Attributes{}},
 					},
+					Then: []i_PO_PS_Then{
+						0: {Action: _Action_accept, _Service_Attributes: _Service_Attributes{}},
+					},
+					_Service_Attributes: _Service_Attributes{},
 				},
-				_Service_Attributes: _Service_Attributes{},
-			}
+			},
+			_Service_Attributes: _Service_Attributes{},
 		}
 	}
 	for _, b := range peer.RI {
@@ -596,25 +597,27 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		}
 	}
 	for a := range v_Peer.RI {
-		switch a == _Defaults[_mgmt_RI].(_Name) {
+		switch a {
+		case _Defaults[_mgmt_RI].(_Name):
+			continue
+		}
+		switch _, flag := v_Peer.SZ[a]; flag {
 		case false:
-			switch _, flag := v_Peer.SZ[a]; flag {
-			case false:
-				v_Peer.SZ[a] = i_SZ{
-					Screen:                "",
-					IF:                    map[_Name]i_SZ_IF{},
-					_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(),
-					_Service_Attributes:   _Service_Attributes{},
-				}
+			v_Peer.SZ[a] = i_SZ{
+				Screen:                "",
+				IF:                    map[_Name]i_SZ_IF{},
+				_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(),
+				_Service_Attributes:   _Service_Attributes{},
 			}
-			for e := range v_Peer.RI[a].IF {
-				switch _, flag := v_Peer.SZ[a].IF[e]; flag {
-				case false:
-					v_Peer.SZ[a].IF[e] = i_SZ_IF{
-						_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh),
-						_Service_Attributes:   _Service_Attributes{},
-					}
-				}
+		}
+		for e := range v_Peer.RI[a].IF {
+			switch _, flag := v_Peer.SZ[a].IF[e]; flag {
+			case true:
+				continue
+			}
+			v_Peer.SZ[a].IF[e] = i_SZ_IF{
+				_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh),
+				_Service_Attributes:   _Service_Attributes{},
 			}
 		}
 	}
