@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/netip"
+	"regexp"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
@@ -635,6 +636,22 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		Rule_Set:            parse_cDB_Rule_Set(peer, v_Peer, &h.Rule_Set),
 		_Service_Attributes: h._Service_Attributes,
 	}
+
+	h = peer.NAT_Destination
+
+	v_Peer.NAT[_Type_destination] = i_NAT{
+		Pool:                parse_cDB_Pool(peer, v_Peer, &h.Pool),
+		Rule_Set:            parse_cDB_Rule_Set(peer, v_Peer, &h.Rule_Set),
+		_Service_Attributes: h._Service_Attributes,
+	}
+
+	h = peer.NAT_Static
+
+	v_Peer.NAT[_Type_static] = i_NAT{
+		Pool:                parse_cDB_Pool(peer, v_Peer, &h.Pool),
+		Rule_Set:            parse_cDB_Rule_Set(peer, v_Peer, &h.Rule_Set),
+		_Service_Attributes: h._Service_Attributes,
+	}
 	return true
 }
 func parse_cDB_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
@@ -676,19 +693,19 @@ func parse_cDB_Pool(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Pool) (outbou
 	outbound = make(map[_Name]i_Pool)
 	for _, j := range *inbound {
 		// todo: make it more elegant ....
-		switch len(parse_interface(j.IPPrefix.MarshalText()).([]byte)) != 0 && j.IPPrefix.IsValid() {
-		case false:
+		switch len(parse_interface(j.IPPrefix.MarshalText()).([]byte)) != 0 && !j.IPPrefix.IsValid() {
+		case true:
 			log.Warnf("Peer '%v', Pool '%v', invalid IP '%v'; ACTION: skip.", peer.ASN, j.Name, j.IPPrefix)
 			continue
 		}
-		switch _, flag := v_Peer.RI[j.RI]; flag && len(j.RI) != 0 {
-		case false:
-			log.Warnf("Peer '%v', Pool '%v', invalid RI '%v'; ACTION: skip.", peer.ASN, j.Name, j.RI)
+		switch _, flag := v_Peer.RI[j.RI]; len(j.RI) != 0 && !flag {
+		case true:
+			log.Warnf("Peer '%v', Pool '%v', unknown RI '%v'; ACTION: skip.", peer.ASN, j.Name, j.RI)
 			continue
 		}
-		switch _, flag := v_Peer.SZ[j.SZ]; flag && len(j.SZ) != 0 {
-		case false:
-			log.Warnf("Peer '%v', Pool '%v', invalid SZ '%v'; ACTION: skip.", peer.ASN, j.Name, j.SZ)
+		switch _, flag := v_Peer.SZ[j.SZ]; len(j.SZ) != 0 && !flag {
+		case true:
+			log.Warnf("Peer '%v', Pool '%v', unknown SZ '%v'; ACTION: skip.", peer.ASN, j.Name, j.SZ)
 			continue
 		}
 		outbound[j.Name] = i_Pool{
@@ -725,13 +742,12 @@ func parse_cDB_Rule(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Rule) (outbou
 }
 func parse_cDB_Match(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Match) (outbound []i_Match) {
 	for _, j := range *inbound {
-		switch {
-		case len(j.Application) != 0:
-			switch _, flag := i_ja[j.Application]; flag {
-			case false:
-				log.Warnf("Peer '%v', unknown Application '%v'; ACTION: skip.", peer.ASN, j.Application)
-				continue
-			}
+		switch _, flag := i_ja[j.Application]; len(j.Application) != 0 &&
+			!flag &&
+			parse_interface(regexp.MatchString("^junos-", "j.Application")).(bool) {
+		case true:
+			log.Warnf("Peer '%v', unknown Application '%v'; ACTION: skip.", peer.ASN, j.Application)
+			continue
 		}
 		outbound = append(outbound, i_Match{
 			JA:                  j.Application,
@@ -744,14 +760,14 @@ func parse_cDB_Match(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Match) (outb
 }
 func parse_cDB_Then(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Then) (outbound []i_Then) {
 	for _, j := range *inbound {
-		switch _, flag := i_ab[j.AB]; len(j.AB) != 0 && flag {
-		case false:
-			log.Warnf("Peer '%v', invalid AB '%v'; ACTION: skip.", peer.ASN, j.AB)
+		switch _, flag := i_ab[j.AB]; len(j.AB) != 0 && !flag {
+		case true:
+			log.Warnf("Peer '%v', unknown AB '%v'; ACTION: skip.", peer.ASN, j.AB)
 			continue
 		}
-		switch _, flag := v_Peer.RI[j.RI]; len(j.RI) != 0 && flag {
-		case false:
-			log.Warnf("Peer '%v', invalid RI '%v'; ACTION: skip.", peer.ASN, j.RI)
+		switch _, flag := v_Peer.RI[j.RI]; len(j.RI) != 0 && !flag {
+		case true:
+			log.Warnf("Peer '%v', unknown RI '%v'; ACTION: skip.", peer.ASN, j.RI)
 			continue
 		}
 		outbound = append(outbound, i_Then{
@@ -769,29 +785,29 @@ func parse_cDB_Then(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Then) (outbou
 }
 func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_FromTo) (outbound []i_FromTo) {
 	for _, j := range *inbound {
-		switch _, flag := i_ab[j.AB]; len(j.AB) != 0 && flag {
-		case false:
-			log.Warnf("Peer '%v', invalid AB '%v'; ACTION: skip.", peer.ASN, j.AB)
+		switch _, flag := i_ab[j.AB]; len(j.AB) != 0 && !flag {
+		case true:
+			log.Warnf("Peer '%v', unknown AB '%v'; ACTION: skip.", peer.ASN, j.AB)
 			continue
 		}
-		switch _, flag := v_Peer.IF_2_RI[j.IF]; len(j.IF) != 0 && flag {
-		case false:
-			log.Warnf("Peer '%v', invalid IF '%v'; ACTION: skip.", peer.ASN, j.IF)
+		switch _, flag := v_Peer.IF_2_RI[j.IF]; len(j.IF) != 0 && !flag {
+		case true:
+			log.Warnf("Peer '%v', unknown IF '%v'; ACTION: skip.", peer.ASN, j.IF)
 			continue
 		}
-		// switch _, flag := v_Peer.RI[j.RI]; len(j.RG) != 0 && flag {
-		// case false:
+		// switch _, flag := v_Peer.RI[j.RI]; len(j.RG) != 0 && !flag {
+		// case true:
 		// log.Warnf("Peer '%v', invalid RG '%v'; ACTION: skip.", peer.ASN, j.RG)
 		// continue
 		// }
-		switch _, flag := v_Peer.RI[j.RI]; len(j.RI) != 0 && flag {
-		case false:
-			log.Warnf("Peer '%v', invalid RI '%v'; ACTION: skip.", peer.ASN, j.RI)
+		switch _, flag := v_Peer.RI[j.RI]; len(j.RI) != 0 && !flag {
+		case true:
+			log.Warnf("Peer '%v', unknown RI '%v'; ACTION: skip.", peer.ASN, j.RI)
 			continue
 		}
-		switch _, flag := v_Peer.SZ[j.SZ]; len(j.SZ) != 0 && flag {
-		case false:
-			log.Warnf("Peer '%v', invalid SZ '%v'; ACTION: skip.", peer.ASN, j.SZ)
+		switch _, flag := v_Peer.SZ[j.SZ]; len(j.SZ) != 0 && !flag {
+		case true:
+			log.Warnf("Peer '%v', unknown SZ '%v'; ACTION: skip.", peer.ASN, j.SZ)
 			continue
 		}
 		outbound = append(outbound, i_FromTo{
