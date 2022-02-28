@@ -4,10 +4,10 @@ import (
 	"net/netip"
 )
 
-type _i_ab map[_Name]i_AB
-type _i_ja map[_Name]i_JA
-type _i_pl map[_Name]i_PO_PL
-type _i_ps map[_Name]i_PO_PS
+type _i_ab map[_Name]*i_AB
+type _i_ja map[_Name]*i_JA
+type _i_pl map[_Name]*i_PO_PL
+type _i_ps map[_Name]*i_PO_PS
 type _i_peer map[_ASN]i_Peer
 type _i_vi map[_VI_ID]*i_VI
 type _i_vi_peer map[_VI_ID]map[_VI_Peer_ID]*i_VI_Peer

@@ -309,7 +309,7 @@ func create_AB(ab_name _Name, sa *_Service_Attributes) (ok bool) {
 		log.Debugf("Address Book '%+v', already exist; ACTION: skip.", ab_name)
 		return
 	}
-	i_ab[ab_name] = i_AB{
+	i_ab[ab_name] = &i_AB{
 		Type:                _Type_set,
 		Address:             nil,
 		Address_Set:         map[_Name]_Type{},
@@ -388,13 +388,13 @@ func add_2_AB(public, private bool, ab_name _Name, inbound ...interface{}) (ok b
 			switch value := (address).(type) {
 			case _FQDN:
 				ok = true
-				i_ab[ab_name] = i_AB{
+				i_ab[ab_name] = &i_AB{
 					Type:    _Type_fqdn,
 					Address: value,
 				}
 			case netip.Prefix:
 				ok = true
-				i_ab[ab_name] = i_AB{
+				i_ab[ab_name] = &i_AB{
 					Type:    _Type_ipprefix,
 					Address: value,
 				}

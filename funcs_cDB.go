@@ -29,8 +29,8 @@ func parse_cDB_JA(inbound *[]cDB_JA) (ok bool) {
 			log.Warnf("Application '%v' already exist; ACTION: skip.", b.Name)
 			continue
 		}
-		i_ja[b.Name] = func() (outbound i_JA) {
-			outbound = i_JA{
+		i_ja[b.Name] = func() (outbound *i_JA) {
+			outbound = &i_JA{
 				Term: func() (outbound []i_JA_Term) {
 					for _, d := range b.Term {
 						outbound = append(outbound, i_JA_Term{
@@ -56,8 +56,8 @@ func parse_cDB_PL(inbound *[]cDB_PO_PL) (ok bool) {
 			log.Warnf("Policy List '%v' already exist; ACTION: skip.", b.Name)
 			continue
 		}
-		i_pl[b.Name] = func() (outbound i_PO_PL) {
-			outbound = i_PO_PL{
+		i_pl[b.Name] = func() (outbound *i_PO_PL) {
+			outbound = &i_PO_PL{
 				Match: func() (outbound []i_PO_PL_Match) {
 					for _, d := range b.Match {
 						outbound = append(outbound, i_PO_PL_Match{
@@ -81,8 +81,8 @@ func parse_cDB_PS(inbound *[]cDB_PO_PS) (ok bool) {
 			log.Warnf("Policy Statement '%v' already exist; ACTION: skip.", b.Name)
 			continue
 		}
-		i_ps[b.Name] = func() (outbound i_PO_PS) {
-			outbound = i_PO_PS{
+		i_ps[b.Name] = func() (outbound *i_PO_PS) {
+			outbound = &i_PO_PS{
 				Term: func() (outbound []i_PO_PS_Term) {
 					for _, d := range b.Term {
 						outbound = append(outbound, i_PO_PS_Term{
@@ -223,59 +223,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 			continue
 		}
 		var (
-		// v_vi_peer_list = make(map[_VI_Peer_ID]_ASN)
-
-		// v_vi           = func() (outbound *i_VI) {
-		// 	outbound = &i_VI{
-		// 		PName:               pad(&b.ID, 5),
-		// 		IPPrefix:            get_VI_IPPrefix(b.ID, 0).Masked(),
-		// 		IKE_No_NAT:          false,
-		// 		IKE_GCM:             false,
-		// 		Type:                b.Type,
-		// 		Communication:       b.Communication,
-		// 		Route_Metric:        b.Route_Metric,
-		// 		PSK:                 b.PSK._Validate(64),
-		// 		_Service_Attributes: b._Service_Attributes,
-		// 	}
-		// 	return
-		// }()
-		// v_vi_peer = func() (outbound map[_VI_Peer_ID]*i_VI_Peer) {
-		// 	outbound = make(map[_VI_Peer_ID]*i_VI_Peer)
-		// 	for _, d := range b.Peer {
-		// 		switch /*d.ID >= 0 &&*/ d.ID <= 1 {
-		// 		case false:
-		// 			log.Warnf("VI '%v', Peer '%v', index out of range; ACTION: skip.", b.ID, d.ID)
-		// 			continue
-		// 		}
-		// 		switch _, flag := outbound[d.ID]; flag {
-		// 		case true:
-		// 			log.Warnf("VI '%v', Peer '%v' already exist; ACTION: skip.", b.ID, d.ID)
-		// 			continue
-		// 		}
-		// 		v_vi_peer_list[d.ID] = d.ASN
-		// 		var (
-		// 			v_RI                = d.RI._Validate_RI(_Defaults[_mgmt_RI].(_Name))
-		// 			v_IF                = d.IF
-		// 			v_IP                = d.IP
-		// 			v_NAT               = netip.Addr{}
-		// 			v_IKE_Local_Address bool
-		// 		)
-		// 		outbound[d.ID] = &i_VI_Peer{
-		// 			ASN:                 d.ASN,
-		// 			RI:                  v_RI,
-		// 			IF:                  v_IF,
-		// 			IP:                  v_IP,
-		// 			NAT:                 v_NAT,
-		// 			IKE_Local_Address:   v_IKE_Local_Address,
-		// 			Dynamic:             d.Dynamic,
-		// 			Inner_RI:            d.Inner_RI._Validate_RI(_Defaults[_mgmt_RI].(_Name)),
-		// 			Inner_IP:            get_VI_IPPrefix(b.ID, d.ID+1).Addr(),
-		// 			Inner_IPPrefix:      get_VI_IPPrefix(b.ID, d.ID+1),
-		// 			_Service_Attributes: d._Service_Attributes,
-		// 		}
-		// 	}
-		// 	return
-		// }()
+			v_vi_peer_list = make(map[_VI_Peer_ID]_ASN)
 		)
 		i_vi[b.ID] = &i_VI{
 			PName:               pad(&b.ID, 5),
@@ -308,6 +256,8 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				v_NAT               = netip.Addr{}
 				v_IKE_Local_Address bool
 			)
+
+			v_vi_peer_list[d.ID] = d.ASN
 			i_vi_peer[b.ID][d.ID] = &i_VI_Peer{
 				ASN:                 d.ASN,
 				RI:                  v_RI,
@@ -323,18 +273,16 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 			}
 		}
 
-		// i_vi_peer[b.ID] = v_vi_peer
-		// i_peer[v_vi_peer_list[0]].VI[b.ID] = i_vi[b.ID]
-		// i_peer[v_vi_peer_list[0]].VI_Left[b.ID] = i_vi_peer[b.ID][0]
-		// i_peer[v_vi_peer_list[0]].VI_Right[b.ID] = i_vi_peer[b.ID][1]
-		// i_peer[v_vi_peer_list[1]].VI[b.ID] = i_vi[b.ID]
-		// i_peer[v_vi_peer_list[1]].VI_Left[b.ID] = i_vi_peer[b.ID][1]
-		// i_peer[v_vi_peer_list[1]].VI_Right[b.ID] = i_vi_peer[b.ID][0]
-		// for c, d := range v_vi_peer_list {
-		// 	i_peer[d].VI[b.ID] = i_vi[b.ID]
-		// 	i_peer[d].VI_Left[b.ID] = i_vi_peer[b.ID][c]
-		// 	i_peer[d].VI_Right[b.ID] = i_vi_peer[b.ID][c]
-		// }
+		switch len(v_vi_peer_list) != 2 {
+		case true:
+			continue
+		}
+		i_peer[v_vi_peer_list[0]].VI[b.ID] = i_vi[b.ID]
+		i_peer[v_vi_peer_list[0]].VI_Left[b.ID] = i_vi_peer[b.ID][0]
+		i_peer[v_vi_peer_list[0]].VI_Right[b.ID] = i_vi_peer[b.ID][1]
+		i_peer[v_vi_peer_list[1]].VI[b.ID] = i_vi[b.ID]
+		i_peer[v_vi_peer_list[1]].VI_Left[b.ID] = i_vi_peer[b.ID][1]
+		i_peer[v_vi_peer_list[1]].VI_Right[b.ID] = i_vi_peer[b.ID][0]
 	}
 	return true
 }
@@ -379,7 +327,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		}
 		switch _, flag := i_ps["redistribute_"+b.Name]; flag {
 		case false:
-			i_ps["redistribute_"+b.Name] = i_PO_PS{
+			i_ps["redistribute_"+b.Name] = &i_PO_PS{
 				Term: []i_PO_PS_Term{
 					0: {
 						Name: "PERMIT",
