@@ -707,13 +707,13 @@ func parse_cDB_Rule_Set(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Rule_Set)
 		outbound[j.Name] = i_Rule_Set{
 			From:                parse_cDB_FromTo(peer, v_Peer, &j.From),
 			To:                  parse_cDB_FromTo(peer, v_Peer, &j.To),
-			Rule:                nil,
+			Rule:                parse_cDB_Rule(peer, v_Peer, &j.Rule),
 			_Service_Attributes: j._Service_Attributes,
 		}
 	}
 	return
 }
-func parse_cDB_Rule(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]i_Rule) (outbound map[_Name]i_Rule) {
+func parse_cDB_Rule(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Rule) (outbound map[_Name]i_Rule) {
 	outbound = make(map[_Name]i_Rule)
 	for _, j := range *inbound {
 		outbound[j.Name] = i_Rule{
