@@ -1,40 +1,94 @@
 package main
 
-func parse_iDB_Peer() (ok bool) {
-	// for a := range i_peer {
-	// for c := range i_peer[a].RI {
-	// }
-	// }
-	return true
-}
+func parse_iDB_Peer_Vocabulary() (ok bool) {
+	for _, value := range i_peer {
+		var (
+			_v_AB_list          = make(map[_Name]bool)
+			_v_Application_list = make(map[_Name]bool)
+		)
+		for _, b := range value.Source {
+			for _, d := range b.Rule_Set {
+				for _, x := range d.Rule {
+					for _, z := range x.Match {
+						switch len(z.Source_AB) == 0 {
+						case false:
+							_v_AB_list[z.Source_AB] = true
+						}
+						switch len(z.Destination_AB) == 0 {
+						case false:
+							_v_AB_list[z.Destination_AB] = true
+						}
+						switch len(z.Application) == 0 {
+						case false:
+							_v_Application_list[z.Application] = true
+						}
+					}
+				}
+			}
+		}
+		for _, b := range value.Destination {
+			for _, d := range b.Rule_Set {
+				for _, x := range d.Rule {
+					for _, z := range x.Match {
+						switch len(z.Source_AB) == 0 {
+						case false:
+							_v_AB_list[z.Source_AB] = true
+						}
+						switch len(z.Destination_AB) == 0 {
+						case false:
+							_v_AB_list[z.Destination_AB] = true
+						}
+						switch len(z.Application) == 0 {
+						case false:
+							_v_Application_list[z.Application] = true
+						}
+					}
+				}
+			}
+		}
+		for _, b := range value.SP_Exact {
+			for _, x := range b.Rule {
+				for _, z := range x.Match {
+					switch len(z.Source_AB) == 0 {
+					case false:
+						_v_AB_list[z.Source_AB] = true
+					}
+					switch len(z.Destination_AB) == 0 {
+					case false:
+						_v_AB_list[z.Destination_AB] = true
+					}
+					switch len(z.Application) == 0 {
+					case false:
+						_v_Application_list[z.Application] = true
+					}
+				}
+			}
+		}
+		for _, x := range value.SP_Global {
+			for _, z := range x.Match {
+				switch len(z.Source_AB) == 0 {
+				case false:
+					_v_AB_list[z.Source_AB] = true
+				}
+				switch len(z.Destination_AB) == 0 {
+				case false:
+					_v_AB_list[z.Destination_AB] = true
+				}
+				switch len(z.Application) == 0 {
+				case false:
+					_v_Application_list[z.Application] = true
+				}
+			}
+		}
 
-func parse_iDB_VI_Peer() (ok bool) {
-	// for a, b := range i_vi_peer {
-	// 	var (
-	// 		i = make(map[_VI_Peer_ID]_ASN)
-	// 	)
-	// 	for c, d := range b {
-	// 		i[c] = d.ASN
-	// 		// var (
-	// 		// 	r = i_vi[a]
-	// 		// 	l = i_vi_peer[a][c]
-	// 		// )
-	// 		// i_peer[i[c]].VI[a] = &r
-	// 		// i_peer[i[c]].VI_Left[a] = &l
-	// 		i_peer[i[c]].VI[a] = i_vi[a]
-	// 		i_peer[i[c]].VI_Left[a] = i_vi_peer[a][c]
-	// 		// i_peer[i[c]].VI = map[_VI_ID]*i_VI{
-	// 		// 	PName:               "",
-	// 		// 	IPPrefix:            netip.Prefix{},
-	// 		// 	IKE_No_NAT:          false,
-	// 		// 	IKE_GCM:             false,
-	// 		// 	Type:                "",
-	// 		// 	Communication:       "",
-	// 		// 	Route_Metric:        0,
-	// 		// 	PSK:                 "",
-	// 		// 	_Service_Attributes: _Service_Attributes{},
-	// 		// }
-	// 	}
-	// }
+		_v_AB_list = _AB_rparse(_v_AB_list)
+
+		for a := range _v_AB_list {
+			value.AB[a] = pdb_ab[a]
+		}
+		for a := range _v_Application_list {
+			value.Application[a] = pdb_appl[a]
+		}
+	}
 	return true
 }
