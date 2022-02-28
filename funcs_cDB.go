@@ -632,10 +632,10 @@ func parse_cDB_Peer_SP_Options(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			case _Action_permit_all, _Action_deny_all:
 				return value
 			case "":
-				return _Defaults[_sp_efault_policy].(_Action)
+				return _Defaults[_sp_default_policy].(_Action)
 			default:
-				log.Warnf("Peer '%v', unknown default security policy '%v'; ACTION: use '%v'.", peer.ASN, value, _Defaults[_sp_efault_policy])
-				return _Defaults[_sp_efault_policy].(_Action)
+				log.Warnf("Peer '%v', unknown default security policy '%v'; ACTION: use '%v'.", peer.ASN, value, _Defaults[_sp_default_policy])
+				return _Defaults[_sp_default_policy].(_Action)
 			}
 		}(),
 	}

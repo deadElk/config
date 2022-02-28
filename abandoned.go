@@ -225,6 +225,13 @@ set protocols bgp group AS4200000000 neighbor {{.VI_INSIDE_RIGHT_IP}} export exp
 set protocols bgp group AS4200000000 neighbor {{.VI_INSIDE_RIGHT_IP}} peer-as {{.VI_INSIDE_RIGHT_AS}}
 */
 
+var (
+	pdb_ab   = make(map[_Name]_Security_AB)
+	pdb_appl = make(map[_Name][]_Security_Application_Term)
+	pdb_peer = make(map[_ASN]pDB_Peer)
+	pdb_gt   = make(map[_Name]pDB_GT)
+)
+
 const (
 	_juniper_RI               _Name          = "master"
 	_juniper_mgmt_RI          _Name          = "mgmt_junos"

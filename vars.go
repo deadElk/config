@@ -18,10 +18,6 @@ var (
 		// "sum_uint32": sum_uint32_gt_fm,
 		"sum_string": sum_string_gt_fm,
 	}
-	pdb_ab   = make(map[_Name]_Security_AB)
-	pdb_appl = make(map[_Name][]_Security_Application_Term)
-	pdb_peer = make(map[_ASN]pDB_Peer)
-	pdb_gt   = make(map[_Name]pDB_GT)
 
 	config    = make(_i_config)
 	i_ab      = make(_i_ab)
@@ -116,22 +112,22 @@ var (
 		_Type_zone:             _Type_zone,
 	}
 	_Defaults = map[interface{}]interface{}{
-		_loglevel:         log.InfoLevel,
-		_sp_efault_policy: _Action_permit_all,
-		_comm_if:          _Communication_ptmp,
-		_comm_vi:          _Communication_ptp,
-		_VI_IPPrefix:      parse_interface(netip.ParsePrefix("10.90.0.0/16")).(netip.Prefix),
-		_VI_IPShift:       uint32(0),
-		_RI:               _Name("master"),
-		_mgmt_RI:          _Name("mgmt_junos"),
-		_mgmt_IF:          _Name("fxp0.0"),
-		_mgmt_Description: _Description("MANAGEMENT-INSTANCE"),
-		_domain_name:      _FQDN("example.com"),
-		_ps_bits_per_rm:   uint32(2),        // ____
-		_ps_max_rms:       uint32(32/2 - 1), // ^^^^
-		_GT_list:          []_Name{},
-		_path_GT:          "./templates",
-		_path_out:         "./tmp",
+		_loglevel:          log.InfoLevel,
+		_sp_default_policy: _Action_permit_all,
+		_comm_if:           _Communication_ptmp,
+		_comm_vi:           _Communication_ptp,
+		_VI_IPPrefix:       parse_interface(netip.ParsePrefix("10.90.0.0/16")).(netip.Prefix),
+		_VI_IPShift:        uint32(0),
+		_RI:                _Name("master"),
+		_mgmt_RI:           _Name("mgmt_junos"),
+		_mgmt_IF:           _Name("fxp0.0"),
+		_mgmt_Description:  _Description("MANAGEMENT-INSTANCE"),
+		_domain_name:       _FQDN("example.com"),
+		_ps_bits_per_rm:    uint32(2),        // ____
+		_ps_max_rms:        uint32(32/2 - 1), // ^^^^
+		_GT_list:           []_Name{},
+		_path_GT:           "./templates",
+		_path_out:          "./tmp",
 		_file_list_config: []string{
 			"./" + _serviced + ".xml",
 			"/usr/local/opt/etc/" + _serviced + ".xml",
