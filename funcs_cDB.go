@@ -389,6 +389,8 @@ func parse_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 									v_IP_2_IF[f.IPPrefix.Addr()] = d.Name
 								}
 								add_2_AB(true, false, "OUTTER_LIST", f.IPPrefix.Addr(), f.NAT)
+								add_2_AB(true, false, "O_AS"+_Name(v_Peer.PName), f.IPPrefix.Addr(), f.NAT)
+								add_2_AB(false, true, "I_AS"+_Name(v_Peer.PName), f.IPPrefix.Addr(), f.NAT)
 								outbound[f.IPPrefix] = i_Peer_RI_IF_IP{
 									Masked:              f.IPPrefix.Masked(),
 									Primary:             f.Primary,

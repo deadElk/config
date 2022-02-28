@@ -242,6 +242,7 @@ type cDB_PO_PS_Term struct {
 	_Service_Attributes
 }
 type cDB_PO_PS_From struct {
+	RI         _Name     `xml:"RI,attr"`
 	Protocol   _Protocol `xml:"protocol,attr"`
 	Route_Type _Type     `xml:"route_type,attr"`
 	PL         _Name     `xml:"PL,attr"`
