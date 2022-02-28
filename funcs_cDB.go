@@ -669,7 +669,9 @@ func parse_cDB_Peer_SP_Global(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	for _, j := range peer.SP_Global {
 		v_Peer.SP_Global = append(v_Peer.SP_Global, i_Rule{
 			Name:                j.Name,
-			Match:               parse_cDB_Match(peer, v_Peer, &j.Match),
+			JA:                  parse_cDB_Match_2_Name(peer, v_Peer, &j.Match),
+			From:                parse_cDB_FromTo(peer, v_Peer, &j.From),
+			To:                  parse_cDB_FromTo(peer, v_Peer, &j.To),
 			Then:                parse_cDB_Then(peer, v_Peer, &j.Then),
 			_Service_Attributes: j._Service_Attributes,
 		})
@@ -749,14 +751,16 @@ func parse_cDB_Rule(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Rule) (outbou
 	outbound = make(map[_Name]i_Rule)
 	for _, j := range *inbound {
 		outbound[j.Name] = i_Rule{
-			Match:               parse_cDB_Match(peer, v_Peer, &j.Match),
+			JA:                  parse_cDB_Match_2_Name(peer, v_Peer, &j.Match),
+			From:                parse_cDB_FromTo(peer, v_Peer, &j.From),
+			To:                  parse_cDB_FromTo(peer, v_Peer, &j.To),
 			Then:                parse_cDB_Then(peer, v_Peer, &j.Then),
 			_Service_Attributes: j._Service_Attributes,
 		}
 	}
 	return
 }
-func parse_cDB_Match(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Match) (outbound []i_Match) {
+func parse_cDB_Match_2_Name(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Match) (outbound []_Name) {
 	for _, j := range *inbound {
 		switch _, flag := i_ja[j.Application]; len(j.Application) != 0 &&
 			!flag &&
@@ -765,12 +769,7 @@ func parse_cDB_Match(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Match) (outb
 			log.Warnf("Peer '%v', unknown Application '%v'; ACTION: skip.", peer.ASN, j.Application)
 			continue
 		}
-		outbound = append(outbound, i_Match{
-			JA:                  j.Application,
-			From:                parse_cDB_FromTo(peer, v_Peer, &j.From),
-			To:                  parse_cDB_FromTo(peer, v_Peer, &j.To),
-			_Service_Attributes: j._Service_Attributes,
-		})
+		outbound = append(outbound, j.Application)
 	}
 	return
 }

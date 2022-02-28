@@ -168,15 +168,11 @@ type i_FromTo struct {
 	_Service_Attributes
 }
 type i_Rule struct {
-	Name  _Name     // SP
-	Match []i_Match // SP, NAT
-	Then  []i_Then  // SP, NAT
-	_Service_Attributes
-}
-type i_Match struct {
-	JA   _Name
-	From []i_FromTo
-	To   []i_FromTo
+	Name _Name      // SP
+	JA   []_Name    // SP, NAT
+	From []i_FromTo // SP, NAT
+	To   []i_FromTo // SP, NAT
+	Then []i_Then   // SP, NAT
 	_Service_Attributes
 }
 type i_Then struct {

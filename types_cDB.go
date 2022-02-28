@@ -166,15 +166,15 @@ type cDB_FromTo struct {
 	_Service_Attributes
 }
 type cDB_Rule struct {
-	Name  _Name       `xml:"name,attr"`
-	Match []cDB_Match `xml:"Match"`
-	Then  []cDB_Then  `xml:"Then"`
+	Name  _Name        `xml:"name,attr"`
+	From  []cDB_FromTo `xml:"From"`
+	To    []cDB_FromTo `xml:"To"`
+	Match []cDB_Match  `xml:"Match"`
+	Then  []cDB_Then   `xml:"Then"`
 	_Service_Attributes
 }
 type cDB_Match struct {
-	Application _Name        `xml:"application,attr"`
-	From        []cDB_FromTo `xml:"From"`
-	To          []cDB_FromTo `xml:"To"`
+	Application _Name `xml:"application,attr"`
 	_Service_Attributes
 }
 type cDB_Then struct {
@@ -183,8 +183,8 @@ type cDB_Then struct {
 	Pool        _Name   `xml:"pool,attr"`
 	AB          _Name   `xml:"AB,attr"`
 	RI          _Name   `xml:"RI,attr"`
-	Port_Low    _Port   `xml:"low,attr"`
-	Port_High   _Port   `xml:"high,attr"`
+	Port_Low    _Port   `xml:"port_low,attr"`
+	Port_High   _Port   `xml:"port_high,attr"`
 	_Service_Attributes
 }
 
