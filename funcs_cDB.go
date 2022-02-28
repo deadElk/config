@@ -141,8 +141,7 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 			continue
 		}
 		var (
-			v_Version = re_caps.Split(b.Version, -1)
-			v_Peer    = i_Peer{
+			v_Peer = i_Peer{
 				PName:               pad(&b.ASN, 10),
 				Router_ID:           netip.Addr{},
 				IF_2_RI:             map[_Name]_Name{},
@@ -154,7 +153,7 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 				Hostname:            "",
 				Domain_Name:         "",
 				Version:             b.Version,
-				Major:               parse_interface(strconv.ParseFloat(v_Version[0], 64)).(float64),
+				Major:               0,
 				Manufacturer:        b.Manufacturer,
 				Model:               b.Model,
 				Serial:              b.Serial,
@@ -171,11 +170,9 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 				i_SP_Options:        i_SP_Options{},
 				_Service_Attributes: b._Service_Attributes,
 			}
-			v_Major string
 		)
 		create_AB("O_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
 		create_AB("I_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
-		split_2_string(&b.Version, re_caps, &v_Major)
 		parse_cDB_Peer_RI(&b, &v_Peer)
 
 		// PName
@@ -188,7 +185,7 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 		// RI
 		parse_cDB_Peer_Hostname(&b, &v_Peer)
 		parse_cDB_Peer_Domain_Name(&b, &v_Peer)
-		// Version
+		parse_cDB_Peer_Version(&b, &v_Peer)
 		// Major
 		// Manufacturer
 		// Model
@@ -199,16 +196,12 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 		parse_cDB_Peer_NAT(&b, &v_Peer)
 		parse_cDB_Peer_SP_Exact(&b, &v_Peer)
 		parse_cDB_Peer_SP_Global(&b, &v_Peer)
-		// AB
-		// JA
-		// PL
-		// PS
+		parse_cDB_Peer_AB(&b, &v_Peer)
+		parse_cDB_Peer_JA(&b, &v_Peer)
+		parse_cDB_Peer_PL(&b, &v_Peer)
+		parse_cDB_Peer_PS(&b, &v_Peer)
 		parse_cDB_Peer_SP_Options(&b, &v_Peer)
 
-		v_Peer.AB = map[_Name]*i_AB{}
-		v_Peer.JA = map[_Name]*i_JA{}
-		v_Peer.PL = map[_Name]*i_PO_PL{}
-		v_Peer.PS = map[_Name]*i_PO_PS{}
 		i_peer[b.ASN] = v_Peer
 		ok = true
 
@@ -554,6 +547,19 @@ func parse_cDB_Peer_Domain_Name(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	}
 	return true
 }
+func parse_cDB_Peer_Version(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+	// var (
+	// 	v_Major string
+	// )
+	// split_2_string(&peer.Version, re_caps, &v_Major)
+	// v_Peer.Major = parse_interface(strconv.ParseFloat(v_Major, 64)).(float64)
+
+	var (
+		v_Version = re_caps.Split(peer.Version, -1)
+	)
+	v_Peer.Major = parse_interface(strconv.ParseFloat(v_Version[0], 64)).(float64)
+	return true
+}
 
 func parse_cDB_Peer_GT_List(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	switch len(peer.GT_List) == 0 {
@@ -624,7 +630,18 @@ func parse_cDB_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 func parse_cDB_Peer_SP_Global(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	return true
 }
-
+func parse_cDB_Peer_AB(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+	return true
+}
+func parse_cDB_Peer_JA(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+	return true
+}
+func parse_cDB_Peer_PL(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+	return true
+}
+func parse_cDB_Peer_PS(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+	return true
+}
 func parse_cDB_Peer_SP_Options(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	v_Peer.i_SP_Options = i_SP_Options{
 		SP_Default_Policy: func() _Action {
