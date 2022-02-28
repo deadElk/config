@@ -156,10 +156,13 @@ type cDB_Rule_Set struct {
 	_Service_Attributes
 }
 type cDB_FromTo struct {
-	IF _Name `xml:"IF,attr"`
-	SZ _Name `xml:"SZ,attr"`
-	RI _Name `xml:"RI,attr"`
-	RG _Name `xml:"RG,attr"`
+	AB        _Name `xml:"AB,attr"`        // NAT_Destination
+	IF        _Name `xml:"IF,attr"`        // NAT_Source
+	RG        _Name `xml:"RG,attr"`        // NAT_Source
+	RI        _Name `xml:"RI,attr"`        // NAT_Source
+	SZ        _Name `xml:"SZ,attr"`        // NAT_Source
+	Port_Low  _Port `xml:"port_low,attr"`  // NAT_Destination
+	Port_High _Port `xml:"port_high,attr"` // NAT_Destination
 	_Service_Attributes
 }
 type cDB_Rule struct {
@@ -169,17 +172,9 @@ type cDB_Rule struct {
 	_Service_Attributes
 }
 type cDB_Match struct {
-	Application _Name              `xml:"application,attr"`
-	From        []cDB_Match_FromTo `xml:"From"`
-	To          []cDB_Match_FromTo `xml:"To"`
-	_Service_Attributes
-}
-type cDB_Match_FromTo struct {
-	SZ        _Name `xml:"SZ,attr"`
-	AB        _Name `xml:"AB,attr"`
-	RI        _Name `xml:"RI,attr"`
-	Port_Low  _Port `xml:"port_low,attr"`
-	Port_High _Port `xml:"port_high,attr"`
+	Application _Name        `xml:"application,attr"`
+	From        []cDB_FromTo `xml:"From"`
+	To          []cDB_FromTo `xml:"To"`
 	_Service_Attributes
 }
 type cDB_Then struct {

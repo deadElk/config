@@ -158,30 +158,25 @@ type i_Rule_Set struct {
 	_Service_Attributes
 }
 type i_FromTo struct {
-	IF _Name
-	SZ _Name
-	RI _Name
-	RG _Name
+	AB        _Name // NAT_Destination
+	IF        _Name // NAT_Source
+	RG        _Name // NAT_Source
+	RI        _Name // NAT_Source
+	SZ        _Name // NAT_Source
+	Port_Low  _Port // NAT_Destination
+	Port_High _Port // NAT_Destination
 	_Service_Attributes
 }
 type i_Rule struct {
-	Name  _Name // used only within security policies
-	Match []i_Match
-	Then  []i_Then
+	Name  _Name     // SP
+	Match []i_Match // SP, NAT
+	Then  []i_Then  // SP, NAT
 	_Service_Attributes
 }
 type i_Match struct {
 	Application _Name
-	From        []i_Match_FromTo
-	To          []i_Match_FromTo
-	_Service_Attributes
-}
-type i_Match_FromTo struct {
-	SZ        _Name
-	AB        _Name
-	RI        _Name
-	Port_Low  _Port
-	Port_High _Port
+	From        []i_FromTo
+	To          []i_FromTo
 	_Service_Attributes
 }
 type i_Then struct {

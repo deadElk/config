@@ -173,6 +173,7 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 		)
 		create_AB("O_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
 		create_AB("I_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
+		parse_cDB_Peer_Version(&b, &v_Peer)
 		parse_cDB_Peer_RI(&b, &v_Peer)
 
 		// PName
@@ -185,7 +186,7 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 		// RI
 		parse_cDB_Peer_Hostname(&b, &v_Peer)
 		parse_cDB_Peer_Domain_Name(&b, &v_Peer)
-		parse_cDB_Peer_Version(&b, &v_Peer)
+		// Version
 		// Major
 		// Manufacturer
 		// Model
@@ -625,6 +626,15 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	return true
 }
 func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+	var (
+		h = peer.NAT_Source
+	)
+	v_Peer.NAT[_Type_source] = i_NAT{
+		Address_Persistent:  h.Address_Persistent,
+		Pool:                parse_cDB_Pool(peer, v_Peer, &h.Pool),
+		Rule_Set:            parse_cDB_Rule_Set(peer, v_Peer, &h.Rule_Set),
+		_Service_Attributes: h._Service_Attributes,
+	}
 	return true
 }
 func parse_cDB_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
@@ -660,4 +670,104 @@ func parse_cDB_Peer_SP_Options(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		}(),
 	}
 	return true
+}
+
+func parse_cDB_Pool(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Pool) (outbound map[_Name]i_Pool) {
+	outbound = make(map[_Name]i_Pool)
+	for _, j := range *inbound {
+		switch {
+		case len(parse_interface(j.IPPrefix.MarshalText()).([]byte)) != 0 && !j.IPPrefix.IsValid():
+			log.Warnf("Peer '%v', Pool '%v', invalid IP '%v'; ACTION: skip.", peer.ASN, j.Name, j.IPPrefix)
+			continue
+		case len(j.RI) != 0:
+			switch _, flag := v_Peer.RI[j.RI]; flag {
+			case false:
+				log.Warnf("Peer '%v', Pool '%v', invalid RI '%v'; ACTION: skip.", peer.ASN, j.Name, j.RI)
+				continue
+			}
+		case len(j.SZ) != 0:
+			switch _, flag := v_Peer.SZ[j.SZ]; flag {
+			case false:
+				log.Warnf("Peer '%v', Pool '%v', invalid SZ '%v'; ACTION: skip.", peer.ASN, j.Name, j.SZ)
+				continue
+			}
+		}
+		outbound[j.Name] = i_Pool{
+			IPPrefix:            j.IPPrefix,
+			RI:                  j.RI,
+			SZ:                  j.SZ,
+			_Service_Attributes: j._Service_Attributes,
+		}
+	}
+	return
+}
+func parse_cDB_Rule_Set(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Rule_Set) (outbound map[_Name]i_Rule_Set) {
+	outbound = make(map[_Name]i_Rule_Set)
+	for _, j := range *inbound {
+		outbound[j.Name] = i_Rule_Set{
+			From:                parse_cDB_FromTo(peer, v_Peer, &j.From),
+			To:                  parse_cDB_FromTo(peer, v_Peer, &j.To),
+			Rule:                nil,
+			_Service_Attributes: j._Service_Attributes,
+		}
+	}
+	return
+}
+func parse_cDB_Rule(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]i_Rule) (outbound map[_Name]i_Rule) {
+	outbound = make(map[_Name]i_Rule)
+	for _, j := range *inbound {
+		outbound[j.Name] = i_Rule{
+			Match:               nil,
+			Then:                nil,
+			_Service_Attributes: j._Service_Attributes,
+		}
+	}
+	return
+}
+func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_FromTo) (outbound []i_FromTo) {
+	for _, j := range *inbound {
+		switch {
+		case len(j.AB) != 0:
+			switch _, flag := i_ab[j.AB]; flag {
+			case false:
+				log.Warnf("Peer '%v', invalid IP '%v'; ACTION: skip.", peer.ASN, j.AB)
+				continue
+			}
+		case len(j.IF) != 0:
+			switch _, flag := v_Peer.IF_2_RI[j.IF]; flag {
+			case false:
+				log.Warnf("Peer '%v', invalid IF '%v'; ACTION: skip.", peer.ASN, j.IF)
+				continue
+			}
+		// case len(j.RG) != 0:
+		// switch _, flag := v_Peer.RI[j.RI]; flag {
+		// case false:
+		// log.Warnf("Peer '%v', invalid RG '%v'; ACTION: skip.", peer.ASN, j.RG)
+		// continue
+		// }
+		case len(j.RI) != 0:
+			switch _, flag := v_Peer.RI[j.RI]; flag {
+			case false:
+				log.Warnf("Peer '%v', invalid RI '%v'; ACTION: skip.", peer.ASN, j.RI)
+				continue
+			}
+		case len(j.SZ) != 0:
+			switch _, flag := v_Peer.SZ[j.SZ]; flag {
+			case false:
+				log.Warnf("Peer '%v', invalid SZ '%v'; ACTION: skip.", peer.ASN, j.SZ)
+				continue
+			}
+		}
+		outbound = append(outbound, i_FromTo{
+			AB:                  j.AB,
+			IF:                  j.IF,
+			RG:                  j.RG,
+			RI:                  j.RI,
+			SZ:                  j.SZ,
+			Port_Low:            j.Port_Low,
+			Port_High:           j.Port_High,
+			_Service_Attributes: j._Service_Attributes,
+		})
+	}
+	return
 }
