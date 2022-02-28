@@ -69,6 +69,9 @@ var (
 		_Mask_longer:   _Mask_longer,
 		_Mask_orlonger: _Mask_orlonger,
 	}
+	c_Nane = map[_Name]_Name{
+		_Name_any: _Name_any,
+	}
 	c_Protocol = map[_Protocol]_Protocol{
 		_Protocol_access_internal: _Protocol_access_internal,
 		_Protocol_aggregate:       _Protocol_aggregate,

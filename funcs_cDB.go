@@ -801,7 +801,7 @@ func parse_cDB_Then(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Then) (outbou
 }
 func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_FromTo) (outbound []i_FromTo) {
 	for _, j := range *inbound {
-		switch _, flag := i_ab[j.AB]; len(j.AB) != 0 && !flag {
+		switch _, flag := i_ab[j.AB]; len(j.AB) != 0 && !flag && j.AB != "any" {
 		case true:
 			log.Warnf("Peer '%v', unknown AB '%v'; ACTION: skip.", peer.ASN, j.AB)
 			continue
@@ -821,7 +821,7 @@ func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_FromTo) (ou
 			log.Warnf("Peer '%v', unknown RI '%v'; ACTION: skip.", peer.ASN, j.RI)
 			continue
 		}
-		switch _, flag := v_Peer.SZ[j.SZ]; len(j.SZ) != 0 && !flag && j.SZ != _Defaults[_host_RI].(_Name) {
+		switch _, flag := v_Peer.SZ[j.SZ]; len(j.SZ) != 0 && !flag && j.SZ != _Defaults[_host_RI].(_Name) && j.SZ != "any" {
 		case true:
 			log.Warnf("Peer '%v', unknown SZ '%v'; ACTION: skip.", peer.ASN, j.SZ)
 			continue

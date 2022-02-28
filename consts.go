@@ -44,6 +44,7 @@ const (
 	_Mask_exact                _Mask          = "exact"
 	_Mask_longer               _Mask          = "longer"
 	_Mask_orlonger             _Mask          = "orlonger"
+	_Name_any                  _Name          = "any"
 	_Protocol_access_internal  _Protocol      = "access-internal"
 	_Protocol_aggregate        _Protocol      = "aggregate"
 	_Protocol_all              _Protocol      = "all"
