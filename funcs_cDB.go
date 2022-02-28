@@ -205,38 +205,34 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 		i_peer[b.ASN] = v_Peer
 		ok = true
 
-		for _, b := range peer.RI {
-			switch _, flag := i_peer[peer.ASN].RI[b.Name]; flag {
-			case true:
-				i_peer[peer.ASN].RI[b.Name].Leak[_Action_import] = i_Peer_RI_RO_Leak_FromTo{
-					PL: func() (outbound []_Name) {
-						for _, d := range b.From {
-							switch _, flag = i_ps[d.PL]; flag {
-							case false:
-								log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PL)
-								continue
-							}
-							outbound = append(outbound, d.PL)
-						}
-						return
-					}(),
-				}
-				i_peer[peer.ASN].RI[b.Name].Leak[_Action_export] = i_Peer_RI_RO_Leak_FromTo{
-					PL: func() (outbound []_Name) {
-						for _, d := range b.To {
-							switch _, flag = i_ps[d.PL]; flag {
-							case false:
-								log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PL)
-								continue
-							}
-							outbound = append(outbound, d.PL)
-						}
-						return
-					}(),
-				}
-			}
-		}
-
+		// for c, d := range v_Peer.RI {
+		// 	v_Peer.RI[c].Leak[_Action_import] = i_Peer_RI_RO_Leak_FromTo{
+		// 		PL: func() (outbound []_Name) {
+		// 			for _, f := range b.From {
+		// 				switch _, flag = i_ps[f.PL]; flag {
+		// 				case false:
+		// 					log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", b.ASN, c, f.PL)
+		// 					continue
+		// 				}
+		// 				outbound = append(outbound, f.PL)
+		// 			}
+		// 			return
+		// 		}(),
+		// 	}
+		// 	v_Peer.RI[c].Leak[_Action_export] = i_Peer_RI_RO_Leak_FromTo{
+		// 		PL: func() (outbound []_Name) {
+		// 			for _, f := range d.To {
+		// 				switch _, flag = i_ps[f.PL]; flag {
+		// 				case false:
+		// 					log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", b.ASN, c, f.PL)
+		// 					continue
+		// 				}
+		// 				outbound = append(outbound, f.PL)
+		// 			}
+		// 			return
+		// 		}(),
+		// 	}
+		// }
 	}
 	for _, b := range *inbound {
 		switch _, flag := i_peer[b.ASN]; flag {

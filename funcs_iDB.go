@@ -1,9 +1,5 @@
 package main
 
-import (
-	log "github.com/sirupsen/logrus"
-)
-
 func parse_iDB_Peer() (ok bool) {
 	for a := range i_peer {
 		for c := range i_peer[a].RI {
@@ -43,32 +39,32 @@ func parse_iDB_Peer() (ok bool) {
 					}
 				}
 			}
-			i_peer[a].RI[c].Leak[_Action_import] = i_Peer_RI_RO_Leak_FromTo{
-				PL: func() (outbound []_Name) {
-					for _, f := range b.From {
-						switch _, flag = i_ps[f.PL]; flag {
-						case false:
-							log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", a, c, f.PL)
-							continue
-						}
-						outbound = append(outbound, f.PL)
-					}
-					return
-				}(),
-			}
-			i_peer[a].RI[c].Leak[_Action_export] = i_Peer_RI_RO_Leak_FromTo{
-				PL: func() (outbound []_Name) {
-					for _, f := range b.To {
-						switch _, flag = i_ps[f.PL]; flag {
-						case false:
-							log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", a, c, f.PL)
-							continue
-						}
-						outbound = append(outbound, f.PL)
-					}
-					return
-				}(),
-			}
+			// i_peer[a].RI[c].Leak[_Action_import] = i_Peer_RI_RO_Leak_FromTo{
+			// 	PL: func() (outbound []_Name) {
+			// 		for _, f := range b.From {
+			// 			switch _, flag = i_ps[f.PL]; flag {
+			// 			case false:
+			// 				log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", a, c, f.PL)
+			// 				continue
+			// 			}
+			// 			outbound = append(outbound, f.PL)
+			// 		}
+			// 		return
+			// 	}(),
+			// }
+			// i_peer[a].RI[c].Leak[_Action_export] = i_Peer_RI_RO_Leak_FromTo{
+			// 	PL: func() (outbound []_Name) {
+			// 		for _, f := range b.To {
+			// 			switch _, flag = i_ps[f.PL]; flag {
+			// 			case false:
+			// 				log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", a, c, f.PL)
+			// 				continue
+			// 			}
+			// 			outbound = append(outbound, f.PL)
+			// 		}
+			// 		return
+			// 	}(),
+			// }
 
 		}
 	}
