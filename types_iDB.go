@@ -174,9 +174,9 @@ type i_Rule struct {
 	_Service_Attributes
 }
 type i_Match struct {
-	Application _Name
-	From        []i_FromTo
-	To          []i_FromTo
+	JA   _Name
+	From []i_FromTo
+	To   []i_FromTo
 	_Service_Attributes
 }
 type i_Then struct {
@@ -204,7 +204,7 @@ type i_AB_Address struct {
 	_Service_Attributes
 }
 
-// Junos Applications
+// Junos Applications (JA)
 type i_JA struct {
 	Term []i_JA_Term
 	_Service_Attributes
