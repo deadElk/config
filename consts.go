@@ -90,6 +90,7 @@ const (
 	_RI                _Default = "default_RI"
 	_mgmt_RI           _Default = "default_mgmt_RI"
 	_mgmt_IF           _Default = "default_mgmt_IF"
+	_host_RI           _Default = "default_host_RI"
 	_mgmt_Description  _Default = "default_mgmt_description"
 	_domain_name       _Default = "default_domain_name"
 	_ps_bits_per_rm    _Default = "default_ps_bits_per_rm"

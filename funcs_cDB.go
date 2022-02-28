@@ -655,9 +655,25 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	return true
 }
 func parse_cDB_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+	for _, j := range peer.SP_Exact {
+		v_Peer.SP_Exact = append(v_Peer.SP_Exact, i_Rule_Set{
+			From:                parse_cDB_FromTo(peer, v_Peer, &j.From),
+			To:                  parse_cDB_FromTo(peer, v_Peer, &j.To),
+			Rule:                parse_cDB_Rule(peer, v_Peer, &j.Rule),
+			_Service_Attributes: j._Service_Attributes,
+		})
+	}
 	return true
 }
 func parse_cDB_Peer_SP_Global(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+	for _, j := range peer.SP_Global {
+		v_Peer.SP_Global = append(v_Peer.SP_Global, i_Rule{
+			Name:                j.Name,
+			Match:               parse_cDB_Match(peer, v_Peer, &j.Match),
+			Then:                parse_cDB_Then(peer, v_Peer, &j.Then),
+			_Service_Attributes: j._Service_Attributes,
+		})
+	}
 	return true
 }
 func parse_cDB_Peer_AB(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
@@ -805,7 +821,7 @@ func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_FromTo) (ou
 			log.Warnf("Peer '%v', unknown RI '%v'; ACTION: skip.", peer.ASN, j.RI)
 			continue
 		}
-		switch _, flag := v_Peer.SZ[j.SZ]; len(j.SZ) != 0 && !flag {
+		switch _, flag := v_Peer.SZ[j.SZ]; len(j.SZ) != 0 && !flag && j.SZ != _Defaults[_host_RI].(_Name) {
 		case true:
 			log.Warnf("Peer '%v', unknown SZ '%v'; ACTION: skip.", peer.ASN, j.SZ)
 			continue

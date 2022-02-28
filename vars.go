@@ -121,6 +121,7 @@ var (
 		_RI:                _Name("master"),
 		_mgmt_RI:           _Name("mgmt_junos"),
 		_mgmt_IF:           _Name("fxp0.0"),
+		_host_RI:           _Name("junos-host"),
 		_mgmt_Description:  _Description("MANAGEMENT-INSTANCE"),
 		_domain_name:       _FQDN("example.com"),
 		_ps_bits_per_rm:    uint32(2),        // ____
