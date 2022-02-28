@@ -104,7 +104,6 @@ type cDB_Peer_RI_RO_RT_GW struct {
 }
 type cDB_Peer_RI_RO_Leak_FromTo struct {
 	PL _Name `xml:"PL,attr"`
-	_Service_Attributes
 }
 
 // Virtual Interfaces

@@ -237,6 +237,7 @@ type i_PO_PS_Term struct {
 	_Service_Attributes
 }
 type i_PO_PS_From struct {
+	RI         _Name
 	Protocol   _Protocol
 	Route_Type _Type
 	PL         _Name
