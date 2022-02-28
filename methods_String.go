@@ -54,9 +54,6 @@ func (inbound _Secret) String() string {
 func (inbound _PName) String() string {
 	return string(inbound)
 }
-func (inbound _Mode) String() string {
-	return string(inbound)
-}
 func (inbound _FQDN) String() string {
 	return string(inbound)
 }

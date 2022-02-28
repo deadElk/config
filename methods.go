@@ -7,14 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (inbound _Description) _Validate(default_description _Description) _Description {
-	switch len(inbound) == 0 {
-	case true:
-		return default_description
-	}
-	return inbound
-}
-func (inbound *_Secret) _Validate(length uint, message ...string) _Secret {
+func (inbound *_Secret) validate(length uint, message ...string) _Secret {
 	switch len(*inbound) >= int(length) {
 	case true:
 		return *inbound
@@ -36,43 +29,53 @@ func (inbound *_Secret) _Validate(length uint, message ...string) _Secret {
 	}
 	return _Secret(interim)
 }
-func (inbound _Type) _VI_Sanitize() _Type {
-	switch inbound {
-	case _Type_st, "":
-		return inbound
-	case _Type_gr, _Type_lt:
-		log.Errorf("unsupported VI type '%v'; ACTION: use default '%v'.", inbound, _Type_st)
-		return _Type_st
-	default:
-		log.Warnf("unknown VI type '%v'; ACTION: use default '%v'.", inbound, _Type_st)
-		return _Type_st
-	}
-}
-func (inbound _FQDN) _Name() _Name {
-	return _Name(inbound.String())
-}
-func (inbound _Action) _SP_Validate() _Action {
-	switch inbound {
-	case _Action_permit_all, _Action_deny_all:
-		return inbound
-	case "":
-		return _Action_permit_all
-	}
-	log.Warnf("unknown SP default action '%v'; ACTION: use default '%v'.", inbound, _Action_permit_all)
-	return _Action_permit_all
-}
-
-func (inbound _Name) _Validate_RI(decline ..._Name) (outbound _Name) {
+func (inbound *_Name) validate_RI(decline ..._Name) (outbound _Name) {
 	outbound = _Defaults[_RI].(_Name)
-	switch len(inbound) == 0 || inbound == outbound {
+	switch len(*inbound) == 0 || *inbound == outbound {
 	case true:
 		return
 	}
 	for _, interim := range decline {
-		switch inbound == interim {
+		switch *inbound == interim {
 		case true:
 			return
 		}
 	}
-	return inbound
+	return *inbound
+}
+func (inbound *i_Peer) link_AB(name ..._Name) {
+	for _, value := range name {
+		switch i_ab[value] == nil {
+		case true:
+			continue
+		}
+		inbound.AB[value] = i_ab[value]
+	}
+}
+func (inbound *i_Peer) link_JA(name ..._Name) {
+	for _, value := range name {
+		switch i_ja[value] == nil {
+		case true:
+			continue
+		}
+		inbound.JA[value] = i_ja[value]
+	}
+}
+func (inbound *i_Peer) link_PL(name ..._Name) {
+	for _, value := range name {
+		switch i_pl[value] == nil {
+		case true:
+			continue
+		}
+		inbound.PL[value] = i_pl[value]
+	}
+}
+func (inbound *i_Peer) link_PS(name ..._Name) {
+	for _, value := range name {
+		switch i_ps[value] == nil {
+		case true:
+			continue
+		}
+		inbound.PS[value] = i_ps[value]
+	}
 }

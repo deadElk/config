@@ -48,7 +48,6 @@ func set_loglevel(inbound ...string) (ok bool) {
 	}
 	return
 }
-
 func parse_interface(inbound interface{}, skip interface{}) interface{} {
 	switch value := skip.(type) {
 	case error:
@@ -371,8 +370,8 @@ func add_2_AB(public, private bool, ab_name _Name, inbound ...interface{}) (ok b
 				i_ab[ab_name].Address_Set[value] = _Type_set
 			case _FQDN:
 				ok = true
-				i_ab[ab_name].Address_Set[value._Name()] = _Type_fqdn
-				add_2_AB(true, true, value._Name(), value)
+				i_ab[ab_name].Address_Set[_Name(value)] = _Type_fqdn
+				add_2_AB(true, true, _Name(value), value)
 			case netip.Prefix:
 				var (
 					ab = _Name(value.String())

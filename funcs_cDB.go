@@ -158,7 +158,7 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 				Manufacturer:        b.Manufacturer,
 				Model:               b.Model,
 				Serial:              b.Serial,
-				Root:                b.Root._Validate(16),
+				Root:                b.Root.validate(16),
 				GT_List:             []_Name{},
 				SZ:                  map[_Name]i_SZ{},
 				NAT:                 map[_Type]i_NAT{},
@@ -174,6 +174,7 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 		)
 		create_AB("O_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
 		create_AB("I_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
+		v_Peer.link_AB("OUTER_LIST", "O_AS"+_Name(v_Peer.PName), "I_AS"+_Name(v_Peer.PName))
 		parse_cDB_Peer_Version(&b, &v_Peer)
 		parse_cDB_Peer_RI(&b, &v_Peer)
 
@@ -225,7 +226,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 			Type:                b.Type,
 			Communication:       b.Communication,
 			Route_Metric:        b.Route_Metric,
-			PSK:                 b.PSK._Validate(64),
+			PSK:                 b.PSK.validate(64),
 			_Service_Attributes: b._Service_Attributes,
 		}
 		i_vi_peer[b.ID] = map[_VI_Peer_ID]*i_VI_Peer{}
@@ -242,7 +243,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				continue
 			}
 			var (
-				v_RI                = d.RI._Validate_RI(_Defaults[_mgmt_RI].(_Name))
+				v_RI                = d.RI.validate_RI(_Defaults[_mgmt_RI].(_Name))
 				v_IF                = d.IF
 				v_IP                = d.IP
 				v_NAT               = netip.Addr{}
@@ -258,7 +259,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				NAT:                 v_NAT,
 				IKE_Local_Address:   v_IKE_Local_Address,
 				Dynamic:             d.Dynamic,
-				Inner_RI:            d.Inner_RI._Validate_RI(_Defaults[_mgmt_RI].(_Name)),
+				Inner_RI:            d.Inner_RI.validate_RI(_Defaults[_mgmt_RI].(_Name)),
 				Inner_IP:            get_VI_IPPrefix(b.ID, d.ID+1).Addr(),
 				Inner_IPPrefix:      get_VI_IPPrefix(b.ID, d.ID+1),
 				_Service_Attributes: d._Service_Attributes,
@@ -336,6 +337,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			},
 			_Service_Attributes: _Service_Attributes{},
 		}
+		v_Peer.link_PS("redistribute_" + b.Name)
 	}
 	for _, b := range peer.RI {
 		switch _, flag := v_Peer.RI[b.Name]; flag {
@@ -505,6 +507,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 								continue
 							}
 							outbound = append(outbound, d.PL)
+							v_Peer.link_PL(d.PL)
 						}
 						return
 					}(),
@@ -518,6 +521,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 								continue
 							}
 							outbound = append(outbound, d.PL)
+							v_Peer.link_PL(d.PL)
 						}
 						return
 					}(),
@@ -752,23 +756,26 @@ func parse_cDB_Rule(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Rule) (outbou
 }
 func parse_cDB_Match_2_Name(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Match) (outbound []_Name) {
 	for _, j := range *inbound {
-		switch _, flag := i_ja[j.Application]; len(j.Application) != 0 &&
-			!flag &&
-			parse_interface(regexp.MatchString("^junos-", "j.Application")).(bool) {
-		case true:
+		switch _, flag := i_ja[j.Application]; {
+		// todo
+		case parse_interface(regexp.MatchString("^(junos-|any$)", string(j.Application))).(bool):
+		case len(j.Application) != 0 && !flag:
 			log.Warnf("Peer '%v', unknown Application '%v'; ACTION: skip.", peer.ASN, j.Application)
 			continue
 		}
 		outbound = append(outbound, j.Application)
+		v_Peer.link_JA(j.Application)
 	}
 	return
 }
 func parse_cDB_Then(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Then) (outbound []i_Then) {
 	for _, j := range *inbound {
-		switch _, flag := i_ab[j.AB]; len(j.AB) != 0 && !flag {
-		case true:
+		switch _, flag := i_ab[j.AB]; {
+		case len(j.AB) != 0 && !flag && j.AB != "any":
 			log.Warnf("Peer '%v', unknown AB '%v'; ACTION: skip.", peer.ASN, j.AB)
 			continue
+		case len(j.AB) != 0 && j.AB != "any":
+			v_Peer.link_AB(j.AB)
 		}
 		switch _, flag := v_Peer.RI[j.RI]; len(j.RI) != 0 && !flag {
 		case true:
@@ -794,6 +801,8 @@ func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_FromTo) (ou
 		case true:
 			log.Warnf("Peer '%v', unknown AB '%v'; ACTION: skip.", peer.ASN, j.AB)
 			continue
+		case len(j.AB) != 0 && j.AB != "any":
+			v_Peer.link_AB(j.AB)
 		}
 		switch _, flag := v_Peer.IF_2_RI[j.IF]; len(j.IF) != 0 && !flag {
 		case true:

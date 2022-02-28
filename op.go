@@ -69,7 +69,7 @@ func parse_DB(xml_db *cDB) (ok bool) {
 	parse_cDB_Peer(&xml_db.Peer)
 	parse_cDB_VI(&xml_db.VI)
 
-	parse_iDB_Peer_Vocabulary()
+	// parse_iDB_Peer_Vocabulary()
 
 	return true
 }

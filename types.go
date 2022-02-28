@@ -41,7 +41,6 @@ type _Description string
 type _FQDN string
 type _Content string
 type _Mask string
-type _Mode string
 type _Name string
 type _PName string
 type _Protocol string
