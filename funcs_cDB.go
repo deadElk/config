@@ -656,12 +656,16 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 }
 func parse_cDB_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	for _, j := range peer.SP_Exact {
-		v_Peer.SP_Exact = append(v_Peer.SP_Exact, i_Rule_Set{
-			From:                parse_cDB_FromTo(peer, v_Peer, &j.From),
-			To:                  parse_cDB_FromTo(peer, v_Peer, &j.To),
-			Rule:                parse_cDB_Rule(peer, v_Peer, &j.Rule),
-			_Service_Attributes: j._Service_Attributes,
-		})
+		for _, l := range j.To {
+			for _, n := range j.From {
+				v_Peer.SP_Exact = append(v_Peer.SP_Exact, i_Rule_Set{
+					From:                parse_cDB_FromTo(peer, v_Peer, &[]cDB_FromTo{0: n}),
+					To:                  parse_cDB_FromTo(peer, v_Peer, &[]cDB_FromTo{0: l}),
+					Rule:                parse_cDB_Rule(peer, v_Peer, &j.Rule),
+					_Service_Attributes: j._Service_Attributes,
+				})
+			}
+		}
 	}
 	return true
 }
