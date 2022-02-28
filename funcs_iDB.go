@@ -65,7 +65,6 @@ func parse_iDB_Peer() (ok bool) {
 			// 		return
 			// 	}(),
 			// }
-
 		}
 	}
 	return true
