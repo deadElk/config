@@ -9,8 +9,8 @@ type _i_ja map[_Name]i_JA
 type _i_pl map[_Name]i_PO_PL
 type _i_ps map[_Name]i_PO_PS
 type _i_peer map[_ASN]i_Peer
-type _i_vi map[_VI_ID]i_VI
-type _i_vi_peer map[_VI_ID]map[_VI_Peer_ID]i_VI_Peer
+type _i_vi map[_VI_ID]*i_VI
+type _i_vi_peer map[_VI_ID]map[_VI_Peer_ID]*i_VI_Peer
 type _i_gt map[_Name]i_GT
 type _i_config map[_ASN][]byte
 
@@ -22,31 +22,31 @@ type i_GT struct {
 
 // Peer
 type i_Peer struct {
-	PName         _PName
-	Router_ID     netip.Addr
-	IF_2_RI       map[_Name]_Name // interface to RI mapping. interfaces within one peer must be unique.
-	VI            map[_VI_ID]*i_VI
-	VI_Peer_Left  map[_VI_ID]*i_VI_Peer
-	VI_Peer_Right map[_VI_ID]*i_VI_Peer
-	IFM           map[_Name]i_Peer_IFM
-	RI            map[_Name]i_Peer_RI
-	Hostname      _FQDN
-	Domain_Name   _FQDN
-	Version       string
-	Major         float64
-	Manufacturer  string
-	Model         string
-	Serial        string
-	Root          _Secret
-	GT_List       []_Name
-	SZ            map[_Name]i_SZ
-	NAT           map[_Type]i_NAT
-	SP_Exact      []i_Rule_Set
-	SP_Global     []i_Rule
-	AB            map[_Name]*i_AB
-	JA            map[_Name]*i_JA
-	PL            map[_Name]*i_PO_PL
-	PS            map[_Name]*i_PO_PS
+	PName        _PName
+	Router_ID    netip.Addr
+	IF_2_RI      map[_Name]_Name // interface to RI mapping. interfaces within one peer must be unique.
+	VI           map[_VI_ID]*i_VI
+	VI_Left      map[_VI_ID]*i_VI_Peer
+	VI_Right     map[_VI_ID]*i_VI_Peer
+	IFM          map[_Name]i_Peer_IFM
+	RI           map[_Name]i_Peer_RI
+	Hostname     _FQDN
+	Domain_Name  _FQDN
+	Version      string
+	Major        float64
+	Manufacturer string
+	Model        string
+	Serial       string
+	Root         _Secret
+	GT_List      []_Name
+	SZ           map[_Name]i_SZ
+	NAT          map[_Type]i_NAT
+	SP_Exact     []i_Rule_Set
+	SP_Global    []i_Rule
+	AB           map[_Name]*i_AB
+	JA           map[_Name]*i_JA
+	PL           map[_Name]*i_PO_PL
+	PS           map[_Name]*i_PO_PS
 	i_SP_Options
 	_Service_Attributes
 }

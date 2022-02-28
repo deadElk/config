@@ -147,8 +147,8 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 				Router_ID:           netip.Addr{},
 				IF_2_RI:             map[_Name]_Name{},
 				VI:                  map[_VI_ID]*i_VI{},
-				VI_Peer_Left:        map[_VI_ID]*i_VI_Peer{},
-				VI_Peer_Right:       map[_VI_ID]*i_VI_Peer{},
+				VI_Left:             map[_VI_ID]*i_VI_Peer{},
+				VI_Right:            map[_VI_ID]*i_VI_Peer{},
 				IFM:                 map[_Name]i_Peer_IFM{},
 				RI:                  map[_Name]i_Peer_RI{},
 				Hostname:            "",
@@ -182,8 +182,8 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 		parse_cDB_Peer_Router_ID(&b, &v_Peer)
 		// IF_2_RI
 		// VI
-		// VI_Peer_Left
-		// VI_Peer_Right
+		// VI_Left
+		// VI_Right
 		parse_cDB_Peer_IFM(&b, &v_Peer)
 		// RI
 		parse_cDB_Peer_Hostname(&b, &v_Peer)
@@ -223,71 +223,117 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 			continue
 		}
 		var (
-			v_vi_peer_list = make(map[_VI_Peer_ID]_ASN)
-			v_vi           = func() (outbound i_VI) {
-				outbound = i_VI{
-					PName:               pad(&b.ID, 5),
-					IPPrefix:            get_VI_IPPrefix(b.ID, 0).Masked(),
-					IKE_No_NAT:          false,
-					IKE_GCM:             false,
-					Type:                b.Type,
-					Communication:       b.Communication,
-					Route_Metric:        b.Route_Metric,
-					PSK:                 b.PSK._Validate(64),
-					_Service_Attributes: b._Service_Attributes,
-				}
-				return
-			}()
-			v_vi_peer = func() (outbound map[_VI_Peer_ID]i_VI_Peer) {
-				outbound = make(map[_VI_Peer_ID]i_VI_Peer)
-				for _, d := range b.Peer {
-					switch /*d.ID >= 0 &&*/ d.ID <= 1 {
-					case false:
-						log.Warnf("VI '%v', Peer '%v', index out of range; ACTION: skip.", b.ID, d.ID)
-						continue
-					}
-					switch _, flag := outbound[d.ID]; flag {
-					case true:
-						log.Warnf("VI '%v', Peer '%v' already exist; ACTION: skip.", b.ID, d.ID)
-						continue
-					}
-					v_vi_peer_list[d.ID] = d.ASN
-					var (
-						v_RI                = d.RI._Validate_RI(_Defaults[_mgmt_RI].(_Name))
-						v_IF                = d.IF
-						v_IP                = d.IP
-						v_NAT               = netip.Addr{}
-						v_IKE_Local_Address bool
-					)
-					outbound[d.ID] = i_VI_Peer{
-						ASN:                 d.ASN,
-						RI:                  v_RI,
-						IF:                  v_IF,
-						IP:                  v_IP,
-						NAT:                 v_NAT,
-						IKE_Local_Address:   v_IKE_Local_Address,
-						Dynamic:             d.Dynamic,
-						Inner_RI:            d.Inner_RI._Validate_RI(_Defaults[_mgmt_RI].(_Name)),
-						Inner_IP:            get_VI_IPPrefix(b.ID, d.ID+1).Addr(),
-						Inner_IPPrefix:      get_VI_IPPrefix(b.ID, d.ID+1),
-						_Service_Attributes: d._Service_Attributes,
-					}
-				}
-				return
-			}()
+		// v_vi_peer_list = make(map[_VI_Peer_ID]_ASN)
+
+		// v_vi           = func() (outbound *i_VI) {
+		// 	outbound = &i_VI{
+		// 		PName:               pad(&b.ID, 5),
+		// 		IPPrefix:            get_VI_IPPrefix(b.ID, 0).Masked(),
+		// 		IKE_No_NAT:          false,
+		// 		IKE_GCM:             false,
+		// 		Type:                b.Type,
+		// 		Communication:       b.Communication,
+		// 		Route_Metric:        b.Route_Metric,
+		// 		PSK:                 b.PSK._Validate(64),
+		// 		_Service_Attributes: b._Service_Attributes,
+		// 	}
+		// 	return
+		// }()
+		// v_vi_peer = func() (outbound map[_VI_Peer_ID]*i_VI_Peer) {
+		// 	outbound = make(map[_VI_Peer_ID]*i_VI_Peer)
+		// 	for _, d := range b.Peer {
+		// 		switch /*d.ID >= 0 &&*/ d.ID <= 1 {
+		// 		case false:
+		// 			log.Warnf("VI '%v', Peer '%v', index out of range; ACTION: skip.", b.ID, d.ID)
+		// 			continue
+		// 		}
+		// 		switch _, flag := outbound[d.ID]; flag {
+		// 		case true:
+		// 			log.Warnf("VI '%v', Peer '%v' already exist; ACTION: skip.", b.ID, d.ID)
+		// 			continue
+		// 		}
+		// 		v_vi_peer_list[d.ID] = d.ASN
+		// 		var (
+		// 			v_RI                = d.RI._Validate_RI(_Defaults[_mgmt_RI].(_Name))
+		// 			v_IF                = d.IF
+		// 			v_IP                = d.IP
+		// 			v_NAT               = netip.Addr{}
+		// 			v_IKE_Local_Address bool
+		// 		)
+		// 		outbound[d.ID] = &i_VI_Peer{
+		// 			ASN:                 d.ASN,
+		// 			RI:                  v_RI,
+		// 			IF:                  v_IF,
+		// 			IP:                  v_IP,
+		// 			NAT:                 v_NAT,
+		// 			IKE_Local_Address:   v_IKE_Local_Address,
+		// 			Dynamic:             d.Dynamic,
+		// 			Inner_RI:            d.Inner_RI._Validate_RI(_Defaults[_mgmt_RI].(_Name)),
+		// 			Inner_IP:            get_VI_IPPrefix(b.ID, d.ID+1).Addr(),
+		// 			Inner_IPPrefix:      get_VI_IPPrefix(b.ID, d.ID+1),
+		// 			_Service_Attributes: d._Service_Attributes,
+		// 		}
+		// 	}
+		// 	return
+		// }()
 		)
-		i_vi[b.ID] = v_vi
-		i_vi_peer[b.ID] = v_vi_peer
+		i_vi[b.ID] = &i_VI{
+			PName:               pad(&b.ID, 5),
+			IPPrefix:            get_VI_IPPrefix(b.ID, 0).Masked(),
+			IKE_No_NAT:          false,
+			IKE_GCM:             false,
+			Type:                b.Type,
+			Communication:       b.Communication,
+			Route_Metric:        b.Route_Metric,
+			PSK:                 b.PSK._Validate(64),
+			_Service_Attributes: b._Service_Attributes,
+		}
+		i_vi_peer[b.ID] = map[_VI_Peer_ID]*i_VI_Peer{}
+
+		for _, d := range b.Peer {
+			switch /*d.ID >= 0 &&*/ d.ID <= 1 {
+			case false:
+				log.Warnf("VI '%v', Peer '%v', index out of range; ACTION: skip.", b.ID, d.ID)
+				continue
+			}
+			switch _, flag := i_vi_peer[b.ID][d.ID]; flag {
+			case true:
+				log.Warnf("VI '%v', Peer '%v' already exist; ACTION: skip.", b.ID, d.ID)
+				continue
+			}
+			var (
+				v_RI                = d.RI._Validate_RI(_Defaults[_mgmt_RI].(_Name))
+				v_IF                = d.IF
+				v_IP                = d.IP
+				v_NAT               = netip.Addr{}
+				v_IKE_Local_Address bool
+			)
+			i_vi_peer[b.ID][d.ID] = &i_VI_Peer{
+				ASN:                 d.ASN,
+				RI:                  v_RI,
+				IF:                  v_IF,
+				IP:                  v_IP,
+				NAT:                 v_NAT,
+				IKE_Local_Address:   v_IKE_Local_Address,
+				Dynamic:             d.Dynamic,
+				Inner_RI:            d.Inner_RI._Validate_RI(_Defaults[_mgmt_RI].(_Name)),
+				Inner_IP:            get_VI_IPPrefix(b.ID, d.ID+1).Addr(),
+				Inner_IPPrefix:      get_VI_IPPrefix(b.ID, d.ID+1),
+				_Service_Attributes: d._Service_Attributes,
+			}
+		}
+
+		// i_vi_peer[b.ID] = v_vi_peer
 		// i_peer[v_vi_peer_list[0]].VI[b.ID] = i_vi[b.ID]
-		// i_peer[v_vi_peer_list[0]].VI_Peer_Left[b.ID] = i_vi_peer[b.ID][0]
-		// i_peer[v_vi_peer_list[0]].VI_Peer_Right[b.ID] = i_vi_peer[b.ID][1]
+		// i_peer[v_vi_peer_list[0]].VI_Left[b.ID] = i_vi_peer[b.ID][0]
+		// i_peer[v_vi_peer_list[0]].VI_Right[b.ID] = i_vi_peer[b.ID][1]
 		// i_peer[v_vi_peer_list[1]].VI[b.ID] = i_vi[b.ID]
-		// i_peer[v_vi_peer_list[1]].VI_Peer_Left[b.ID] = i_vi_peer[b.ID][1]
-		// i_peer[v_vi_peer_list[1]].VI_Peer_Right[b.ID] = i_vi_peer[b.ID][0]
+		// i_peer[v_vi_peer_list[1]].VI_Left[b.ID] = i_vi_peer[b.ID][1]
+		// i_peer[v_vi_peer_list[1]].VI_Right[b.ID] = i_vi_peer[b.ID][0]
 		// for c, d := range v_vi_peer_list {
 		// 	i_peer[d].VI[b.ID] = i_vi[b.ID]
-		// 	i_peer[d].VI_Peer_Left[b.ID] = i_vi_peer[b.ID][c]
-		// 	i_peer[d].VI_Peer_Right[b.ID] = i_vi_peer[b.ID][c]
+		// 	i_peer[d].VI_Left[b.ID] = i_vi_peer[b.ID][c]
+		// 	i_peer[d].VI_Right[b.ID] = i_vi_peer[b.ID][c]
 		// }
 	}
 	return true
