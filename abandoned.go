@@ -648,7 +648,7 @@ func db_parse(xml_db *sDB) (err error) {
 													log.Warnf("peer ASN '%v', router ID '%v' already defined; ACTION: skip.", value.ASN, v_Router_ID)
 												}
 											}
-											_AB_Address_add(true, false, "OUTTER_LIST", ip_v.IPPrefix.Addr(), ip_v.NAT)
+											_AB_Address_add(true, false, "OUTER_LIST", ip_v.IPPrefix.Addr(), ip_v.NAT)
 											switch {
 											case ip_v.NAT.IsValid() && !ip_v.NAT.IsPrivate():
 												v_IP_List[parse_interface(ip_v.NAT.Prefix(32)).(netip.Prefix)] = true
@@ -682,7 +682,7 @@ func db_parse(xml_db *sDB) (err error) {
 												continue
 											}
 											vIP_IF[parp_i] = if_v.Name
-											_AB_Address_add(true, false, "OUTTER_LIST", parp_v.IPPrefix.Addr(), parp_v.NAT)
+											_AB_Address_add(true, false, "OUTER_LIST", parp_v.IPPrefix.Addr(), parp_v.NAT)
 											parp_o[parp_v.IPPrefix.Addr()] = pDB_Peer_RI_IF_PARP{
 												IPPrefix:            parp_v.IPPrefix,
 												NAT:                 parp_v.NAT,

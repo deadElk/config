@@ -227,7 +227,7 @@ func parse_VI(inbound *[]cDB_VI) (ok bool) {
 			v_vi           = func() (outbound i_VI) {
 				outbound = i_VI{
 					PName:               pad(&b.ID, 5),
-					IPPrefix:            get_VI_IPPrefix(b.ID, 0),
+					IPPrefix:            get_VI_IPPrefix(b.ID, 0).Masked(),
 					IKE_No_NAT:          false,
 					IKE_GCM:             false,
 					Type:                b.Type,
@@ -241,6 +241,11 @@ func parse_VI(inbound *[]cDB_VI) (ok bool) {
 			v_vi_peer = func() (outbound map[_VI_Peer_ID]i_VI_Peer) {
 				outbound = make(map[_VI_Peer_ID]i_VI_Peer)
 				for _, d := range b.Peer {
+					switch /*d.ID >= 0 &&*/ d.ID <= 1 {
+					case false:
+						log.Warnf("VI '%v', Peer '%v', index out of range; ACTION: skip.", b.ID, d.ID)
+						continue
+					}
 					switch _, flag := outbound[d.ID]; flag {
 					case true:
 						log.Warnf("VI '%v', Peer '%v' already exist; ACTION: skip.", b.ID, d.ID)
@@ -388,7 +393,7 @@ func parse_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 									}
 									v_IP_2_IF[f.IPPrefix.Addr()] = d.Name
 								}
-								add_2_AB(true, false, "OUTTER_LIST", f.IPPrefix.Addr(), f.NAT)
+								add_2_AB(true, false, "OUTER_LIST", f.IPPrefix.Addr(), f.NAT)
 								add_2_AB(true, false, "O_AS"+_Name(v_Peer.PName), f.IPPrefix.Addr(), f.NAT)
 								add_2_AB(false, true, "I_AS"+_Name(v_Peer.PName), f.IPPrefix.Addr(), f.NAT)
 								outbound[f.IPPrefix] = i_Peer_RI_IF_IP{
@@ -416,7 +421,7 @@ func parse_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 									continue
 								}
 								v_IP_2_IF[f.IP] = d.Name
-								add_2_AB(true, false, "OUTTER_LIST", f.IP, f.NAT)
+								add_2_AB(true, false, "OUTER_LIST", f.IP, f.NAT)
 								outbound[f.IP] = i_Peer_RI_IF_PARP{
 									NAT:                 f.NAT,
 									_Service_Attributes: f._Service_Attributes,
@@ -568,47 +573,6 @@ func parse_Peer_GT_List(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	return true
 }
 func parse_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
-	// for _, b := range peer.SZ {
-	// 	switch {
-	// 	case b.Name == _Defaults[_mgmt_RI].(_Name):
-	// 		log.Warnf("Peer '%v', SZ '%v' cannot be defined; ACTION: ignore.", peer.ASN, b.Name)
-	// 		continue
-	// 	}
-	// 	v_Peer.SZ[b.Name] = i_SZ{
-	// 		Screen: b.Screen,
-	// 		IF: func() (outbound map[_Name]_Host_Inbound_Traffic) {
-	// 			outbound = make(map[_Name]_Host_Inbound_Traffic)
-	// 			for c := range v_Peer.RI[b.Name].IF {
-	// 				outbound[c] = parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh)
-	// 			}
-	// 			return
-	// 		}(),
-	// 		_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(),
-	// 		_Service_Attributes:   b._Service_Attributes,
-	// 	}
-	// }
-	//
-	// for a := range v_Peer.RI {
-	// 	switch a == _Defaults[_mgmt_RI].(_Name) {
-	// 	case false:
-	// 		switch _, flag := v_Peer.SZ[a]; flag {
-	// 		case false:
-	// 			v_Peer.SZ[a] = i_SZ{
-	// 				Screen:                "",
-	// 				IF:                    map[_Name]_Host_Inbound_Traffic{},
-	// 				_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(),
-	// 				_Service_Attributes:   _Service_Attributes{},
-	// 			}
-	// 		}
-	// 		for e := range v_Peer.RI[a].IF {
-	// 			switch _, flag := v_Peer.SZ[a].IF[e]; flag {
-	// 			case false:
-	// 				v_Peer.SZ[a].IF[e] = parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh)
-	// 			}
-	// 		}
-	// 	}
-	// }
-
 	for _, b := range peer.SZ {
 		switch {
 		case b.Name == _Defaults[_mgmt_RI].(_Name):
@@ -631,7 +595,6 @@ func parse_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			_Service_Attributes:   b._Service_Attributes,
 		}
 	}
-
 	for a := range v_Peer.RI {
 		switch a == _Defaults[_mgmt_RI].(_Name) {
 		case false:

@@ -60,7 +60,7 @@ func parse_DB(xml_db *cDB) (ok bool) {
 	case false:
 		_Defaults[_path_out] = xml_db.Upload_Path
 	}
-	create_AB("OUTTER_LIST", &_Service_Attributes{})
+	create_AB("OUTER_LIST", &_Service_Attributes{})
 
 	parse_AB(&xml_db.AB)
 	parse_JA(&xml_db.JA)
