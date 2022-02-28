@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func parse_AB(inbound *[]cDB_AB) (ok bool) {
+func parse_cDB_AB(inbound *[]cDB_AB) (ok bool) {
 	for _, b := range *inbound {
 		switch b.Set {
 		case true:
@@ -22,7 +22,7 @@ func parse_AB(inbound *[]cDB_AB) (ok bool) {
 	}
 	return true
 }
-func parse_JA(inbound *[]cDB_JA) (ok bool) {
+func parse_cDB_JA(inbound *[]cDB_JA) (ok bool) {
 	for _, b := range *inbound {
 		switch _, flag := i_ja[b.Name]; flag {
 		case true:
@@ -49,7 +49,7 @@ func parse_JA(inbound *[]cDB_JA) (ok bool) {
 	}
 	return true
 }
-func parse_PL(inbound *[]cDB_PO_PL) (ok bool) {
+func parse_cDB_PL(inbound *[]cDB_PO_PL) (ok bool) {
 	for _, b := range *inbound {
 		switch _, flag := i_pl[b.Name]; flag {
 		case true:
@@ -74,7 +74,7 @@ func parse_PL(inbound *[]cDB_PO_PL) (ok bool) {
 	}
 	return true
 }
-func parse_PS(inbound *[]cDB_PO_PS) (ok bool) {
+func parse_cDB_PS(inbound *[]cDB_PO_PS) (ok bool) {
 	for _, b := range *inbound {
 		switch _, flag := i_ps[b.Name]; flag {
 		case true:
@@ -122,17 +122,17 @@ func parse_PS(inbound *[]cDB_PO_PS) (ok bool) {
 	}
 	return true
 }
-func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
+func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 	for _, b := range *inbound {
 		switch _, flag := i_peer[b.ASN]; flag {
 		case true:
 			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ASN)
 			continue
 		}
-		parse_AB(&b.AB)
-		parse_JA(&b.JA)
-		parse_PL(&b.PL)
-		parse_PS(&b.PS)
+		parse_cDB_AB(&b.AB)
+		parse_cDB_JA(&b.JA)
+		parse_cDB_PL(&b.PL)
+		parse_cDB_PS(&b.PS)
 	}
 	for _, b := range *inbound {
 		switch _, flag := i_peer[b.ASN]; flag {
@@ -176,34 +176,34 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 		create_AB("O_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
 		create_AB("I_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
 		split_2_string(&b.Version, re_caps, &v_Major)
-		parse_Peer_RI(&b, &v_Peer)
+		parse_cDB_Peer_RI(&b, &v_Peer)
 
 		// PName
-		parse_Peer_Router_ID(&b, &v_Peer)
+		parse_cDB_Peer_Router_ID(&b, &v_Peer)
 		// IF_2_RI
 		// VI
 		// VI_Peer_Left
 		// VI_Peer_Right
-		parse_Peer_IFM(&b, &v_Peer)
+		parse_cDB_Peer_IFM(&b, &v_Peer)
 		// RI
-		parse_Peer_Hostname(&b, &v_Peer)
-		parse_Peer_Domain_Name(&b, &v_Peer)
+		parse_cDB_Peer_Hostname(&b, &v_Peer)
+		parse_cDB_Peer_Domain_Name(&b, &v_Peer)
 		// Version
 		// Major
 		// Manufacturer
 		// Model
 		// Serial
 		// Root
-		parse_Peer_GT_List(&b, &v_Peer)
-		parse_Peer_SZ(&b, &v_Peer)
-		parse_Peer_NAT(&b, &v_Peer)
-		parse_Peer_SP_Exact(&b, &v_Peer)
-		parse_Peer_SP_Global(&b, &v_Peer)
+		parse_cDB_Peer_GT_List(&b, &v_Peer)
+		parse_cDB_Peer_SZ(&b, &v_Peer)
+		parse_cDB_Peer_NAT(&b, &v_Peer)
+		parse_cDB_Peer_SP_Exact(&b, &v_Peer)
+		parse_cDB_Peer_SP_Global(&b, &v_Peer)
 		// AB
 		// JA
 		// PL
 		// PS
-		parse_Peer_SP_Options(&b, &v_Peer)
+		parse_cDB_Peer_SP_Options(&b, &v_Peer)
 
 		v_Peer.AB = map[_Name]*i_AB{}
 		v_Peer.JA = map[_Name]*i_JA{}
@@ -215,7 +215,7 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 	}
 	return
 }
-func parse_VI(inbound *[]cDB_VI) (ok bool) {
+func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 	for _, b := range *inbound {
 		switch _, flag := i_vi[b.ID]; flag {
 		case true:
@@ -292,11 +292,11 @@ func parse_VI(inbound *[]cDB_VI) (ok bool) {
 	}
 	return true
 }
-func parse_VI_Peer(inbound *[]cDB_VI_Peer) (ok bool) {
+func parse_cDB_VI_Peer(inbound *[]cDB_VI_Peer) (ok bool) {
 	return true
 }
 
-func parse_Peer_Router_ID(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+func parse_cDB_Peer_Router_ID(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	switch peer.Router_ID.IsValid() {
 	case true:
 		v_Peer.Router_ID = peer.Router_ID
@@ -315,7 +315,7 @@ func parse_Peer_Router_ID(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	return true
 }
 
-func parse_Peer_IFM(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+func parse_cDB_Peer_IFM(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	for _, b := range peer.IFM {
 		v_Peer.IFM[b.Name] = i_Peer_IFM{
 			Communication:       parse_Communication(&peer.ASN, &b.Name, &b.Communication),
@@ -324,7 +324,7 @@ func parse_Peer_IFM(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	}
 	return true
 }
-func parse_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	for _, b := range peer.RI {
 		switch _, flag := v_Peer.RI[b.Name]; flag {
 		case true:
@@ -541,7 +541,7 @@ func parse_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	}
 	return true
 }
-func parse_Peer_Hostname(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+func parse_cDB_Peer_Hostname(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	switch len(peer.Hostname) == 0 {
 	case true:
 		v_Peer.Hostname = "gw_as" + _FQDN(pad(&peer.ASN, 10))
@@ -551,7 +551,7 @@ func parse_Peer_Hostname(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	}
 	return true
 }
-func parse_Peer_Domain_Name(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+func parse_cDB_Peer_Domain_Name(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	switch len(peer.Domain_Name) == 0 {
 	case true:
 		v_Peer.Domain_Name = _Defaults[_domain_name].(_FQDN)
@@ -561,7 +561,7 @@ func parse_Peer_Domain_Name(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	return true
 }
 
-func parse_Peer_GT_List(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+func parse_cDB_Peer_GT_List(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	switch len(peer.GT_List) == 0 {
 	case false:
 		for _, b := range peer.GT_List {
@@ -572,7 +572,7 @@ func parse_Peer_GT_List(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	}
 	return true
 }
-func parse_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	for _, b := range peer.SZ {
 		switch {
 		case b.Name == _Defaults[_mgmt_RI].(_Name):
@@ -621,17 +621,17 @@ func parse_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 
 	return true
 }
-func parse_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	return true
 }
-func parse_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+func parse_cDB_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	return true
 }
-func parse_Peer_SP_Global(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+func parse_cDB_Peer_SP_Global(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	return true
 }
 
-func parse_Peer_SP_Options(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+func parse_cDB_Peer_SP_Options(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	v_Peer.i_SP_Options = i_SP_Options{
 		SP_Default_Policy: func() _Action {
 			switch value := peer.SP_Options.Default_Policy; value {

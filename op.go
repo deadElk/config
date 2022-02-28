@@ -62,12 +62,15 @@ func parse_DB(xml_db *cDB) (ok bool) {
 	}
 	create_AB("OUTER_LIST", &_Service_Attributes{})
 
-	parse_AB(&xml_db.AB)
-	parse_JA(&xml_db.JA)
-	parse_PL(&xml_db.PL)
-	parse_PS(&xml_db.PS)
-	parse_Peer(&xml_db.Peer)
-	parse_VI(&xml_db.VI)
+	parse_cDB_AB(&xml_db.AB)
+	parse_cDB_JA(&xml_db.JA)
+	parse_cDB_PL(&xml_db.PL)
+	parse_cDB_PS(&xml_db.PS)
+	parse_cDB_Peer(&xml_db.Peer)
+	parse_cDB_VI(&xml_db.VI)
+
+	parse_iDB_Peer()
+	parse_iDB_VI_Peer()
 
 	return true
 }
