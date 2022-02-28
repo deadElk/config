@@ -568,6 +568,47 @@ func parse_Peer_GT_List(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	return true
 }
 func parse_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+	// for _, b := range peer.SZ {
+	// 	switch {
+	// 	case b.Name == _Defaults[_mgmt_RI].(_Name):
+	// 		log.Warnf("Peer '%v', SZ '%v' cannot be defined; ACTION: ignore.", peer.ASN, b.Name)
+	// 		continue
+	// 	}
+	// 	v_Peer.SZ[b.Name] = i_SZ{
+	// 		Screen: b.Screen,
+	// 		IF: func() (outbound map[_Name]_Host_Inbound_Traffic) {
+	// 			outbound = make(map[_Name]_Host_Inbound_Traffic)
+	// 			for c := range v_Peer.RI[b.Name].IF {
+	// 				outbound[c] = parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh)
+	// 			}
+	// 			return
+	// 		}(),
+	// 		_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(),
+	// 		_Service_Attributes:   b._Service_Attributes,
+	// 	}
+	// }
+	//
+	// for a := range v_Peer.RI {
+	// 	switch a == _Defaults[_mgmt_RI].(_Name) {
+	// 	case false:
+	// 		switch _, flag := v_Peer.SZ[a]; flag {
+	// 		case false:
+	// 			v_Peer.SZ[a] = i_SZ{
+	// 				Screen:                "",
+	// 				IF:                    map[_Name]_Host_Inbound_Traffic{},
+	// 				_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(),
+	// 				_Service_Attributes:   _Service_Attributes{},
+	// 			}
+	// 		}
+	// 		for e := range v_Peer.RI[a].IF {
+	// 			switch _, flag := v_Peer.SZ[a].IF[e]; flag {
+	// 			case false:
+	// 				v_Peer.SZ[a].IF[e] = parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh)
+	// 			}
+	// 		}
+	// 	}
+	// }
+
 	for _, b := range peer.SZ {
 		switch {
 		case b.Name == _Defaults[_mgmt_RI].(_Name):
@@ -576,10 +617,13 @@ func parse_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		}
 		v_Peer.SZ[b.Name] = i_SZ{
 			Screen: b.Screen,
-			IF: func() (outbound map[_Name]_Host_Inbound_Traffic) {
-				outbound = make(map[_Name]_Host_Inbound_Traffic)
+			IF: func() (outbound map[_Name]i_SZ_IF) {
+				outbound = make(map[_Name]i_SZ_IF)
 				for c := range v_Peer.RI[b.Name].IF {
-					outbound[c] = parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh)
+					outbound[c] = i_SZ_IF{
+						_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh),
+						_Service_Attributes:   _Service_Attributes{},
+					}
 				}
 				return
 			}(),
@@ -595,7 +639,7 @@ func parse_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			case false:
 				v_Peer.SZ[a] = i_SZ{
 					Screen:                "",
-					IF:                    map[_Name]_Host_Inbound_Traffic{},
+					IF:                    map[_Name]i_SZ_IF{},
 					_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(),
 					_Service_Attributes:   _Service_Attributes{},
 				}
@@ -603,7 +647,10 @@ func parse_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			for e := range v_Peer.RI[a].IF {
 				switch _, flag := v_Peer.SZ[a].IF[e]; flag {
 				case false:
-					v_Peer.SZ[a].IF[e] = parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh)
+					v_Peer.SZ[a].IF[e] = i_SZ_IF{
+						_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh),
+						_Service_Attributes:   _Service_Attributes{},
+					}
 				}
 			}
 		}

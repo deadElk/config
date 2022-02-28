@@ -129,7 +129,11 @@ type i_VI_Peer struct {
 // Security
 type i_SZ struct {
 	Screen _Name
-	IF     map[_Name]_Host_Inbound_Traffic
+	IF     map[_Name]i_SZ_IF
+	_Host_Inbound_Traffic
+	_Service_Attributes
+}
+type i_SZ_IF struct {
 	_Host_Inbound_Traffic
 	_Service_Attributes
 }

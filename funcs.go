@@ -306,7 +306,7 @@ func read_GT() (ok bool) {
 func create_AB(ab_name _Name, sa *_Service_Attributes) (ok bool) {
 	switch _, flag := i_ab[ab_name]; flag {
 	case true:
-		log.Warnf("Address Book '%+v', already exist; ACTION: skip.", ab_name)
+		log.Debugf("Address Book '%+v', already exist; ACTION: skip.", ab_name)
 		return
 	}
 	i_ab[ab_name] = i_AB{
@@ -382,7 +382,7 @@ func add_2_AB(public, private bool, ab_name _Name, inbound ...interface{}) (ok b
 				add_2_AB(true, true, ab, value)
 			}
 		case flag:
-			log.Warnf("AB '%+v''%+v', already exist; ACTION: skip.", ab_name, i_ab[ab_name])
+			log.Debugf("AB '%+v''%+v', already exist; ACTION: skip.", ab_name, i_ab[ab_name])
 			continue
 		default:
 			switch value := (address).(type) {
