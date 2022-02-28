@@ -7,48 +7,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (inbound _Communication) _Sanitize(mode _Mode) (outbound _Communication) {
-	switch mode {
-	case _if_mode_vi:
-		switch inbound {
-		case _if_comm_ptmp, _if_comm_ptp:
-			return inbound
-		case "":
-			return _vi_comm_
-		default:
-			outbound = _vi_comm_
-		}
-	case _if_mode_link:
-		switch inbound {
-		case _if_comm_ptmp, _if_comm_ptp:
-			return inbound
-		case "":
-			return _if_comm_
-		default:
-			outbound = _if_comm_
-		}
-	}
-	log.Warnf("unknown IF Communication type '%v'; ACTION: use '%v'.", inbound, outbound)
-	return
-}
 func (inbound _Description) _Validate(default_description _Description) _Description {
 	switch len(inbound) == 0 {
 	case true:
 		return default_description
-	}
-	return inbound
-}
-func (inbound _Name) _Validate(decline ..._Name) (outbound _Name) {
-	outbound = _juniper_RI
-	switch len(inbound) == 0 || inbound == _juniper_RI {
-	case true:
-		return
-	}
-	for _, interim := range decline {
-		switch inbound == interim {
-		case true:
-			return
-		}
 	}
 	return inbound
 }
@@ -89,16 +51,6 @@ func (inbound _Type) _VI_Sanitize() _Type {
 func (inbound _FQDN) _Name() _Name {
 	return _Name(inbound.String())
 }
-func (inbound *_Host_Inbound_Traffic) _Defaults() _Host_Inbound_Traffic {
-	return _Host_Inbound_Traffic{
-		Services: map[_Service]bool{
-			_service_ping:       true,
-			_service_ssh:        true,
-			_service_traceroute: true,
-		},
-		Protocols: map[_Protocol]bool{},
-	}
-}
 func (inbound _Action) _SP_Validate() _Action {
 	switch inbound {
 	case _Action_permit_all, _Action_deny_all:
@@ -123,7 +75,4 @@ func (inbound _Name) _Validate_RI(decline ..._Name) (outbound _Name) {
 		}
 	}
 	return inbound
-}
-func (inbound _Name) _Find_RI(decline ..._Name) (outbound _Name) {
-	return
 }
