@@ -129,6 +129,17 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ASN)
 			continue
 		}
+		parse_AB(&b.AB)
+		parse_JA(&b.JA)
+		parse_PL(&b.PL)
+		parse_PS(&b.PS)
+	}
+	for _, b := range *inbound {
+		switch _, flag := i_peer[b.ASN]; flag {
+		case true:
+			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ASN)
+			continue
+		}
 		var (
 			v_Version = re_caps.Split(b.Version, -1)
 			v_Peer    = i_Peer{
@@ -165,10 +176,6 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 		create_AB("O_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
 		create_AB("I_AS"+_Name(v_Peer.PName), &_Service_Attributes{})
 		split_2_string(&b.Version, re_caps, &v_Major)
-		parse_AB(&b.AB)
-		parse_JA(&b.JA)
-		parse_PL(&b.PL)
-		parse_PS(&b.PS)
 		parse_Peer_RI(&b, &v_Peer)
 
 		// PName
@@ -205,40 +212,6 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 		i_peer[b.ASN] = v_Peer
 		ok = true
 
-		// for c, d := range v_Peer.RI {
-		// 	v_Peer.RI[c].Leak[_Action_import] = i_Peer_RI_RO_Leak_FromTo{
-		// 		PL: func() (outbound []_Name) {
-		// 			for _, f := range b.From {
-		// 				switch _, flag = i_ps[f.PL]; flag {
-		// 				case false:
-		// 					log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", b.ASN, c, f.PL)
-		// 					continue
-		// 				}
-		// 				outbound = append(outbound, f.PL)
-		// 			}
-		// 			return
-		// 		}(),
-		// 	}
-		// 	v_Peer.RI[c].Leak[_Action_export] = i_Peer_RI_RO_Leak_FromTo{
-		// 		PL: func() (outbound []_Name) {
-		// 			for _, f := range d.To {
-		// 				switch _, flag = i_ps[f.PL]; flag {
-		// 				case false:
-		// 					log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", b.ASN, c, f.PL)
-		// 					continue
-		// 				}
-		// 				outbound = append(outbound, f.PL)
-		// 			}
-		// 			return
-		// 		}(),
-		// 	}
-		// }
-	}
-	for _, b := range *inbound {
-		switch _, flag := i_peer[b.ASN]; flag {
-		case true:
-			parse_Peer_RI_Leak(&b)
-		}
 	}
 	return
 }
@@ -347,6 +320,31 @@ func parse_Peer_IFM(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	return true
 }
 func parse_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+	for _, b := range peer.RI {
+		switch _, flag := v_Peer.RI[b.Name]; flag {
+		case true:
+			log.Warnf("Peer '%v', RI '%v' already exist; ACTION: ignore.", peer.ASN, b.Name)
+			continue
+		}
+		switch _, flag := i_ps["redistribute_"+b.Name]; flag {
+		case false:
+			i_ps["redistribute_"+b.Name] = i_PO_PS{
+				Term: []i_PO_PS_Term{
+					0: {
+						Name: "PERMIT",
+						From: []i_PO_PS_From{
+							0: {RI: b.Name, _Service_Attributes: _Service_Attributes{}},
+						},
+						Then: []i_PO_PS_Then{
+							0: {Action: _Action_accept, _Service_Attributes: _Service_Attributes{}},
+						},
+						_Service_Attributes: _Service_Attributes{},
+					},
+				},
+				_Service_Attributes: _Service_Attributes{},
+			}
+		}
+	}
 	for _, b := range peer.RI {
 		switch _, flag := v_Peer.RI[b.Name]; flag {
 		case true:
@@ -500,10 +498,37 @@ func parse_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			}()
 		)
 		v_Peer.RI[b.Name] = i_Peer_RI{
-			IP_2_IF:             v_IP_2_IF,
-			IF:                  v_IF,
-			RT:                  v_RT,
-			Leak:                map[_Action]i_Peer_RI_RO_Leak_FromTo{},
+			IP_2_IF: v_IP_2_IF,
+			IF:      v_IF,
+			RT:      v_RT,
+			Leak: map[_Action]i_Peer_RI_RO_Leak_FromTo{
+				_Action_import: {
+					PL: func() (outbound []_Name) {
+						for _, d := range b.From {
+							switch _, flag := i_ps[d.PL]; flag {
+							case false:
+								log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PL)
+								continue
+							}
+							outbound = append(outbound, d.PL)
+						}
+						return
+					}(),
+				},
+				_Action_export: {
+					PL: func() (outbound []_Name) {
+						for _, d := range b.To {
+							switch _, flag := i_ps[d.PL]; flag {
+							case false:
+								log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PL)
+								continue
+							}
+							outbound = append(outbound, d.PL)
+						}
+						return
+					}(),
+				},
+			},
 			_Service_Attributes: b._Service_Attributes,
 		}
 	}
@@ -546,7 +571,6 @@ func parse_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		case b.Name == _Defaults[_mgmt_RI].(_Name):
 			log.Warnf("Peer '%v', SZ '%v' cannot be defined; ACTION: ignore.", peer.ASN, b.Name)
 			continue
-		case len(b.Screen) == 0:
 		}
 		v_Peer.SZ[b.Name] = i_SZ{
 			Screen: b.Screen,
@@ -561,6 +585,28 @@ func parse_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			_Service_Attributes:   b._Service_Attributes,
 		}
 	}
+
+	for a := range v_Peer.RI {
+		switch a == _Defaults[_mgmt_RI].(_Name) {
+		case false:
+			switch _, flag := v_Peer.SZ[a]; flag {
+			case false:
+				v_Peer.SZ[a] = i_SZ{
+					Screen:                "",
+					IF:                    map[_Name]_Host_Inbound_Traffic{},
+					_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(),
+					_Service_Attributes:   _Service_Attributes{},
+				}
+			}
+			for e := range v_Peer.RI[a].IF {
+				switch _, flag := v_Peer.SZ[a].IF[e]; flag {
+				case false:
+					v_Peer.SZ[a].IF[e] = parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh)
+				}
+			}
+		}
+	}
+
 	return true
 }
 func parse_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
@@ -586,41 +632,6 @@ func parse_Peer_SP_Options(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				return _Defaults[_sp_efault_policy].(_Action)
 			}
 		}(),
-	}
-	return true
-}
-
-func parse_Peer_RI_Leak(peer *cDB_Peer) (ok bool) {
-	for _, b := range peer.RI {
-		switch _, flag := i_peer[peer.ASN].RI[b.Name]; flag {
-		case true:
-			i_peer[peer.ASN].RI[b.Name].Leak[_Action_import] = i_Peer_RI_RO_Leak_FromTo{
-				PL: func() (outbound []_Name) {
-					for _, d := range b.From {
-						switch _, flag = i_ps[d.PL]; flag {
-						case false:
-							log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PL)
-							continue
-						}
-						outbound = append(outbound, d.PL)
-					}
-					return
-				}(),
-			}
-			i_peer[peer.ASN].RI[b.Name].Leak[_Action_export] = i_Peer_RI_RO_Leak_FromTo{
-				PL: func() (outbound []_Name) {
-					for _, d := range b.To {
-						switch _, flag = i_ps[d.PL]; flag {
-						case false:
-							log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PL)
-							continue
-						}
-						outbound = append(outbound, d.PL)
-					}
-					return
-				}(),
-			}
-		}
 	}
 	return true
 }
