@@ -135,9 +135,9 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 				PName:               pad(&b.ASN, 10),
 				Router_ID:           netip.Addr{},
 				IF_2_RI:             map[_Name]_Name{},
-				VI:                  map[_VI_ID]*i_VI{},
-				VI_Peer_Left:        map[_VI_ID]*i_VI_Peer{},
-				VI_Peer_Right:       map[_VI_ID]*i_VI_Peer{},
+				VI:                  map[_VI_ID]i_VI{},
+				VI_Peer_Left:        map[_VI_ID]i_VI_Peer{},
+				VI_Peer_Right:       map[_VI_ID]i_VI_Peer{},
 				IFM:                 map[_Name]i_Peer_IFM{},
 				RI:                  map[_Name]i_Peer_RI{},
 				Hostname:            "",
@@ -204,6 +204,39 @@ func parse_Peer(inbound *[]cDB_Peer) (ok bool) {
 		v_Peer.PS = map[_Name]*i_PO_PS{}
 		i_peer[b.ASN] = v_Peer
 		ok = true
+
+		for _, b := range peer.RI {
+			switch _, flag := i_peer[peer.ASN].RI[b.Name]; flag {
+			case true:
+				i_peer[peer.ASN].RI[b.Name].Leak[_Action_import] = i_Peer_RI_RO_Leak_FromTo{
+					PL: func() (outbound []_Name) {
+						for _, d := range b.From {
+							switch _, flag = i_ps[d.PL]; flag {
+							case false:
+								log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PL)
+								continue
+							}
+							outbound = append(outbound, d.PL)
+						}
+						return
+					}(),
+				}
+				i_peer[peer.ASN].RI[b.Name].Leak[_Action_export] = i_Peer_RI_RO_Leak_FromTo{
+					PL: func() (outbound []_Name) {
+						for _, d := range b.To {
+							switch _, flag = i_ps[d.PL]; flag {
+							case false:
+								log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PL)
+								continue
+							}
+							outbound = append(outbound, d.PL)
+						}
+						return
+					}(),
+				}
+			}
+		}
+
 	}
 	for _, b := range *inbound {
 		switch _, flag := i_peer[b.ASN]; flag {
@@ -221,7 +254,8 @@ func parse_VI(inbound *[]cDB_VI) (ok bool) {
 			continue
 		}
 		var (
-			v_vi = func() (outbound i_VI) {
+			v_vi_peer_list = make(map[_VI_Peer_ID]_ASN)
+			v_vi           = func() (outbound i_VI) {
 				outbound = i_VI{
 					PName:               pad(&b.ID, 5),
 					IPPrefix:            get_VI_IPPrefix(b.ID, 0),
@@ -243,6 +277,7 @@ func parse_VI(inbound *[]cDB_VI) (ok bool) {
 						log.Warnf("VI '%v', Peer '%v' already exist; ACTION: skip.", b.ID, d.ID)
 						continue
 					}
+					v_vi_peer_list[d.ID] = d.ASN
 					var (
 						v_RI                = d.RI._Validate_RI(_Defaults[_mgmt_RI].(_Name))
 						v_IF                = d.IF
@@ -269,6 +304,17 @@ func parse_VI(inbound *[]cDB_VI) (ok bool) {
 		)
 		i_vi[b.ID] = v_vi
 		i_vi_peer[b.ID] = v_vi_peer
+		// i_peer[v_vi_peer_list[0]].VI[b.ID] = i_vi[b.ID]
+		// i_peer[v_vi_peer_list[0]].VI_Peer_Left[b.ID] = i_vi_peer[b.ID][0]
+		// i_peer[v_vi_peer_list[0]].VI_Peer_Right[b.ID] = i_vi_peer[b.ID][1]
+		// i_peer[v_vi_peer_list[1]].VI[b.ID] = i_vi[b.ID]
+		// i_peer[v_vi_peer_list[1]].VI_Peer_Left[b.ID] = i_vi_peer[b.ID][1]
+		// i_peer[v_vi_peer_list[1]].VI_Peer_Right[b.ID] = i_vi_peer[b.ID][0]
+		// for c, d := range v_vi_peer_list {
+		// 	i_peer[d].VI[b.ID] = i_vi[b.ID]
+		// 	i_peer[d].VI_Peer_Left[b.ID] = i_vi_peer[b.ID][c]
+		// 	i_peer[d].VI_Peer_Right[b.ID] = i_vi_peer[b.ID][c]
+		// }
 	}
 	return true
 }
@@ -311,33 +357,6 @@ func parse_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			log.Warnf("Peer '%v', RI '%v' already exist; ACTION: ignore.", peer.ASN, b.Name)
 			continue
 		}
-		add_PO_PS("redistribute_"+b.Name, &i_PO_PS{
-			Term: []i_PO_PS_Term{
-				0: {
-					Name: "PERMIT",
-					From: []i_PO_PS_From{
-						0: {
-							RI:                  b.Name,
-							Protocol:            "",
-							Route_Type:          "",
-							PL:                  "",
-							Mask:                "",
-							_Service_Attributes: _Service_Attributes{},
-						},
-					},
-					Then: []i_PO_PS_Then{
-						0: {
-							Action:              _Action_accept,
-							Action_Flag:         "",
-							Metric:              0,
-							_Service_Attributes: _Service_Attributes{},
-						},
-					},
-					_Service_Attributes: _Service_Attributes{},
-				},
-			},
-			_Service_Attributes: _Service_Attributes{},
-		})
 		var (
 			v_IP_2_IF = make(map[netip.Addr]_Name)
 			v_IF      = func() (outbound map[_Name]i_Peer_RI_IF) {

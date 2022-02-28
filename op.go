@@ -69,6 +69,8 @@ func parse_DB(xml_db *cDB) (ok bool) {
 	parse_Peer(&xml_db.Peer)
 	parse_VI(&xml_db.VI)
 
+	parse_iDB_Peer()
+
 	// TODO:
 	//   add_2_AB(true, false, "O_AS"+_Name(v_PName), f.IPPrefix.Addr(), f.NAT)
 	//	 add_2_AB(false, true, "I_AS"+_Name(v_PName), f.IPPrefix.Addr(), f.NAT)
