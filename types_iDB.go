@@ -41,7 +41,7 @@ type i_Peer struct {
 	Root         _Secret
 	GT_List      []_Name
 	SZ           map[_Name]i_SZ
-	NAT          map[_Type]i_NAT
+	NAT          map[_Type]i_NAT_Type
 	SP_Exact     []i_Rule_Set
 	SP_Global    []i_Rule
 	AB           map[_Name]*i_AB
@@ -138,7 +138,7 @@ type i_SZ_IF struct {
 	_Host_Inbound_Traffic
 	_Service_Attributes
 }
-type i_NAT struct {
+type i_NAT_Type struct {
 	Address_Persistent bool
 	Pool               map[_Name]i_Pool
 	Rule_Set           map[_Name]i_Rule_Set

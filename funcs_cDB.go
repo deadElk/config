@@ -195,7 +195,7 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 				Root:                b.Root.validate(16),
 				GT_List:             []_Name{},
 				SZ:                  map[_Name]i_SZ{},
-				NAT:                 map[_Type]i_NAT{},
+				NAT:                 map[_Type]i_NAT_Type{},
 				SP_Exact:            []i_Rule_Set{},
 				SP_Global:           []i_Rule{},
 				AB:                  map[_Name]*i_AB{},
@@ -657,7 +657,7 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	var (
 		h = peer.NAT_Source
 	)
-	v_Peer.NAT[_Type_source] = i_NAT{
+	v_Peer.NAT[_Type_source] = i_NAT_Type{
 		Address_Persistent:  h.Address_Persistent,
 		Pool:                parse_cDB_Pool(peer, v_Peer, &h.Pool),
 		Rule_Set:            parse_cDB_Rule_Set(peer, v_Peer, &h.Rule_Set),
@@ -666,7 +666,7 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 
 	h = peer.NAT_Destination
 
-	v_Peer.NAT[_Type_destination] = i_NAT{
+	v_Peer.NAT[_Type_destination] = i_NAT_Type{
 		Pool:                parse_cDB_Pool(peer, v_Peer, &h.Pool),
 		Rule_Set:            parse_cDB_Rule_Set(peer, v_Peer, &h.Rule_Set),
 		_Service_Attributes: h._Service_Attributes,
@@ -674,7 +674,7 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 
 	h = peer.NAT_Static
 
-	v_Peer.NAT[_Type_static] = i_NAT{
+	v_Peer.NAT[_Type_static] = i_NAT_Type{
 		Pool:                parse_cDB_Pool(peer, v_Peer, &h.Pool),
 		Rule_Set:            parse_cDB_Rule_Set(peer, v_Peer, &h.Rule_Set),
 		_Service_Attributes: h._Service_Attributes,
