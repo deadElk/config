@@ -176,6 +176,7 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 		}
 		var (
 			v_Peer = i_Peer{
+				ASN:                 b.ASN,
 				PName:               pad(&b.ASN, 10),
 				Router_ID:           netip.Addr{},
 				IF_2_RI:             map[_Name]_Name{},
