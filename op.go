@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/xml"
 	"io/ioutil"
-	"net/netip"
 	"os"
 	"sort"
 	"text/template"
@@ -97,64 +96,74 @@ func upload_config() (ok bool) {
 		err error
 	)
 	var (
-		hosts   string
-		ordered []int
+		hosts       string
+		s_peer_list []int
 	)
 	for index, value := range config {
-		ordered = append(ordered, int(index))
+		s_peer_list = append(s_peer_list, int(index))
 		var (
 			fn = _Defaults[_path_out].(string) + "./AS" + index.String()
 		)
-		switch err_i := os.WriteFile(fn, value, 0600); err_i == nil {
+		switch err = os.WriteFile(fn, value, 0600); err == nil {
 		case true:
 			log.Debugf("OK '%v'", index)
 		case false:
-			log.Errorf("Fail '%v' with error '%v'", index, err_i)
+			log.Errorf("Fail '%v' with error '%v'", index, err)
+		}
+	}
+	sort.Ints(s_peer_list)
+
+	for _, value := range s_peer_list {
+		var (
+			index     = _ASN(value)
+			s_public  []string
+			s_private []string
+		)
+		for a := range i_peer[index].AB["O_AS"+_Name(i_peer[index].PName)].Address_Set {
+			s_public = append(s_public, a.String())
+		}
+		for a := range i_peer[index].AB["I_AS"+_Name(i_peer[index].PName)].Address_Set {
+			s_private = append(s_private, a.String())
 		}
 	}
 
-	sort.Ints(ordered)
-	for _, value := range ordered {
-		var (
-			index = _ASN(value)
-		)
-		hosts += func() (outbound string) {
-			var (
-				ips       string
-				publics   []netip.Prefix
-				router_id = parse_interface(i_peer[index].Router_ID.Prefix(32)).(netip.Prefix)
-			)
-			publics = append(publics, router_id)
-			for ip_i, ip_v := range i_peer[index].IPPrefix_List {
-				switch ip_i == router_id {
-				case false:
-					ips += tabber(ip_i.String(), 3) + "\t"
-				}
-				switch ip_v {
-				case true:
-					publics = append(publics, ip_i)
-				}
-			}
-			for _, ip := range publics {
-				outbound += tabber(ip.Addr().String(), 2) +
-					"\t####\t" +
-					tabber(i_peer[index].PName.String(), 2) + "\t" +
-					tabber(i_peer[index].Router_ID.String(), 2) + "\t" +
-					tabber(i_peer[index].Hostname.String(), 3) + "\t" +
-					tabber(i_peer[index].Manufacturer+" "+i_peer[index].Model, 3) + "\t####\t" +
-					ips + "\n"
-			}
-			outbound += "\n"
-			return
-		}()
-	}
-
-	switch err_i := os.WriteFile(_Defaults[_path_out].(string)+"./hosts.txt", []byte(hosts), 0600); err_i == nil {
-	case true:
-		log.Infof("OK 'hosts.txt'")
-	case false:
-		log.Errorf("Fail 'hosts.txt' with error '%v'", err_i)
-	}
+	// 	hosts += func() (outbound string) {
+	// 		var (
+	// 			ips       string
+	// 			publics   []netip.Prefix
+	// 			router_id = parse_interface(i_peer[index].Router_ID.Prefix(32)).(netip.Prefix)
+	// 		)
+	// 		publics = append(publics, router_id)
+	// 		for ip_i, ip_v := range i_peer[index].IPPrefix_List {
+	// 			switch ip_i == router_id {
+	// 			case false:
+	// 				ips += tabber(ip_i.String(), 3) + "\t"
+	// 			}
+	// 			switch ip_v {
+	// 			case true:
+	// 				publics = append(publics, ip_i)
+	// 			}
+	// 		}
+	// 		for _, ip := range publics {
+	// 			outbound += tabber(ip.Addr().String(), 2) +
+	// 				"\t####\t" +
+	// 				tabber(i_peer[index].PName.String(), 2) + "\t" +
+	// 				tabber(i_peer[index].Router_ID.String(), 2) + "\t" +
+	// 				tabber(i_peer[index].Hostname.String(), 3) + "\t" +
+	// 				tabber(i_peer[index].Manufacturer+" "+i_peer[index].Model, 3) + "\t####\t" +
+	// 				ips + "\n"
+	// 		}
+	// 		outbound += "\n"
+	// 		return
+	// 	}()
+	// }
+	//
+	// switch err_i := os.WriteFile(_Defaults[_path_out].(string)+"./hosts.txt", []byte(hosts), 0600); err_i == nil {
+	// case true:
+	// 	log.Infof("OK 'hosts.txt'")
+	// case false:
+	// 	log.Errorf("Fail 'hosts.txt' with error '%v'", err_i)
+	// }
 
 	log.Debugf("\n%s\n", hosts)
 	return err == nil
