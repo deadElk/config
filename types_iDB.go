@@ -209,16 +209,15 @@ type i_Then struct {
 
 // Address Book
 type i_AB struct {
-	Type        _Type
-	Address     interface{}
-	Address_Set map[_Name]_Type
+	Type     _Type
+	IPPrefix netip.Prefix
+	FQDN     _FQDN
+	Set      map[_Name]i_AB_Set
 	_GT_Action
 	_Service_Attributes
 }
-type i_AB_Address struct {
-	AB       _Name
-	IPPrefix netip.Prefix
-	FQDN     _FQDN
+type i_AB_Set struct {
+	Type _Type
 	_GT_Action
 	_Service_Attributes
 }

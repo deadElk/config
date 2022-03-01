@@ -122,10 +122,10 @@ func upload_config() (ok bool) {
 			ip_list   = "\t"
 			s_target  = []string{0: i_peer[index].Router_ID.String()}
 		)
-		for c := range i_peer[index].AB["O_AS"+_Name(i_peer[index].PName)].Address_Set {
+		for c := range i_peer[index].AB["O_AS"+_Name(i_peer[index].PName)].Set {
 			s_public = append(s_public, c.String())
 		}
-		for c := range i_peer[index].AB["I_AS"+_Name(i_peer[index].PName)].Address_Set {
+		for c := range i_peer[index].AB["I_AS"+_Name(i_peer[index].PName)].Set {
 			s_private = append(s_private, c.String())
 		}
 		sort.Strings(s_public)

@@ -30,9 +30,9 @@ func parse_iDB_Peer_Vocabulary() (ok bool) {
 }
 func peer_iDB_recurse_AB(interim *map[_Name]*i_AB, inbound _Name) (ok bool) {
 	(*interim)[inbound] = i_ab[inbound]
-	for a, b := range i_ab[inbound].Address_Set {
+	for a, b := range i_ab[inbound].Set {
 		switch {
-		case b != _Type_set:
+		case b.Type != _Type_set:
 			peer_iDB_recurse_AB(interim, a)
 		case (*interim)[a] == nil:
 			peer_iDB_recurse_AB(interim, a)
