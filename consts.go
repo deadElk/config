@@ -9,7 +9,7 @@ const (
 	_passwd_Z    string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	_passwd_z    string = "abcdefghijklmnopqrstuvwxyz"
 	_passwd_0    string = "0123456789"
-	_passwd_oops string = "_" // carefully with special symbols
+	_passwd_oops string = "_" // carefully with a special symbols
 	_passwd             = _passwd_Z + _passwd_z + _passwd_0 + _passwd_oops
 
 	_Action_accept             _Action        = "accept"

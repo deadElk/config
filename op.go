@@ -47,6 +47,7 @@ func op() (ok bool) {
 				log.Warnf("configuration file '%v' GT parse error; ACTION: skip.", value)
 				continue
 			}
+			log.Infof("GTs are parsed.")
 			return
 		}
 	}()
