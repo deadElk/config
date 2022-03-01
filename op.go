@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"io/ioutil"
+	"net/netip"
 	"os"
 	"sort"
 	"text/template"
@@ -119,6 +120,7 @@ func upload_config() (ok bool) {
 			s_public  []string
 			s_private []string
 			ip_list   = "\t"
+			s_target  = []string{0: i_peer[index].Router_ID.String()}
 		)
 		for c := range i_peer[index].AB["O_AS"+_Name(i_peer[index].PName)].Address_Set {
 			s_public = append(s_public, c.String())
@@ -129,30 +131,43 @@ func upload_config() (ok bool) {
 		sort.Strings(s_public)
 		sort.Strings(s_private)
 		for _, d := range s_private {
-			ip_list += d + "\t"
+			ip_list += tabber(d, 3) + "\t"
 		}
 		for _, d := range s_public {
-			ip_list += d + "\t"
+			s_target = append(s_target, d)
+			ip_list += tabber(d, 3) + "\t"
 		}
-
 		hosts += func() (outbound string) {
-			outbound += tabber(i_peer[index].Router_ID.String(), 2) +
-				"\t####\t" +
-				tabber(i_peer[index].PName.String(), 2) + "\t" +
-				tabber(i_peer[index].Router_ID.String(), 2) + "\t" +
-				tabber(i_peer[index].Hostname.String(), 3) + "\t" +
-				tabber(i_peer[index].Manufacturer+" "+i_peer[index].Model, 3) + "\t####\t" +
-				ip_list + "\n"
+			for _, f := range s_target {
+				var (
+					host = func() string {
+						switch addr, err := netip.ParseAddr(f); err == nil {
+						case true:
+							return addr.String()
+						case false:
+							prefix, _ := netip.ParsePrefix(f)
+							return prefix.Addr().String()
+						}
+						return ""
+					}()
+				)
+				outbound += tabber(host, 2) +
+					"\t####\t" +
+					tabber(i_peer[index].PName.String(), 2) + "\t" +
+					tabber(i_peer[index].Hostname.String(), 3) + "\t" +
+					tabber(i_peer[index].Manufacturer+" "+i_peer[index].Model, 3) + "\t####\t" +
+					ip_list + "\n"
+			}
 			outbound += "\n"
 			return
 		}()
 	}
 
-	switch err_i := os.WriteFile(_Defaults[_path_out].(string)+"./hosts.txt", []byte(hosts), 0600); err_i == nil {
+	switch err = os.WriteFile(_Defaults[_path_out].(string)+"./hosts.txt", []byte(hosts), 0600); err == nil {
 	case true:
 		log.Infof("OK 'hosts.txt'")
 	case false:
-		log.Errorf("Fail 'hosts.txt' with error '%v'", err_i)
+		log.Errorf("Fail 'hosts.txt' with error '%v'", err)
 	}
 
 	log.Debugf("\n%s\n", hosts)
