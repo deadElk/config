@@ -20,7 +20,6 @@ func init() {
 	log.SetReportCaller(true)
 }
 func main() {
-	set_VI_IPPrefix()
 	switch op() {
 	case false:
 		log.Fatalf("something wrong ....")
