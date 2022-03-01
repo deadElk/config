@@ -6,7 +6,7 @@ import (
 
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
 
-// Why return String() "invalid ID"???? What for???? Why not just return an empty String() "" ????
+// Why return String() "invalid IP"???? What for???? Why not just return an empty String() "" ????
 type _netip_Prefix struct {
 	netip.Prefix
 }
@@ -26,10 +26,9 @@ type _Host_Inbound_Traffic struct {
 	Services  map[_Service]bool  `xml:"service,attr"`
 	Protocols map[_Protocol]bool `xml:"protocol,attr"`
 }
-type _Route_Attributes struct {
-	Action     _Action `xml:"action,attr"`
-	Metric     uint    `xml:"metric,attr"`
-	Preference uint    `xml:"preference,attr"`
+type _GT_Action struct {
+	GT_Action       interface{}
+	GT_Action_Value interface{}
 }
 
 type _ASN uint32
