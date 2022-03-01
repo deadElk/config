@@ -51,6 +51,11 @@ func op() (ok bool) {
 			return
 		}
 	}()
+	switch upload_config() {
+	case false:
+		log.Warnf("config upload error.")
+		return
+	}
 	return err == nil
 }
 func parse_GT() (ok bool) {
@@ -83,5 +88,11 @@ func parse_GT() (ok bool) {
 			}()
 		}
 	}
+	return err == nil
+}
+func upload_config() (ok bool) {
+	var (
+		err error
+	)
 	return err == nil
 }
