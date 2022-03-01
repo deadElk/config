@@ -660,12 +660,14 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				for c := range v_Peer.RI[b.Name].IF {
 					outbound[c] = i_SZ_IF{
 						_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh),
+						_GT_Action:            _GT_Action{},
 						_Service_Attributes:   _Service_Attributes{},
 					}
 				}
 				return
 			}(),
 			_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(),
+			_GT_Action:            _GT_Action{},
 			_Service_Attributes:   b._Service_Attributes,
 		}
 	}
@@ -680,6 +682,7 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				Screen:                "",
 				IF:                    map[_Name]i_SZ_IF{},
 				_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(),
+				_GT_Action:            _GT_Action{},
 				_Service_Attributes:   _Service_Attributes{},
 			}
 		}
@@ -690,6 +693,7 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			}
 			v_Peer.SZ[a].IF[e] = i_SZ_IF{
 				_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh),
+				_GT_Action:            _GT_Action{},
 				_Service_Attributes:   _Service_Attributes{},
 			}
 		}
@@ -705,22 +709,27 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		Address_Persistent:  h.Address_Persistent,
 		Pool:                parse_cDB_Pool(peer, v_Peer, &h.Pool),
 		Rule_Set:            parse_cDB_Rule_Set(peer, v_Peer, &h.Rule_Set),
+		_GT_Action:          _GT_Action{},
 		_Service_Attributes: h._Service_Attributes,
 	}
 
 	h = peer.NAT_Destination
 
 	v_Peer.NAT[_Type_destination] = i_NAT_Type{
+		Address_Persistent:  false,
 		Pool:                parse_cDB_Pool(peer, v_Peer, &h.Pool),
 		Rule_Set:            parse_cDB_Rule_Set(peer, v_Peer, &h.Rule_Set),
+		_GT_Action:          _GT_Action{},
 		_Service_Attributes: h._Service_Attributes,
 	}
 
 	h = peer.NAT_Static
 
 	v_Peer.NAT[_Type_static] = i_NAT_Type{
+		Address_Persistent:  false,
 		Pool:                parse_cDB_Pool(peer, v_Peer, &h.Pool),
 		Rule_Set:            parse_cDB_Rule_Set(peer, v_Peer, &h.Rule_Set),
+		_GT_Action:          _GT_Action{},
 		_Service_Attributes: h._Service_Attributes,
 	}
 	return true
@@ -733,6 +742,7 @@ func parse_cDB_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 					From:                parse_cDB_FromTo(peer, v_Peer, &[]cDB_FromTo{0: n}),
 					To:                  parse_cDB_FromTo(peer, v_Peer, &[]cDB_FromTo{0: l}),
 					Rule:                parse_cDB_Rule(peer, v_Peer, &j.Rule),
+					_GT_Action:          _GT_Action{},
 					_Service_Attributes: j._Service_Attributes,
 				})
 			}
@@ -748,6 +758,7 @@ func parse_cDB_Peer_SP_Global(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			From:                parse_cDB_FromTo(peer, v_Peer, &j.From),
 			To:                  parse_cDB_FromTo(peer, v_Peer, &j.To),
 			Then:                parse_cDB_Then(peer, v_Peer, &j.Then),
+			_GT_Action:          _GT_Action{},
 			_Service_Attributes: j._Service_Attributes,
 		})
 	}
@@ -794,6 +805,7 @@ func parse_cDB_Pool(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Pool) (outbou
 			IPPrefix:            j.IPPrefix,
 			RI:                  j.RI,
 			SZ:                  j.SZ,
+			_GT_Action:          _GT_Action{},
 			_Service_Attributes: j._Service_Attributes,
 		}
 	}
@@ -806,6 +818,7 @@ func parse_cDB_Rule_Set(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Rule_Set)
 			From:                parse_cDB_FromTo(peer, v_Peer, &j.From),
 			To:                  parse_cDB_FromTo(peer, v_Peer, &j.To),
 			Rule:                parse_cDB_Rule(peer, v_Peer, &j.Rule),
+			_GT_Action:          _GT_Action{},
 			_Service_Attributes: j._Service_Attributes,
 		}
 	}
@@ -815,10 +828,12 @@ func parse_cDB_Rule(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Rule) (outbou
 	outbound = make(map[_Name]i_Rule)
 	for _, j := range *inbound {
 		outbound[j.Name] = i_Rule{
+			Name:                "",
 			JA:                  parse_cDB_Match_2_Name(peer, v_Peer, &j.Match),
 			From:                parse_cDB_FromTo(peer, v_Peer, &j.From),
 			To:                  parse_cDB_FromTo(peer, v_Peer, &j.To),
 			Then:                parse_cDB_Then(peer, v_Peer, &j.Then),
+			_GT_Action:          _GT_Action{},
 			_Service_Attributes: j._Service_Attributes,
 		}
 	}
@@ -860,6 +875,7 @@ func parse_cDB_Then(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Then) (outbou
 			RI:                  j.RI,
 			Port_Low:            j.Port_Low,
 			Port_High:           j.Port_High,
+			_GT_Action:          _GT_Action{},
 			_Service_Attributes: j._Service_Attributes,
 		})
 	}
@@ -902,6 +918,7 @@ func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_FromTo) (ou
 			SZ:                  j.SZ,
 			Port_Low:            j.Port_Low,
 			Port_High:           j.Port_High,
+			_GT_Action:          _GT_Action{},
 			_Service_Attributes: j._Service_Attributes,
 		})
 	}
