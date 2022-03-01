@@ -1,6 +1,11 @@
 package main
 
-func peer_iDB_Vocabulary() (ok bool) {
+func parse_iDB() (ok bool) {
+	parse_iDB_Peer_Vocabulary()
+	return true
+}
+
+func parse_iDB_Peer_Vocabulary() (ok bool) {
 	for y, v_Peer := range i_peer {
 
 		var (
