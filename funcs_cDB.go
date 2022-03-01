@@ -72,7 +72,7 @@ func parse_cDB_JA(inbound *[]cDB_JA) (ok bool) {
 							Protocol:         d.Protocol,
 							Destination_Port: d.Destination_Port,
 							_GT_Action: _GT_Action{
-								GT_Action: "set applications application " + b.Name.String() + " term " + d.Name.String() + " protocol " + d.Protocol.String() + " destination-port " + d.Destination_Port.String(),
+								GT_Action: "term " + d.Name.String() + " protocol " + d.Protocol.String() + " destination-port " + d.Destination_Port.String(),
 							},
 							_Service_Attributes: d._Service_Attributes,
 						})
@@ -103,7 +103,7 @@ func parse_cDB_PL(inbound *[]cDB_PO_PL) (ok bool) {
 						outbound = append(outbound, i_PO_PL_Match{
 							IPPrefix: d.IPPrefix,
 							_GT_Action: _GT_Action{
-								GT_Action: "set policy-options prefix-list " + b.Name.String() + " default " + d.IPPrefix.String(),
+								GT_Action: "default " + d.IPPrefix.String(),
 							},
 							_Service_Attributes: d._Service_Attributes,
 						})
@@ -155,7 +155,7 @@ func parse_cDB_PS(inbound *[]cDB_PO_PS) (ok bool) {
 										PL:         f.PL,
 										Mask:       f.Mask,
 										_GT_Action: _GT_Action{
-											GT_Action: "set policy-options policy-statement " + b.Name.String() + " term " + d.Name.String() + " from " + a_Action,
+											GT_Action: "from " + a_Action,
 										},
 										_Service_Attributes: f._Service_Attributes,
 									})
@@ -176,7 +176,7 @@ func parse_cDB_PS(inbound *[]cDB_PO_PS) (ok bool) {
 										Action_Flag: f.Action_Flag,
 										Metric:      f.Metric,
 										_GT_Action: _GT_Action{
-											GT_Action: "set policy-options policy-statement " + b.Name.String() + " term " + d.Name.String() + " then " + f.Action.String() + " " + f.Action_Flag.String() + a_Action,
+											GT_Action: "then " + f.Action.String() + " " + f.Action_Flag.String() + a_Action,
 										},
 										_Service_Attributes: f._Service_Attributes,
 									})
@@ -184,7 +184,7 @@ func parse_cDB_PS(inbound *[]cDB_PO_PS) (ok bool) {
 								return
 							}(),
 							_GT_Action: _GT_Action{
-								GT_Action: "set policy-options policy-statement " + b.Name.String() + " term " + d.Name.String(),
+								GT_Action: "term " + d.Name.String(),
 							},
 							_Service_Attributes: d._Service_Attributes,
 						})
@@ -980,7 +980,7 @@ func parse_cDB_AB_add_Address(public, private bool, ab_name _Name, inbound ...in
 				i_ab[ab_name].Set[value] = i_AB_Set{
 					Type: _Type_set,
 					_GT_Action: _GT_Action{
-						GT_Action: "set security address-book global address-set " + ab_name.String() + " address-set " + value.String(),
+						GT_Action: "address-set " + value.String(),
 					},
 					_Service_Attributes: _Service_Attributes{},
 				}
@@ -989,7 +989,7 @@ func parse_cDB_AB_add_Address(public, private bool, ab_name _Name, inbound ...in
 				i_ab[ab_name].Set[_Name(value)] = i_AB_Set{
 					Type: _Type_fqdn,
 					_GT_Action: _GT_Action{
-						GT_Action: "set security address-book global address-set " + ab_name.String() + " address " + value.String(),
+						GT_Action: "address " + value.String(),
 					},
 					_Service_Attributes: _Service_Attributes{},
 				}
@@ -999,7 +999,7 @@ func parse_cDB_AB_add_Address(public, private bool, ab_name _Name, inbound ...in
 				i_ab[ab_name].Set[_Name(value.String())] = i_AB_Set{
 					Type: _Type_ipprefix,
 					_GT_Action: _GT_Action{
-						GT_Action: "set security address-book global address-set " + ab_name.String() + " address " + value.String(),
+						GT_Action: "address " + value.String(),
 					},
 					_Service_Attributes: _Service_Attributes{},
 				}
