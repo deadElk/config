@@ -279,9 +279,6 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 	}
 	return true
 }
-func parse_cDB_VI_Peer(inbound *[]cDB_VI_Peer) (ok bool) {
-	return true
-}
 
 func parse_cDB_Peer_Router_ID(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	switch peer.Router_ID.IsValid() {
