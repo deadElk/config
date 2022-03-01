@@ -17,6 +17,7 @@ type _i_config map[_ASN][]byte
 // Templates
 type i_GT struct {
 	Content _Content
+	_GT_Action
 	_Service_Attributes
 }
 
@@ -49,10 +50,12 @@ type i_Peer struct {
 	PL           map[_Name]*i_PO_PL
 	PS           map[_Name]*i_PO_PS
 	i_SP_Options
+	_GT_Action
 	_Service_Attributes
 }
 type i_Peer_IFM struct {
 	Communication _Communication
+	_GT_Action
 	_Service_Attributes
 }
 type i_Peer_RI struct {
@@ -60,6 +63,7 @@ type i_Peer_RI struct {
 	IF      map[_Name]i_Peer_RI_IF
 	RT      map[netip.Prefix]i_Peer_RI_RO_RT
 	Leak    map[_Action]i_Peer_RI_RO_Leak_FromTo
+	_GT_Action
 	_Service_Attributes
 }
 type i_Peer_RI_IF struct {
@@ -68,6 +72,7 @@ type i_Peer_RI_IF struct {
 	Communication _Communication
 	IP            map[netip.Prefix]i_Peer_RI_IF_IP
 	PARP          map[netip.Addr]i_Peer_RI_IF_PARP
+	_GT_Action
 	_Service_Attributes
 }
 type i_Peer_RI_IF_IP struct {
@@ -76,14 +81,17 @@ type i_Peer_RI_IF_IP struct {
 	Preferred bool
 	NAT       netip.Addr
 	DHCP      bool
+	_GT_Action
 	_Service_Attributes
 }
 type i_Peer_RI_IF_PARP struct {
 	NAT netip.Addr
+	_GT_Action
 	_Service_Attributes
 }
 type i_Peer_RI_RO_RT struct {
 	GW map[_Name]i_Peer_RI_RO_RT_GW
+	_GT_Action
 	_Service_Attributes
 }
 type i_Peer_RI_RO_RT_GW struct {
@@ -94,10 +102,12 @@ type i_Peer_RI_RO_RT_GW struct {
 	Action_Flag _Action
 	Metric      _Route_Weight
 	Preference  _Route_Weight
+	_GT_Action
 	_Service_Attributes
 }
 type i_Peer_RI_RO_Leak_FromTo struct {
 	PS []_Name
+	_GT_Action
 	_Service_Attributes
 }
 
@@ -111,6 +121,7 @@ type i_VI struct {
 	Communication _Communication
 	Route_Metric  _Route_Weight
 	PSK           _Secret
+	_GT_Action
 	_Service_Attributes
 }
 type i_VI_Peer struct {
@@ -124,6 +135,7 @@ type i_VI_Peer struct {
 	Inner_RI          _Name
 	Inner_IP          netip.Addr
 	Inner_IPPrefix    netip.Prefix
+	_GT_Action
 	_Service_Attributes
 }
 
@@ -132,22 +144,26 @@ type i_SZ struct {
 	Screen _Name
 	IF     map[_Name]i_SZ_IF
 	_Host_Inbound_Traffic
+	_GT_Action
 	_Service_Attributes
 }
 type i_SZ_IF struct {
 	_Host_Inbound_Traffic
+	_GT_Action
 	_Service_Attributes
 }
 type i_NAT_Type struct {
 	Address_Persistent bool
 	Pool               map[_Name]i_Pool
 	Rule_Set           map[_Name]i_Rule_Set
+	_GT_Action
 	_Service_Attributes
 }
 type i_Pool struct {
 	IPPrefix netip.Prefix
 	RI       _Name
 	SZ       _Name
+	_GT_Action
 	_Service_Attributes
 }
 
@@ -156,6 +172,7 @@ type i_Rule_Set struct {
 	From []i_FromTo
 	To   []i_FromTo
 	Rule map[_Name]i_Rule
+	_GT_Action
 	_Service_Attributes
 }
 type i_FromTo struct {
@@ -166,6 +183,7 @@ type i_FromTo struct {
 	SZ        _Name // NAT_Source
 	Port_Low  _Port // NAT_Destination
 	Port_High _Port // NAT_Destination
+	_GT_Action
 	_Service_Attributes
 }
 type i_Rule struct {
@@ -174,6 +192,7 @@ type i_Rule struct {
 	From []i_FromTo // SP, NAT
 	To   []i_FromTo // SP, NAT
 	Then []i_Then   // SP, NAT
+	_GT_Action
 	_Service_Attributes
 }
 type i_Then struct {
@@ -184,6 +203,7 @@ type i_Then struct {
 	RI          _Name
 	Port_Low    _Port
 	Port_High   _Port
+	_GT_Action
 	_Service_Attributes
 }
 
@@ -192,44 +212,52 @@ type i_AB struct {
 	Type        _Type
 	Address     interface{}
 	Address_Set map[_Name]_Type
+	_GT_Action
 	_Service_Attributes
 }
 type i_AB_Address struct {
 	AB       _Name
 	IPPrefix netip.Prefix
 	FQDN     _FQDN
+	_GT_Action
 	_Service_Attributes
 }
 
 // Junos Applications (JA)
 type i_JA struct {
 	Term []i_JA_Term
+	_GT_Action
 	_Service_Attributes
 }
 type i_JA_Term struct {
 	Name             _Name
 	Protocol         _Protocol
 	Destination_Port _Port
+	_GT_Action
 	_Service_Attributes
 }
 
 // Policy Options
 type i_PO_PL struct {
 	Match []i_PO_PL_Match
+	_GT_Action
 	_Service_Attributes
 }
 type i_PO_PL_Match struct {
 	IPPrefix netip.Prefix
+	_GT_Action
 	_Service_Attributes
 }
 type i_PO_PS struct {
 	Term []i_PO_PS_Term
+	_GT_Action
 	_Service_Attributes
 }
 type i_PO_PS_Term struct {
 	Name _Name
 	From []i_PO_PS_From
 	Then []i_PO_PS_Then
+	_GT_Action
 	_Service_Attributes
 }
 type i_PO_PS_From struct {
@@ -238,12 +266,14 @@ type i_PO_PS_From struct {
 	Route_Type _Type
 	PL         _Name
 	Mask       _Mask
+	_GT_Action
 	_Service_Attributes
 }
 type i_PO_PS_Then struct {
 	Action      _Action
 	Action_Flag _Action
 	Metric      _Route_Weight
+	_GT_Action
 	_Service_Attributes
 }
 
