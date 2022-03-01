@@ -22,6 +22,7 @@ type i_GT struct {
 
 // Peer
 type i_Peer struct {
+	ASN          _ASN
 	PName        _PName
 	Router_ID    netip.Addr
 	IF_2_RI      map[_Name]_Name // interface to RI mapping. interfaces within one peer must be unique.
