@@ -72,7 +72,7 @@ func parse_cDB_JA(inbound *[]cDB_JA) (ok bool) {
 							Protocol:         d.Protocol,
 							Destination_Port: d.Destination_Port,
 							_GT_Action: _GT_Action{
-								GT_Action: "",
+								GT_Action: "set applications application " + b.Name.String() + " term " + d.Name.String() + " protocol " + d.Protocol.String() + " destination-port " + d.Destination_Port.String(),
 							},
 							_Service_Attributes: d._Service_Attributes,
 						})
@@ -80,7 +80,7 @@ func parse_cDB_JA(inbound *[]cDB_JA) (ok bool) {
 					return
 				}(),
 				_GT_Action: _GT_Action{
-					GT_Action: "",
+					GT_Action: "set applications application " + b.Name.String(),
 				},
 				_Service_Attributes: b._Service_Attributes,
 			}
@@ -382,6 +382,7 @@ func parse_cDB_Peer_IFM(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	for _, b := range peer.IFM {
 		v_Peer.IFM[b.Name] = i_Peer_IFM{
 			Communication:       parse_Communication(&peer.ASN, &b.Name, &b.Communication),
+			_GT_Action:          _GT_Action{GT_Action: ""},
 			_Service_Attributes: b._Service_Attributes,
 		}
 	}
