@@ -313,31 +313,26 @@ func parse_cDB_Peer_IFM(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 }
 func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	for _, b := range peer.RI {
-		switch _, flag := v_Peer.RI[b.Name]; flag {
-		case true:
+		switch _, flag := v_Peer.RI[b.Name]; {
+		case flag:
 			log.Warnf("Peer '%v', RI '%v' already exist; ACTION: ignore.", peer.ASN, b.Name)
 			continue
 		}
-		switch _, flag := i_ps["redistribute_"+b.Name]; flag {
-		case true:
-			continue
-		}
-		i_ps["redistribute_"+b.Name] = &i_PO_PS{
-			Term: []i_PO_PS_Term{
-				0: {
-					Name: "PERMIT",
-					From: []i_PO_PS_From{
-						0: {RI: b.Name, _Service_Attributes: _Service_Attributes{}},
+		switch _, flag := i_ps["redistribute_"+b.Name]; {
+		case !flag:
+			i_ps["redistribute_"+b.Name] = &i_PO_PS{
+				Term: []i_PO_PS_Term{
+					0: {
+						Name:                "PERMIT",
+						From:                []i_PO_PS_From{0: {RI: b.Name, _Service_Attributes: _Service_Attributes{}}},
+						Then:                []i_PO_PS_Then{0: {Action: _Action_accept, _Service_Attributes: _Service_Attributes{}}},
+						_Service_Attributes: _Service_Attributes{},
 					},
-					Then: []i_PO_PS_Then{
-						0: {Action: _Action_accept, _Service_Attributes: _Service_Attributes{}},
-					},
-					_Service_Attributes: _Service_Attributes{},
 				},
-			},
-			_Service_Attributes: _Service_Attributes{},
+				_Service_Attributes: _Service_Attributes{},
+			}
+			v_Peer.link_PS("redistribute_" + b.Name)
 		}
-		v_Peer.link_PS("redistribute_" + b.Name)
 	}
 	for _, b := range peer.RI {
 		switch _, flag := v_Peer.RI[b.Name]; flag {
@@ -499,29 +494,29 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			RT:      v_RT,
 			Leak: map[_Action]i_Peer_RI_RO_Leak_FromTo{
 				_Action_import: {
-					PL: func() (outbound []_Name) {
+					PS: func() (outbound []_Name) {
 						for _, d := range b.From {
-							switch _, flag := i_ps[d.PL]; flag {
+							switch _, flag := i_ps[d.PS]; flag {
 							case false:
-								log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PL)
+								log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PS)
 								continue
 							}
-							outbound = append(outbound, d.PL)
-							v_Peer.link_PL(d.PL)
+							outbound = append(outbound, d.PS)
+							v_Peer.link_PS(d.PS)
 						}
 						return
 					}(),
 				},
 				_Action_export: {
-					PL: func() (outbound []_Name) {
+					PS: func() (outbound []_Name) {
 						for _, d := range b.To {
-							switch _, flag := i_ps[d.PL]; flag {
+							switch _, flag := i_ps[d.PS]; flag {
 							case false:
-								log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PL)
+								log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PS)
 								continue
 							}
-							outbound = append(outbound, d.PL)
-							v_Peer.link_PL(d.PL)
+							outbound = append(outbound, d.PS)
+							v_Peer.link_PS(d.PS)
 						}
 						return
 					}(),
@@ -774,7 +769,7 @@ func parse_cDB_Then(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Then) (outbou
 		case len(j.AB) != 0 && !flag && j.AB != "any":
 			log.Warnf("Peer '%v', unknown AB '%v'; ACTION: skip.", peer.ASN, j.AB)
 			continue
-		case len(j.AB) != 0 && j.AB != "any":
+		case len(j.AB) != 0 && flag && j.AB != "any":
 			v_Peer.link_AB(j.AB)
 		}
 		switch _, flag := v_Peer.RI[j.RI]; len(j.RI) != 0 && !flag {
@@ -797,15 +792,15 @@ func parse_cDB_Then(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Then) (outbou
 }
 func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_FromTo) (outbound []i_FromTo) {
 	for _, j := range *inbound {
-		switch _, flag := i_ab[j.AB]; len(j.AB) != 0 && !flag && j.AB != "any" {
-		case true:
+		switch _, flag := i_ab[j.AB]; {
+		case len(j.AB) != 0 && !flag && j.AB != "any":
 			log.Warnf("Peer '%v', unknown AB '%v'; ACTION: skip.", peer.ASN, j.AB)
 			continue
-		case len(j.AB) != 0 && j.AB != "any":
+		case len(j.AB) != 0 && flag && j.AB != "any":
 			v_Peer.link_AB(j.AB)
 		}
-		switch _, flag := v_Peer.IF_2_RI[j.IF]; len(j.IF) != 0 && !flag {
-		case true:
+		switch _, flag := v_Peer.IF_2_RI[j.IF]; {
+		case len(j.IF) != 0 && !flag:
 			log.Warnf("Peer '%v', unknown IF '%v'; ACTION: skip.", peer.ASN, j.IF)
 			continue
 		}
@@ -814,13 +809,13 @@ func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_FromTo) (ou
 		// log.Warnf("Peer '%v', invalid RG '%v'; ACTION: skip.", peer.ASN, j.RG)
 		// continue
 		// }
-		switch _, flag := v_Peer.RI[j.RI]; len(j.RI) != 0 && !flag {
-		case true:
+		switch _, flag := v_Peer.RI[j.RI]; {
+		case len(j.RI) != 0 && !flag:
 			log.Warnf("Peer '%v', unknown RI '%v'; ACTION: skip.", peer.ASN, j.RI)
 			continue
 		}
-		switch _, flag := v_Peer.SZ[j.SZ]; len(j.SZ) != 0 && !flag && j.SZ != _Defaults[_host_RI].(_Name) && j.SZ != "any" {
-		case true:
+		switch _, flag := v_Peer.SZ[j.SZ]; {
+		case len(j.SZ) != 0 && !flag && j.SZ != _Defaults[_host_RI].(_Name) && j.SZ != "any":
 			log.Warnf("Peer '%v', unknown SZ '%v'; ACTION: skip.", peer.ASN, j.SZ)
 			continue
 		}
