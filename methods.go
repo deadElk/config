@@ -102,3 +102,14 @@ func (inbound *Host_Inbound_Traffic_List) parse(enable ...interface{}) (outbound
 	}
 	return
 }
+
+func (inbound *_Name) validate_AB(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool) (outbound _Name) {
+	switch _, flag := i_ab[*inbound]; {
+	case len(*inbound) != 0 && !flag && *inbound != "any":
+		log.Warnf("Peer '%v', unknown AB '%v'; ACTION: skip.", peer.ASN, *inbound)
+		return
+	case len(*inbound) != 0 && flag && *inbound != "any":
+		v_Peer.link_AB(*inbound)
+	}
+	return
+}
