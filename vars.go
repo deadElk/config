@@ -96,8 +96,10 @@ var (
 	}
 	c_Type = map[_Type]_Type{
 		_Type_destination:      _Type_destination,
+		_Type_exact:            _Type_exact,
 		_Type_fqdn:             _Type_fqdn,
 		_Type_from:             _Type_from,
+		_Type_global:           _Type_global,
 		_Type_gr:               _Type_gr + "0",
 		_Type_interface:        _Type_interface,
 		_Type_ipprefix:         _Type_ipprefix,

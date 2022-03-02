@@ -169,9 +169,10 @@ type i_Pool struct {
 
 // Security Rules
 type i_Rule_Set struct {
+	Name _Name
 	From []i_FromTo
 	To   []i_FromTo
-	Rule map[_Name]i_Rule
+	Rule []i_Rule
 	GT_Action_List
 	Attribute_List
 }
