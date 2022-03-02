@@ -325,6 +325,8 @@ func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_dir
 		fallthrough
 	case port_low != 0 && port_high != 0:
 		outbound += " to " + port_high.String()
+	default:
+		return
 	}
 	switch {
 	case inbound_type == _Type_static && inbound_direction == _Type_from:
