@@ -378,7 +378,8 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				GT_Action_List:            GT_Action_List{GT_Action: " interfaces " + "st0." + b.ID.String()},
 				Attribute_List:            Attribute_List{},
 			}
-
+			i_peer[v_vi_peer_list[_first].ASN].IF_2_RI[_Name("st0."+b.ID.String())] = i_vi_peer[b.ID][_first].Inner_RI
+			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].IP_2_IF[i_vi_peer[b.ID][_first].Inner_IP] = _Name("st0." + b.ID.String())
 		}
 	}
 	return true
