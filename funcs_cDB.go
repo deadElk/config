@@ -745,6 +745,14 @@ func parse_cDB_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 					GT_Action_List: GT_Action_List{GT_Action: ""},
 					Attribute_List: j.Attribute_List,
 				})
+				var (
+					t = &v_Peer.SP_Exact[len(v_Peer.SP_Exact)-1]
+				)
+				switch len(t.From) != 1 || len(t.To) != 1 {
+				case true:
+					continue
+				}
+				t.GT_Action_List.GT_Action = "set security policies from-zone " + t.From[0].SZ.String() + " to-zone " + t.To[0].SZ.String()
 			}
 		}
 	}
@@ -934,10 +942,10 @@ func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inboun
 		case len(j.AB) != 0 && flag && j.AB != "any":
 			v_Peer.link_AB(j.AB)
 		}
-		switch {
-		case len(j.AB) != 0:
-			v_Action += " source-address-name " + j.AB.String()
-		}
+		// switch {
+		// case len(j.AB) != 0:
+		// 	v_Action += " source-address-name " + j.AB.String()
+		// }
 		switch _, flag := v_Peer.IF_2_RI[j.IF]; {
 		case len(j.IF) != 0 && !flag:
 			log.Warnf("Peer '%v', unknown IF '%v'; ACTION: skip.", peer.ASN, j.IF)
