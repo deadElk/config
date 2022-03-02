@@ -60,11 +60,11 @@ type i_Peer_IFM struct {
 	Attribute_List
 }
 type i_Peer_RI struct {
-	IP_2_IF map[netip.Addr]_Name // interface's IP address to interface mapping. IP addresses within one RI must be unique.
-	IF      map[_Name]i_Peer_RI_IF
-	RT      map[netip.Prefix]i_Peer_RI_RO_RT
-	Leak    map[_Action]i_Peer_RI_RO_Leak_FromTo
-	Protocol map[_Name]
+	IP_2_IF  map[netip.Addr]_Name // interface's IP address to interface mapping. IP addresses within one RI must be unique.
+	IF       map[_Name]i_Peer_RI_IF
+	RT       map[netip.Prefix]i_Peer_RI_RO_RT
+	Leak     map[_Action]i_Peer_RI_RO_Leak_FromTo
+	Protocol map[_Name]_Name
 	GT_Action_List
 	Attribute_List
 }
@@ -126,12 +126,12 @@ type i_VI struct {
 	Attribute_List
 }
 type i_VI_Peer struct {
-	ASN     _ASN
-	RI      _Name
-	IF      _Name
-	IP      netip.Addr
-	NAT     netip.Addr
-	Dynamic bool
+	ASN            _ASN
+	RI             _Name
+	IF             _Name
+	IP             netip.Addr
+	NAT            netip.Addr
+	Dynamic        bool
 	Inner_RI       _Name
 	Inner_IP       netip.Addr
 	Inner_IPPrefix netip.Prefix

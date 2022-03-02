@@ -282,7 +282,9 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 			continue
 		}
 		var (
-			v_vi_peer_list = make(map[_VI_Peer_ID]_ASN)
+			v_vi_peer_list = make(map[_VI_Peer_ID]*i_VI_Peer)
+			v_IKE_GCM      bool
+			v_IKE_No_NAT   bool
 		)
 		i_vi[b.ID] = &i_VI{
 			PName:         pad(&b.ID, 5),
@@ -318,28 +320,47 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				v_IKE_Local_Address bool
 			)
 
-			v_vi_peer_list[d.ID] = d.ASN
 			i_vi_peer[b.ID][d.ID] = &i_VI_Peer{
-				ASN:             d.ASN,
-				RI:              v_RI,
-				IF:              v_IF,
-				IP:              v_IP,
-				NAT:             v_NAT,
-				Dynamic:         d.Dynamic,
-				Inner_RI:        d.Inner_RI.validate_RI(_Defaults[_mgmt_RI].(_Name)),
-				Inner_IP:        get_VI_IPPrefix(b.ID, d.ID+1).Addr(),
-				Inner_IPPrefix:  get_VI_IPPrefix(b.ID, d.ID+1),
-				IKE_Option_List: IKE_Option_List{IKE_Local_Address: v_IKE_Local_Address},
-				GT_Action_List:  GT_Action_List{},
-				Attribute_List:  d.Attribute_List,
+				ASN:            d.ASN,
+				RI:             v_RI,
+				IF:             v_IF,
+				IP:             v_IP,
+				NAT:            v_NAT,
+				Dynamic:        d.Dynamic,
+				Inner_RI:       d.Inner_RI.validate_RI(_Defaults[_mgmt_RI].(_Name)),
+				Inner_IP:       get_VI_IPPrefix(b.ID, d.ID+1).Addr(),
+				Inner_IPPrefix: get_VI_IPPrefix(b.ID, d.ID+1),
+				IKE_Option_List: IKE_Option_List{
+					IKE_GCM:           v_IKE_GCM,
+					IKE_No_NAT:        v_IKE_No_NAT,
+					IKE_Local_Address: v_IKE_Local_Address,
+				},
+				GT_Action_List: GT_Action_List{},
+				Attribute_List: d.Attribute_List,
 			}
-			i_peer[d.ASN].RI[d.Inner_RI.validate_RI(_Defaults[_mgmt_RI].(_Name))].IF[_Name("st0."+b.ID.String())] = i_Peer_RI_IF{
+			v_vi_peer_list[d.ID] = i_vi_peer[b.ID][d.ID]
+		}
+
+		var (
+			_first, _second, _total _VI_Peer_ID
+		)
+		switch _total = _VI_Peer_ID(len(v_vi_peer_list)); _total != 2 {
+		case true:
+			continue
+		}
+
+		for _first, _second = 0, _total-1; _first <= _total-1; _first, _second = _first+1, _second-1 {
+			i_peer[v_vi_peer_list[_first].ASN].VI[b.ID] = i_vi[b.ID]
+			i_peer[v_vi_peer_list[_first].ASN].VI_Left[b.ID] = i_vi_peer[b.ID][_first]
+			i_peer[v_vi_peer_list[_first].ASN].VI_Right[b.ID] = i_vi_peer[b.ID][_second]
+
+			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].IF[_Name("st0."+b.ID.String())] = i_Peer_RI_IF{
 				IFM:           "st0",
 				IFsM:          _Name(b.ID.String()),
 				Communication: _Defaults[_comm_vi].(_Communication),
 				IP: map[netip.Prefix]i_Peer_RI_IF_IP{
-					get_VI_IPPrefix(b.ID, d.ID+1): {
-						Masked:         get_VI_IPPrefix(b.ID, d.ID+1).Masked(),
+					i_vi_peer[b.ID][_first].Inner_IPPrefix: {
+						Masked:         i_vi_peer[b.ID][_first].Inner_IPPrefix.Masked(),
 						Primary:        false,
 						Preferred:      false,
 						NAT:            netip.Addr{},
@@ -350,26 +371,15 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				},
 				PARP:           nil,
 				GT_Action_List: GT_Action_List{},
-				Attribute_List: Attribute_List{},
+				Attribute_List: Attribute_List{Description: _Description("" + i_vi_peer[b.ID][_first].IF.String() + "_AS" + pad(i_vi_peer[b.ID][_second].ASN.String(), 10).String() + "_" + i_vi_peer[b.ID][_second].IF.String())},
 			}
-			i_peer[d.ASN].SZ[d.Inner_RI.validate_RI(_Defaults[_mgmt_RI].(_Name))].IF[_Name("st0."+b.ID.String())] = i_Peer_SZ_IF{
+			i_peer[v_vi_peer_list[_first].ASN].SZ[i_vi_peer[b.ID][_first].Inner_RI].IF[_Name("st0."+b.ID.String())] = i_Peer_SZ_IF{
 				Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh, _Protocol_bgp),
 				GT_Action_List:            GT_Action_List{GT_Action: " interfaces " + "st0." + b.ID.String()},
 				Attribute_List:            Attribute_List{},
 			}
-		}
-		switch len(v_vi_peer_list) != 2 {
-		case true:
-			continue
-		}
-		i_peer[v_vi_peer_list[0]].VI[b.ID] = i_vi[b.ID]
-		i_peer[v_vi_peer_list[0]].VI_Left[b.ID] = i_vi_peer[b.ID][0]
-		i_peer[v_vi_peer_list[0]].VI_Right[b.ID] = i_vi_peer[b.ID][1]
-		i_peer[v_vi_peer_list[1]].VI[b.ID] = i_vi[b.ID]
-		i_peer[v_vi_peer_list[1]].VI_Left[b.ID] = i_vi_peer[b.ID][1]
-		i_peer[v_vi_peer_list[1]].VI_Right[b.ID] = i_vi_peer[b.ID][0]
 
-		i_peer[v_vi_peer_list[0]].VI[b.ID] = i_vi[b.ID]
+		}
 	}
 	return true
 }
