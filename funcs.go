@@ -318,7 +318,7 @@ func read_GT() (ok bool) {
 	return err == nil
 }
 
-func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool, port_low, port_high _Port) (outbound string /* , ok bool */) {
+func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, port_low, port_high _Port) (outbound string /* , ok bool */) {
 	switch {
 	case port_low != 0:
 		outbound = "-port " + port_low.String()
@@ -327,11 +327,11 @@ func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool, po
 		outbound += " to " + port_high.String()
 	}
 	switch {
-	case inbound_type[_Type_static] && inbound_type[_Type_from]:
+	case inbound_type == _Type_static && inbound_direction == _Type_from:
 		outbound = " source" + outbound + " "
-	case inbound_type[_Type_static] && inbound_type[_Type_to]:
+	case inbound_type == _Type_static && inbound_direction == _Type_to:
 		outbound = " destination" + outbound + " "
-	case inbound_type[_Type_static]:
+	case inbound_type == _Type_static && inbound_direction == _Type_then:
 		outbound = " mapped" + outbound + " "
 	}
 

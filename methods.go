@@ -103,7 +103,7 @@ func (inbound *Host_Inbound_Traffic_List) parse(enable ...interface{}) (outbound
 	return
 }
 
-func (inbound *_Name) action_AB(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool) (outbound string /* , ok bool */) {
+func (inbound *_Name) action_AB(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
 	switch _, flag := i_ab[*inbound]; {
 	case len(*inbound) == 0:
 		return
@@ -115,37 +115,37 @@ func (inbound *_Name) action_AB(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map
 	}
 	switch {
 
-	case inbound_type[_Type_exact] && inbound_type[_Type_from]:
+	case inbound_type == _Type_exact && inbound_direction == _Type_from:
 		outbound = " source-address " + (*inbound).String() + " "
-	case inbound_type[_Type_global] && inbound_type[_Type_from]:
+	case inbound_type == _Type_global && inbound_direction == _Type_from:
 		outbound = " source-address " + (*inbound).String() + " "
-	case inbound_type[_Type_source] && inbound_type[_Type_from]:
+	case inbound_type == _Type_source && inbound_direction == _Type_from:
 		outbound = " source-address-name " + (*inbound).String() + " "
-	case inbound_type[_Type_destination] && inbound_type[_Type_from]:
+	case inbound_type == _Type_destination && inbound_direction == _Type_from:
 		outbound = " source-address-name " + (*inbound).String() + " "
-	case inbound_type[_Type_static] && inbound_type[_Type_from]:
+	case inbound_type == _Type_static && inbound_direction == _Type_from:
 		outbound = " source-address-name " + (*inbound).String() + " "
 
-	case inbound_type[_Type_exact] && inbound_type[_Type_to]:
+	case inbound_type == _Type_exact && inbound_direction == _Type_to:
 		outbound = " destination-address " + (*inbound).String() + " "
-	case inbound_type[_Type_global] && inbound_type[_Type_to]:
+	case inbound_type == _Type_global && inbound_direction == _Type_to:
 		outbound = " destination-address " + (*inbound).String() + " "
-	case inbound_type[_Type_source] && inbound_type[_Type_to]:
+	case inbound_type == _Type_source && inbound_direction == _Type_to:
 		outbound = " destination-address-name " + (*inbound).String() + " "
-	case inbound_type[_Type_destination] && inbound_type[_Type_to]:
+	case inbound_type == _Type_destination && inbound_direction == _Type_to:
 		outbound = " destination-address-name " + (*inbound).String() + " "
-	case inbound_type[_Type_static] && inbound_type[_Type_to]:
+	case inbound_type == _Type_static && inbound_direction == _Type_to:
 		outbound = " destination-address-name " + (*inbound).String() + " "
 
-	case inbound_type[_Type_exact]:
+	case inbound_type == _Type_exact:
 		outbound = " source-address " + (*inbound).String() + " "
-	case inbound_type[_Type_global]:
+	case inbound_type == _Type_global:
 		outbound = " source-address " + (*inbound).String() + " "
-	case inbound_type[_Type_source]:
+	case inbound_type == _Type_source:
 		outbound = " source-address-name " + (*inbound).String() + " "
-	case inbound_type[_Type_destination]:
+	case inbound_type == _Type_destination:
 		outbound = " destination-address-name " + (*inbound).String() + " "
-	case inbound_type[_Type_static]:
+	case inbound_type == _Type_static:
 		outbound = " prefix-name " + (*inbound).String() + " "
 
 	default:
@@ -155,7 +155,7 @@ func (inbound *_Name) action_AB(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map
 	return
 }
 
-func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool) (outbound string /* , ok bool */) {
+func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
 	switch _, flag := v_Peer.RI[*inbound]; {
 	case len(*inbound) == 0:
 		return
@@ -166,7 +166,7 @@ func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map
 	return " routing-instance " + (*inbound).String() + " "
 }
 
-func (inbound *_Name) action_SZ(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool) (outbound string /* , ok bool */) {
+func (inbound *_Name) action_SZ(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
 	switch _, flag := v_Peer.SZ[*inbound]; {
 	case len(*inbound) == 0:
 		return
@@ -177,7 +177,7 @@ func (inbound *_Name) action_SZ(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map
 	return " zone " + (*inbound).String() + " "
 }
 
-func (inbound *_Name) action_IF(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool) (outbound string /* , ok bool */) {
+func (inbound *_Name) action_IF(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
 	switch _, flag := v_Peer.IF_2_RI[*inbound]; {
 	case len(*inbound) == 0:
 		return
