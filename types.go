@@ -42,7 +42,7 @@ type Attribute_List struct {
 	Disable     bool         `xml:"disable,attr"`
 	GT_Action_List
 }
-type _Host_Inbound_Traffic struct {
+type Host_Inbound_Traffic_List struct {
 	Services  map[_Service]bool  `xml:"service,attr"`
 	Protocols map[_Protocol]bool `xml:"protocol,attr"`
 	GT_Action_List

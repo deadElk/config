@@ -660,14 +660,14 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				outbound = make(map[_Name]i_SZ_IF)
 				for c := range v_Peer.RI[b.Name].IF {
 					outbound[c] = i_SZ_IF{
-						_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh),
-						GT_Action_List:        GT_Action_List{GT_Action: " interfaces " + c.String()},
-						Attribute_List:        Attribute_List{},
+						Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh),
+						GT_Action_List:            GT_Action_List{GT_Action: " interfaces " + c.String()},
+						Attribute_List:            Attribute_List{},
 					}
 				}
 				return
 			}(),
-			_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(),
+			Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(),
 			// GT_Action_List:            GT_Action_List{GT_Action: "set security zones security-zone " + b.Name.String() + a_Action},
 			GT_Action_List: GT_Action_List{GT_Action: "set security zones security-zone " + b.Name.String()},
 			Attribute_List: b.Attribute_List,
@@ -681,11 +681,11 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		switch _, flag := v_Peer.SZ[a]; flag {
 		case false:
 			v_Peer.SZ[a] = i_SZ{
-				Screen:                "",
-				IF:                    map[_Name]i_SZ_IF{},
-				_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(),
-				GT_Action_List:        GT_Action_List{GT_Action: "set security zones security-zone " + a.String()},
-				Attribute_List:        Attribute_List{},
+				Screen:                    "",
+				IF:                        map[_Name]i_SZ_IF{},
+				Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(),
+				GT_Action_List:            GT_Action_List{GT_Action: "set security zones security-zone " + a.String()},
+				Attribute_List:            Attribute_List{},
 			}
 		}
 		for e := range v_Peer.RI[a].IF {
@@ -694,9 +694,9 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				continue
 			}
 			v_Peer.SZ[a].IF[e] = i_SZ_IF{
-				_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh),
-				GT_Action_List:        GT_Action_List{GT_Action: " interfaces " + e.String()},
-				Attribute_List:        Attribute_List{},
+				Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh),
+				GT_Action_List:            GT_Action_List{GT_Action: " interfaces " + e.String()},
+				Attribute_List:            Attribute_List{},
 			}
 		}
 	}

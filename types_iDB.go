@@ -143,12 +143,12 @@ type i_VI_Peer struct {
 type i_SZ struct {
 	Screen _Name
 	IF     map[_Name]i_SZ_IF
-	_Host_Inbound_Traffic
+	Host_Inbound_Traffic_List
 	GT_Action_List
 	Attribute_List
 }
 type i_SZ_IF struct {
-	_Host_Inbound_Traffic
+	Host_Inbound_Traffic_List
 	GT_Action_List
 	Attribute_List
 }
