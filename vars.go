@@ -113,6 +113,7 @@ var (
 		_Type_source:           _Type_source,
 		_Type_st:               _Type_st + "0",
 		_Type_static:           _Type_static,
+		_Type_then:             _Type_then,
 		_Type_to:               _Type_to,
 		_Type_vi:               _Type_vi,
 		_Type_zone:             _Type_zone,

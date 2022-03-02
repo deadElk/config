@@ -103,7 +103,7 @@ func (inbound *Host_Inbound_Traffic_List) parse(enable ...interface{}) (outbound
 	return
 }
 
-func (inbound *_Name) action_AB(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool) (outbound string) {
+func (inbound *_Name) action_AB(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool) (outbound string /* , ok bool */) {
 	switch _, flag := i_ab[*inbound]; {
 	case len(*inbound) == 0:
 		return
@@ -114,30 +114,43 @@ func (inbound *_Name) action_AB(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map
 		v_Peer.link_AB(*inbound)
 	}
 	switch {
+
 	case inbound_type[_Type_exact] && inbound_type[_Type_from]:
+		outbound = " source-address " + (*inbound).String() + " "
 	case inbound_type[_Type_global] && inbound_type[_Type_from]:
 		outbound = " source-address " + (*inbound).String() + " "
 	case inbound_type[_Type_source] && inbound_type[_Type_from]:
+		outbound = " source-address-name " + (*inbound).String() + " "
 	case inbound_type[_Type_destination] && inbound_type[_Type_from]:
+		outbound = " source-address-name " + (*inbound).String() + " "
 	case inbound_type[_Type_static] && inbound_type[_Type_from]:
+		outbound = " source-address-name " + (*inbound).String() + " "
 
 	case inbound_type[_Type_exact] && inbound_type[_Type_to]:
+		outbound = " destination-address " + (*inbound).String() + " "
 	case inbound_type[_Type_global] && inbound_type[_Type_to]:
+		outbound = " destination-address " + (*inbound).String() + " "
 	case inbound_type[_Type_source] && inbound_type[_Type_to]:
+		outbound = " destination-address-name " + (*inbound).String() + " "
 	case inbound_type[_Type_destination] && inbound_type[_Type_to]:
+		outbound = " destination-address-name " + (*inbound).String() + " "
 	case inbound_type[_Type_static] && inbound_type[_Type_to]:
+		outbound = " destination-address-name " + (*inbound).String() + " "
 
 	case inbound_type[_Type_exact]:
+		outbound = " source-address " + (*inbound).String() + " "
 	case inbound_type[_Type_global]:
+		outbound = " source-address " + (*inbound).String() + " "
 	case inbound_type[_Type_source]:
 		outbound = " source-address-name " + (*inbound).String() + " "
 	case inbound_type[_Type_destination]:
 		outbound = " destination-address-name " + (*inbound).String() + " "
 	case inbound_type[_Type_static]:
 		outbound = " prefix-name " + (*inbound).String() + " "
+
 	default:
 		log.Warnf("Peer '%v', AB '%v', type '%v', unknown operation; ACTION: return ''.", peer.ASN, *inbound, inbound_type)
-		return
+		return ""
 	}
 	return
 }

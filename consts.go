@@ -81,6 +81,7 @@ const (
 	_Type_source               _Type          = "source"
 	_Type_st                   _Type          = "st"
 	_Type_static               _Type          = "static"
+	_Type_then                 _Type          = "then"
 	_Type_to                   _Type          = "to"
 	_Type_vi                   _Type          = "vi"
 	_Type_zone                 _Type          = "zone"
