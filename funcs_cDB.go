@@ -667,8 +667,10 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				return
 			}(),
 			_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(),
-			_GT_Action:            _GT_Action{},
-			_Service_Attributes:   b._Service_Attributes,
+			_GT_Action: _GT_Action{
+				GT_Action: "",
+			},
+			_Service_Attributes: b._Service_Attributes,
 		}
 	}
 	for a := range v_Peer.RI {
@@ -682,8 +684,10 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				Screen:                "",
 				IF:                    map[_Name]i_SZ_IF{},
 				_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(),
-				_GT_Action:            _GT_Action{},
-				_Service_Attributes:   _Service_Attributes{},
+				_GT_Action: _GT_Action{
+					GT_Action: "",
+				},
+				_Service_Attributes: _Service_Attributes{},
 			}
 		}
 		for e := range v_Peer.RI[a].IF {
@@ -693,8 +697,10 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			}
 			v_Peer.SZ[a].IF[e] = i_SZ_IF{
 				_Host_Inbound_Traffic: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh),
-				_GT_Action:            _GT_Action{},
-				_Service_Attributes:   _Service_Attributes{},
+				_GT_Action: _GT_Action{
+					GT_Action: "",
+				},
+				_Service_Attributes: _Service_Attributes{},
 			}
 		}
 	}
@@ -706,30 +712,36 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		h = peer.NAT_Source
 	)
 	v_Peer.NAT[_Type_source] = i_NAT_Type{
-		Address_Persistent:  h.Address_Persistent,
-		Pool:                parse_cDB_Pool(peer, v_Peer, &h.Pool),
-		Rule_Set:            parse_cDB_Rule_Set(peer, v_Peer, &h.Rule_Set),
-		_GT_Action:          _GT_Action{},
+		Address_Persistent: h.Address_Persistent,
+		Pool:               parse_cDB_Pool(peer, v_Peer, &h.Pool),
+		Rule_Set:           parse_cDB_Rule_Set(peer, v_Peer, &h.Rule_Set),
+		_GT_Action: _GT_Action{
+			GT_Action: "",
+		},
 		_Service_Attributes: h._Service_Attributes,
 	}
 
 	h = peer.NAT_Destination
 
 	v_Peer.NAT[_Type_destination] = i_NAT_Type{
-		Address_Persistent:  false,
-		Pool:                parse_cDB_Pool(peer, v_Peer, &h.Pool),
-		Rule_Set:            parse_cDB_Rule_Set(peer, v_Peer, &h.Rule_Set),
-		_GT_Action:          _GT_Action{},
+		Address_Persistent: false,
+		Pool:               parse_cDB_Pool(peer, v_Peer, &h.Pool),
+		Rule_Set:           parse_cDB_Rule_Set(peer, v_Peer, &h.Rule_Set),
+		_GT_Action: _GT_Action{
+			GT_Action: "",
+		},
 		_Service_Attributes: h._Service_Attributes,
 	}
 
 	h = peer.NAT_Static
 
 	v_Peer.NAT[_Type_static] = i_NAT_Type{
-		Address_Persistent:  false,
-		Pool:                parse_cDB_Pool(peer, v_Peer, &h.Pool),
-		Rule_Set:            parse_cDB_Rule_Set(peer, v_Peer, &h.Rule_Set),
-		_GT_Action:          _GT_Action{},
+		Address_Persistent: false,
+		Pool:               parse_cDB_Pool(peer, v_Peer, &h.Pool),
+		Rule_Set:           parse_cDB_Rule_Set(peer, v_Peer, &h.Rule_Set),
+		_GT_Action: _GT_Action{
+			GT_Action: "",
+		},
 		_Service_Attributes: h._Service_Attributes,
 	}
 	return true
@@ -739,10 +751,12 @@ func parse_cDB_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		for _, l := range j.To {
 			for _, n := range j.From {
 				v_Peer.SP_Exact = append(v_Peer.SP_Exact, i_Rule_Set{
-					From:                parse_cDB_FromTo(peer, v_Peer, &[]cDB_FromTo{0: n}),
-					To:                  parse_cDB_FromTo(peer, v_Peer, &[]cDB_FromTo{0: l}),
-					Rule:                parse_cDB_Rule(peer, v_Peer, &j.Rule),
-					_GT_Action:          _GT_Action{},
+					From: parse_cDB_FromTo(peer, v_Peer, &[]cDB_FromTo{0: n}),
+					To:   parse_cDB_FromTo(peer, v_Peer, &[]cDB_FromTo{0: l}),
+					Rule: parse_cDB_Rule(peer, v_Peer, &j.Rule),
+					_GT_Action: _GT_Action{
+						GT_Action: "",
+					},
 					_Service_Attributes: j._Service_Attributes,
 				})
 			}
@@ -753,12 +767,14 @@ func parse_cDB_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 func parse_cDB_Peer_SP_Global(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	for _, j := range peer.SP_Global {
 		v_Peer.SP_Global = append(v_Peer.SP_Global, i_Rule{
-			Name:                j.Name,
-			JA:                  parse_cDB_Match_2_Name(peer, v_Peer, &j.Match),
-			From:                parse_cDB_FromTo(peer, v_Peer, &j.From),
-			To:                  parse_cDB_FromTo(peer, v_Peer, &j.To),
-			Then:                parse_cDB_Then(peer, v_Peer, &j.Then),
-			_GT_Action:          _GT_Action{},
+			Name: j.Name,
+			JA:   parse_cDB_Match_2_Name(peer, v_Peer, &j.Match),
+			From: parse_cDB_FromTo(peer, v_Peer, &j.From),
+			To:   parse_cDB_FromTo(peer, v_Peer, &j.To),
+			Then: parse_cDB_Then(peer, v_Peer, &j.Then),
+			_GT_Action: _GT_Action{
+				GT_Action: "",
+			},
 			_Service_Attributes: j._Service_Attributes,
 		})
 	}
@@ -802,10 +818,12 @@ func parse_cDB_Pool(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Pool) (outbou
 			continue
 		}
 		outbound[j.Name] = i_Pool{
-			IPPrefix:            j.IPPrefix,
-			RI:                  j.RI,
-			SZ:                  j.SZ,
-			_GT_Action:          _GT_Action{},
+			IPPrefix: j.IPPrefix,
+			RI:       j.RI,
+			SZ:       j.SZ,
+			_GT_Action: _GT_Action{
+				GT_Action: "",
+			},
 			_Service_Attributes: j._Service_Attributes,
 		}
 	}
@@ -815,10 +833,12 @@ func parse_cDB_Rule_Set(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Rule_Set)
 	outbound = make(map[_Name]i_Rule_Set)
 	for _, j := range *inbound {
 		outbound[j.Name] = i_Rule_Set{
-			From:                parse_cDB_FromTo(peer, v_Peer, &j.From),
-			To:                  parse_cDB_FromTo(peer, v_Peer, &j.To),
-			Rule:                parse_cDB_Rule(peer, v_Peer, &j.Rule),
-			_GT_Action:          _GT_Action{},
+			From: parse_cDB_FromTo(peer, v_Peer, &j.From),
+			To:   parse_cDB_FromTo(peer, v_Peer, &j.To),
+			Rule: parse_cDB_Rule(peer, v_Peer, &j.Rule),
+			_GT_Action: _GT_Action{
+				GT_Action: "",
+			},
 			_Service_Attributes: j._Service_Attributes,
 		}
 	}
@@ -828,12 +848,14 @@ func parse_cDB_Rule(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Rule) (outbou
 	outbound = make(map[_Name]i_Rule)
 	for _, j := range *inbound {
 		outbound[j.Name] = i_Rule{
-			Name:                "",
-			JA:                  parse_cDB_Match_2_Name(peer, v_Peer, &j.Match),
-			From:                parse_cDB_FromTo(peer, v_Peer, &j.From),
-			To:                  parse_cDB_FromTo(peer, v_Peer, &j.To),
-			Then:                parse_cDB_Then(peer, v_Peer, &j.Then),
-			_GT_Action:          _GT_Action{},
+			Name: "",
+			JA:   parse_cDB_Match_2_Name(peer, v_Peer, &j.Match),
+			From: parse_cDB_FromTo(peer, v_Peer, &j.From),
+			To:   parse_cDB_FromTo(peer, v_Peer, &j.To),
+			Then: parse_cDB_Then(peer, v_Peer, &j.Then),
+			_GT_Action: _GT_Action{
+				GT_Action: "",
+			},
 			_Service_Attributes: j._Service_Attributes,
 		}
 	}
@@ -868,14 +890,16 @@ func parse_cDB_Then(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Then) (outbou
 			continue
 		}
 		outbound = append(outbound, i_Then{
-			Action:              j.Action,
-			Action_Flag:         j.Action_Flag,
-			Pool:                j.Pool,
-			AB:                  j.AB,
-			RI:                  j.RI,
-			Port_Low:            j.Port_Low,
-			Port_High:           j.Port_High,
-			_GT_Action:          _GT_Action{},
+			Action:      j.Action,
+			Action_Flag: j.Action_Flag,
+			Pool:        j.Pool,
+			AB:          j.AB,
+			RI:          j.RI,
+			Port_Low:    j.Port_Low,
+			Port_High:   j.Port_High,
+			_GT_Action: _GT_Action{
+				GT_Action: "",
+			},
 			_Service_Attributes: j._Service_Attributes,
 		})
 	}
@@ -911,14 +935,16 @@ func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_FromTo) (ou
 			continue
 		}
 		outbound = append(outbound, i_FromTo{
-			AB:                  j.AB,
-			IF:                  j.IF,
-			RG:                  j.RG,
-			RI:                  j.RI,
-			SZ:                  j.SZ,
-			Port_Low:            j.Port_Low,
-			Port_High:           j.Port_High,
-			_GT_Action:          _GT_Action{},
+			AB:        j.AB,
+			IF:        j.IF,
+			RG:        j.RG,
+			RI:        j.RI,
+			SZ:        j.SZ,
+			Port_Low:  j.Port_Low,
+			Port_High: j.Port_High,
+			_GT_Action: _GT_Action{
+				GT_Action: "",
+			},
 			_Service_Attributes: j._Service_Attributes,
 		})
 	}
