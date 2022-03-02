@@ -40,10 +40,12 @@ type _Service_Attributes struct {
 	Verbosity   string       `xml:"verbosity,attr"`
 	Patch       string       `xml:"patch,attr"`
 	Disable     bool         `xml:"disable,attr"`
+	_GT_Action
 }
 type _Host_Inbound_Traffic struct {
 	Services  map[_Service]bool  `xml:"service,attr"`
 	Protocols map[_Protocol]bool `xml:"protocol,attr"`
+	_GT_Action
 }
 type _GT_Action struct {
 	GT_Action string

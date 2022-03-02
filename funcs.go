@@ -242,8 +242,9 @@ func parse_Communication(_peer *_ASN, _if *_Name, inbound *_Communication) _Comm
 }
 func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound _Host_Inbound_Traffic) {
 	outbound = _Host_Inbound_Traffic{
-		Services:  map[_Service]bool{},
-		Protocols: map[_Protocol]bool{},
+		Services:   map[_Service]bool{},
+		Protocols:  map[_Protocol]bool{},
+		_GT_Action: _GT_Action{},
 	}
 	for _, b := range enabled {
 		switch value := b.(type) {
