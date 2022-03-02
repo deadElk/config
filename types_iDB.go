@@ -41,8 +41,8 @@ type i_Peer struct {
 	Serial       string
 	Root         _Secret
 	GT_List      []_Name
-	SZ           map[_Name]i_SZ
-	NAT          map[_Type]i_NAT_Type
+	SZ           map[_Name]i_Peer_SZ
+	NAT          map[_Type]i_Peer_NAT_Type
 	SP_Exact     []i_Rule_Set
 	SP_Global    []i_Rule
 	AB           map[_Name]*i_AB
@@ -64,6 +64,7 @@ type i_Peer_RI struct {
 	IF      map[_Name]i_Peer_RI_IF
 	RT      map[netip.Prefix]i_Peer_RI_RO_RT
 	Leak    map[_Action]i_Peer_RI_RO_Leak_FromTo
+	Protocol map[_Name]
 	GT_Action_List
 	Attribute_List
 }
@@ -125,12 +126,12 @@ type i_VI struct {
 	Attribute_List
 }
 type i_VI_Peer struct {
-	ASN            _ASN
-	RI             _Name
-	IF             _Name
-	IP             netip.Addr
-	NAT            netip.Addr
-	Dynamic        bool
+	ASN     _ASN
+	RI      _Name
+	IF      _Name
+	IP      netip.Addr
+	NAT     netip.Addr
+	Dynamic bool
 	Inner_RI       _Name
 	Inner_IP       netip.Addr
 	Inner_IPPrefix netip.Prefix
@@ -140,19 +141,19 @@ type i_VI_Peer struct {
 }
 
 // Security
-type i_SZ struct {
+type i_Peer_SZ struct {
 	Screen _Name
-	IF     map[_Name]i_SZ_IF
+	IF     map[_Name]i_Peer_SZ_IF
 	Host_Inbound_Traffic_List
 	GT_Action_List
 	Attribute_List
 }
-type i_SZ_IF struct {
+type i_Peer_SZ_IF struct {
 	Host_Inbound_Traffic_List
 	GT_Action_List
 	Attribute_List
 }
-type i_NAT_Type struct {
+type i_Peer_NAT_Type struct {
 	Address_Persistent bool
 	Pool               map[_Name]i_Pool
 	Rule_Set           map[_Name]i_Rule_Set
