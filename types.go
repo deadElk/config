@@ -33,20 +33,30 @@ type _netip_Addr struct {
 	netip.Addr
 }
 
-type _Service_Attributes struct {
+type Attribute_List struct {
 	Description _Description `xml:"description,attr"`
 	Deactivate  bool         `xml:"deactivate,attr"`
 	Reserved    bool         `xml:"reserved,attr"`
 	Verbosity   string       `xml:"verbosity,attr"`
 	Patch       string       `xml:"patch,attr"`
 	Disable     bool         `xml:"disable,attr"`
-	_GT_Action
+	GT_Action_List
 }
 type _Host_Inbound_Traffic struct {
 	Services  map[_Service]bool  `xml:"service,attr"`
 	Protocols map[_Protocol]bool `xml:"protocol,attr"`
-	_GT_Action
+	GT_Action_List
 }
-type _GT_Action struct {
+type GT_Action_List struct {
 	GT_Action string
+}
+
+type IKE_Option_List struct {
+	IKE_GCM           bool
+	IKE_No_NAT        bool
+	IKE_Local_Address bool
+}
+
+type SP_Option_List struct {
+	SP_Default_Policy _Action
 }

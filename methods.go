@@ -80,3 +80,25 @@ func (inbound *i_Peer) link_PS(name ..._Name) {
 		inbound.PS[value] = i_ps[value]
 	}
 }
+
+func (inbound *_Host_Inbound_Traffic) parse(enable ...interface{}) (outbound _Host_Inbound_Traffic) {
+	switch inbound == nil {
+	case false:
+		outbound = *inbound
+	default:
+		outbound = _Host_Inbound_Traffic{
+			Services:       map[_Service]bool{},
+			Protocols:      map[_Protocol]bool{},
+			GT_Action_List: GT_Action_List{GT_Action: "host-inbound-traffic "},
+		}
+	}
+	for _, b := range enable {
+		switch value := b.(type) {
+		case _Service:
+			outbound.Services[value] = true
+		case _Protocol:
+			outbound.Protocols[value] = true
+		}
+	}
+	return
+}

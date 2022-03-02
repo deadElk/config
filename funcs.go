@@ -104,7 +104,21 @@ func tabber(inbound string, tabs int) string {
 }
 
 func convert_2_string(inbound interface{}) string {
+	// switch value := inbound.(type) {
+	// case interface{}:
+	// 	return fmt.Sprintf("%s", value)
+	// case *interface{}:
+	// 	return fmt.Sprintf("%s", value)
+	// }
+	// return ""
+	// switch reflect.ValueOf(inbound).Kind() {
+	// case reflect.Ptr:
+	// 	return fmt.Sprintf("%s", reflect.ValueOf(inbound))
+	// }
+	// return fmt.Sprintf("%s", reflect.ValueOf(inbound))
+
 	return fmt.Sprintf("%s", inbound)
+
 	// switch value := (inbound).(type) {
 	// case *string:
 	// 	return *value
@@ -242,9 +256,9 @@ func parse_Communication(_peer *_ASN, _if *_Name, inbound *_Communication) _Comm
 }
 func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound _Host_Inbound_Traffic) {
 	outbound = _Host_Inbound_Traffic{
-		Services:   map[_Service]bool{},
-		Protocols:  map[_Protocol]bool{},
-		_GT_Action: _GT_Action{},
+		Services:       map[_Service]bool{},
+		Protocols:      map[_Protocol]bool{},
+		GT_Action_List: GT_Action_List{GT_Action: "host-inbound-traffic "},
 	}
 	for _, b := range enabled {
 		switch value := b.(type) {
