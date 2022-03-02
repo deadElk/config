@@ -647,7 +647,7 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			log.Warnf("Peer '%v', SZ '%v' cannot be defined; ACTION: ignore.", peer.ASN, b.Name)
 			continue
 		}
-		// var (
+		// var
 		// 	a_Action string
 		// )
 		// switch {
