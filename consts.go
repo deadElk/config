@@ -75,6 +75,7 @@ const (
 	_Type_lt                   _Type          = "lt"
 	_Type_routing_group        _Type          = "routing-group"
 	_Type_routing_instance     _Type          = "routing-instance"
+	_Type_security_policy      _Type          = "security policy"
 	_Type_security_zone        _Type          = "security-zone"
 	_Type_set                  _Type          = "set"
 	_Type_source               _Type          = "source"

@@ -710,7 +710,7 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	v_Peer.NAT[_Type_source] = i_NAT_Type{
 		Address_Persistent: h.Address_Persistent,
 		Pool:               parse_cDB_Pool(peer, v_Peer, &h.Pool),
-		Rule_Set:           parse_cDB_Rule_Set(peer, v_Peer, _Type_source, &h.Rule_Set),
+		Rule_Set:           parse_cDB_Rule_Set(peer, v_Peer, map[_Type]bool{_Type_source: true}, &h.Rule_Set),
 		GT_Action_List:     GT_Action_List{GT_Action: "set security nat source "},
 		Attribute_List:     h.Attribute_List,
 	}
@@ -719,7 +719,7 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 
 	v_Peer.NAT[_Type_destination] = i_NAT_Type{
 		Pool:           parse_cDB_Pool(peer, v_Peer, &h.Pool),
-		Rule_Set:       parse_cDB_Rule_Set(peer, v_Peer, _Type_destination, &h.Rule_Set),
+		Rule_Set:       parse_cDB_Rule_Set(peer, v_Peer, map[_Type]bool{_Type_destination: true}, &h.Rule_Set),
 		GT_Action_List: GT_Action_List{GT_Action: "set security nat destination "},
 		Attribute_List: h.Attribute_List,
 	}
@@ -728,7 +728,7 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 
 	v_Peer.NAT[_Type_static] = i_NAT_Type{
 		Pool:           parse_cDB_Pool(peer, v_Peer, &h.Pool),
-		Rule_Set:       parse_cDB_Rule_Set(peer, v_Peer, _Type_static, &h.Rule_Set),
+		Rule_Set:       parse_cDB_Rule_Set(peer, v_Peer, map[_Type]bool{_Type_static: true}, &h.Rule_Set),
 		GT_Action_List: GT_Action_List{GT_Action: "set security nat static "},
 		Attribute_List: h.Attribute_List,
 	}
@@ -739,9 +739,9 @@ func parse_cDB_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		for _, l := range j.To {
 			for _, n := range j.From {
 				v_Peer.SP_Exact = append(v_Peer.SP_Exact, i_Rule_Set{
-					From:           parse_cDB_FromTo(peer, v_Peer, _Type_exact, &[]cDB_FromTo{0: n}),
-					To:             parse_cDB_FromTo(peer, v_Peer, _Type_exact, &[]cDB_FromTo{0: l}),
-					Rule:           parse_cDB_Rule(peer, v_Peer, _Type_exact, &j.Rule),
+					From:           parse_cDB_FromTo(peer, v_Peer, map[_Type]bool{_Type_exact: true}, &[]cDB_FromTo{0: n}),
+					To:             parse_cDB_FromTo(peer, v_Peer, map[_Type]bool{_Type_exact: true}, &[]cDB_FromTo{0: l}),
+					Rule:           parse_cDB_Rule(peer, v_Peer, map[_Type]bool{_Type_exact: true}, &j.Rule),
 					GT_Action_List: GT_Action_List{GT_Action: ""},
 					Attribute_List: j.Attribute_List,
 				})
@@ -763,10 +763,10 @@ func parse_cDB_Peer_SP_Global(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		v_Peer.SP_Global = append(v_Peer.SP_Global, i_Rule{
 			Name:           j.Name,
 			JA:             parse_cDB_Match_2_Name(peer, v_Peer, &j.Match),
-			From:           parse_cDB_FromTo(peer, v_Peer, _Type_global, &j.From),
-			To:             parse_cDB_FromTo(peer, v_Peer, _Type_global, &j.To),
-			Then:           parse_cDB_Then(peer, v_Peer, _Type_global, &j.Then),
-			GT_Action_List: GT_Action_List{GT_Action: ""},
+			From:           parse_cDB_FromTo(peer, v_Peer, map[_Type]bool{_Type_global: true}, &j.From),
+			To:             parse_cDB_FromTo(peer, v_Peer, map[_Type]bool{_Type_global: true}, &j.To),
+			Then:           parse_cDB_Then(peer, v_Peer, map[_Type]bool{_Type_global: true}, &j.Then),
+			GT_Action_List: GT_Action_List{GT_Action: "set security policies global policy " + j.Name.String()},
 			Attribute_List: j.Attribute_List,
 		})
 	}
@@ -828,7 +828,7 @@ func parse_cDB_Pool(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Pool) (outbou
 	}
 	return
 }
-func parse_cDB_Rule_Set(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound *[]cDB_Rule_Set) (outbound map[_Name]i_Rule_Set) {
+func parse_cDB_Rule_Set(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool, inbound *[]cDB_Rule_Set) (outbound map[_Name]i_Rule_Set) {
 	outbound = make(map[_Name]i_Rule_Set)
 	for _, j := range *inbound {
 		outbound[j.Name] = i_Rule_Set{
@@ -842,7 +842,7 @@ func parse_cDB_Rule_Set(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbo
 	}
 	return
 }
-func parse_cDB_Rule(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound *[]cDB_Rule) (outbound []i_Rule) {
+func parse_cDB_Rule(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool, inbound *[]cDB_Rule) (outbound []i_Rule) {
 	var (
 		v_Action string
 	)
@@ -873,7 +873,7 @@ func parse_cDB_Match_2_Name(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Match
 	}
 	return
 }
-func parse_cDB_Then(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound *[]cDB_Then) (outbound []i_Then) {
+func parse_cDB_Then(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool, inbound *[]cDB_Then) (outbound []i_Then) {
 	for _, j := range *inbound {
 		var (
 			v_Action string
@@ -886,11 +886,11 @@ func parse_cDB_Then(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound 
 			v_Peer.link_AB(j.AB)
 		}
 		switch {
-		case len(j.AB) != 0 && inbound_type == _Type_source:
+		case len(j.AB) != 0 && inbound_type[_Type_source]:
 			v_Action += " source-address-name " + j.AB.String()
-		case len(j.AB) != 0 && inbound_type == _Type_destination:
+		case len(j.AB) != 0 && inbound_type[_Type_destination]:
 			v_Action += " destination-address-name " + j.AB.String()
-		case len(j.AB) != 0 && inbound_type == _Type_static:
+		case len(j.AB) != 0 && inbound_type[_Type_static]:
 			v_Action += " prefix-name " + j.AB.String()
 		}
 		switch _, flag := v_Peer.RI[j.RI]; {
@@ -905,15 +905,15 @@ func parse_cDB_Then(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound 
 			v_Action += " pool " + j.Pool.String()
 		}
 		switch {
-		case j.Port_Low != 0 && inbound_type == _Type_source:
+		case j.Port_Low != 0 && inbound_type[_Type_source]:
 			v_Action += " source-port " + j.Port_Low.String()
 			fallthrough
-		case j.Port_Low != 0 && j.Port_High != 0 && inbound_type == _Type_source:
+		case j.Port_Low != 0 && j.Port_High != 0 && inbound_type[_Type_source]:
 			v_Action += " to " + j.Port_High.String()
-		case j.Port_Low != 0 && inbound_type == _Type_destination:
+		case j.Port_Low != 0 && inbound_type[_Type_destination]:
 			v_Action += " destination-port " + j.Port_Low.String()
 			fallthrough
-		case j.Port_Low != 0 && j.Port_High != 0 && inbound_type == _Type_destination:
+		case j.Port_Low != 0 && j.Port_High != 0 && inbound_type[_Type_destination]:
 			v_Action += " to " + j.Port_High.String()
 		}
 		outbound = append(outbound, i_Then{
@@ -930,7 +930,7 @@ func parse_cDB_Then(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound 
 	}
 	return
 }
-func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound *[]cDB_FromTo) (outbound []i_FromTo) {
+func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool, inbound *[]cDB_FromTo) (outbound []i_FromTo) {
 	for _, j := range *inbound {
 		var (
 			v_Action string
@@ -942,10 +942,10 @@ func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inboun
 		case len(j.AB) != 0 && flag && j.AB != "any":
 			v_Peer.link_AB(j.AB)
 		}
-		// switch {
-		// case len(j.AB) != 0:
-		// 	v_Action += " source-address-name " + j.AB.String()
-		// }
+		switch {
+		case len(j.AB) != 0:
+			v_Action += " source-address-name " + j.AB.String()
+		}
 		switch _, flag := v_Peer.IF_2_RI[j.IF]; {
 		case len(j.IF) != 0 && !flag:
 			log.Warnf("Peer '%v', unknown IF '%v'; ACTION: skip.", peer.ASN, j.IF)
@@ -973,10 +973,10 @@ func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inboun
 			v_Action += " zone " + j.SZ.String()
 		}
 		switch {
-		case j.Port_Low != 0 && inbound_type == _Type_static:
+		case j.Port_Low != 0 && inbound_type[_Type_static]:
 			v_Action += " mapped-port " + j.Port_Low.String()
 			fallthrough
-		case j.Port_Low != 0 && j.Port_High != 0 && inbound_type == _Type_static:
+		case j.Port_Low != 0 && j.Port_High != 0 && inbound_type[_Type_static]:
 			v_Action += " to " + j.Port_High.String()
 		}
 		outbound = append(outbound, i_FromTo{

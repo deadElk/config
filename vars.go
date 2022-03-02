@@ -107,6 +107,7 @@ var (
 		_Type_lt:               _Type_lt + "0",
 		_Type_routing_group:    _Type_routing_group,
 		_Type_routing_instance: _Type_routing_instance,
+		_Type_security_policy:  _Type_security_policy,
 		_Type_security_zone:    _Type_security_zone,
 		_Type_set:              _Type_set,
 		_Type_source:           _Type_source,
