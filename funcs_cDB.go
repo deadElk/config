@@ -141,7 +141,7 @@ func parse_cDB_PS(inbound *[]cDB_PO_PS) (ok bool) {
 										v_Action = " prefix-list-filter " + f.PL.String() + " " + f.Mask.String()
 									}
 									outbound = append(outbound, i_PO_PS_From{
-										RI:             "",
+										RI:             f.RI,
 										Protocol:       f.Protocol,
 										Route_Type:     f.Route_Type,
 										PL:             f.PL,
@@ -709,7 +709,7 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	)
 	v_Peer.NAT[_Type_source] = i_NAT_Type{
 		Address_Persistent: h.Address_Persistent,
-		Pool:               parse_cDB_Pool(peer, v_Peer, &h.Pool),
+		Pool:               parse_cDB_Pool(peer, v_Peer, map[_Type]bool{_Type_source: true, _Type_pool: true}, &h.Pool),
 		Rule_Set:           parse_cDB_Rule_Set(peer, v_Peer, map[_Type]bool{_Type_source: true}, &h.Rule_Set),
 		GT_Action_List:     GT_Action_List{GT_Action: "set security nat source "},
 		Attribute_List:     h.Attribute_List,
@@ -718,7 +718,7 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	h = peer.NAT_Destination
 
 	v_Peer.NAT[_Type_destination] = i_NAT_Type{
-		Pool:           parse_cDB_Pool(peer, v_Peer, &h.Pool),
+		Pool:           parse_cDB_Pool(peer, v_Peer, map[_Type]bool{_Type_destination: true, _Type_pool: true}, &h.Pool),
 		Rule_Set:       parse_cDB_Rule_Set(peer, v_Peer, map[_Type]bool{_Type_destination: true}, &h.Rule_Set),
 		GT_Action_List: GT_Action_List{GT_Action: "set security nat destination "},
 		Attribute_List: h.Attribute_List,
@@ -727,7 +727,7 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	h = peer.NAT_Static
 
 	v_Peer.NAT[_Type_static] = i_NAT_Type{
-		Pool:           parse_cDB_Pool(peer, v_Peer, &h.Pool),
+		Pool:           parse_cDB_Pool(peer, v_Peer, map[_Type]bool{_Type_static: true, _Type_pool: true}, &h.Pool),
 		Rule_Set:       parse_cDB_Rule_Set(peer, v_Peer, map[_Type]bool{_Type_static: true}, &h.Rule_Set),
 		GT_Action_List: GT_Action_List{GT_Action: "set security nat static "},
 		Attribute_List: h.Attribute_List,
@@ -790,7 +790,7 @@ func parse_cDB_Peer_SP_Options(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	return true
 }
 
-func parse_cDB_Pool(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Pool) (outbound map[_Name]i_Pool) {
+func parse_cDB_Pool(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool, inbound *[]cDB_Pool) (outbound map[_Name]i_Pool) {
 	outbound = make(map[_Name]i_Pool)
 	for _, j := range *inbound {
 		var (
@@ -803,20 +803,8 @@ func parse_cDB_Pool(peer *cDB_Peer, v_Peer *i_Peer, inbound *[]cDB_Pool) (outbou
 			continue
 		}
 		// v_Action = " address " + j.IPPrefix.String()
-		switch _, flag := v_Peer.RI[j.RI]; {
-		case len(j.RI) != 0 && !flag:
-			log.Warnf("Peer '%v', Pool '%v', unknown RI '%v'; ACTION: skip.", peer.ASN, j.Name, j.RI)
-			continue
-		case len(j.RI) != 0:
-			v_Action += " routing-instance " + j.RI.String()
-		}
-		switch _, flag := v_Peer.SZ[j.SZ]; {
-		case len(j.SZ) != 0 && !flag:
-			log.Warnf("Peer '%v', Pool '%v', unknown SZ '%v'; ACTION: skip.", peer.ASN, j.Name, j.SZ)
-			continue
-		case len(j.SZ) != 0:
-			v_Action += " zone " + j.SZ.String()
-		}
+		v_Action += j.RI.action_RI(peer, v_Peer, inbound_type)
+		v_Action += j.SZ.action_SZ(peer, v_Peer, inbound_type)
 		outbound[j.Name] = i_Pool{
 			IPPrefix: j.IPPrefix,
 			RI:       j.RI,
@@ -879,29 +867,12 @@ func parse_cDB_Then(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool,
 			v_Action string
 		)
 		v_Action += j.AB.action_AB(peer, v_Peer, inbound_type)
-		switch _, flag := v_Peer.RI[j.RI]; {
-		case len(j.RI) != 0 && !flag:
-			log.Warnf("Peer '%v', unknown RI '%v'; ACTION: skip.", peer.ASN, j.RI)
-			continue
-		case len(j.RI) != 0:
-			v_Action += " routing-instance " + j.RI.String()
-		}
+		v_Action += j.RI.action_RI(peer, v_Peer, inbound_type)
 		switch {
 		case len(j.Pool) != 0:
 			v_Action += " pool " + j.Pool.String()
 		}
-		switch {
-		case j.Port_Low != 0 && inbound_type[_Type_source]:
-			v_Action += " source-port " + j.Port_Low.String()
-			fallthrough
-		case j.Port_Low != 0 && j.Port_High != 0 && inbound_type[_Type_source]:
-			v_Action += " to " + j.Port_High.String()
-		case j.Port_Low != 0 && inbound_type[_Type_destination]:
-			v_Action += " destination-port " + j.Port_Low.String()
-			fallthrough
-		case j.Port_Low != 0 && j.Port_High != 0 && inbound_type[_Type_destination]:
-			v_Action += " to " + j.Port_High.String()
-		}
+		v_Action += action_Port(peer, v_Peer, inbound_type, j.Port_Low, j.Port_High)
 		outbound = append(outbound, i_Then{
 			Action:         j.Action,
 			Action_Flag:    j.Action_Flag,
@@ -922,39 +893,10 @@ func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]boo
 			v_Action string
 		)
 		v_Action += j.AB.action_AB(peer, v_Peer, inbound_type)
-		switch _, flag := v_Peer.IF_2_RI[j.IF]; {
-		case len(j.IF) != 0 && !flag:
-			log.Warnf("Peer '%v', unknown IF '%v'; ACTION: skip.", peer.ASN, j.IF)
-			continue
-		case len(j.IF) != 0:
-			v_Action += " interface " + j.IF.String()
-		}
-		// switch _, flag := v_Peer.RI[j.RI]; len(j.RG) != 0 && !flag {
-		// case true:
-		// log.Warnf("Peer '%v', unknown RG '%v'; ACTION: skip.", peer.ASN, j.RG)
-		// continue
-		// }
-		switch _, flag := v_Peer.RI[j.RI]; {
-		case len(j.RI) != 0 && !flag:
-			log.Warnf("Peer '%v', unknown RI '%v'; ACTION: skip.", peer.ASN, j.RI)
-			continue
-		case len(j.RI) != 0:
-			v_Action += " routing-instance " + j.RI.String()
-		}
-		switch _, flag := v_Peer.SZ[j.SZ]; {
-		case len(j.SZ) != 0 && !flag && j.SZ != _Defaults[_host_RI].(_Name) && j.SZ != "any":
-			log.Warnf("Peer '%v', unknown SZ '%v'; ACTION: skip.", peer.ASN, j.SZ)
-			continue
-		case len(j.SZ) != 0:
-			v_Action += " zone " + j.SZ.String()
-		}
-		switch {
-		case j.Port_Low != 0 && inbound_type[_Type_static]:
-			v_Action += " mapped-port " + j.Port_Low.String()
-			fallthrough
-		case j.Port_Low != 0 && j.Port_High != 0 && inbound_type[_Type_static]:
-			v_Action += " to " + j.Port_High.String()
-		}
+		v_Action += j.IF.action_IF(peer, v_Peer, inbound_type)
+		v_Action += j.RI.action_RI(peer, v_Peer, inbound_type)
+		v_Action += j.SZ.action_SZ(peer, v_Peer, inbound_type)
+		v_Action += action_Port(peer, v_Peer, inbound_type, j.Port_Low, j.Port_High)
 		outbound = append(outbound, i_FromTo{
 			AB:             j.AB,
 			IF:             j.IF,

@@ -105,6 +105,7 @@ var (
 		_Type_ipprefix:         _Type_ipprefix,
 		_Type_link:             _Type_link,
 		_Type_lt:               _Type_lt + "0",
+		_Type_pool:             _Type_pool,
 		_Type_routing_group:    _Type_routing_group,
 		_Type_routing_instance: _Type_routing_instance,
 		_Type_security_policy:  _Type_security_policy,

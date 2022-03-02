@@ -73,6 +73,7 @@ const (
 	_Type_ipprefix             _Type          = "ipprefix"
 	_Type_link                 _Type          = "link"
 	_Type_lt                   _Type          = "lt"
+	_Type_pool                 _Type          = "pool"
 	_Type_routing_group        _Type          = "routing-group"
 	_Type_routing_instance     _Type          = "routing-instance"
 	_Type_security_policy      _Type          = "security policy"

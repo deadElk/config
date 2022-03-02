@@ -154,3 +154,36 @@ func (inbound *_Name) action_AB(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map
 	}
 	return
 }
+
+func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool) (outbound string /* , ok bool */) {
+	switch _, flag := v_Peer.RI[*inbound]; {
+	case len(*inbound) == 0:
+		return
+	case !flag && *inbound != _Defaults[_host_RI].(_Name):
+		log.Warnf("Peer '%v', unknown RI '%v', type '%v'; ACTION: return ''.", peer.ASN, *inbound, inbound_type)
+		return
+	}
+	return " routing-instance " + (*inbound).String() + " "
+}
+
+func (inbound *_Name) action_SZ(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool) (outbound string /* , ok bool */) {
+	switch _, flag := v_Peer.SZ[*inbound]; {
+	case len(*inbound) == 0:
+		return
+	case !flag && *inbound != _Name_any && *inbound != _Defaults[_host_RI].(_Name):
+		log.Warnf("Peer '%v', unknown SZ '%v', type '%v'; ACTION: return ''.", peer.ASN, *inbound, inbound_type)
+		return
+	}
+	return " zone " + (*inbound).String() + " "
+}
+
+func (inbound *_Name) action_IF(peer *cDB_Peer, v_Peer *i_Peer, inbound_type map[_Type]bool) (outbound string /* , ok bool */) {
+	switch _, flag := v_Peer.IF_2_RI[*inbound]; {
+	case len(*inbound) == 0:
+		return
+	case !flag:
+		log.Warnf("Peer '%v', unknown SZ '%v', type '%v'; ACTION: return ''.", peer.ASN, *inbound, inbound_type)
+		return
+	}
+	return " interface " + (*inbound).String() + " "
+}
