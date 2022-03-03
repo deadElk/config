@@ -30,6 +30,7 @@ type i_Peer struct {
 	VI           map[_VI_ID]*i_VI
 	VI_Left      map[_VI_ID]*i_VI_Peer
 	VI_Right     map[_VI_ID]*i_VI_Peer
+	VI_GT        map[_VI_ID]i_VI_GT
 	IFM          map[_Name]i_Peer_IFM
 	RI           map[_Name]i_Peer_RI
 	Hostname     _FQDN
@@ -123,6 +124,8 @@ type i_VI struct {
 	PSK           _Secret
 	IKE_GCM       bool
 	IKE_No_NAT    bool
+	// Left          *i_VI_Peer
+	// Right         *i_VI_Peer
 	// *IKE_Option_List
 	GT_Action_List
 	Attribute_List
@@ -140,6 +143,38 @@ type i_VI_Peer struct {
 	IKE_Dynamic       bool
 	IKE_Dynamic_Other bool
 	// *IKE_Option_List
+	GT_Action_List
+	Attribute_List
+}
+type i_VI_GT struct {
+	PName                   _PName
+	IPPrefix                netip.Prefix
+	Type                    _Type
+	Communication           _Communication
+	Route_Metric            _Route_Weight
+	PSK                     _Secret
+	IKE_GCM                 bool
+	IKE_No_NAT              bool
+	Left_RI                 _Name
+	Left_IF                 _Name
+	Left_IP                 netip.Addr
+	Left_NAT                netip.Addr
+	Left_Inner_RI           _Name
+	Left_Inner_IP           netip.Addr
+	Left_Inner_IPPrefix     netip.Prefix
+	Left_IKE_Local_Address  bool
+	Left_IKE_Dynamic        bool
+	Right_RI                _Name
+	Right_IF                _Name
+	Right_IP                netip.Addr
+	Right_NAT               netip.Addr
+	Right_Inner_RI          _Name
+	Right_Inner_IP          netip.Addr
+	Right_Inner_IPPrefix    netip.Prefix
+	Right_IKE_Local_Address bool
+	Right_IKE_Dynamic       bool
+	// Left                    *i_VI_Peer
+	// Right                   *i_VI_Peer
 	GT_Action_List
 	Attribute_List
 }

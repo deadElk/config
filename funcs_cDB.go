@@ -212,6 +212,7 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 				VI:              map[_VI_ID]*i_VI{},
 				VI_Left:         map[_VI_ID]*i_VI_Peer{},
 				VI_Right:        map[_VI_ID]*i_VI_Peer{},
+				VI_GT:           map[_VI_ID]i_VI_GT{},
 				IFM:             map[_Name]i_Peer_IFM{},
 				RI:              map[_Name]i_Peer_RI{},
 				Hostname:        "",
@@ -422,6 +423,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 			}
 			i_peer[v_vi_peer_list[_first].ASN].IF_2_RI[_if] = i_vi_peer[b.ID][_first].Inner_RI
 			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].IP_2_IF[i_vi_peer[b.ID][_first].Inner_IP] = _if
+
 		}
 
 	}
