@@ -121,7 +121,9 @@ type i_VI struct {
 	Communication _Communication
 	Route_Metric  _Route_Weight
 	PSK           _Secret
-	*IKE_Option_List
+	IKE_GCM       bool
+	IKE_No_NAT    bool
+	// *IKE_Option_List
 	GT_Action_List
 	Attribute_List
 }
@@ -137,7 +139,7 @@ type i_VI_Peer struct {
 	IKE_Local_Address bool
 	IKE_Dynamic       bool
 	IKE_Dynamic_Other bool
-	*IKE_Option_List
+	// *IKE_Option_List
 	GT_Action_List
 	Attribute_List
 }

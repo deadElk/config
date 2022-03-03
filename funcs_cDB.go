@@ -293,10 +293,10 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 			Communication: b.Communication,
 			Route_Metric:  b.Route_Metric,
 			PSK:           b.PSK.validate(64),
-			IKE_Option_List: &IKE_Option_List{
-				IKE_GCM:    v_IKE_GCM,
-				IKE_No_NAT: v_IKE_No_NAT,
-			},
+			// IKE_Option_List: &IKE_Option_List{
+			IKE_GCM:    v_IKE_GCM,
+			IKE_No_NAT: v_IKE_No_NAT,
+			// },
 			GT_Action_List: GT_Action_List{},
 			Attribute_List: b.Attribute_List,
 		}
@@ -373,9 +373,9 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				IKE_Local_Address: v_IKE_Local_Address,
 				IKE_Dynamic:       v_IKE_Dynamic,
 				IKE_Dynamic_Other: v_IKE_Dynamic_Other,
-				IKE_Option_List:   i_vi[b.ID].IKE_Option_List,
-				GT_Action_List:    GT_Action_List{},
-				Attribute_List:    d.Attribute_List,
+				// IKE_Option_List:   i_vi[b.ID].IKE_Option_List,
+				GT_Action_List: GT_Action_List{},
+				Attribute_List: d.Attribute_List,
 			}
 			v_vi_peer_list[d.ID] = i_vi_peer[b.ID][d.ID]
 		}
@@ -389,9 +389,9 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 			continue
 		}
 
-		i_vi[b.ID].IKE_GCM = i_peer[v_vi_peer_list[0].ASN].IKE_GCM && i_peer[v_vi_peer_list[1].ASN].IKE_GCM
-
 		for _first, _second = 0, _total-1; _first <= _total-1; _first, _second = _first+1, _second-1 {
+			i_vi[b.ID].IKE_GCM = i_vi[b.ID].IKE_GCM && i_peer[v_vi_peer_list[_first].ASN].IKE_GCM
+
 			i_peer[v_vi_peer_list[_first].ASN].VI[b.ID] = i_vi[b.ID]
 			i_peer[v_vi_peer_list[_first].ASN].VI_Left[b.ID] = i_vi_peer[b.ID][_first]
 			i_peer[v_vi_peer_list[_first].ASN].VI_Right[b.ID] = i_vi_peer[b.ID][_second]
