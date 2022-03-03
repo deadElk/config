@@ -141,7 +141,6 @@ type i_VI_Peer struct {
 	Inner_IPPrefix    netip.Prefix
 	IKE_Local_Address bool
 	IKE_Dynamic       bool
-	IKE_Dynamic_Other bool
 	// *IKE_Option_List
 	GT_Action_List
 	Attribute_List
