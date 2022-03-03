@@ -337,7 +337,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				log.Warnf("VI '%v', Peer '%v', IF '%v' no ip addresses found; ACTION: skip.", b.ID, d.ID, v_IF)
 				continue
 			}
-			v_IP = func() (outbound netip.Addr) {
+			v_IP, v_NAT = func() (outbound, outbound_nat netip.Addr) {
 				var (
 					interim netip.Prefix
 					value   i_Peer_RI_IF_IP
@@ -345,19 +345,20 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				for interim, value = range i_peer[d.ASN].RI[v_RI].IF[v_IF].IP {
 					switch interim.Addr() == d.IP {
 					case true:
-						v_NAT = value.NAT
-						return interim.Addr()
+						return interim.Addr(), value.NAT
 					}
 				}
 				switch !interim.IsValid() && !i_peer[d.ASN].RI[v_RI].IF[v_IF].IP[interim].DHCP {
 				case true:
-					log.Warnf("VI '%v', Peer '%v', IF '%v' no valid ip addresses found; ACTION: try to use dynamic.", b.ID, d.ID, v_IF)
+					log.Warnf("VI '%v', Peer '%v', IF '%v' no valid ip addresses found; ACTION: try to find something.", b.ID, d.ID, v_IF)
 				}
-				v_NAT = value.NAT
-				return interim.Addr()
+				return interim.Addr(), value.NAT
 			}()
 			switch {
-			case v_NAT.IsValid():
+			case len(i_peer[d.ASN].RI[v_RI].IF[v_IF].IP) > 1:
+				v_IKE_Local_Address = true
+			case (!v_IP.IsValid() || v_IP.IsPrivate()) && (!v_NAT.IsValid() || v_NAT.IsPrivate()):
+				i_vi[b.ID].IKE_No_NAT = false
 			}
 
 			i_vi_peer[b.ID][d.ID] = &i_VI_Peer{
@@ -366,7 +367,6 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				IF:                v_IF,
 				IP:                v_IP,
 				NAT:               v_NAT,
-				Dynamic:           d.Dynamic,
 				Inner_RI:          v_Inner_RI,
 				Inner_IP:          get_VI_IPPrefix(b.ID, d.ID+1).Addr(),
 				Inner_IPPrefix:    get_VI_IPPrefix(b.ID, d.ID+1),

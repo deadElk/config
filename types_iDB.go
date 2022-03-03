@@ -131,7 +131,6 @@ type i_VI_Peer struct {
 	IF                _Name
 	IP                netip.Addr
 	NAT               netip.Addr
-	Dynamic           bool
 	Inner_RI          _Name
 	Inner_IP          netip.Addr
 	Inner_IPPrefix    netip.Prefix

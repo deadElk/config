@@ -123,7 +123,6 @@ type cDB_VI_Peer struct {
 	RI       _Name       `xml:"RI,attr"`
 	IF       _Name       `xml:"IF,attr"`
 	IP       netip.Addr  `xml:"IP,attr"`
-	Dynamic  bool        `xml:"dynamic,attr"`
 	Inner_RI _Name       `xml:"inner_RI,attr"`
 	Attribute_List
 }
