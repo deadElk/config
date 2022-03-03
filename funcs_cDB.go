@@ -293,7 +293,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 			Communication: b.Communication,
 			Route_Metric:  b.Route_Metric,
 			PSK:           b.PSK.validate(64),
-			IKE_Option_List: IKE_Option_List{
+			IKE_Option_List: &IKE_Option_List{
 				IKE_GCM:    v_IKE_GCM,
 				IKE_No_NAT: v_IKE_No_NAT,
 			},
@@ -315,29 +315,67 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 			}
 			var (
 				v_RI                = d.RI.validate_RI(_Defaults[_mgmt_RI].(_Name))
-				v_IF                = d.IF
-				v_IP                = d.IP
-				v_NAT               = netip.Addr{}
+				v_IF                _Name
+				v_IP                netip.Addr
+				v_NAT               netip.Addr
 				v_IKE_Local_Address bool
+				v_IKE_Dynamic       bool
+				v_IKE_Dynamic_Other bool
+				v_Inner_RI          = d.Inner_RI.validate_RI(_Defaults[_mgmt_RI].(_Name))
 			)
+			switch _, flag := i_peer[d.ASN].RI[v_RI].IF[d.IF]; {
+			case len(d.IF) == 0:
+				for v_IF = range i_peer[d.ASN].RI[v_RI].IF {
+					log.Debugf("VI '%v', Peer '%v', taken first found interface '%v'; ACTION: skip.", b.ID, d.ID, v_IF)
+					break
+				}
+			case flag:
+				v_IF = d.IF
+			}
+			switch {
+			case len(i_peer[d.ASN].RI[v_RI].IF[v_IF].IP) < 1:
+				log.Warnf("VI '%v', Peer '%v', IF '%v' no ip addresses found; ACTION: skip.", b.ID, d.ID, v_IF)
+				continue
+			}
+			v_IP = func() (outbound netip.Addr) {
+				var (
+					interim netip.Prefix
+					value   i_Peer_RI_IF_IP
+				)
+				for interim, value = range i_peer[d.ASN].RI[v_RI].IF[v_IF].IP {
+					switch interim.Addr() == d.IP {
+					case true:
+						v_NAT = value.NAT
+						return interim.Addr()
+					}
+				}
+				switch !interim.IsValid() && !i_peer[d.ASN].RI[v_RI].IF[v_IF].IP[interim].DHCP {
+				case true:
+					log.Warnf("VI '%v', Peer '%v', IF '%v' no valid ip addresses found; ACTION: try to use dynamic.", b.ID, d.ID, v_IF)
+				}
+				v_NAT = value.NAT
+				return interim.Addr()
+			}()
+			switch {
+			case v_NAT.IsValid():
+			}
 
 			i_vi_peer[b.ID][d.ID] = &i_VI_Peer{
-				ASN:            d.ASN,
-				RI:             v_RI,
-				IF:             v_IF,
-				IP:             v_IP,
-				NAT:            v_NAT,
-				Dynamic:        d.Dynamic,
-				Inner_RI:       d.Inner_RI.validate_RI(_Defaults[_mgmt_RI].(_Name)),
-				Inner_IP:       get_VI_IPPrefix(b.ID, d.ID+1).Addr(),
-				Inner_IPPrefix: get_VI_IPPrefix(b.ID, d.ID+1),
-				IKE_Option_List: IKE_Option_List{
-					IKE_GCM:           i_peer[d.ASN].IKE_GCM,
-					IKE_No_NAT:        v_IKE_No_NAT,
-					IKE_Local_Address: v_IKE_Local_Address,
-				},
-				GT_Action_List: GT_Action_List{},
-				Attribute_List: d.Attribute_List,
+				ASN:               d.ASN,
+				RI:                v_RI,
+				IF:                v_IF,
+				IP:                v_IP,
+				NAT:               v_NAT,
+				Dynamic:           d.Dynamic,
+				Inner_RI:          v_Inner_RI,
+				Inner_IP:          get_VI_IPPrefix(b.ID, d.ID+1).Addr(),
+				Inner_IPPrefix:    get_VI_IPPrefix(b.ID, d.ID+1),
+				IKE_Local_Address: v_IKE_Local_Address,
+				IKE_Dynamic:       v_IKE_Dynamic,
+				IKE_Dynamic_Other: v_IKE_Dynamic_Other,
+				IKE_Option_List:   i_vi[b.ID].IKE_Option_List,
+				GT_Action_List:    GT_Action_List{},
+				Attribute_List:    d.Attribute_List,
 			}
 			v_vi_peer_list[d.ID] = i_vi_peer[b.ID][d.ID]
 		}
@@ -354,11 +392,6 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 		i_vi[b.ID].IKE_GCM = i_peer[v_vi_peer_list[0].ASN].IKE_GCM && i_peer[v_vi_peer_list[1].ASN].IKE_GCM
 
 		for _first, _second = 0, _total-1; _first <= _total-1; _first, _second = _first+1, _second-1 {
-			i_vi_peer[b.ID][_first].IKE_GCM = i_vi[b.ID].IKE_GCM
-			i_vi[b.ID].IKE_No_NAT = i_vi[b.ID].IKE_No_NAT && i_vi_peer[b.ID][_first].IKE_No_NAT
-
-			i_vi_peer[b.ID][_first].IKE_No_NAT = i_vi[b.ID].IKE_No_NAT
-
 			i_peer[v_vi_peer_list[_first].ASN].VI[b.ID] = i_vi[b.ID]
 			i_peer[v_vi_peer_list[_first].ASN].VI_Left[b.ID] = i_vi_peer[b.ID][_first]
 			i_peer[v_vi_peer_list[_first].ASN].VI_Right[b.ID] = i_vi_peer[b.ID][_second]

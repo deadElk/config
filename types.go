@@ -51,9 +51,8 @@ type GT_Action_List struct {
 }
 
 type IKE_Option_List struct {
-	IKE_GCM           bool
-	IKE_No_NAT        bool
-	IKE_Local_Address bool
+	IKE_GCM    bool
+	IKE_No_NAT bool
 }
 
 type SP_Option_List struct {

@@ -121,21 +121,24 @@ type i_VI struct {
 	Communication _Communication
 	Route_Metric  _Route_Weight
 	PSK           _Secret
-	IKE_Option_List
+	*IKE_Option_List
 	GT_Action_List
 	Attribute_List
 }
 type i_VI_Peer struct {
-	ASN            _ASN
-	RI             _Name
-	IF             _Name
-	IP             netip.Addr
-	NAT            netip.Addr
-	Dynamic        bool
-	Inner_RI       _Name
-	Inner_IP       netip.Addr
-	Inner_IPPrefix netip.Prefix
-	IKE_Option_List
+	ASN               _ASN
+	RI                _Name
+	IF                _Name
+	IP                netip.Addr
+	NAT               netip.Addr
+	Dynamic           bool
+	Inner_RI          _Name
+	Inner_IP          netip.Addr
+	Inner_IPPrefix    netip.Prefix
+	IKE_Local_Address bool
+	IKE_Dynamic       bool
+	IKE_Dynamic_Other bool
+	*IKE_Option_List
 	GT_Action_List
 	Attribute_List
 }
