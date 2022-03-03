@@ -40,7 +40,6 @@ type Attribute_List struct {
 	Verbosity   string       `xml:"verbosity,attr"`
 	Patch       string       `xml:"patch,attr"`
 	Disable     bool         `xml:"disable,attr"`
-	GT_Action_List
 }
 type Host_Inbound_Traffic_List struct {
 	Services  map[_Service]bool  `xml:"service,attr"`

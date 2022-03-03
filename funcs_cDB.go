@@ -515,6 +515,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 							}
 							return
 						}(),
+						GT_Action_List: GT_Action_List{},
 						Attribute_List: d.Attribute_List,
 					}
 				}
@@ -538,29 +539,45 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 									v_RT_Table       _Name
 									v_RT_Action      = c_Action[f.Action]
 									v_RT_Action_Flag _Action
+									v_Action         = "static route " + d.Identifier.String() + " "
 								)
 								switch v_RT_Action = c_Action[f.Action]; {
 								case v_RT_Action == _Action_discard:
+									v_Action += v_RT_Action.String()
 								case v_RT_Action == _Action_next_table && len(f.Table) != 0:
 									v_RT_Table = f.Table
+									v_Action += v_RT_Action.String() + " " + v_RT_Table.String()
 								case (v_RT_Action == _Action_next_hop || v_RT_Action == _Action_qualified_next_hop) && len(f.IF) != 0:
 									v_RT_IF = f.IF
+									v_Action += v_RT_Action.String() + " " + v_RT_IF.String()
 								case (v_RT_Action == _Action_next_hop || v_RT_Action == _Action_qualified_next_hop) && f.IP.IsValid():
 									v_RT_IP = f.IP
+									v_Action += v_RT_Action.String() + " " + v_RT_IP.String()
 								case len(v_RT_Action) == 0 && len(f.Table) != 0:
 									v_RT_Action = _Action_next_table
 									v_RT_Table = f.Table
+									v_Action += v_RT_Action.String() + " " + v_RT_Table.String()
 								case len(v_RT_Action) == 0 && len(f.IF) != 0:
 									v_RT_Action = _Action_next_hop
 									v_RT_IF = f.IF
+									v_Action += v_RT_Action.String() + " " + v_RT_IF.String()
 								case len(v_RT_Action) == 0 && f.IP.IsValid():
 									v_RT_Action = _Action_next_hop
 									v_RT_IP = f.IP
+									v_Action += v_RT_Action.String() + " " + v_RT_IP.String()
 								case len(v_RT_Action) == 0:
 									v_RT_Action = _Action_discard
+									v_Action += v_RT_Action.String()
 								default:
 									log.Warnf("Peer '%v', RI '%v', Identifier '%v', invalid GW '%v'; ACTION: ignore.", peer.ASN, b.Name, d.Identifier, f)
 									continue
+								}
+								switch {
+								case f.Metric > 0:
+									v_Action += " metric " + f.Metric.String() + " "
+									fallthrough
+								case f.Preference > 0:
+									v_Action += " preference " + f.Preference.String() + " "
 								}
 								var (
 									v_GW = i_Peer_RI_RO_RT_GW{
@@ -571,6 +588,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 										Action_Flag:    v_RT_Action_Flag,
 										Metric:         f.Metric,
 										Preference:     f.Preference,
+										GT_Action_List: GT_Action_List{GT_Action: " " + v_Action + " "},
 										Attribute_List: f.Attribute_List,
 									}
 									v_Name = _Name(hash(&v_GW).String())
@@ -589,7 +607,15 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				}
 				return
 			}()
+			v_Action = func() string {
+				switch {
+				case b.Name != _Defaults[_RI].(_Name):
+					return "set routing-instances " + b.Name.String() + " "
+				}
+				return "set "
+			}()
 		)
+
 		v_Peer.RI[b.Name] = i_Peer_RI{
 			IP_2_IF: v_IP_2_IF,
 			IF:      v_IF,
@@ -623,6 +649,10 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 						return
 					}(),
 				},
+			},
+			Protocol: nil,
+			GT_Action_List: GT_Action_List{
+				GT_Action: v_Action,
 			},
 			Attribute_List: b.Attribute_List,
 		}
