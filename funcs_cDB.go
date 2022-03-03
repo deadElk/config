@@ -283,18 +283,19 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 		}
 		var (
 			v_vi_peer_list = make(map[_VI_Peer_ID]*i_VI_Peer)
-			v_IKE_GCM      bool
-			v_IKE_No_NAT   bool
+			v_IKE_GCM      = true
+			v_IKE_No_NAT   = true
 		)
 		i_vi[b.ID] = &i_VI{
 			PName:         pad(&b.ID, 5),
 			IPPrefix:      get_VI_IPPrefix(b.ID, 0).Masked(),
-			Type:          b.Type,
+			Type:          _Type_st,
 			Communication: b.Communication,
 			Route_Metric:  b.Route_Metric,
 			PSK:           b.PSK.validate(64),
 			IKE_Option_List: IKE_Option_List{
-				IKE_No_NAT: false,
+				IKE_GCM:    v_IKE_GCM,
+				IKE_No_NAT: v_IKE_No_NAT,
 			},
 			GT_Action_List: GT_Action_List{},
 			Attribute_List: b.Attribute_List,
@@ -331,7 +332,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				Inner_IP:       get_VI_IPPrefix(b.ID, d.ID+1).Addr(),
 				Inner_IPPrefix: get_VI_IPPrefix(b.ID, d.ID+1),
 				IKE_Option_List: IKE_Option_List{
-					IKE_GCM:           v_IKE_GCM,
+					IKE_GCM:           i_peer[d.ASN].IKE_GCM,
 					IKE_No_NAT:        v_IKE_No_NAT,
 					IKE_Local_Address: v_IKE_Local_Address,
 				},
@@ -350,7 +351,14 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 			continue
 		}
 
+		i_vi[b.ID].IKE_GCM = i_peer[v_vi_peer_list[0].ASN].IKE_GCM && i_peer[v_vi_peer_list[1].ASN].IKE_GCM
+
 		for _first, _second = 0, _total-1; _first <= _total-1; _first, _second = _first+1, _second-1 {
+			i_vi_peer[b.ID][_first].IKE_GCM = i_vi[b.ID].IKE_GCM
+			i_vi[b.ID].IKE_No_NAT = i_vi[b.ID].IKE_No_NAT && i_vi_peer[b.ID][_first].IKE_No_NAT
+
+			i_vi_peer[b.ID][_first].IKE_No_NAT = i_vi[b.ID].IKE_No_NAT
+
 			i_peer[v_vi_peer_list[_first].ASN].VI[b.ID] = i_vi[b.ID]
 			i_peer[v_vi_peer_list[_first].ASN].VI_Left[b.ID] = i_vi_peer[b.ID][_first]
 			i_peer[v_vi_peer_list[_first].ASN].VI_Right[b.ID] = i_vi_peer[b.ID][_second]
@@ -382,6 +390,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 			i_peer[v_vi_peer_list[_first].ASN].IF_2_RI[_if] = i_vi_peer[b.ID][_first].Inner_RI
 			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].IP_2_IF[i_vi_peer[b.ID][_first].Inner_IP] = _if
 		}
+
 	}
 	return true
 }
