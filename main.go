@@ -10,14 +10,23 @@ import (
 func init() {
 	log.SetLevel(_Defaults[_loglevel].(log.Level))
 	log.SetFormatter(&log.TextFormatter{
-		DisableColors:    false,
-		FullTimestamp:    true,
-		PadLevelText:     true,
-		ForceQuote:       true,
-		QuoteEmptyFields: true,
-		TimestampFormat:  time.RFC3339Nano,
+		ForceColors:               false,
+		DisableColors:             false,
+		ForceQuote:                true,
+		DisableQuote:              false,
+		EnvironmentOverrideColors: false,
+		DisableTimestamp:          true,
+		FullTimestamp:             false,
+		TimestampFormat:           time.RFC3339Nano,
+		DisableSorting:            true,
+		SortingFunc:               nil,
+		DisableLevelTruncation:    false,
+		PadLevelText:              true,
+		QuoteEmptyFields:          true,
+		FieldMap:                  nil,
+		CallerPrettyfier:          nil,
 	})
-	log.SetReportCaller(true)
+	log.SetReportCaller(false)
 }
 func main() {
 	switch op() {

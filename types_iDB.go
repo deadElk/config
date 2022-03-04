@@ -154,6 +154,7 @@ type i_VI_GT struct {
 	PSK                     _Secret
 	IKE_GCM                 bool
 	IKE_No_NAT              bool
+	Left_ASN                _ASN
 	Left_RI                 _Name
 	Left_IF                 _Name
 	Left_IP                 netip.Addr
@@ -163,6 +164,7 @@ type i_VI_GT struct {
 	Left_Inner_IPPrefix     netip.Prefix
 	Left_IKE_Local_Address  bool
 	Left_IKE_Dynamic        bool
+	Right_ASN               _ASN
 	Right_RI                _Name
 	Right_IF                _Name
 	Right_IP                netip.Addr

@@ -132,8 +132,8 @@ var (
 		_host_RI:           _Name("junos-host"),
 		_mgmt_Description:  _Description("MANAGEMENT-INSTANCE"),
 		_domain_name:       _FQDN("example.com"),
-		_ps_bits_per_rm:    uint32(2),        // ____
-		_ps_max_rms:        uint32(32/2 - 1), // ^^^^
+		_ps_bits_per_rm:    _Route_Weight(2),        // ____
+		_ps_max_rms:        _Route_Weight(32/2 - 1), // ^^^^
 		_GT_list:           []_Name{},
 		_path_GT:           "./templates",
 		_path_out:          "./tmp",

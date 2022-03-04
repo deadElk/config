@@ -292,8 +292,14 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 			IPPrefix:      get_VI_IPPrefix(b.ID, 0).Masked(),
 			Type:          _Type_st,
 			Communication: b.Communication,
-			Route_Metric:  b.Route_Metric,
-			PSK:           b.PSK.validate(64),
+			Route_Metric: func() _Route_Weight {
+				switch b.Route_Metric > _Defaults[_ps_max_rms].(_Route_Weight) {
+				case true:
+					return 0
+				}
+				return _Defaults[_ps_max_rms].(_Route_Weight) - b.Route_Metric
+			}(),
+			PSK: b.PSK.validate(64),
 			// IKE_Option_List: &IKE_Option_List{
 			IKE_GCM:    v_IKE_GCM,
 			IKE_No_NAT: v_IKE_No_NAT,
@@ -433,6 +439,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				PSK:                     i_vi[b.ID].PSK,
 				IKE_GCM:                 i_vi[b.ID].IKE_GCM,
 				IKE_No_NAT:              i_vi[b.ID].IKE_No_NAT,
+				Left_ASN:                i_vi_peer[b.ID][_first].ASN,
 				Left_RI:                 i_vi_peer[b.ID][_first].RI,
 				Left_IF:                 i_vi_peer[b.ID][_first].IF,
 				Left_IP:                 i_vi_peer[b.ID][_first].IP,
@@ -442,6 +449,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				Left_Inner_IPPrefix:     i_vi_peer[b.ID][_first].Inner_IPPrefix,
 				Left_IKE_Local_Address:  i_vi_peer[b.ID][_first].IKE_Local_Address,
 				Left_IKE_Dynamic:        i_vi_peer[b.ID][_first].IKE_Dynamic,
+				Right_ASN:               i_vi_peer[b.ID][_second].ASN,
 				Right_RI:                i_vi_peer[b.ID][_second].RI,
 				Right_IF:                i_vi_peer[b.ID][_second].IF,
 				Right_IP:                i_vi_peer[b.ID][_second].IP,
