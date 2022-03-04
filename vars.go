@@ -19,15 +19,16 @@ var (
 		"sum_string": sum_string_gt_fm,
 	}
 
-	config    = make(_i_config)
-	i_ab      = make(_i_ab)
-	i_ja      = make(_i_ja)
-	i_pl      = make(_i_pl)
-	i_ps      = make(_i_ps)
-	i_vi      = make(_i_vi)
-	i_vi_peer = make(_i_vi_peer)
-	i_peer    = make(_i_peer)
-	i_gt      = make(_i_gt)
+	config      = make(_i_config)
+	i_ab        = make(_i_ab)
+	i_ja        = make(_i_ja)
+	i_pl        = make(_i_pl)
+	i_ps        = make(_i_ps)
+	i_vi        = make(_i_vi)
+	i_vi_peer   = make(_i_vi_peer)
+	i_peer      = make(_i_peer)
+	i_gt        = make(_i_gt)
+	i_peer_list []_ASN
 )
 
 var (
