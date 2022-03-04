@@ -100,19 +100,22 @@ func upload_config() (ok bool) {
 		hosts       string
 		s_peer_list []int
 	)
-	for a, b := range config {
+	for a := range config {
 		s_peer_list = append(s_peer_list, int(a))
-		var (
-			fn = _Defaults[_path_out].(string) + "./AS" + a.String()
-		)
-		switch err = os.WriteFile(fn, b, 0600); err == nil {
-		case true:
-			log.Debugf("OK '%v'", a)
-		case false:
-			log.Errorf("Fail '%v' with error '%v'", a, err)
-		}
 	}
 	sort.Ints(s_peer_list)
+	for _, b := range s_peer_list {
+		var (
+			asn = "AS" + _ASN(b).String()
+			fn  = _Defaults[_path_out].(string) + "./" + asn
+		)
+		switch err = os.WriteFile(fn, config[_ASN(b)], 0600); err == nil {
+		case true:
+			log.Infof("OK %v", asn)
+		case false:
+			log.Errorf("Fail '%v' with error '%v'", asn, err)
+		}
+	}
 
 	for _, b := range s_peer_list {
 		var (

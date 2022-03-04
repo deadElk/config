@@ -481,7 +481,7 @@ func parse_cDB_Peer_Router_ID(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			}
 			return parse_interface(netip.ParseAddr("192.0.2.0")).(netip.Addr)
 		}()
-		log.Warnf("Peer '%v', invalid Router_ID '%v'; ACTION: use '%v'.", peer.ASN, peer.Router_ID, v_Peer.Router_ID)
+		log.Debugf("Peer '%v', invalid Router_ID '%v'; ACTION: use '%v'.", peer.ASN, peer.Router_ID, v_Peer.Router_ID)
 	}
 	return true
 }
