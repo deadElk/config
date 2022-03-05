@@ -94,19 +94,21 @@ func parse_GT() (ok bool) {
 }
 func upload_config() (ok bool) {
 	var (
-		err error
-	)
-	var (
+		err         error
+		i_peer_list []_ASN
 		hosts       string
-		s_peer_list []int
 	)
-	for a := range config {
-		s_peer_list = append(s_peer_list, int(a))
+
+	for a := range i_peer {
+		i_peer_list = append(i_peer_list, a)
 	}
-	sort.Ints(s_peer_list)
-	for _, b := range s_peer_list {
+	sort.Slice(i_peer_list, func(i, j int) bool {
+		return i_peer_list[i] < i_peer_list[j]
+	})
+
+	for _, b := range i_peer_list {
 		var (
-			asn = "AS" + _ASN(b).String()
+			asn = "AS" + pad(b, 10).String()
 			fn  = _Defaults[_path_out].(string) + "./" + asn
 		)
 		switch err = os.WriteFile(fn, config[_ASN(b)], 0600); err == nil {
@@ -115,20 +117,17 @@ func upload_config() (ok bool) {
 		case false:
 			log.Errorf("Fail '%v' with error '%v'", asn, err)
 		}
-	}
 
-	for _, b := range s_peer_list {
 		var (
-			index     = _ASN(b)
 			s_public  []string
 			s_private []string
 			ip_list   = "\t"
-			s_target  = []string{0: i_peer[index].Router_ID.String()}
+			s_target  = []string{0: i_peer[b].Router_ID.String()}
 		)
-		for c := range i_peer[index].AB["O_AS"+_Name(i_peer[index].PName)].Set {
+		for c := range i_peer[b].AB["O_AS"+_Name(i_peer[b].PName)].Set {
 			s_public = append(s_public, c.String())
 		}
-		for c := range i_peer[index].AB["I_AS"+_Name(i_peer[index].PName)].Set {
+		for c := range i_peer[b].AB["I_AS"+_Name(i_peer[b].PName)].Set {
 			s_private = append(s_private, c.String())
 		}
 		sort.Strings(s_public)
@@ -156,9 +155,9 @@ func upload_config() (ok bool) {
 				)
 				outbound += tabber(host, 2) +
 					"\t####\t" +
-					tabber(i_peer[index].PName.String(), 2) + "\t" +
-					tabber(i_peer[index].Hostname.String(), 3) + "\t" +
-					tabber(i_peer[index].Manufacturer+" "+i_peer[index].Model, 3) + "\t####\t" +
+					tabber(i_peer[b].PName.String(), 2) + "\t" +
+					tabber(i_peer[b].Hostname.String(), 3) + "\t" +
+					tabber(i_peer[b].Manufacturer+" "+i_peer[b].Model, 3) + "\t####\t" +
 					ip_list + "\n"
 			}
 			outbound += "\n"

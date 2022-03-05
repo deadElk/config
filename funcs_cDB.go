@@ -192,7 +192,6 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ASN)
 			continue
 		}
-		i_peer_list = append(i_peer_list, b.ASN)
 		parse_cDB_AB(&b.AB)
 		parse_cDB_JA(&b.JA)
 		parse_cDB_PL(&b.PL)
