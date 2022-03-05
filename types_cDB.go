@@ -7,7 +7,7 @@ import (
 
 // DB root
 type cDB struct {
-	XMLName     xml.Name     `xml:"AS4200240XXX"`
+	XMLName     xml.Name
 	Domain_Name _FQDN        `xml:"domain_name,attr"`
 	VI_IPPrefix netip.Prefix `xml:"VI_IPprefix,attr"`
 	GT_List     string       `xml:"GT_list,attr"`
@@ -140,10 +140,13 @@ type cDB_NAT struct {
 	_Attribute_List
 }
 type cDB_Pool struct {
-	Name     _Name        `xml:"name,attr"`
-	IPPrefix netip.Prefix `xml:"IPprefix,attr"`
-	RI       _Name        `xml:"RI,attr"`
-	SZ       _Name        `xml:"SZ,attr"`
+	Name      _Name        `xml:"name,attr"`
+	IPPrefix  netip.Prefix `xml:"IPprefix,attr"`
+	RI        _Name        `xml:"RI,attr"`
+	SZ        _Name        `xml:"SZ,attr"`
+	Port      _Port        `xml:"port,attr"`
+	Port_Low  _Port        `xml:"port_low,attr"`
+	Port_High _Port        `xml:"port_high,attr"`
 	_Attribute_List
 }
 
@@ -211,6 +214,7 @@ type cDB_JA struct {
 type cDB_JA_Term struct {
 	Name             _Name     `xml:"name,attr"`
 	Protocol         _Protocol `xml:"protocol,attr"`
+	Source_Port      _Port     `xml:"source_port,attr"`
 	Destination_Port _Port     `xml:"destination_port,attr"`
 	_Attribute_List
 }

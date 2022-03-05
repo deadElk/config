@@ -87,7 +87,7 @@ type _BGP_Group_Neighbor struct {
 	Local_ASN  _ASN
 	Remote_ASN _ASN
 	Passive    bool
-	Right_IP   netip.Addr
+	Remote_IP  netip.Addr
 	Route_Leak map[_Action]i_Route_Leak_FromTo
 	GT_Action  string
 	_Attribute_List

@@ -75,11 +75,25 @@ var (
 	c_Protocol = map[_Protocol]_Protocol{
 		_Protocol_access_internal: _Protocol_access_internal,
 		_Protocol_aggregate:       _Protocol_aggregate,
+		_Protocol_ah:              _Protocol_ah,
 		_Protocol_all:             _Protocol_all,
 		_Protocol_bgp:             _Protocol_bgp,
 		_Protocol_direct:          _Protocol_direct,
+		_Protocol_egp:             _Protocol_egp,
+		_Protocol_esp:             _Protocol_esp,
+		_Protocol_gre:             _Protocol_gre,
+		_Protocol_icmp6:           _Protocol_icmp6,
+		_Protocol_icmp:            _Protocol_icmp,
+		_Protocol_igmp:            _Protocol_igmp,
+		_Protocol_ipip:            _Protocol_ipip,
 		_Protocol_local:           _Protocol_local,
+		_Protocol_ospf:            _Protocol_ospf,
+		_Protocol_pim:             _Protocol_pim,
+		_Protocol_rsvp:            _Protocol_rsvp,
+		_Protocol_sctp:            _Protocol_sctp,
 		_Protocol_static:          _Protocol_static,
+		_Protocol_tcp:             _Protocol_tcp,
+		_Protocol_udp:             _Protocol_udp,
 	}
 	c_Service = map[_Service]_Service{
 		_Service_all:         _Service_all,
@@ -120,6 +134,7 @@ var (
 		_Type_zone:             _Type_zone,
 	}
 	_Defaults = map[interface{}]interface{}{
+		_group:             _Name("4200000000"),
 		_loglevel:          log.InfoLevel,
 		_sp_default_policy: _Action_permit_all,
 		_comm_if:           _Communication_ptmp,

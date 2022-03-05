@@ -155,6 +155,14 @@ func (inbound *_Name) action_AB(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	return
 }
 
+func (inbound *_Name) action_Pool(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
+	switch {
+	case len(*inbound) == 0:
+		return
+	}
+	return " pool " + (*inbound).String() + " "
+}
+
 func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
 	switch _, flag := v_Peer.RI[*inbound]; {
 	case len(*inbound) == 0:

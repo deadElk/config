@@ -67,12 +67,12 @@ type i_Peer_IFM struct {
 	_Attribute_List
 }
 type i_Peer_RI struct {
-	IP_2_IF  map[netip.Addr]_Name // interface's IP address to interface mapping. IP addresses within one RI must be unique.
-	IF       map[_Name]i_Peer_RI_IF
-	RT       map[netip.Prefix]i_Peer_RI_RO_RT
-	Leak     map[_Action]i_Route_Leak_FromTo
-	Protocol map[_Name]_Name
-	_BGP
+	IP_2_IF   map[netip.Addr]_Name // interface's IP address to interface mapping. IP addresses within one RI must be unique.
+	IF        map[_Name]i_Peer_RI_IF
+	RT        map[netip.Prefix]i_Peer_RI_RO_RT
+	Leak      map[_Action]i_Route_Leak_FromTo
+	Protocol  map[_Name]_Name
+	BGP       _BGP
 	GT_Action string
 	_Attribute_List
 }
@@ -212,6 +212,9 @@ type i_Pool struct {
 	IPPrefix  netip.Prefix
 	RI        _Name
 	SZ        _Name
+	Port      _Port
+	Port_Low  _Port
+	Port_High _Port
 	GT_Action string
 	_Attribute_List
 }
