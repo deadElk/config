@@ -59,6 +59,7 @@ type i_Peer_SP struct {
 	Option_List _SP_Option_List
 	Exact       []i_Rule_Set
 	Global      []i_Rule
+	GT_Action   string
 }
 type i_Peer_IFM struct {
 	Communication _Communication

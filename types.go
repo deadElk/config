@@ -60,15 +60,17 @@ type _Host_Inbound_Traffic_List struct {
 type _IKE_Option_List struct {
 	IKE_GCM    bool
 	IKE_No_NAT bool
+	GT_Action  string
 }
 
 type _SP_Option_List struct {
 	Default_Policy _Action
+	GT_Action      string
 }
 
 type _BGP struct {
-	BGP_Group      map[_Name]_BGP_Group
-	GT_Action_List []string
+	BGP_Group map[_Name]_BGP_Group
+	GT_Action string
 	_Attribute_List
 }
 type _BGP_Group struct {
@@ -77,16 +79,16 @@ type _BGP_Group struct {
 	Passive    bool
 	// 	Type      _Type
 	// 	Multipath bool
-	BGP_Neighbor   map[netip.Addr]_BGP_Group_Neighbor
-	GT_Action_List []string
+	BGP_Neighbor map[netip.Addr]_BGP_Group_Neighbor
+	GT_Action    string
 	_Attribute_List
 }
 type _BGP_Group_Neighbor struct {
-	Local_ASN      _ASN
-	Remote_ASN     _ASN
-	Passive        bool
-	Right_IP       netip.Addr
-	Route_Leak     map[_Action]i_Route_Leak_FromTo
-	GT_Action_List []string
+	Local_ASN  _ASN
+	Remote_ASN _ASN
+	Passive    bool
+	Right_IP   netip.Addr
+	Route_Leak map[_Action]i_Route_Leak_FromTo
+	GT_Action  string
 	_Attribute_List
 }

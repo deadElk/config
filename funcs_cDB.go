@@ -270,7 +270,7 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 		parse_cDB_Peer_SP_Exact(&b, &v_Peer)
 		parse_cDB_Peer_SP_Global(&b, &v_Peer)
 
-		parse_cDB_Peer_SP_Options(&b, &v_Peer)
+		parse_cDB_Peer_SP_Option_List(&b, &v_Peer)
 
 		i_peer[b.ASN] = v_Peer
 		ok = true
@@ -918,7 +918,7 @@ func parse_cDB_Peer_SP_Global(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	return true
 }
 
-func parse_cDB_Peer_SP_Options(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+func parse_cDB_Peer_SP_Option_List(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	v_Peer.SP.Option_List = _SP_Option_List{
 		Default_Policy: func() _Action {
 			switch value := peer.SP_Option_List.Default_Policy; value {
@@ -931,6 +931,7 @@ func parse_cDB_Peer_SP_Options(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				return _Defaults[_sp_default_policy].(_Action)
 			}
 		}(),
+		GT_Action: "",
 	}
 	return true
 }
