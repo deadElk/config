@@ -358,3 +358,11 @@ func strings_Join(inbound []_Name, delimiter string) (outbound _Name) {
 	}
 	return _Name(buffer.String())
 }
+
+func (inbound *_Names) parse_action_PS(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, names ..._Name) (outbound string /* , ok bool */) {
+	switch {
+	case len(*inbound) == 0:
+		return
+	}
+	return
+}

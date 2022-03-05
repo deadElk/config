@@ -500,6 +500,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 					},
 				}
 			)
+
 			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_Defaults[_group].(_Name)].Neighbor[i_vi_peer[b.ID][_second].Inner_IP] = _BGP_Group_Neighbor{
 				Local_ASN:  i_vi_peer[b.ID][_first].ASN,
 				Remote_ASN: i_vi_peer[b.ID][_second].ASN,
@@ -753,7 +754,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			Route_Leak: map[_Action]i_Route_Leak_FromTo{
 				_Action_import: {
 					PS: func() (outbound []_Name) {
-						for _, d := range b.From {
+						for _, d := range b.Route_Leak.Import {
 							switch _, flag := i_ps[d.PS]; flag {
 							case false:
 								log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PS)
@@ -767,7 +768,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				},
 				_Action_export: {
 					PS: func() (outbound []_Name) {
-						for _, d := range b.To {
+						for _, d := range b.Route_Leak.Export {
 							switch _, flag := i_ps[d.PS]; flag {
 							case false:
 								log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PS)
