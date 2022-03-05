@@ -9,7 +9,8 @@ import (
 )
 
 func parse_cDB(xml_db *cDB) (ok bool) {
-	set_loglevel(xml_db.Verbosity)
+	// set_loglevel(xml_db.Verbosity)
+	log.SetLevel(xml_db.Verbosity)
 	switch len(xml_db.GT_Path) == 0 {
 	case false:
 		_Defaults[_path_GT] = xml_db.GT_Path
@@ -71,13 +72,13 @@ func parse_cDB_JA(inbound *[]cDB_JA) (ok bool) {
 							Name:             d.Name,
 							Protocol:         d.Protocol,
 							Destination_Port: d.Destination_Port,
-							_GT_Action_List:  _GT_Action_List{GT_Action: " term " + d.Name.String() + " protocol " + d.Protocol.String() + " destination-port " + d.Destination_Port.String()},
+							GT_Action:        " term " + d.Name.String() + " protocol " + d.Protocol.String() + " destination-port " + d.Destination_Port.String(),
 							_Attribute_List:  d._Attribute_List,
 						})
 					}
 					return
 				}(),
-				_GT_Action_List: _GT_Action_List{GT_Action: "set applications application " + b.Name.String()},
+				GT_Action:       "set applications application " + b.Name.String(),
 				_Attribute_List: b._Attribute_List,
 			}
 			return
@@ -98,13 +99,13 @@ func parse_cDB_PL(inbound *[]cDB_PO_PL) (ok bool) {
 					for _, d := range b.Match {
 						outbound = append(outbound, i_PO_PL_Match{
 							IPPrefix:        d.IPPrefix,
-							_GT_Action_List: _GT_Action_List{GT_Action: " default " + d.IPPrefix.String()},
+							GT_Action:       " default " + d.IPPrefix.String(),
 							_Attribute_List: d._Attribute_List,
 						})
 					}
 					return
 				}(),
-				_GT_Action_List: _GT_Action_List{GT_Action: "set policy-options prefix-list " + b.Name.String()},
+				GT_Action:       "set policy-options prefix-list " + b.Name.String(),
 				_Attribute_List: b._Attribute_List,
 			}
 			return
@@ -146,7 +147,7 @@ func parse_cDB_PS(inbound *[]cDB_PO_PS) (ok bool) {
 										Route_Type:      f.Route_Type,
 										PL:              f.PL,
 										Mask:            f.Mask,
-										_GT_Action_List: _GT_Action_List{GT_Action: " from " + v_Action},
+										GT_Action:       " from " + v_Action,
 										_Attribute_List: f._Attribute_List,
 									})
 								}
@@ -165,19 +166,19 @@ func parse_cDB_PS(inbound *[]cDB_PO_PS) (ok bool) {
 										Action:          f.Action,
 										Action_Flag:     f.Action_Flag,
 										Metric:          f.Metric,
-										_GT_Action_List: _GT_Action_List{GT_Action: " then " + f.Action.String() + " " + f.Action_Flag.String() + v_Action},
+										GT_Action:       " then " + f.Action.String() + " " + f.Action_Flag.String() + v_Action,
 										_Attribute_List: f._Attribute_List,
 									})
 								}
 								return
 							}(),
-							_GT_Action_List: _GT_Action_List{GT_Action: " term " + d.Name.String()},
+							GT_Action:       " term " + d.Name.String(),
 							_Attribute_List: d._Attribute_List,
 						})
 					}
 					return
 				}(),
-				_GT_Action_List: _GT_Action_List{GT_Action: "set policy-options policy-statement " + b.Name.String()},
+				GT_Action:       "set policy-options policy-statement " + b.Name.String(),
 				_Attribute_List: b._Attribute_List,
 			}
 			return
@@ -236,7 +237,7 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 					Global:      nil,
 				},
 				_IKE_Option_List: _IKE_Option_List{},
-				_GT_Action_List:  _GT_Action_List{},
+				GT_Action:        "",
 				_Attribute_List:  b._Attribute_List,
 			}
 		)
@@ -306,7 +307,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 			IKE_GCM:    v_IKE_GCM,
 			IKE_No_NAT: v_IKE_No_NAT,
 			// },
-			_GT_Action_List: _GT_Action_List{},
+			GT_Action:       "",
 			_Attribute_List: b._Attribute_List,
 		}
 		i_vi_peer[b.ID] = map[_VI_Peer_ID]*i_VI_Peer{}
@@ -381,7 +382,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				IKE_Local_Address: v_IKE_Local_Address,
 				IKE_Dynamic:       v_IKE_Dynamic,
 				// _IKE_Option_List:   i_vi[b.ID]._IKE_Option_List,
-				_GT_Action_List: _GT_Action_List{},
+				GT_Action:       "",
 				_Attribute_List: d._Attribute_List,
 			}
 			v_vi_peer_list[d.ID] = i_vi_peer[b.ID][d.ID]
@@ -414,17 +415,17 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 						Preferred:       false,
 						NAT:             netip.Addr{},
 						DHCP:            false,
-						_GT_Action_List: _GT_Action_List{},
+						GT_Action:       "",
 						_Attribute_List: _Attribute_List{},
 					},
 				},
 				PARP:            nil,
-				_GT_Action_List: _GT_Action_List{},
+				GT_Action:       "",
 				_Attribute_List: _Attribute_List{Description: _Description("" + i_vi_peer[b.ID][_first].IF.String() + "_AS" + pad(i_vi_peer[b.ID][_second].ASN.String(), 10).String() + "_" + i_vi_peer[b.ID][_second].IF.String())},
 			}
 			i_peer[v_vi_peer_list[_first].ASN].SZ[i_vi_peer[b.ID][_first].Inner_RI].IF[_if] = i_Peer_SZ_IF{
 				_Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh, _Protocol_bgp),
-				_GT_Action_List:            _GT_Action_List{GT_Action: " interfaces " + _if.String()},
+				GT_Action:                  " interfaces " + _if.String(),
 				_Attribute_List:            _Attribute_List{},
 			}
 			i_peer[v_vi_peer_list[_first].ASN].IF_2_RI[_if] = i_vi_peer[b.ID][_first].Inner_RI
@@ -461,7 +462,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				Remote_Inner_IPPrefix:    i_vi_peer[b.ID][_second].Inner_IPPrefix,
 				Remote_IKE_Local_Address: i_vi_peer[b.ID][_second].IKE_Local_Address,
 				Remote_IKE_Dynamic:       i_vi_peer[b.ID][_second].IKE_Dynamic,
-				_GT_Action_List:          _GT_Action_List{},
+				GT_Action:                "",
 				_Attribute_List:          _Attribute_List{},
 			}
 		}
@@ -492,7 +493,7 @@ func parse_cDB_Peer_IFM(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	for _, b := range peer.IFM {
 		v_Peer.IFM[b.Name] = i_Peer_IFM{
 			Communication:   parse_Communication(&peer.ASN, &b.Name, &b.Communication),
-			_GT_Action_List: _GT_Action_List{GT_Action: "set interfaces " + b.Name.String()},
+			GT_Action:       "set interfaces " + b.Name.String(),
 			_Attribute_List: b._Attribute_List,
 		}
 	}
@@ -598,7 +599,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 							}
 							return
 						}(),
-						_GT_Action_List: _GT_Action_List{},
+						GT_Action:       "",
 						_Attribute_List: d._Attribute_List,
 					}
 				}
@@ -671,7 +672,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 										Action_Flag:     v_RT_Action_Flag,
 										Metric:          f.Metric,
 										Preference:      f.Preference,
-										_GT_Action_List: _GT_Action_List{GT_Action: " " + v_Action + " "},
+										GT_Action:       " " + v_Action + " ",
 										_Attribute_List: f._Attribute_List,
 									}
 									v_Name = _Name(hash(&v_GW).String())
@@ -733,10 +734,8 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 					}(),
 				},
 			},
-			Protocol: nil,
-			_GT_Action_List: _GT_Action_List{
-				GT_Action: v_Action,
-			},
+			Protocol:        nil,
+			GT_Action:       v_Action,
 			_Attribute_List: b._Attribute_List,
 		}
 	}
@@ -807,7 +806,7 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				for c := range v_Peer.RI[b.Name].IF {
 					outbound[c] = i_Peer_SZ_IF{
 						_Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh),
-						_GT_Action_List:            _GT_Action_List{GT_Action: " interfaces " + c.String()},
+						GT_Action:                  " interfaces " + c.String(),
 						_Attribute_List:            _Attribute_List{},
 					}
 				}
@@ -815,7 +814,7 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			}(),
 			_Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(),
 			// _GT_Action_List:            _GT_Action_List{GT_Action: "set security zones security-zone " + b.Name.String() + v_Action},
-			_GT_Action_List: _GT_Action_List{GT_Action: "set security zones security-zone " + b.Name.String()},
+			GT_Action:       "set security zones security-zone " + b.Name.String(),
 			_Attribute_List: b._Attribute_List,
 		}
 	}
@@ -830,7 +829,7 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				Screen:                     "",
 				IF:                         map[_Name]i_Peer_SZ_IF{},
 				_Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(),
-				_GT_Action_List:            _GT_Action_List{GT_Action: "set security zones security-zone " + a.String()},
+				GT_Action:                  "set security zones security-zone " + a.String(),
 				_Attribute_List:            _Attribute_List{},
 			}
 		}
@@ -841,7 +840,7 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			}
 			v_Peer.SZ[a].IF[e] = i_Peer_SZ_IF{
 				_Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh),
-				_GT_Action_List:            _GT_Action_List{GT_Action: " interfaces " + e.String()},
+				GT_Action:                  " interfaces " + e.String(),
 				_Attribute_List:            _Attribute_List{},
 			}
 		}
@@ -857,7 +856,7 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		Address_Persistent: h.Address_Persistent,
 		Pool:               parse_cDB_Pool(peer, v_Peer, _Type_source, _Type_pool, &h.Pool),
 		Rule_Set:           parse_cDB_Rule_Set(peer, v_Peer, _Type_source, "", &h.Rule_Set),
-		_GT_Action_List:    _GT_Action_List{GT_Action: "set security nat source "},
+		GT_Action:          "set security nat source ",
 		_Attribute_List:    h._Attribute_List,
 	}
 
@@ -866,7 +865,7 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	v_Peer.NAT[_Type_destination] = i_Peer_NAT_Type{
 		Pool:            parse_cDB_Pool(peer, v_Peer, _Type_destination, _Type_pool, &h.Pool),
 		Rule_Set:        parse_cDB_Rule_Set(peer, v_Peer, _Type_destination, "", &h.Rule_Set),
-		_GT_Action_List: _GT_Action_List{GT_Action: "set security nat destination "},
+		GT_Action:       "set security nat destination ",
 		_Attribute_List: h._Attribute_List,
 	}
 
@@ -875,7 +874,7 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	v_Peer.NAT[_Type_static] = i_Peer_NAT_Type{
 		Pool:            parse_cDB_Pool(peer, v_Peer, _Type_static, _Type_pool, &h.Pool),
 		Rule_Set:        parse_cDB_Rule_Set(peer, v_Peer, _Type_static, "", &h.Rule_Set),
-		_GT_Action_List: _GT_Action_List{GT_Action: "set security nat static "},
+		GT_Action:       "set security nat static ",
 		_Attribute_List: h._Attribute_List,
 	}
 	return true
@@ -888,7 +887,7 @@ func parse_cDB_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 					From:            parse_cDB_FromTo(peer, v_Peer, _Type_exact, _Type_from, &[]cDB_FromTo{0: n}),
 					To:              parse_cDB_FromTo(peer, v_Peer, _Type_exact, _Type_to, &[]cDB_FromTo{0: l}),
 					Rule:            parse_cDB_Rule(peer, v_Peer, _Type_exact, "", &j.Rule),
-					_GT_Action_List: _GT_Action_List{GT_Action: ""},
+					GT_Action:       "",
 					_Attribute_List: j._Attribute_List,
 				})
 				var (
@@ -898,7 +897,7 @@ func parse_cDB_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				case true:
 					continue
 				}
-				t._GT_Action_List.GT_Action = "set security policies from-zone " + t.From[0].SZ.String() + " to-zone " + t.To[0].SZ.String()
+				t.GT_Action = "set security policies from-zone " + t.From[0].SZ.String() + " to-zone " + t.To[0].SZ.String()
 			}
 		}
 	}
@@ -912,7 +911,7 @@ func parse_cDB_Peer_SP_Global(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			From:            parse_cDB_FromTo(peer, v_Peer, _Type_global, _Type_from, &j.From),
 			To:              parse_cDB_FromTo(peer, v_Peer, _Type_global, _Type_to, &j.To),
 			Then:            parse_cDB_Then(peer, v_Peer, _Type_global, _Type_then, &j.Then),
-			_GT_Action_List: _GT_Action_List{GT_Action: "set security policies global policy " + j.Name.String()},
+			GT_Action:       "set security policies global policy " + j.Name.String(),
 			_Attribute_List: j._Attribute_List,
 		})
 	}
@@ -956,7 +955,7 @@ func parse_cDB_Pool(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_
 			RI:       j.RI,
 			SZ:       j.SZ,
 			// _GT_Action_List: _GT_Action_List{GT_Action: "pool " + j.Name.String() + v_Action},
-			_GT_Action_List: _GT_Action_List{GT_Action: v_Action},
+			GT_Action:       v_Action,
 			_Attribute_List: j._Attribute_List,
 		}
 	}
@@ -970,7 +969,7 @@ func parse_cDB_Rule_Set(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbo
 			From:            parse_cDB_FromTo(peer, v_Peer, inbound_type, _Type_from, &j.From),
 			To:              parse_cDB_FromTo(peer, v_Peer, inbound_type, _Type_to, &j.To),
 			Rule:            parse_cDB_Rule(peer, v_Peer, inbound_type, inbound_direction, &j.Rule),
-			_GT_Action_List: _GT_Action_List{GT_Action: "rule-set " + j.Name.String()},
+			GT_Action:       "rule-set " + j.Name.String(),
 			_Attribute_List: j._Attribute_List,
 		}
 	}
@@ -987,7 +986,7 @@ func parse_cDB_Rule(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_
 			From:            parse_cDB_FromTo(peer, v_Peer, inbound_type, _Type_from, &j.From),
 			To:              parse_cDB_FromTo(peer, v_Peer, inbound_type, _Type_to, &j.To),
 			Then:            parse_cDB_Then(peer, v_Peer, inbound_type, _Type_then, &j.Then),
-			_GT_Action_List: _GT_Action_List{GT_Action: "" + j.Name.String() + v_Action},
+			GT_Action:       "" + j.Name.String() + v_Action,
 			_Attribute_List: j._Attribute_List,
 		})
 	}
@@ -1027,7 +1026,7 @@ func parse_cDB_Then(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_
 			RI:              j.RI,
 			Port_Low:        j.Port_Low,
 			Port_High:       j.Port_High,
-			_GT_Action_List: _GT_Action_List{GT_Action: "" + j.Action.String() + " " + j.Action_Flag.String() + " " + v_Action},
+			GT_Action:       "" + j.Action.String() + " " + j.Action_Flag.String() + " " + v_Action,
 			_Attribute_List: j._Attribute_List,
 		})
 	}
@@ -1051,7 +1050,7 @@ func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inboun
 			SZ:              j.SZ,
 			Port_Low:        j.Port_Low,
 			Port_High:       j.Port_High,
-			_GT_Action_List: _GT_Action_List{GT_Action: "" + v_Action},
+			GT_Action:       "" + v_Action,
 			_Attribute_List: j._Attribute_List,
 		})
 	}
@@ -1069,7 +1068,7 @@ func parse_cDB_AB_create_Set(ab_name _Name, sa *_Attribute_List) (ok bool) {
 		IPPrefix:        netip.Prefix{},
 		FQDN:            "",
 		Set:             map[_Name]i_AB_Set{},
-		_GT_Action_List: _GT_Action_List{GT_Action: "set security address-book global address-set " + ab_name.String()},
+		GT_Action:       "set security address-book global address-set " + ab_name.String(),
 		_Attribute_List: *sa,
 	}
 	return true
@@ -1127,14 +1126,14 @@ func parse_cDB_AB_add_Address(public, private bool, ab_name _Name, inbound ...in
 				ok = true
 				i_ab[ab_name].Set[value] = i_AB_Set{
 					Type:            _Type_set,
-					_GT_Action_List: _GT_Action_List{GT_Action: " address-set " + value.String()},
+					GT_Action:       " address-set " + value.String(),
 					_Attribute_List: _Attribute_List{},
 				}
 			case _FQDN:
 				ok = true
 				i_ab[ab_name].Set[_Name(value)] = i_AB_Set{
 					Type:            _Type_fqdn,
-					_GT_Action_List: _GT_Action_List{GT_Action: " address " + value.String()},
+					GT_Action:       " address " + value.String(),
 					_Attribute_List: _Attribute_List{},
 				}
 				parse_cDB_AB_add_Address(true, true, _Name(value), value)
@@ -1142,7 +1141,7 @@ func parse_cDB_AB_add_Address(public, private bool, ab_name _Name, inbound ...in
 				ok = true
 				i_ab[ab_name].Set[_Name(value.String())] = i_AB_Set{
 					Type:            _Type_ipprefix,
-					_GT_Action_List: _GT_Action_List{GT_Action: " address " + value.String()},
+					GT_Action:       " address " + value.String(),
 					_Attribute_List: _Attribute_List{},
 				}
 				parse_cDB_AB_add_Address(true, true, _Name(value.String()), value)
@@ -1159,7 +1158,7 @@ func parse_cDB_AB_add_Address(public, private bool, ab_name _Name, inbound ...in
 					IPPrefix:        netip.Prefix{},
 					FQDN:            value,
 					Set:             nil,
-					_GT_Action_List: _GT_Action_List{GT_Action: "set security address-book global address " + ab_name.String() + " dns-name " + value.String()},
+					GT_Action:       "set security address-book global address " + ab_name.String() + " dns-name " + value.String(),
 					_Attribute_List: _Attribute_List{},
 				}
 			case netip.Prefix:
@@ -1169,7 +1168,7 @@ func parse_cDB_AB_add_Address(public, private bool, ab_name _Name, inbound ...in
 					IPPrefix:        value,
 					FQDN:            "",
 					Set:             nil,
-					_GT_Action_List: _GT_Action_List{GT_Action: "set security address-book global address " + ab_name.String() + " address " + value.String()},
+					GT_Action:       "set security address-book global address " + ab_name.String() + " address " + value.String(),
 					_Attribute_List: _Attribute_List{},
 				}
 			}

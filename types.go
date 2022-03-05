@@ -2,6 +2,8 @@ package main
 
 import (
 	"net/netip"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
@@ -24,6 +26,7 @@ type _Service string
 type _Type string
 type _VI_ID uint16
 type _VI_Peer_ID uint16
+
 type _GT_Action_List map[interface{}][]string
 
 // Why return String() "invalid IP"???? What for???? Why not just return an empty String() "" ????
@@ -38,16 +41,16 @@ type _Attribute_List struct {
 	Description _Description `xml:"description,attr"`
 	Deactivate  bool         `xml:"deactivate,attr"`
 	Reserved    bool         `xml:"reserved,attr"`
-	Verbosity   string       `xml:"verbosity,attr"`
+	Verbosity   log.Level    `xml:"verbosity,attr"`
 	Patch       string       `xml:"patch,attr"`
 	Disable     bool         `xml:"disable,attr"`
-	gt_Action   map[interface{}][]string
+	GT_Action   string
 }
 
 type _Host_Inbound_Traffic_List struct {
 	Services  map[_Service]bool  `xml:"service,attr"`
 	Protocols map[_Protocol]bool `xml:"protocol,attr"`
-	_GT_Action_List
+	GT_Action string
 }
 
 // type _GT_Action_List struct {
@@ -64,8 +67,8 @@ type _SP_Option_List struct {
 }
 
 type _BGP struct {
-	BGP_Group map[_Name]_BGP_Group
-	_GT_Action_List
+	BGP_Group      map[_Name]_BGP_Group
+	GT_Action_List []string
 	_Attribute_List
 }
 type _BGP_Group struct {
@@ -74,16 +77,16 @@ type _BGP_Group struct {
 	Passive    bool
 	// 	Type      _Type
 	// 	Multipath bool
-	BGP_Neighbor map[netip.Addr]_BGP_Group_Neighbor
-	_GT_Action_List
+	BGP_Neighbor   map[netip.Addr]_BGP_Group_Neighbor
+	GT_Action_List []string
 	_Attribute_List
 }
 type _BGP_Group_Neighbor struct {
-	Local_ASN  _ASN
-	Remote_ASN _ASN
-	Passive    bool
-	Right_IP   netip.Addr
-	Route_Leak map[_Action]i_Route_Leak_FromTo
-	_GT_Action_List
+	Local_ASN      _ASN
+	Remote_ASN     _ASN
+	Passive        bool
+	Right_IP       netip.Addr
+	Route_Leak     map[_Action]i_Route_Leak_FromTo
+	GT_Action_List []string
 	_Attribute_List
 }

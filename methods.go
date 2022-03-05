@@ -87,9 +87,9 @@ func (inbound *_Host_Inbound_Traffic_List) parse(enable ...interface{}) (outboun
 		outbound = *inbound
 	default:
 		outbound = _Host_Inbound_Traffic_List{
-			Services:        map[_Service]bool{},
-			Protocols:       map[_Protocol]bool{},
-			_GT_Action_List: _GT_Action_List{GT_Action: "host-inbound-traffic "},
+			Services:  map[_Service]bool{},
+			Protocols: map[_Protocol]bool{},
+			GT_Action: "host-inbound-traffic ",
 		}
 	}
 	for _, b := range enable {

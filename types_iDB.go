@@ -14,10 +14,12 @@ type _i_vi_peer map[_VI_ID]map[_VI_Peer_ID]*i_VI_Peer
 type _i_gt map[_Name]i_GT
 type _i_config map[_ASN][]byte
 
+// 				GT_Action: []string{0: ""},
+
 // Templates
 type i_GT struct {
-	Content _Content
-	_GT_Action_List
+	Content   _Content
+	GT_Action string
 	_Attribute_List
 }
 
@@ -50,7 +52,7 @@ type i_Peer struct {
 	PS           map[_Name]*i_PO_PS
 	SP           i_Peer_SP
 	_IKE_Option_List
-	_GT_Action_List
+	GT_Action string
 	_Attribute_List
 }
 type i_Peer_SP struct {
@@ -60,7 +62,7 @@ type i_Peer_SP struct {
 }
 type i_Peer_IFM struct {
 	Communication _Communication
-	_GT_Action_List
+	GT_Action     string
 	_Attribute_List
 }
 type i_Peer_RI struct {
@@ -70,7 +72,7 @@ type i_Peer_RI struct {
 	Leak     map[_Action]i_Route_Leak_FromTo
 	Protocol map[_Name]_Name
 	_BGP
-	_GT_Action_List
+	GT_Action string
 	_Attribute_List
 }
 
@@ -80,7 +82,7 @@ type i_Peer_RI_IF struct {
 	Communication _Communication
 	IP            map[netip.Prefix]i_Peer_RI_IF_IP
 	PARP          map[netip.Addr]i_Peer_RI_IF_PARP
-	_GT_Action_List
+	GT_Action     string
 	_Attribute_List
 }
 type i_Peer_RI_IF_IP struct {
@@ -89,17 +91,17 @@ type i_Peer_RI_IF_IP struct {
 	Preferred bool
 	NAT       netip.Addr
 	DHCP      bool
-	_GT_Action_List
+	GT_Action string
 	_Attribute_List
 }
 type i_Peer_RI_IF_PARP struct {
-	NAT netip.Addr
-	_GT_Action_List
+	NAT       netip.Addr
+	GT_Action string
 	_Attribute_List
 }
 type i_Peer_RI_RO_RT struct {
-	GW map[_Name]i_Peer_RI_RO_RT_GW
-	_GT_Action_List
+	GW        map[_Name]i_Peer_RI_RO_RT_GW
+	GT_Action string
 	_Attribute_List
 }
 type i_Peer_RI_RO_RT_GW struct {
@@ -110,12 +112,12 @@ type i_Peer_RI_RO_RT_GW struct {
 	Action_Flag _Action
 	Metric      _Route_Weight
 	Preference  _Route_Weight
-	_GT_Action_List
+	GT_Action   string
 	_Attribute_List
 }
 type i_Route_Leak_FromTo struct {
-	PS []_Name
-	_GT_Action_List
+	PS        []_Name
+	GT_Action string
 	_Attribute_List
 }
 
@@ -132,7 +134,7 @@ type i_VI struct {
 	// Local          *i_VI_Peer
 	// Remote         *i_VI_Peer
 	// *_IKE_Option_List
-	_GT_Action_List
+	GT_Action string
 	_Attribute_List
 }
 type i_VI_Peer struct {
@@ -147,7 +149,7 @@ type i_VI_Peer struct {
 	IKE_Local_Address bool
 	IKE_Dynamic       bool
 	// *_IKE_Option_List
-	_GT_Action_List
+	GT_Action string
 	_Attribute_List
 }
 type i_VI_GT struct {
@@ -181,7 +183,7 @@ type i_VI_GT struct {
 	Remote_IKE_Dynamic       bool
 	// Local                    *i_VI_Peer
 	// Remoteп                   *i_VI_Peer
-	_GT_Action_List
+	GT_Action string
 	_Attribute_List
 }
 
@@ -190,36 +192,36 @@ type i_Peer_SZ struct {
 	Screen _Name
 	IF     map[_Name]i_Peer_SZ_IF
 	_Host_Inbound_Traffic_List
-	_GT_Action_List
+	GT_Action string
 	_Attribute_List
 }
 type i_Peer_SZ_IF struct {
 	_Host_Inbound_Traffic_List
-	_GT_Action_List
+	GT_Action string
 	_Attribute_List
 }
 type i_Peer_NAT_Type struct {
 	Address_Persistent bool
 	Pool               map[_Name]i_Pool
 	Rule_Set           map[_Name]i_Rule_Set
-	_GT_Action_List
+	GT_Action          string
 	_Attribute_List
 }
 type i_Pool struct {
-	IPPrefix netip.Prefix
-	RI       _Name
-	SZ       _Name
-	_GT_Action_List
+	IPPrefix  netip.Prefix
+	RI        _Name
+	SZ        _Name
+	GT_Action string
 	_Attribute_List
 }
 
 // Security Rules
 type i_Rule_Set struct {
-	Name _Name
-	From []i_FromTo
-	To   []i_FromTo
-	Rule []i_Rule
-	_GT_Action_List
+	Name      _Name
+	From      []i_FromTo
+	To        []i_FromTo
+	Rule      []i_Rule
+	GT_Action string
 	_Attribute_List
 }
 type i_FromTo struct {
@@ -230,16 +232,16 @@ type i_FromTo struct {
 	SZ        _Name // NAT_Source
 	Port_Low  _Port // NAT_Destination
 	Port_High _Port // NAT_Destination
-	_GT_Action_List
+	GT_Action string
 	_Attribute_List
 }
 type i_Rule struct {
-	Name _Name      // SP
-	JA   []_Name    // SP, NAT
-	From []i_FromTo // SP, NAT
-	To   []i_FromTo // SP, NAT
-	Then []i_Then   // SP, NAT
-	_GT_Action_List
+	Name      _Name      // SP
+	JA        []_Name    // SP, NAT
+	From      []i_FromTo // SP, NAT
+	To        []i_FromTo // SP, NAT
+	Then      []i_Then   // SP, NAT
+	GT_Action string
 	_Attribute_List
 }
 type i_Then struct {
@@ -250,60 +252,60 @@ type i_Then struct {
 	RI          _Name
 	Port_Low    _Port
 	Port_High   _Port
-	_GT_Action_List
+	GT_Action   string
 	_Attribute_List
 }
 
 // Address Book
 type i_AB struct {
-	Type     _Type
-	IPPrefix netip.Prefix
-	FQDN     _FQDN
-	Set      map[_Name]i_AB_Set
-	_GT_Action_List
+	Type      _Type
+	IPPrefix  netip.Prefix
+	FQDN      _FQDN
+	Set       map[_Name]i_AB_Set
+	GT_Action string
 	_Attribute_List
 }
 type i_AB_Set struct {
-	Type _Type
-	_GT_Action_List
+	Type      _Type
+	GT_Action string
 	_Attribute_List
 }
 
 // Junos Applications (JA)
 type i_JA struct {
-	Term []i_JA_Term
-	_GT_Action_List
+	Term      []i_JA_Term
+	GT_Action string
 	_Attribute_List
 }
 type i_JA_Term struct {
 	Name             _Name
 	Protocol         _Protocol
 	Destination_Port _Port
-	_GT_Action_List
+	GT_Action        string
 	_Attribute_List
 }
 
 // Policy Options
 type i_PO_PL struct {
-	Match []i_PO_PL_Match
-	_GT_Action_List
+	Match     []i_PO_PL_Match
+	GT_Action string
 	_Attribute_List
 }
 type i_PO_PL_Match struct {
-	IPPrefix netip.Prefix
-	_GT_Action_List
+	IPPrefix  netip.Prefix
+	GT_Action string
 	_Attribute_List
 }
 type i_PO_PS struct {
-	Term []i_PO_PS_Term
-	_GT_Action_List
+	Term      []i_PO_PS_Term
+	GT_Action string
 	_Attribute_List
 }
 type i_PO_PS_Term struct {
-	Name _Name
-	From []i_PO_PS_From
-	Then []i_PO_PS_Then
-	_GT_Action_List
+	Name      _Name
+	From      []i_PO_PS_From
+	Then      []i_PO_PS_Then
+	GT_Action string
 	_Attribute_List
 }
 type i_PO_PS_From struct {
@@ -312,13 +314,13 @@ type i_PO_PS_From struct {
 	Route_Type _Type
 	PL         _Name
 	Mask       _Mask
-	_GT_Action_List
+	GT_Action  string
 	_Attribute_List
 }
 type i_PO_PS_Then struct {
 	Action      _Action
 	Action_Flag _Action
 	Metric      _Route_Weight
-	_GT_Action_List
+	GT_Action   string
 	_Attribute_List
 }
