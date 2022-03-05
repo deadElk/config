@@ -24,6 +24,7 @@ type _Service string
 type _Type string
 type _VI_ID uint16
 type _VI_Peer_ID uint16
+type _GT_Action_List map[interface{}][]string
 
 // Why return String() "invalid IP"???? What for???? Why not just return an empty String() "" ????
 type _netip_Prefix struct {
@@ -46,13 +47,12 @@ type _Attribute_List struct {
 type _Host_Inbound_Traffic_List struct {
 	Services  map[_Service]bool  `xml:"service,attr"`
 	Protocols map[_Protocol]bool `xml:"protocol,attr"`
-	// GT_Action map[interface{}][]string
 	_GT_Action_List
 }
 
-type _GT_Action_List struct {
-	GT_Action string
-}
+// type _GT_Action_List struct {
+// 	GT_Action string
+// }
 
 type _IKE_Option_List struct {
 	IKE_GCM    bool
