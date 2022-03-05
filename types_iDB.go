@@ -66,9 +66,29 @@ type i_Peer_RI struct {
 	RT       map[netip.Prefix]i_Peer_RI_RO_RT
 	Leak     map[_Action]i_Peer_RI_RO_Leak_FromTo
 	Protocol map[_Name]_Name
+	i_BGP
 	GT_Action_List
 	Attribute_List
 }
+type i_BGP struct {
+	BGP_Group map[_Name]i_BGP_Group
+	GT_Action_List
+	Attribute_List
+}
+type i_BGP_Group struct {
+	BGP_Neighbor map[netip.Prefix]i_BGP_Group_Neighbor
+	GT_Action_List
+	Attribute_List
+}
+type i_BGP_Group_Neighbor struct {
+	Left_ASN  _ASN
+	Right_ASN _ASN
+	Right_IP  netip.Prefix
+	Leak      map[_Action]i_Peer_RI_RO_Leak_FromTo
+	GT_Action_List
+	Attribute_List
+}
+
 type i_Peer_RI_IF struct {
 	IFM           _Name
 	IFsM          _Name
