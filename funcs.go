@@ -254,11 +254,11 @@ func parse_Communication(_peer *_ASN, _if *_Name, inbound *_Communication) _Comm
 		return _Defaults[_comm_if].(_Communication)
 	}
 }
-func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound Host_Inbound_Traffic_List) {
-	outbound = Host_Inbound_Traffic_List{
-		Services:       map[_Service]bool{},
-		Protocols:      map[_Protocol]bool{},
-		GT_Action_List: GT_Action_List{GT_Action: "host-inbound-traffic "},
+func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound _Host_Inbound_Traffic_List) {
+	outbound = _Host_Inbound_Traffic_List{
+		Services:        map[_Service]bool{},
+		Protocols:       map[_Protocol]bool{},
+		_GT_Action_List: _GT_Action_List{GT_Action: "host-inbound-traffic "},
 	}
 	for _, b := range enabled {
 		switch value := b.(type) {

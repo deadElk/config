@@ -33,29 +33,57 @@ type _netip_Addr struct {
 	netip.Addr
 }
 
-type Attribute_List struct {
+type _Attribute_List struct {
 	Description _Description `xml:"description,attr"`
 	Deactivate  bool         `xml:"deactivate,attr"`
 	Reserved    bool         `xml:"reserved,attr"`
 	Verbosity   string       `xml:"verbosity,attr"`
 	Patch       string       `xml:"patch,attr"`
 	Disable     bool         `xml:"disable,attr"`
+	gt_Action   map[interface{}][]string
 }
-type Host_Inbound_Traffic_List struct {
+
+type _Host_Inbound_Traffic_List struct {
 	Services  map[_Service]bool  `xml:"service,attr"`
 	Protocols map[_Protocol]bool `xml:"protocol,attr"`
 	// GT_Action map[interface{}][]string
-	GT_Action_List
+	_GT_Action_List
 }
-type GT_Action_List struct {
+
+type _GT_Action_List struct {
 	GT_Action string
 }
 
-type IKE_Option_List struct {
+type _IKE_Option_List struct {
 	IKE_GCM    bool
 	IKE_No_NAT bool
 }
 
-type SP_Option_List struct {
-	SP_Default_Policy _Action
+type _SP_Option_List struct {
+	Default_Policy _Action
+}
+
+type _BGP struct {
+	BGP_Group map[_Name]_BGP_Group
+	_GT_Action_List
+	_Attribute_List
+}
+type _BGP_Group struct {
+	Local_ASN  _ASN
+	Remote_ASN _ASN
+	Passive    bool
+	// 	Type      _Type
+	// 	Multipath bool
+	BGP_Neighbor map[netip.Addr]_BGP_Group_Neighbor
+	_GT_Action_List
+	_Attribute_List
+}
+type _BGP_Group_Neighbor struct {
+	Local_ASN  _ASN
+	Remote_ASN _ASN
+	Passive    bool
+	Right_IP   netip.Addr
+	Route_Leak map[_Action]i_Route_Leak_FromTo
+	_GT_Action_List
+	_Attribute_List
 }

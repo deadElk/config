@@ -81,15 +81,15 @@ func (inbound *i_Peer) link_PS(name ..._Name) {
 	}
 }
 
-func (inbound *Host_Inbound_Traffic_List) parse(enable ...interface{}) (outbound Host_Inbound_Traffic_List) {
+func (inbound *_Host_Inbound_Traffic_List) parse(enable ...interface{}) (outbound _Host_Inbound_Traffic_List) {
 	switch inbound == nil {
 	case false:
 		outbound = *inbound
 	default:
-		outbound = Host_Inbound_Traffic_List{
-			Services:       map[_Service]bool{},
-			Protocols:      map[_Protocol]bool{},
-			GT_Action_List: GT_Action_List{GT_Action: "host-inbound-traffic "},
+		outbound = _Host_Inbound_Traffic_List{
+			Services:        map[_Service]bool{},
+			Protocols:       map[_Protocol]bool{},
+			_GT_Action_List: _GT_Action_List{GT_Action: "host-inbound-traffic "},
 		}
 	}
 	for _, b := range enable {
