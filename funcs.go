@@ -359,10 +359,41 @@ func strings_Join(inbound []_Name, delimiter string) (outbound _Name) {
 	return _Name(buffer.String())
 }
 
-func (inbound *_Names) parse_action_PS(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, names ..._Name) (outbound string /* , ok bool */) {
-	switch {
-	case len(*inbound) == 0:
-		return
-	}
+func parse_cDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak cDB_Peer_RI_RO_Route_Leak) (outbound map[_Action]i_Route_Leak_FromTo /* , ok bool */) {
+
+	Route_Leak:	map[_Action]i_Route_Leak_FromTo{
+		_Action_import: {
+			PS: func() (outbound []_Name) {
+				for _, d := range b.Route_Leak.Import {
+					switch _, flag := i_ps[d.PS]; flag {
+					case false:
+						log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PS)
+						continue
+					}
+					outbound = append(outbound, d.PS)
+					v_Peer.link_PS(d.PS)
+				}
+				return
+			}(),
+		},
+		_Action_export: {
+			PS: func() (outbound []_Name) {
+				for _, d := range b.Route_Leak.Export {
+					switch _, flag := i_ps[d.PS]; flag {
+					case false:
+						log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PS)
+						continue
+					}
+					outbound = append(outbound, d.PS)
+					v_Peer.link_PS(d.PS)
+				}
+				return
+			}(),
+		},
+	},
+	// switch {
+	// case len(*inbound) == 0:
+	// 	return
+	// }
 	return
 }
