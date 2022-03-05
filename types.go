@@ -44,7 +44,6 @@ type _Attribute_List struct {
 	Verbosity   log.Level    `xml:"verbosity,attr"`
 	Patch       string       `xml:"patch,attr"`
 	Disable     bool         `xml:"disable,attr"`
-	GT_Action   string
 }
 
 type _Host_Inbound_Traffic_List struct {
@@ -79,15 +78,15 @@ type _BGP_Group struct {
 	Passive    bool
 	// 	Type      _Type
 	// 	Multipath bool
-	BGP_Neighbor map[netip.Addr]_BGP_Group_Neighbor
-	GT_Action    string
+	Neighbor  map[netip.Addr]_BGP_Group_Neighbor
+	GT_Action string
 	_Attribute_List
 }
 type _BGP_Group_Neighbor struct {
 	Local_ASN  _ASN
 	Remote_ASN _ASN
 	Passive    bool
-	Remote_IP  netip.Addr
+	Local_IP   netip.Addr
 	Route_Leak map[_Action]i_Route_Leak_FromTo
 	GT_Action  string
 	_Attribute_List

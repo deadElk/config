@@ -67,13 +67,13 @@ type i_Peer_IFM struct {
 	_Attribute_List
 }
 type i_Peer_RI struct {
-	IP_2_IF   map[netip.Addr]_Name // interface's IP address to interface mapping. IP addresses within one RI must be unique.
-	IF        map[_Name]i_Peer_RI_IF
-	RT        map[netip.Prefix]i_Peer_RI_RO_RT
-	Leak      map[_Action]i_Route_Leak_FromTo
-	Protocol  map[_Name]_Name
-	BGP       _BGP
-	GT_Action string
+	IP_2_IF    map[netip.Addr]_Name // interface's IP address to interface mapping. IP addresses within one RI must be unique.
+	IF         map[_Name]i_Peer_RI_IF
+	RT         map[netip.Prefix]i_Peer_RI_RO_RT
+	Route_Leak map[_Action]i_Route_Leak_FromTo
+	Protocol   map[_Name]_Name
+	BGP        _BGP
+	GT_Action  string
 	_Attribute_List
 }
 
@@ -130,6 +130,7 @@ type i_VI struct {
 	Communication _Communication
 	Route_Metric  _Route_Weight
 	PSK           _Secret
+	Hub           bool
 	IKE_GCM       bool
 	IKE_No_NAT    bool
 	// Local          *i_VI_Peer
@@ -144,6 +145,7 @@ type i_VI_Peer struct {
 	IF                _Name
 	IP                netip.Addr
 	NAT               netip.Addr
+	Hub               bool
 	Inner_RI          _Name
 	Inner_IP          netip.Addr
 	Inner_IPPrefix    netip.Prefix
@@ -167,6 +169,7 @@ type i_VI_GT struct {
 	Local_IF                 _Name
 	Local_IP                 netip.Addr
 	Local_NAT                netip.Addr
+	Local_Hub                bool
 	Local_Inner_RI           _Name
 	Local_Inner_IP           netip.Addr
 	Local_Inner_IPPrefix     netip.Prefix
@@ -177,6 +180,7 @@ type i_VI_GT struct {
 	Remote_IF                _Name
 	Remote_IP                netip.Addr
 	Remote_NAT               netip.Addr
+	Remote_Hub               bool
 	Remote_Inner_RI          _Name
 	Remote_Inner_IP          netip.Addr
 	Remote_Inner_IPPrefix    netip.Prefix

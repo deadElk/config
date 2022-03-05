@@ -377,6 +377,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				IF:                v_IF,
 				IP:                v_IP,
 				NAT:               v_NAT,
+				Hub:               d.Hub,
 				Inner_RI:          v_Inner_RI,
 				Inner_IP:          get_VI_IPPrefix(b.ID, d.ID+1).Addr(),
 				Inner_IPPrefix:    get_VI_IPPrefix(b.ID, d.ID+1),
@@ -448,6 +449,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				Local_IF:                 i_vi_peer[b.ID][_first].IF,
 				Local_IP:                 i_vi_peer[b.ID][_first].IP,
 				Local_NAT:                i_vi_peer[b.ID][_first].NAT,
+				Local_Hub:                i_vi_peer[b.ID][_first].Hub,
 				Local_Inner_RI:           i_vi_peer[b.ID][_first].Inner_RI,
 				Local_Inner_IP:           i_vi_peer[b.ID][_first].Inner_IP,
 				Local_Inner_IPPrefix:     i_vi_peer[b.ID][_first].Inner_IPPrefix,
@@ -458,6 +460,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				Remote_IF:                i_vi_peer[b.ID][_second].IF,
 				Remote_IP:                i_vi_peer[b.ID][_second].IP,
 				Remote_NAT:               i_vi_peer[b.ID][_second].NAT,
+				Remote_Hub:               i_vi_peer[b.ID][_second].Hub,
 				Remote_Inner_RI:          i_vi_peer[b.ID][_second].Inner_RI,
 				Remote_Inner_IP:          i_vi_peer[b.ID][_second].Inner_IP,
 				Remote_Inner_IPPrefix:    i_vi_peer[b.ID][_second].Inner_IPPrefix,
@@ -465,6 +468,48 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 				Remote_IKE_Dynamic:       i_vi_peer[b.ID][_second].IKE_Dynamic,
 				GT_Action:                "",
 				_Attribute_List:          _Attribute_List{},
+			}
+			switch _, flag := i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_Defaults[_group].(_Name)]; flag {
+			case false:
+				i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_Defaults[_group].(_Name)] = _BGP_Group{
+					Local_ASN:  0,
+					Remote_ASN: 0,
+					Passive:    false,
+					Neighbor:   map[netip.Addr]_BGP_Group_Neighbor{},
+					GT_Action:  " group " + _Defaults[_group].(_Name).String() + " ",
+				}
+			}
+			var (
+				v_RL_Import = []_Name{
+					0: _Name("import_metric_" + i_vi[b.ID].Route_Metric.String()),
+				}
+				v_RL_Export = []_Name{
+					0: "aggregate",
+					1: "export_metric_" + _Name(i_vi[b.ID].Route_Metric.String()),
+				}
+				v_RL = map[_Action]i_Route_Leak_FromTo{
+					_Action_import: {
+						PS:              v_RL_Import,
+						GT_Action:       " " + _Action_import.String() + " [ " + strings_Join(v_RL_Import, " ").String() + " ] ",
+						_Attribute_List: _Attribute_List{},
+					},
+					_Action_export: {
+						PS:              v_RL_Export,
+						GT_Action:       " " + _Action_export.String() + " [ " + strings_Join(v_RL_Export, " ").String() + " ] ",
+						_Attribute_List: _Attribute_List{},
+					},
+				}
+			)
+			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_Defaults[_group].(_Name)].Neighbor[i_vi_peer[b.ID][_second].Inner_IP] = _BGP_Group_Neighbor{
+				Local_ASN:  i_vi_peer[b.ID][_first].ASN,
+				Remote_ASN: i_vi_peer[b.ID][_second].ASN,
+				Passive:    i_vi_peer[b.ID][_first].Hub,
+				Local_IP:   i_vi_peer[b.ID][_first].Inner_IP,
+				Route_Leak: v_RL,
+				GT_Action:  " neighbor " + i_vi_peer[b.ID][_second].Inner_IP.String(),
+				_Attribute_List: _Attribute_List{
+					Description: "TI" + _Description(i_vi[b.ID].PName),
+				},
 			}
 		}
 	}
@@ -705,7 +750,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			IP_2_IF: v_IP_2_IF,
 			IF:      v_IF,
 			RT:      v_RT,
-			Leak: map[_Action]i_Route_Leak_FromTo{
+			Route_Leak: map[_Action]i_Route_Leak_FromTo{
 				_Action_import: {
 					PS: func() (outbound []_Name) {
 						for _, d := range b.From {
@@ -735,12 +780,8 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 					}(),
 				},
 			},
-			Protocol: nil,
-			BGP: _BGP{
-				BGP_Group:       map[_Name]_BGP_Group{},
-				GT_Action:       " protocols bgp ",
-				_Attribute_List: _Attribute_List{},
-			},
+			Protocol:        nil,
+			BGP:             _BGP{BGP_Group: map[_Name]_BGP_Group{}, GT_Action: " protocols bgp ", _Attribute_List: _Attribute_List{}},
 			GT_Action:       v_Action,
 			_Attribute_List: b._Attribute_List,
 		}

@@ -59,11 +59,11 @@ type cDB_Peer_IFM struct {
 	_Attribute_List
 }
 type cDB_Peer_RI struct {
-	Name _Name                        `xml:"name,attr"`
-	IF   []cDB_Peer_RI_IF             `xml:"IF"`
-	RT   []cDB_Peer_RI_RO_RT          `xml:"RO>RT"`
-	From []cDB_Peer_RI_RO_Leak_FromTo `xml:"RO>Leak>From"`
-	To   []cDB_Peer_RI_RO_Leak_FromTo `xml:"RO>Leak>To"`
+	Name _Name                              `xml:"name,attr"`
+	IF   []cDB_Peer_RI_IF                   `xml:"IF"`
+	RT   []cDB_Peer_RI_RO_RT                `xml:"RO>RT"`
+	From []cDB_Peer_RI_RO_Route_Leak_FromTo `xml:"RO>Route_Leak>From"`
+	To   []cDB_Peer_RI_RO_Route_Leak_FromTo `xml:"RO>Route_Leak>To"`
 	_Attribute_List
 }
 type cDB_Peer_RI_IF struct {
@@ -102,7 +102,7 @@ type cDB_Peer_RI_RO_RT_GW struct {
 	Preference  _Route_Weight `xml:"preference,attr"`
 	_Attribute_List
 }
-type cDB_Peer_RI_RO_Leak_FromTo struct {
+type cDB_Peer_RI_RO_Route_Leak_FromTo struct {
 	PS _Name `xml:"PS,attr"`
 	_Attribute_List
 }
@@ -123,6 +123,7 @@ type cDB_VI_Peer struct {
 	RI       _Name       `xml:"RI,attr"`
 	IF       _Name       `xml:"IF,attr"`
 	IP       netip.Addr  `xml:"IP,attr"`
+	Hub      bool        `xml:"hub,attr"`
 	Inner_RI _Name       `xml:"inner_RI,attr"`
 	_Attribute_List
 }

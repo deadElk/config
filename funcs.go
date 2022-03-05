@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"net/netip"
@@ -341,4 +342,19 @@ func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_dir
 	}
 
 	return
+}
+
+func strings_Join(inbound []_Name, delimiter string) (outbound _Name) {
+	var (
+		inbounds = len(inbound) - 1
+		buffer   bytes.Buffer
+	)
+	for a, b := range inbound {
+		buffer.WriteString(string(b))
+		switch a < inbounds {
+		case true:
+			buffer.WriteString(delimiter)
+		}
+	}
+	return _Name(buffer.String())
 }
