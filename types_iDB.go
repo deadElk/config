@@ -28,8 +28,8 @@ type i_Peer struct {
 	Router_ID    netip.Addr
 	IF_2_RI      map[_Name]_Name // interface to RI mapping. interfaces within one peer must be unique.
 	VI           map[_VI_ID]*i_VI
-	VI_Left      map[_VI_ID]*i_VI_Peer
-	VI_Right     map[_VI_ID]*i_VI_Peer
+	VI_Local     map[_VI_ID]*i_VI_Peer
+	VI_Remote    map[_VI_ID]*i_VI_Peer
 	VI_GT        map[_VI_ID]i_VI_GT
 	IFM          map[_Name]i_Peer_IFM
 	RI           map[_Name]i_Peer_RI
@@ -76,15 +76,23 @@ type i_BGP struct {
 	Attribute_List
 }
 type i_BGP_Group struct {
+	Local_ASN  _ASN
+	Remote_ASN _ASN
+	// i_BGP_Group_Option_List
 	BGP_Neighbor map[netip.Prefix]i_BGP_Group_Neighbor
 	GT_Action_List
 	Attribute_List
 }
+
+// type i_BGP_Group_Option_List struct {
+// 	Type      _Type
+// 	Multipath bool
+// }
 type i_BGP_Group_Neighbor struct {
-	Left_ASN  _ASN
-	Right_ASN _ASN
-	Right_IP  netip.Prefix
-	Leak      map[_Action]i_Peer_RI_RO_Leak_FromTo
+	Local_ASN  _ASN
+	Remote_ASN _ASN
+	Right_IP   netip.Prefix
+	Leak       map[_Action]i_Peer_RI_RO_Leak_FromTo
 	GT_Action_List
 	Attribute_List
 }
@@ -144,8 +152,8 @@ type i_VI struct {
 	PSK           _Secret
 	IKE_GCM       bool
 	IKE_No_NAT    bool
-	// Left          *i_VI_Peer
-	// Right         *i_VI_Peer
+	// Local          *i_VI_Peer
+	// Remote         *i_VI_Peer
 	// *IKE_Option_List
 	GT_Action_List
 	Attribute_List
@@ -166,36 +174,36 @@ type i_VI_Peer struct {
 	Attribute_List
 }
 type i_VI_GT struct {
-	PName                   _PName
-	IPPrefix                netip.Prefix
-	Type                    _Type
-	Communication           _Communication
-	Route_Metric            _Route_Weight
-	PSK                     _Secret
-	IKE_GCM                 bool
-	IKE_No_NAT              bool
-	Left_ASN                _ASN
-	Left_RI                 _Name
-	Left_IF                 _Name
-	Left_IP                 netip.Addr
-	Left_NAT                netip.Addr
-	Left_Inner_RI           _Name
-	Left_Inner_IP           netip.Addr
-	Left_Inner_IPPrefix     netip.Prefix
-	Left_IKE_Local_Address  bool
-	Left_IKE_Dynamic        bool
-	Right_ASN               _ASN
-	Right_RI                _Name
-	Right_IF                _Name
-	Right_IP                netip.Addr
-	Right_NAT               netip.Addr
-	Right_Inner_RI          _Name
-	Right_Inner_IP          netip.Addr
-	Right_Inner_IPPrefix    netip.Prefix
-	Right_IKE_Local_Address bool
-	Right_IKE_Dynamic       bool
-	// Left                    *i_VI_Peer
-	// Right                   *i_VI_Peer
+	PName                    _PName
+	IPPrefix                 netip.Prefix
+	Type                     _Type
+	Communication            _Communication
+	Route_Metric             _Route_Weight
+	PSK                      _Secret
+	IKE_GCM                  bool
+	IKE_No_NAT               bool
+	Local_ASN                _ASN
+	Local_RI                 _Name
+	Local_IF                 _Name
+	Local_IP                 netip.Addr
+	Local_NAT                netip.Addr
+	Local_Inner_RI           _Name
+	Local_Inner_IP           netip.Addr
+	Local_Inner_IPPrefix     netip.Prefix
+	Local_IKE_Local_Address  bool
+	Local_IKE_Dynamic        bool
+	Remote_ASN               _ASN
+	Remote_RI                _Name
+	Remote_IF                _Name
+	Remote_IP                netip.Addr
+	Remote_NAT               netip.Addr
+	Remote_Inner_RI          _Name
+	Remote_Inner_IP          netip.Addr
+	Remote_Inner_IPPrefix    netip.Prefix
+	Remote_IKE_Local_Address bool
+	Remote_IKE_Dynamic       bool
+	// Local                    *i_VI_Peer
+	// Remoteп                   *i_VI_Peer
 	GT_Action_List
 	Attribute_List
 }

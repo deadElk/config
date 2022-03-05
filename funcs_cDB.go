@@ -210,8 +210,8 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 				Router_ID:       netip.Addr{},
 				IF_2_RI:         map[_Name]_Name{},
 				VI:              map[_VI_ID]*i_VI{},
-				VI_Left:         map[_VI_ID]*i_VI_Peer{},
-				VI_Right:        map[_VI_ID]*i_VI_Peer{},
+				VI_Local:        map[_VI_ID]*i_VI_Peer{},
+				VI_Remote:       map[_VI_ID]*i_VI_Peer{},
 				VI_GT:           map[_VI_ID]i_VI_GT{},
 				IFM:             map[_Name]i_Peer_IFM{},
 				RI:              map[_Name]i_Peer_RI{},
@@ -249,8 +249,8 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 		parse_cDB_Peer_Router_ID(&b, &v_Peer)
 		// IF_2_RI
 		// VI
-		// VI_Left
-		// VI_Right
+		// VI_Local
+		// VI_Remote
 		parse_cDB_Peer_IFM(&b, &v_Peer)
 		// RI
 		parse_cDB_Peer_Hostname(&b, &v_Peer)
@@ -398,8 +398,8 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 			i_vi[b.ID].IKE_GCM = i_vi[b.ID].IKE_GCM && i_peer[v_vi_peer_list[_first].ASN].IKE_GCM
 
 			i_peer[v_vi_peer_list[_first].ASN].VI[b.ID] = i_vi[b.ID]
-			i_peer[v_vi_peer_list[_first].ASN].VI_Left[b.ID] = i_vi_peer[b.ID][_first]
-			i_peer[v_vi_peer_list[_first].ASN].VI_Right[b.ID] = i_vi_peer[b.ID][_second]
+			i_peer[v_vi_peer_list[_first].ASN].VI_Local[b.ID] = i_vi_peer[b.ID][_first]
+			i_peer[v_vi_peer_list[_first].ASN].VI_Remote[b.ID] = i_vi_peer[b.ID][_second]
 
 			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].IF[_if] = i_Peer_RI_IF{
 				IFM:           "st0",
@@ -431,36 +431,36 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 
 		for _first, _second = 0, _total-1; _first <= _total-1; _first, _second = _first+1, _second-1 {
 			i_peer[v_vi_peer_list[_first].ASN].VI_GT[b.ID] = i_VI_GT{
-				PName:                   i_vi[b.ID].PName,
-				IPPrefix:                i_vi[b.ID].IPPrefix,
-				Type:                    i_vi[b.ID].Type,
-				Communication:           i_vi[b.ID].Communication,
-				Route_Metric:            i_vi[b.ID].Route_Metric,
-				PSK:                     i_vi[b.ID].PSK,
-				IKE_GCM:                 i_vi[b.ID].IKE_GCM,
-				IKE_No_NAT:              i_vi[b.ID].IKE_No_NAT,
-				Left_ASN:                i_vi_peer[b.ID][_first].ASN,
-				Left_RI:                 i_vi_peer[b.ID][_first].RI,
-				Left_IF:                 i_vi_peer[b.ID][_first].IF,
-				Left_IP:                 i_vi_peer[b.ID][_first].IP,
-				Left_NAT:                i_vi_peer[b.ID][_first].NAT,
-				Left_Inner_RI:           i_vi_peer[b.ID][_first].Inner_RI,
-				Left_Inner_IP:           i_vi_peer[b.ID][_first].Inner_IP,
-				Left_Inner_IPPrefix:     i_vi_peer[b.ID][_first].Inner_IPPrefix,
-				Left_IKE_Local_Address:  i_vi_peer[b.ID][_first].IKE_Local_Address,
-				Left_IKE_Dynamic:        i_vi_peer[b.ID][_first].IKE_Dynamic,
-				Right_ASN:               i_vi_peer[b.ID][_second].ASN,
-				Right_RI:                i_vi_peer[b.ID][_second].RI,
-				Right_IF:                i_vi_peer[b.ID][_second].IF,
-				Right_IP:                i_vi_peer[b.ID][_second].IP,
-				Right_NAT:               i_vi_peer[b.ID][_second].NAT,
-				Right_Inner_RI:          i_vi_peer[b.ID][_second].Inner_RI,
-				Right_Inner_IP:          i_vi_peer[b.ID][_second].Inner_IP,
-				Right_Inner_IPPrefix:    i_vi_peer[b.ID][_second].Inner_IPPrefix,
-				Right_IKE_Local_Address: i_vi_peer[b.ID][_second].IKE_Local_Address,
-				Right_IKE_Dynamic:       i_vi_peer[b.ID][_second].IKE_Dynamic,
-				GT_Action_List:          GT_Action_List{},
-				Attribute_List:          Attribute_List{},
+				PName:                    i_vi[b.ID].PName,
+				IPPrefix:                 i_vi[b.ID].IPPrefix,
+				Type:                     i_vi[b.ID].Type,
+				Communication:            i_vi[b.ID].Communication,
+				Route_Metric:             i_vi[b.ID].Route_Metric,
+				PSK:                      i_vi[b.ID].PSK,
+				IKE_GCM:                  i_vi[b.ID].IKE_GCM,
+				IKE_No_NAT:               i_vi[b.ID].IKE_No_NAT,
+				Local_ASN:                i_vi_peer[b.ID][_first].ASN,
+				Local_RI:                 i_vi_peer[b.ID][_first].RI,
+				Local_IF:                 i_vi_peer[b.ID][_first].IF,
+				Local_IP:                 i_vi_peer[b.ID][_first].IP,
+				Local_NAT:                i_vi_peer[b.ID][_first].NAT,
+				Local_Inner_RI:           i_vi_peer[b.ID][_first].Inner_RI,
+				Local_Inner_IP:           i_vi_peer[b.ID][_first].Inner_IP,
+				Local_Inner_IPPrefix:     i_vi_peer[b.ID][_first].Inner_IPPrefix,
+				Local_IKE_Local_Address:  i_vi_peer[b.ID][_first].IKE_Local_Address,
+				Local_IKE_Dynamic:        i_vi_peer[b.ID][_first].IKE_Dynamic,
+				Remote_ASN:               i_vi_peer[b.ID][_second].ASN,
+				Remote_RI:                i_vi_peer[b.ID][_second].RI,
+				Remote_IF:                i_vi_peer[b.ID][_second].IF,
+				Remote_IP:                i_vi_peer[b.ID][_second].IP,
+				Remote_NAT:               i_vi_peer[b.ID][_second].NAT,
+				Remote_Inner_RI:          i_vi_peer[b.ID][_second].Inner_RI,
+				Remote_Inner_IP:          i_vi_peer[b.ID][_second].Inner_IP,
+				Remote_Inner_IPPrefix:    i_vi_peer[b.ID][_second].Inner_IPPrefix,
+				Remote_IKE_Local_Address: i_vi_peer[b.ID][_second].IKE_Local_Address,
+				Remote_IKE_Dynamic:       i_vi_peer[b.ID][_second].IKE_Dynamic,
+				GT_Action_List:           GT_Action_List{},
+				Attribute_List:           Attribute_List{},
 			}
 		}
 	}
