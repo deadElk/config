@@ -13,18 +13,18 @@ type cDB struct {
 	GT_List     string       `xml:"GT_list,attr"`
 	Upload_Path string       `xml:"upload_path,attr"`
 	GT_Path     string       `xml:"GT_path,attr"`
-	Peer        []cDB_Peer   `xml:"Peer_List>Peer"`
-	VI          []cDB_VI     `xml:"VI_List>VI"`
+	Peer        []*cDB_Peer  `xml:"Peer_List>Peer"`
+	VI          []*cDB_VI    `xml:"VI_List>VI"`
 	cDB_Vocabulary
 	_Attribute_List
 }
 
 // Vocabulary
 type cDB_Vocabulary struct {
-	AB []cDB_AB    `xml:"Vocabulary>AB_List>AB"`
-	JA []cDB_JA    `xml:"Vocabulary>Application_List>Application"`
-	PL []cDB_PO_PL `xml:"Vocabulary>PO>PL"`
-	PS []cDB_PO_PS `xml:"Vocabulary>PO>PS"`
+	AB []*cDB_AB    `xml:"Vocabulary>AB_List>AB"`
+	JA []*cDB_JA    `xml:"Vocabulary>Application_List>Application"`
+	PL []*cDB_PO_PL `xml:"Vocabulary>PO>PL"`
+	PS []*cDB_PO_PS `xml:"Vocabulary>PO>PS"`
 	_Attribute_List
 }
 
@@ -68,6 +68,7 @@ type cDB_Peer_RI struct {
 type cDB_Peer_RI_RO_Route_Leak struct {
 	Import []cDB_Peer_RI_RO_Route_Leak_FromTo `xml:"Import"`
 	Export []cDB_Peer_RI_RO_Route_Leak_FromTo `xml:"Export"`
+	_Attribute_List
 }
 type cDB_Peer_RI_IF struct {
 	Name          _Name                 `xml:"name,attr"`

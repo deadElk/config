@@ -313,7 +313,7 @@ func read_GT() (ok bool) {
 			log.Warnf("template '%v' already exist; ACTION: skip.", tname)
 			continue
 		}
-		i_gt[tname] = i_GT{
+		i_gt[tname] = &i_GT{
 			Content: trim_space(&data),
 		}
 	}
@@ -359,41 +359,61 @@ func strings_Join(inbound []_Name, delimiter string) (outbound _Name) {
 	return _Name(buffer.String())
 }
 
-func parse_cDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak cDB_Peer_RI_RO_Route_Leak) (outbound map[_Action]i_Route_Leak_FromTo /* , ok bool */) {
-
-	Route_Leak:	map[_Action]i_Route_Leak_FromTo{
-		_Action_import: {
-			PS: func() (outbound []_Name) {
-				for _, d := range b.Route_Leak.Import {
-					switch _, flag := i_ps[d.PS]; flag {
-					case false:
-						log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PS)
-						continue
-					}
-					outbound = append(outbound, d.PS)
-					v_Peer.link_PS(d.PS)
+func parse_cDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak *cDB_Peer_RI_RO_Route_Leak) (outbound map[_Action]i_Route_Leak_FromTo /* , ok bool */) {
+	outbound = make(map[_Action]i_Route_Leak_FromTo)
+	return parse_iDB_Route_Leak(nil, v_Peer, "", "", &map[_Action]i_Route_Leak_FromTo{
+		_Action_import: {PS: func() (outbound []_Name) {
+			for _, b := range (*route_leak).Import {
+				outbound = append(outbound, b.PS)
+			}
+			return
+		}()},
+		_Action_export: {PS: func() (outbound []_Name) {
+			for _, b := range (*route_leak).Export {
+				outbound = append(outbound, b.PS)
+			}
+			return
+		}()},
+	})
+}
+func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak *map[_Action]i_Route_Leak_FromTo) (outbound map[_Action]i_Route_Leak_FromTo /* , ok bool */) {
+	outbound = make(map[_Action]i_Route_Leak_FromTo)
+	var (
+		v_RL_Import = func() (outbound []_Name) {
+			for _, b := range (*route_leak)[_Action_import].PS {
+				switch _, flag := i_ps[b]; flag {
+				case false:
+					log.Warnf("Peer '%v', PL '%v' not found; ACTION: ignore.", v_Peer.ASN, b)
+					continue
 				}
-				return
-			}(),
+				outbound = append(outbound, b)
+				v_Peer.link_PS(b)
+			}
+			return
+		}()
+		v_RL_Export = func() (outbound []_Name) {
+			for _, b := range (*route_leak)[_Action_export].PS {
+				switch _, flag := i_ps[b]; flag {
+				case false:
+					log.Warnf("Peer '%v', PL '%v' not found; ACTION: ignore.", v_Peer.ASN, b)
+					continue
+				}
+				outbound = append(outbound, b)
+				v_Peer.link_PS(b)
+			}
+			return
+		}()
+	)
+	return map[_Action]i_Route_Leak_FromTo{
+		_Action_import: {
+			PS:              v_RL_Import,
+			GT_Action:       " " + _Action_import.String() + " [ " + strings_Join(v_RL_Import, " ").String() + " ] ",
+			_Attribute_List: (*route_leak)[_Action_import]._Attribute_List,
 		},
 		_Action_export: {
-			PS: func() (outbound []_Name) {
-				for _, d := range b.Route_Leak.Export {
-					switch _, flag := i_ps[d.PS]; flag {
-					case false:
-						log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PS)
-						continue
-					}
-					outbound = append(outbound, d.PS)
-					v_Peer.link_PS(d.PS)
-				}
-				return
-			}(),
+			PS:              v_RL_Export,
+			GT_Action:       " " + _Action_export.String() + " [ " + strings_Join(v_RL_Export, " ").String() + " ] ",
+			_Attribute_List: (*route_leak)[_Action_export]._Attribute_List,
 		},
-	},
-	// switch {
-	// case len(*inbound) == 0:
-	// 	return
-	// }
-	return
+	}
 }

@@ -8,10 +8,10 @@ type _i_ab map[_Name]*i_AB
 type _i_ja map[_Name]*i_JA
 type _i_pl map[_Name]*i_PO_PL
 type _i_ps map[_Name]*i_PO_PS
-type _i_peer map[_ASN]i_Peer
+type _i_peer map[_ASN]*i_Peer
 type _i_vi map[_VI_ID]*i_VI
 type _i_vi_peer map[_VI_ID]map[_VI_Peer_ID]*i_VI_Peer
-type _i_gt map[_Name]i_GT
+type _i_gt map[_Name]*i_GT
 type _i_config map[_ASN][]byte
 
 // 				GT_Action: []string{0: ""},
@@ -32,7 +32,7 @@ type i_Peer struct {
 	VI           map[_VI_ID]*i_VI
 	VI_Local     map[_VI_ID]*i_VI_Peer
 	VI_Remote    map[_VI_ID]*i_VI_Peer
-	VI_GT        map[_VI_ID]i_VI_GT
+	VI_GT        map[_VI_ID]*i_VI_GT
 	IFM          map[_Name]i_Peer_IFM
 	RI           map[_Name]i_Peer_RI
 	Hostname     _FQDN

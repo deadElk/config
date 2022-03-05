@@ -33,18 +33,18 @@ func parse_cDB(xml_db *cDB) (ok bool) {
 	}
 	parse_cDB_AB_create_Set("OUTER_LIST", &_Attribute_List{})
 
-	parse_cDB_AB(&xml_db.AB)
-	parse_cDB_JA(&xml_db.JA)
-	parse_cDB_PL(&xml_db.PL)
-	parse_cDB_PS(&xml_db.PS)
-	parse_cDB_Peer(&xml_db.Peer)
-	parse_cDB_VI(&xml_db.VI)
+	parse_cDB_AB(xml_db.AB)
+	parse_cDB_JA(xml_db.JA)
+	parse_cDB_PL(xml_db.PL)
+	parse_cDB_PS(xml_db.PS)
+	parse_cDB_Peer(xml_db.Peer)
+	parse_cDB_VI(xml_db.VI)
 
 	return true
 }
 
-func parse_cDB_AB(inbound *[]cDB_AB) (ok bool) {
-	for _, b := range *inbound {
+func parse_cDB_AB(inbound []*cDB_AB) (ok bool) {
+	for _, b := range inbound {
 		switch b.Set {
 		case true:
 			switch parse_cDB_AB_create_Set(b.Name, &b._Attribute_List); {
@@ -58,8 +58,8 @@ func parse_cDB_AB(inbound *[]cDB_AB) (ok bool) {
 	}
 	return true
 }
-func parse_cDB_JA(inbound *[]cDB_JA) (ok bool) {
-	for _, b := range *inbound {
+func parse_cDB_JA(inbound []*cDB_JA) (ok bool) {
+	for _, b := range inbound {
 		switch _, flag := i_ja[b.Name]; flag {
 		case true:
 			log.Debugf("Application '%v' already exist; ACTION: skip.", b.Name)
@@ -87,8 +87,8 @@ func parse_cDB_JA(inbound *[]cDB_JA) (ok bool) {
 	}
 	return true
 }
-func parse_cDB_PL(inbound *[]cDB_PO_PL) (ok bool) {
-	for _, b := range *inbound {
+func parse_cDB_PL(inbound []*cDB_PO_PL) (ok bool) {
+	for _, b := range inbound {
 		switch _, flag := i_pl[b.Name]; flag {
 		case true:
 			log.Debugf("Policy List '%v' already exist; ACTION: skip.", b.Name)
@@ -114,8 +114,8 @@ func parse_cDB_PL(inbound *[]cDB_PO_PL) (ok bool) {
 	}
 	return true
 }
-func parse_cDB_PS(inbound *[]cDB_PO_PS) (ok bool) {
-	for _, b := range *inbound {
+func parse_cDB_PS(inbound []*cDB_PO_PS) (ok bool) {
+	for _, b := range inbound {
 		switch _, flag := i_ps[b.Name]; flag {
 		case true:
 			log.Debugf("Policy Statement '%v' already exist; ACTION: skip.", b.Name)
@@ -187,26 +187,26 @@ func parse_cDB_PS(inbound *[]cDB_PO_PS) (ok bool) {
 	}
 	return true
 }
-func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
-	for _, b := range *inbound {
+func parse_cDB_Peer(inbound []*cDB_Peer) (ok bool) {
+	for _, b := range inbound {
 		switch _, flag := i_peer[b.ASN]; flag {
 		case true:
 			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ASN)
 			continue
 		}
-		parse_cDB_AB(&b.AB)
-		parse_cDB_JA(&b.JA)
-		parse_cDB_PL(&b.PL)
-		parse_cDB_PS(&b.PS)
+		parse_cDB_AB(b.AB)
+		parse_cDB_JA(b.JA)
+		parse_cDB_PL(b.PL)
+		parse_cDB_PS(b.PS)
 	}
-	for _, b := range *inbound {
+	for _, b := range inbound {
 		switch _, flag := i_peer[b.ASN]; flag {
 		case true:
 			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ASN)
 			continue
 		}
 		var (
-			v_Peer = i_Peer{
+			v_Peer = &i_Peer{
 				ASN:          b.ASN,
 				PName:        pad(&b.ASN, 10),
 				Router_ID:    netip.Addr{},
@@ -214,7 +214,7 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 				VI:           map[_VI_ID]*i_VI{},
 				VI_Local:     map[_VI_ID]*i_VI_Peer{},
 				VI_Remote:    map[_VI_ID]*i_VI_Peer{},
-				VI_GT:        map[_VI_ID]i_VI_GT{},
+				VI_GT:        map[_VI_ID]*i_VI_GT{},
 				IFM:          map[_Name]i_Peer_IFM{},
 				RI:           map[_Name]i_Peer_RI{},
 				Hostname:     "",
@@ -245,33 +245,33 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 		parse_cDB_AB_create_Set("O_AS"+_Name(v_Peer.PName), &_Attribute_List{})
 		parse_cDB_AB_create_Set("I_AS"+_Name(v_Peer.PName), &_Attribute_List{})
 		v_Peer.link_AB("OUTER_LIST", "O_AS"+_Name(v_Peer.PName), "I_AS"+_Name(v_Peer.PName))
-		parse_cDB_Peer_Version(&b, &v_Peer)
+		parse_cDB_Peer_Version(b, v_Peer)
 		v_Peer._IKE_Option_List.IKE_GCM = v_Peer.Major >= 12.3
-		parse_cDB_Peer_RI(&b, &v_Peer)
+		parse_cDB_Peer_RI(b, v_Peer)
 
 		// PName
-		parse_cDB_Peer_Router_ID(&b, &v_Peer)
+		parse_cDB_Peer_Router_ID(b, v_Peer)
 		// IF_2_RI
 		// VI
 		// VI_Local
 		// VI_Remote
-		parse_cDB_Peer_IFM(&b, &v_Peer)
+		parse_cDB_Peer_IFM(b, v_Peer)
 		// RI
-		parse_cDB_Peer_Hostname(&b, &v_Peer)
-		parse_cDB_Peer_Domain_Name(&b, &v_Peer)
+		parse_cDB_Peer_Hostname(b, v_Peer)
+		parse_cDB_Peer_Domain_Name(b, v_Peer)
 		// Version
 		// Major
 		// Manufacturer
 		// Model
 		// Serial
 		// Root
-		parse_cDB_Peer_GT_List(&b, &v_Peer)
-		parse_cDB_Peer_SZ(&b, &v_Peer)
-		parse_cDB_Peer_NAT(&b, &v_Peer)
-		parse_cDB_Peer_SP_Exact(&b, &v_Peer)
-		parse_cDB_Peer_SP_Global(&b, &v_Peer)
+		parse_cDB_Peer_GT_List(b, v_Peer)
+		parse_cDB_Peer_SZ(b, v_Peer)
+		parse_cDB_Peer_NAT(b, v_Peer)
+		parse_cDB_Peer_SP_Exact(b, v_Peer)
+		parse_cDB_Peer_SP_Global(b, v_Peer)
 
-		parse_cDB_Peer_SP_Option_List(&b, &v_Peer)
+		parse_cDB_Peer_SP_Option_List(b, v_Peer)
 
 		i_peer[b.ASN] = v_Peer
 		ok = true
@@ -279,8 +279,8 @@ func parse_cDB_Peer(inbound *[]cDB_Peer) (ok bool) {
 	}
 	return
 }
-func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
-	for _, b := range *inbound {
+func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
+	for _, b := range inbound {
 		switch _, flag := i_vi[b.ID]; flag {
 		case true:
 			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ID)
@@ -400,6 +400,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 		}
 
 		for _first, _second = 0, _total-1; _first <= _total-1; _first, _second = _first+1, _second-1 {
+
 			i_vi[b.ID].IKE_GCM = i_vi[b.ID].IKE_GCM && i_peer[v_vi_peer_list[_first].ASN].IKE_GCM
 
 			i_peer[v_vi_peer_list[_first].ASN].VI[b.ID] = i_vi[b.ID]
@@ -435,7 +436,7 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 		}
 
 		for _first, _second = 0, _total-1; _first <= _total-1; _first, _second = _first+1, _second-1 {
-			i_peer[v_vi_peer_list[_first].ASN].VI_GT[b.ID] = i_VI_GT{
+			i_peer[v_vi_peer_list[_first].ASN].VI_GT[b.ID] = &i_VI_GT{
 				PName:                    i_vi[b.ID].PName,
 				IPPrefix:                 i_vi[b.ID].IPPrefix,
 				Type:                     i_vi[b.ID].Type,
@@ -479,38 +480,18 @@ func parse_cDB_VI(inbound *[]cDB_VI) (ok bool) {
 					GT_Action:  " group " + _Defaults[_group].(_Name).String() + " ",
 				}
 			}
-			var (
-				v_RL_Import = []_Name{
-					0: _Name("import_metric_" + i_vi[b.ID].Route_Metric.String()),
-				}
-				v_RL_Export = []_Name{
-					0: "aggregate",
-					1: "export_metric_" + _Name(i_vi[b.ID].Route_Metric.String()),
-				}
-				v_RL = map[_Action]i_Route_Leak_FromTo{
-					_Action_import: {
-						PS:              v_RL_Import,
-						GT_Action:       " " + _Action_import.String() + " [ " + strings_Join(v_RL_Import, " ").String() + " ] ",
-						_Attribute_List: _Attribute_List{},
-					},
-					_Action_export: {
-						PS:              v_RL_Export,
-						GT_Action:       " " + _Action_export.String() + " [ " + strings_Join(v_RL_Export, " ").String() + " ] ",
-						_Attribute_List: _Attribute_List{},
-					},
-				}
-			)
-
 			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_Defaults[_group].(_Name)].Neighbor[i_vi_peer[b.ID][_second].Inner_IP] = _BGP_Group_Neighbor{
 				Local_ASN:  i_vi_peer[b.ID][_first].ASN,
 				Remote_ASN: i_vi_peer[b.ID][_second].ASN,
 				Passive:    i_vi_peer[b.ID][_first].Hub,
 				Local_IP:   i_vi_peer[b.ID][_first].Inner_IP,
-				Route_Leak: v_RL,
-				GT_Action:  " neighbor " + i_vi_peer[b.ID][_second].Inner_IP.String(),
-				_Attribute_List: _Attribute_List{
-					Description: "TI" + _Description(i_vi[b.ID].PName),
-				},
+				Route_Leak: parse_iDB_Route_Leak(nil, i_peer[v_vi_peer_list[_first].ASN], "", "", &map[_Action]i_Route_Leak_FromTo{
+					_Action_import: {PS: []_Name{0: _Name("import_metric_" + pad(i_vi[b.ID].Route_Metric, 2).String())}},
+					// _Action_export: {PS: []_Name{0: "aggregate", 1: _Name("export_metric_" + pad(i_vi[b.ID].Route_Metric, 2).String())}},
+					_Action_export: {PS: []_Name{0: "aggregate"}},
+				}),
+				GT_Action:       " neighbor " + i_vi_peer[b.ID][_second].Inner_IP.String(),
+				_Attribute_List: _Attribute_List{Description: "TI" + _Description(i_vi[b.ID].PName)},
 			}
 		}
 	}
@@ -553,7 +534,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			log.Warnf("Peer '%v', RI '%v' already exist; ACTION: ignore.", peer.ASN, b.Name)
 			continue
 		}
-		parse_cDB_PS(&[]cDB_PO_PS{
+		parse_cDB_PS([]*cDB_PO_PS{
 			0: {Name: "redistribute_" + b.Name,
 				Term: []cDB_PO_PS_Term{
 					0: {Name: "PERMIT",
@@ -748,39 +729,10 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		)
 
 		v_Peer.RI[b.Name] = i_Peer_RI{
-			IP_2_IF: v_IP_2_IF,
-			IF:      v_IF,
-			RT:      v_RT,
-			Route_Leak: map[_Action]i_Route_Leak_FromTo{
-				_Action_import: {
-					PS: func() (outbound []_Name) {
-						for _, d := range b.Route_Leak.Import {
-							switch _, flag := i_ps[d.PS]; flag {
-							case false:
-								log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PS)
-								continue
-							}
-							outbound = append(outbound, d.PS)
-							v_Peer.link_PS(d.PS)
-						}
-						return
-					}(),
-				},
-				_Action_export: {
-					PS: func() (outbound []_Name) {
-						for _, d := range b.Route_Leak.Export {
-							switch _, flag := i_ps[d.PS]; flag {
-							case false:
-								log.Warnf("Peer '%v', RI '%v', configured Policy List '%v' not found; ACTION: ignore.", peer.ASN, b.Name, d.PS)
-								continue
-							}
-							outbound = append(outbound, d.PS)
-							v_Peer.link_PS(d.PS)
-						}
-						return
-					}(),
-				},
-			},
+			IP_2_IF:         v_IP_2_IF,
+			IF:              v_IF,
+			RT:              v_RT,
+			Route_Leak:      parse_cDB_Route_Leak(peer, v_Peer, "", "", &b.Route_Leak),
 			Protocol:        nil,
 			BGP:             _BGP{BGP_Group: map[_Name]_BGP_Group{}, GT_Action: " protocols bgp ", _Attribute_List: _Attribute_List{}},
 			GT_Action:       v_Action,
