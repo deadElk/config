@@ -44,6 +44,7 @@ type Attribute_List struct {
 type Host_Inbound_Traffic_List struct {
 	Services  map[_Service]bool  `xml:"service,attr"`
 	Protocols map[_Protocol]bool `xml:"protocol,attr"`
+	// GT_Action map[interface{}][]string
 	GT_Action_List
 }
 type GT_Action_List struct {
