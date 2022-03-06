@@ -347,6 +347,7 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 				log.Warnf("VI '%v', Peer '%v', IF '%v' no ip addresses found; ACTION: skip.", b.ID, d.ID, v_IF)
 				continue
 			}
+			i_peer[d.ASN].SZ[v_RI].IF[v_IF]._Host_Inbound_Traffic_List.Services[_Service_ike] = true
 			v_IP, v_NAT = func() (outbound, outbound_nat netip.Addr) {
 				var (
 					interim netip.Prefix
