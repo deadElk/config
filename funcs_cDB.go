@@ -941,7 +941,7 @@ func parse_cDB_Peer_FW(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 							for _, f := range d.From {
 								outbound = append(outbound, i_FW_FromTo{
 									PL:              f.PL,
-									GT_Action:       strings_join(" ", "from", f.PL.action_PL(peer, v_Peer, _Type_firewall, _Type_from)),
+									GT_Action:       f.PL.action_PL(peer, v_Peer, _Type_firewall, _Type_from),
 									_Attribute_List: f._Attribute_List,
 								})
 							}
@@ -951,7 +951,7 @@ func parse_cDB_Peer_FW(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 							for _, f := range d.To {
 								outbound = append(outbound, i_FW_FromTo{
 									PL:              f.PL,
-									GT_Action:       strings_join(" ", "to", f.PL.action_PL(peer, v_Peer, _Type_firewall, _Type_to)),
+									GT_Action:       f.PL.action_PL(peer, v_Peer, _Type_firewall, _Type_to),
 									_Attribute_List: f._Attribute_List,
 								})
 							}
