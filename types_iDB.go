@@ -51,10 +51,39 @@ type i_Peer struct {
 	PL           map[_Name]*i_PO_PL
 	PS           map[_Name]*i_PO_PS
 	SP           i_Peer_SP
+	FW           []i_FW
 	_IKE_Option_List
 	GT_Action string
 	_Attribute_List
 }
+
+type i_FW struct {
+	Name      _Name
+	Term      []i_FW_Term
+	GT_Action string
+	_Attribute_List
+}
+type i_FW_Term struct {
+	Name      _Name
+	From      []i_FW_FromTo
+	To        []i_FW_FromTo
+	Then      []i_FW_Then
+	GT_Action string
+	_Attribute_List
+}
+type i_FW_FromTo struct {
+	PL        _Name
+	GT_Action string
+	_Attribute_List
+}
+type i_FW_Then struct {
+	Action      _Action
+	Action_Flag _Action
+	RI          _Name
+	GT_Action   string
+	_Attribute_List
+}
+
 type i_Peer_SP struct {
 	Option_List _SP_Option_List
 	Exact       []i_Rule_Set

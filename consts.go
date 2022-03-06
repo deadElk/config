@@ -79,6 +79,7 @@ const (
 	_Service_traceroute        _Service       = "traceroute"
 	_Type_destination          _Type          = "destination"
 	_Type_exact                _Type          = "exact"
+	_Type_firewall             _Type          = "firewall"
 	_Type_fqdn                 _Type          = "fqdn"
 	_Type_from                 _Type          = "from"
 	_Type_global               _Type          = "global"

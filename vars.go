@@ -110,6 +110,7 @@ var (
 	c_Type = map[_Type]_Type{
 		_Type_destination:      _Type_destination,
 		_Type_exact:            _Type_exact,
+		_Type_firewall:         _Type_firewall,
 		_Type_fqdn:             _Type_fqdn,
 		_Type_from:             _Type_from,
 		_Type_global:           _Type_global,

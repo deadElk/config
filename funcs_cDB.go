@@ -237,6 +237,7 @@ func parse_cDB_Peer(inbound []*cDB_Peer) (ok bool) {
 					Exact:       nil,
 					Global:      nil,
 				},
+				FW:               nil,
 				_IKE_Option_List: _IKE_Option_List{},
 				GT_Action:        "",
 				_Attribute_List:  b._Attribute_List,
@@ -268,10 +269,10 @@ func parse_cDB_Peer(inbound []*cDB_Peer) (ok bool) {
 		parse_cDB_Peer_GT_List(b, v_Peer)
 		parse_cDB_Peer_SZ(b, v_Peer)
 		parse_cDB_Peer_NAT(b, v_Peer)
+		parse_cDB_Peer_SP_Option_List(b, v_Peer)
 		parse_cDB_Peer_SP_Exact(b, v_Peer)
 		parse_cDB_Peer_SP_Global(b, v_Peer)
-
-		parse_cDB_Peer_SP_Option_List(b, v_Peer)
+		parse_cDB_Peer_FW(b, v_Peer)
 
 		i_peer[b.ASN] = v_Peer
 		ok = true
@@ -872,6 +873,23 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	}
 	return true
 }
+func parse_cDB_Peer_SP_Option_List(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+	v_Peer.SP.Option_List = _SP_Option_List{
+		Default_Policy: func() _Action {
+			switch value := peer.SP_Option_List.Default_Policy; value {
+			case _Action_permit_all, _Action_deny_all:
+				return value
+			case "":
+				return _Defaults[_sp_default_policy].(_Action)
+			default:
+				log.Warnf("Peer '%v', unknown default security policy '%v'; ACTION: use '%v'.", peer.ASN, value, _Defaults[_sp_default_policy])
+				return _Defaults[_sp_default_policy].(_Action)
+			}
+		}(),
+		GT_Action: "",
+	}
+	return true
+}
 func parse_cDB_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	for _, j := range peer.SP_Exact {
 		for _, l := range j.To {
@@ -911,20 +929,55 @@ func parse_cDB_Peer_SP_Global(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	return true
 }
 
-func parse_cDB_Peer_SP_Option_List(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
-	v_Peer.SP.Option_List = _SP_Option_List{
-		Default_Policy: func() _Action {
-			switch value := peer.SP_Option_List.Default_Policy; value {
-			case _Action_permit_all, _Action_deny_all:
-				return value
-			case "":
-				return _Defaults[_sp_default_policy].(_Action)
-			default:
-				log.Warnf("Peer '%v', unknown default security policy '%v'; ACTION: use '%v'.", peer.ASN, value, _Defaults[_sp_default_policy])
-				return _Defaults[_sp_default_policy].(_Action)
-			}
-		}(),
-		GT_Action: "",
+func parse_cDB_Peer_FW(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+	for _, b := range peer.FW {
+		v_Peer.FW = append(v_Peer.FW, i_FW{
+			Name: b.Name,
+			Term: func() (outbound []i_FW_Term) {
+				for _, d := range b.Term {
+					outbound = append(outbound, i_FW_Term{
+						Name: d.Name,
+						From: func() (outbound []i_FW_FromTo) {
+							for _, f := range d.From {
+								outbound = append(outbound, i_FW_FromTo{
+									PL:              f.PL,
+									GT_Action:       strings_join(" ", "from", f.PL.action_RI(peer, v_Peer, _Type_firewall, _Type_from)),
+									_Attribute_List: f._Attribute_List,
+								})
+							}
+							return
+						}(),
+						To: func() (outbound []i_FW_FromTo) {
+							for _, f := range d.To {
+								outbound = append(outbound, i_FW_FromTo{
+									PL:              f.PL,
+									GT_Action:       strings_join(" ", "to", f.PL.action_RI(peer, v_Peer, _Type_firewall, _Type_to)),
+									_Attribute_List: f._Attribute_List,
+								})
+							}
+							return
+						}(),
+						Then: func() (outbound []i_FW_Then) {
+							for _, f := range d.Then {
+								outbound = append(outbound, i_FW_Then{
+									Action:          f.Action,
+									Action_Flag:     f.Action_Flag,
+									RI:              f.RI,
+									GT_Action:       strings_join(" ", "from", f.Action, f.Action_Flag, f.RI.action_RI(peer, v_Peer, _Type_firewall, _Type_then)),
+									_Attribute_List: f._Attribute_List,
+								})
+							}
+							return
+						}(),
+						GT_Action:       strings_join(" ", "term", d.Name),
+						_Attribute_List: d._Attribute_List,
+					})
+				}
+				return
+			}(),
+			GT_Action:       strings_join(" ", "firewall filter", b.Name),
+			_Attribute_List: b._Attribute_List,
+		})
 	}
 	return true
 }

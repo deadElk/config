@@ -49,10 +49,34 @@ type cDB_Peer struct {
 	SP_Option_List  cDB_SP_Option_List `xml:"Security>SP>Option_List"`
 	SP_Exact        []cDB_Rule_Set     `xml:"Security>SP>Exact"`
 	SP_Global       []cDB_Rule         `xml:"Security>SP>Global"`
+	FW              []cDB_FW           `xml:"Security>FW_List>FW"`
 	cDB_Vocabulary
 	// cDB_Security
 	_Attribute_List
 }
+type cDB_FW struct {
+	Name _Name         `xml:"name,attr"`
+	Term []cDB_FW_Term `xml:"Term"`
+	_Attribute_List
+}
+type cDB_FW_Term struct {
+	Name _Name           `xml:"name,attr"`
+	From []cDB_FW_FromTo `xml:"From"`
+	To   []cDB_FW_FromTo `xml:"To"`
+	Then []cDB_FW_Then   `xml:"Then"`
+	_Attribute_List
+}
+type cDB_FW_FromTo struct {
+	PL _Name `xml:"PL,attr"`
+	_Attribute_List
+}
+type cDB_FW_Then struct {
+	Action      _Action `xml:"action,attr"`
+	Action_Flag _Action `xml:"action_flag,attr"`
+	RI          _Name   `xml:"RI,attr"`
+	_Attribute_List
+}
+
 type cDB_Peer_IFM struct {
 	Name          _Name          `xml:"name,attr"`
 	Communication _Communication `xml:"communication,attr"`
