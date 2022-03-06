@@ -237,7 +237,7 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 		return buffer.String()
 
 	default:
-		log.Warnf("unsupported type '%v'; ACTION: ignore.", reflect.TypeOf(inbound))
+		log.Debugf("unsupported type '%v' of '%s'; ACTION: use fmt.Sprintf().", reflect.TypeOf(inbound), inbound)
 		return fmt.Sprintf("%s", value)
 		// log.Fatalf("unsupported type '%v'; ACTION: fatal.", reflect.TypeOf(inbound))
 		// return ""
@@ -453,7 +453,7 @@ func parse_cDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 	})
 }
 func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak *map[_Action]i_Route_Leak_FromTo) (outbound map[_Action]i_Route_Leak_FromTo /* , ok bool */) {
-	// outbound = make(map[_Action]i_Route_Leak_FromTo)
+	outbound = make(map[_Action]i_Route_Leak_FromTo)
 	var (
 		v_RL_Import = func() (outbound []_Name) {
 			for _, b := range (*route_leak)[_Action_import].PS {
@@ -480,19 +480,21 @@ func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 			return
 		}()
 	)
-	return map[_Action]i_Route_Leak_FromTo{
-		_Action_accept: func() (outbound i_Route_Leak_FromTo) {
-			return
-		}(),
-		_Action_import: {
+	switch {
+	case len(v_RL_Import) != 0:
+		outbound[_Action_import] = i_Route_Leak_FromTo{
 			PS:              v_RL_Import,
 			GT_Action:       strings_join(" ", _Action_import.String(), "[", v_RL_Import, "]"),
 			_Attribute_List: (*route_leak)[_Action_import]._Attribute_List,
-		},
-		_Action_export: {
-			PS:              v_RL_Export,
-			GT_Action:       strings_join(" ", _Action_export.String(), "[", v_RL_Import, "]"),
-			_Attribute_List: (*route_leak)[_Action_export]._Attribute_List,
-		},
+		}
 	}
+	switch {
+	case len(v_RL_Export) != 0:
+		outbound[_Action_export] = i_Route_Leak_FromTo{
+			PS:              v_RL_Export,
+			GT_Action:       strings_join(" ", _Action_export.String(), "[", v_RL_Export, "]"),
+			_Attribute_List: (*route_leak)[_Action_export]._Attribute_List,
+		}
+	}
+	return
 }
