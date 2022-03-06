@@ -200,8 +200,15 @@ func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	case inbound_type == _Type_static && inbound_direction == _Type_then:
 		outbound = strings_join(" ", "routing-instance", inbound)
 
+	case inbound_type == _Type_firewall && inbound_direction == _Type_from:
+		outbound = strings_join(" ", "from routing-instance", inbound)
+	case inbound_type == _Type_firewall && inbound_direction == _Type_to:
+		outbound = strings_join(" ", "to routing-instance", inbound)
+	case inbound_type == _Type_firewall && inbound_direction == _Type_then:
+		outbound = strings_join(" ", "routing-instance", inbound)
+
 	default:
-		log.Warnf("Peer '%v', AB '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
+		log.Warnf("Peer '%v', RI '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
 		return ""
 	}
 	return
@@ -243,7 +250,7 @@ func (inbound *_Name) action_SZ(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 		outbound = strings_join(" ", "to-zone", inbound)
 
 	default:
-		log.Warnf("Peer '%v', AB '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
+		log.Warnf("Peer '%v', SZ '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
 		return ""
 	}
 	return
@@ -254,8 +261,30 @@ func (inbound *_Name) action_IF(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	case len(*inbound) == 0:
 		return
 	case !flag:
-		log.Warnf("Peer '%v', unknown SZ '%v', type '%v', subtype '%v'; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
+		log.Warnf("Peer '%v', unknown IF '%v', type '%v', subtype '%v'; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
 		return
 	}
 	return strings_join(" ", "interface", inbound)
+}
+
+func (inbound *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
+	switch _, flag := i_pl[*inbound]; {
+	case len(*inbound) == 0:
+		return
+	case !flag:
+		log.Warnf("Peer '%v', unknown PL '%v', type '%v', subtype '%v'; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
+		return
+	}
+	switch {
+
+	case inbound_type == _Type_firewall && inbound_direction == _Type_from:
+		outbound = strings_join(" ", "from source-prefix-list", inbound)
+	case inbound_type == _Type_firewall && inbound_direction == _Type_to:
+		outbound = strings_join(" ", "from destination-prefix-list", inbound)
+
+	default:
+		log.Warnf("Peer '%v', PL '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
+		return ""
+	}
+	return
 }
