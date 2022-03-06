@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"net/netip"
 	"os"
+	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -15,7 +17,7 @@ import (
 
 func hash(inbound interface{}) (outbound _ID) {
 	var (
-		interim     = convert_2_string(inbound)
+		interim     = convert_2_string("", inbound)
 		value, flag = hash_cache.Load(interim)
 	)
 	switch {
@@ -104,84 +106,147 @@ func tabber(inbound string, tabs int) string {
 	}
 }
 
-func convert_2_string(inbound interface{}) string {
-	// switch value := inbound.(type) {
-	// case interface{}:
-	// 	return fmt.Sprintf("%s", value)
-	// case *interface{}:
-	// 	return fmt.Sprintf("%s", value)
-	// }
-	// return ""
-	// switch reflect.ValueOf(inbound).Kind() {
-	// case reflect.Ptr:
-	// 	return fmt.Sprintf("%s", reflect.ValueOf(inbound))
-	// }
-	// return fmt.Sprintf("%s", reflect.ValueOf(inbound))
+func convert_2_string(delimiter string, inbound interface{}) string {
+	// return fmt.Sprintf("%s", inbound)
+	switch value := (inbound).(type) {
+	case *string:
+		return *value
+	case *_ASN:
+		return strconv.FormatUint(uint64(*value), 10)
+	case *_Action:
+		return (*value).String()
+	case *_Communication:
+		return (*value).String()
+	case *_Content:
+		return (*value).String()
+	case *_Default:
+		return (*value).String()
+	case *_Description:
+		return (*value).String()
+	case *_FQDN:
+		return (*value).String()
+	case *_Mask:
+		return (*value).String()
+	case *_Name:
+		return (*value).String()
+	case *_PName:
+		return (*value).String()
+	case *_Port:
+		return (*value).String()
+	case *_Protocol:
+		return (*value).String()
+	case *_Route_Weight:
+		return (*value).String()
+	case *_Secret:
+		return (*value).String()
+	case *_Service:
+		return (*value).String()
+	case *_Type:
+		return (*value).String()
+	case *_VI_ID:
+		return (*value).String()
+	case *_VI_Peer_ID:
+		return (*value).String()
+	case *[]byte:
+		return string(*value)
+	case *uint:
+		return strconv.FormatUint(uint64(*value), 10)
+	case *uint8:
+		return strconv.FormatUint(uint64(*value), 10)
+	case *uint16:
+		return strconv.FormatUint(uint64(*value), 10)
+	case *uint32:
+		return strconv.FormatUint(uint64(*value), 10)
+	case *uint64:
+		return strconv.FormatUint(*value, 10)
+	case *netip.Addr:
+		return (*value).String()
+	case *netip.Prefix:
+		return (*value).String()
+	case string:
+		return value
+	case _ASN:
+		return strconv.FormatUint(uint64(value), 10)
+	case _Action:
+		return (value).String()
+	case _Communication:
+		return (value).String()
+	case _Content:
+		return (value).String()
+	case _Default:
+		return (value).String()
+	case _Description:
+		return (value).String()
+	case _FQDN:
+		return (value).String()
+	case _Mask:
+		return (value).String()
+	case _Name:
+		return (value).String()
+	case _PName:
+		return (value).String()
+	case _Port:
+		return (value).String()
+	case _Protocol:
+		return (value).String()
+	case _Route_Weight:
+		return (value).String()
+	case _Secret:
+		return (value).String()
+	case _Service:
+		return (value).String()
+	case _Type:
+		return (value).String()
+	case _VI_ID:
+		return (value).String()
+	case _VI_Peer_ID:
+		return (value).String()
+	case []byte:
+		return string(value)
+	case uint:
+		return strconv.FormatUint(uint64(value), 10)
+	case uint8:
+		return strconv.FormatUint(uint64(value), 10)
+	case uint16:
+		return strconv.FormatUint(uint64(value), 10)
+	case uint32:
+		return strconv.FormatUint(uint64(value), 10)
+	case uint64:
+		return strconv.FormatUint(value, 10)
+	case netip.Addr:
+		return (value).String()
+	case netip.Prefix:
+		return (value).String()
 
-	return fmt.Sprintf("%s", inbound)
+	case []_Name:
+		var (
+			inbounds = len(value) - 1
+			buffer   bytes.Buffer
+		)
+		for a, b := range value {
+			switch {
+			case len(b) == 0:
+				continue
+			}
+			buffer.WriteString(b.String())
+			switch {
+			case a < inbounds:
+				buffer.WriteString(delimiter)
+			}
+		}
+		return buffer.String()
 
-	// switch value := (inbound).(type) {
-	// case *string:
-	// 	return *value
-	// case *_Name:
-	// 	return (*value).String()
-	// case *_PName:
-	// 	return (*value).String()
-	// case *_VI_ID:
-	// 	return (*value).String()
-	// case *_VI_Peer_ID:
-	// 	return (*value).String()
-	// case *_ASN:
-	// 	return (*value).String()
-	// case *_Content:
-	// 	return (*value).String()
-	// case *[]byte:
-	// 	return string(*value)
-	// case *uint:
-	// 	return strconv.FormatUint(uint64(*value), 10)
-	// case *uint8:
-	// 	return strconv.FormatUint(uint64(*value), 10)
-	// case *uint16:
-	// 	return strconv.FormatUint(uint64(*value), 10)
-	// case *uint32:
-	// 	return strconv.FormatUint(uint64(*value), 10)
-	// case *uint64:
-	// 	return strconv.FormatUint(*value, 10)
-	// // case string:
-	// // 	return value
-	// // case _Name:
-	// // 	return value.String()
-	// // case _PName:
-	// // 	return value.String()
-	// // case _VI_ID:
-	// // 	return value.String()
-	// // case _VI_Peer_ID:
-	// // 	return value.String()
-	// // case _ASN:
-	// // 	return value.String()
-	// // case _Content:
-	// // 	return value.String()
-	// // case []byte:
-	// // 	return string(value)
-	// // case uint:
-	// // 	return strconv.FormatUint(uint64(value), 10)
-	// // case uint8:
-	// // 	return strconv.FormatUint(uint64(value), 10)
-	// // case uint16:
-	// // 	return strconv.FormatUint(uint64(value), 10)
-	// // case uint32:
-	// // 	return strconv.FormatUint(uint64(value), 10)
-	// // case uint64:
-	// // 	return strconv.FormatUint(value, 10)
-	// default:
-	// 	log.Fatalf("unsupported type '%v'; ACTION: fatal.", reflect.TypeOf(inbound))
-	// 	return ""
-	// }
+	default:
+		log.Warnf("unsupported type '%v'; ACTION: ignore.", reflect.TypeOf(inbound))
+		return fmt.Sprintf("%s", value)
+		// log.Fatalf("unsupported type '%v'; ACTION: fatal.", reflect.TypeOf(inbound))
+		// return ""
+	}
 }
 func pad(inbound interface{}, length int) _PName {
 	var (
 		padding string
-		interim = convert_2_string(inbound)
+		interim = convert_2_string("", inbound)
 	)
 	switch c := length - len(interim); c > 0 {
 	case true:
@@ -195,14 +260,14 @@ func trim_space(inbound interface{}) _Content {
 	var (
 		interim string
 	)
-	for _, value := range strings.Split(convert_2_string(inbound), "\n") {
+	for _, value := range strings.Split(convert_2_string("", inbound), "\n") {
 		interim += strings.TrimSpace(value) + "\n"
 	}
 	return _Content(interim)
 }
 func split_2_string(inbound interface{}, re *regexp.Regexp, target ...*string) {
 	var (
-		interim = re.Split(convert_2_string(inbound), -1)
+		interim = re.Split(convert_2_string("", inbound), -1)
 	)
 	for a := 0; a < len(interim) && a < len(target); a++ {
 		*target[a] = interim[a]
@@ -233,16 +298,17 @@ func set_Domain_Name(inbound ..._FQDN) (ok bool) {
 	}
 	return
 }
-func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
-	switch len(inbound) {
-	case 0:
-		return
-	}
-	for _, value := range inbound {
-		outbound += convert_2_string(value)
-	}
-	return
-}
+
+// func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
+// 	switch len(inbound) {
+// 	case 0:
+// 		return
+// 	}
+// 	for _, value := range inbound {
+// 		outbound += convert_2_string("", value)
+// 	}
+// 	return
+// }
 
 func parse_Communication(_peer *_ASN, _if *_Name, inbound *_Communication) _Communication {
 	switch {
@@ -303,7 +369,7 @@ func read_GT() (ok bool) {
 		var (
 			tname = _Name(fentry.Name()[:len(fentry.Name())-5])
 		)
-		switch data, err = os.ReadFile(_Defaults[_path_GT].(string) + "/" + fentry.Name()); err == nil {
+		switch data, err = os.ReadFile(strings_join("/", _Defaults[_path_GT], fentry.Name())); err == nil {
 		case false:
 			log.Warnf("template '%v' read error '%v'; ACTION: skip.", tname, err)
 			continue
@@ -323,44 +389,54 @@ func read_GT() (ok bool) {
 func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, port, port_low, port_high _Port) (outbound string /* , ok bool */) {
 	switch {
 	// case port != 0:
-	// 	outbound = " " + port_low.String() + " "
+	// 	outbound = port.String()
 	case port_low != 0:
-		outbound = " " + port_low.String() + " "
+		outbound = port_low.String()
 		fallthrough
 	case port_low != 0 && port_high != 0:
-		outbound += " to " + port_high.String() + " "
+		outbound = strings_join(" ", outbound, "to", port_high)
 	default:
 		return
 	}
 	switch {
 	case inbound_type == _Type_static && inbound_direction == _Type_from:
-		outbound = " source-port " + outbound + " "
+		outbound = strings_join(" ", "source-port", outbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_to:
-		outbound = " destination-port " + outbound + " "
+		outbound = strings_join(" ", "destination-port", outbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_then:
-		outbound = " mapped-port " + outbound + " "
+		outbound = strings_join(" ", "mapped-port", outbound)
 	}
 
 	return
 }
 
-func strings_Join(inbound []_Name, delimiter string) (outbound _Name) {
+func strings_join(delimiter string, inbound ...interface{}) (outbound string) {
 	var (
-		inbounds = len(inbound) - 1
+		interim []string
+	)
+	for _, b := range inbound {
+		interim = append(interim, convert_2_string(delimiter, b))
+	}
+	var (
+		inbounds = len(interim) - 1
 		buffer   bytes.Buffer
 	)
-	for a, b := range inbound {
-		buffer.WriteString(string(b))
-		switch a < inbounds {
-		case true:
+	for a, b := range interim {
+		switch {
+		case len(b) == 0:
+			continue
+		}
+		buffer.WriteString(b)
+		switch {
+		case a < inbounds:
 			buffer.WriteString(delimiter)
 		}
 	}
-	return _Name(buffer.String())
+	return buffer.String()
 }
 
 func parse_cDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak *cDB_Peer_RI_RO_Route_Leak) (outbound map[_Action]i_Route_Leak_FromTo /* , ok bool */) {
-	outbound = make(map[_Action]i_Route_Leak_FromTo)
+	// outbound = make(map[_Action]i_Route_Leak_FromTo)
 	return parse_iDB_Route_Leak(nil, v_Peer, "", "", &map[_Action]i_Route_Leak_FromTo{
 		_Action_import: {PS: func() (outbound []_Name) {
 			for _, b := range (*route_leak).Import {
@@ -377,7 +453,7 @@ func parse_cDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 	})
 }
 func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak *map[_Action]i_Route_Leak_FromTo) (outbound map[_Action]i_Route_Leak_FromTo /* , ok bool */) {
-	outbound = make(map[_Action]i_Route_Leak_FromTo)
+	// outbound = make(map[_Action]i_Route_Leak_FromTo)
 	var (
 		v_RL_Import = func() (outbound []_Name) {
 			for _, b := range (*route_leak)[_Action_import].PS {
@@ -405,14 +481,17 @@ func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 		}()
 	)
 	return map[_Action]i_Route_Leak_FromTo{
+		_Action_accept: func() (outbound i_Route_Leak_FromTo) {
+			return
+		}(),
 		_Action_import: {
 			PS:              v_RL_Import,
-			GT_Action:       " " + _Action_import.String() + " [ " + strings_Join(v_RL_Import, " ").String() + " ] ",
+			GT_Action:       strings_join(" ", _Action_import.String(), "[", v_RL_Import, "]"),
 			_Attribute_List: (*route_leak)[_Action_import]._Attribute_List,
 		},
 		_Action_export: {
 			PS:              v_RL_Export,
-			GT_Action:       " " + _Action_export.String() + " [ " + strings_Join(v_RL_Export, " ").String() + " ] ",
+			GT_Action:       strings_join(" ", _Action_export.String(), "[", v_RL_Import, "]"),
 			_Attribute_List: (*route_leak)[_Action_export]._Attribute_List,
 		},
 	}

@@ -4,7 +4,6 @@ import (
 	"net/netip"
 	"regexp"
 	"sync"
-	"text/template"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -14,10 +13,10 @@ var (
 	re_caps    = regexp.MustCompile(`[A-Z]`)
 	re_dot     = regexp.MustCompile(`\.`)
 	re_period  = regexp.MustCompile(`,`)
-	gt_fm      = template.FuncMap{
-		// "sum_uint32": sum_uint32_gt_fm,
-		"sum_string": sum_string_gt_fm,
-	}
+	// gt_fm      = template.FuncMap{
+	// 	// "sum_uint32": sum_uint32_gt_fm,
+	// 	"sum_string": sum_string_gt_fm,
+	// }
 
 	config    = make(_i_config)
 	i_ab      = make(_i_ab)
@@ -69,7 +68,7 @@ var (
 		_Mask_longer:   _Mask_longer,
 		_Mask_orlonger: _Mask_orlonger,
 	}
-	c_Nane = map[_Name]_Name{
+	c_Name = map[_Name]_Name{
 		_Name_any: _Name_any,
 	}
 	c_Protocol = map[_Protocol]_Protocol{

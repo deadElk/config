@@ -73,7 +73,8 @@ func parse_GT() (ok bool) {
 						vGT  *template.Template
 						vBuf bytes.Buffer
 					)
-					switch vGT, err = template.New(gt_v.String()).Funcs(gt_fm).Parse(i_gt[gt_v].Content.String()); err == nil && vGT != nil {
+					// switch vGT, err = template.New(gt_v.String()).Funcs(gt_fm).Parse(i_gt[gt_v].Content.String()); err == nil && vGT != nil {
+					switch vGT, err = template.New(gt_v.String()).Parse(i_gt[gt_v].Content.String()); err == nil && vGT != nil {
 					case true:
 						switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
 						case true:

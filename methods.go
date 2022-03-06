@@ -89,7 +89,7 @@ func (inbound *_Host_Inbound_Traffic_List) parse(enable ...interface{}) (outboun
 		outbound = _Host_Inbound_Traffic_List{
 			Services:  map[_Service]bool{},
 			Protocols: map[_Protocol]bool{},
-			GT_Action: "host-inbound-traffic ",
+			GT_Action: "host-inbound-traffic",
 		}
 	}
 	for _, b := range enable {
@@ -116,37 +116,37 @@ func (inbound *_Name) action_AB(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	switch {
 
 	case inbound_type == _Type_exact && inbound_direction == _Type_from:
-		outbound = " source-address " + (*inbound).String() + " "
+		outbound = "source-address " + (*inbound).String()
 	case inbound_type == _Type_global && inbound_direction == _Type_from:
-		outbound = " source-address " + (*inbound).String() + " "
+		outbound = "source-address " + (*inbound).String()
 	case inbound_type == _Type_source && inbound_direction == _Type_from:
-		outbound = " source-address-name " + (*inbound).String() + " "
+		outbound = "source-address-name " + (*inbound).String()
 	case inbound_type == _Type_destination && inbound_direction == _Type_from:
-		outbound = " source-address-name " + (*inbound).String() + " "
+		outbound = "source-address-name " + (*inbound).String()
 	case inbound_type == _Type_static && inbound_direction == _Type_from:
-		outbound = " source-address-name " + (*inbound).String() + " "
+		outbound = "source-address-name " + (*inbound).String()
 
 	case inbound_type == _Type_exact && inbound_direction == _Type_to:
-		outbound = " destination-address " + (*inbound).String() + " "
+		outbound = "destination-address " + (*inbound).String()
 	case inbound_type == _Type_global && inbound_direction == _Type_to:
-		outbound = " destination-address " + (*inbound).String() + " "
+		outbound = "destination-address " + (*inbound).String()
 	case inbound_type == _Type_source && inbound_direction == _Type_to:
-		outbound = " destination-address-name " + (*inbound).String() + " "
+		outbound = "destination-address-name " + (*inbound).String()
 	case inbound_type == _Type_destination && inbound_direction == _Type_to:
-		outbound = " destination-address-name " + (*inbound).String() + " "
+		outbound = "destination-address-name " + (*inbound).String()
 	case inbound_type == _Type_static && inbound_direction == _Type_to:
-		outbound = " destination-address-name " + (*inbound).String() + " "
+		outbound = "destination-address-name " + (*inbound).String()
 
 	case inbound_type == _Type_exact && inbound_direction == _Type_then:
-		outbound = " source-address " + (*inbound).String() + " "
+		outbound = "source-address " + (*inbound).String()
 	case inbound_type == _Type_global && inbound_direction == _Type_then:
-		outbound = " source-address " + (*inbound).String() + " "
+		outbound = "source-address " + (*inbound).String()
 	case inbound_type == _Type_source && inbound_direction == _Type_then:
-		outbound = " source-address-name " + (*inbound).String() + " "
+		outbound = "source-address-name " + (*inbound).String()
 	case inbound_type == _Type_destination && inbound_direction == _Type_then:
-		outbound = " destination-address-name " + (*inbound).String() + " "
+		outbound = "destination-address-name " + (*inbound).String()
 	case inbound_type == _Type_static && inbound_direction == _Type_then:
-		outbound = " prefix-name " + (*inbound).String() + " "
+		outbound = "prefix-name " + (*inbound).String()
 
 	default:
 		log.Warnf("Peer '%v', AB '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
@@ -160,7 +160,7 @@ func (inbound *_Name) action_Pool(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _
 	case len(*inbound) == 0:
 		return
 	}
-	return " pool " + (*inbound).String() + " "
+	return "pool " + (*inbound).String()
 }
 
 func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
@@ -174,31 +174,31 @@ func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	switch {
 
 	case inbound_type == _Type_source && inbound_direction == _Type_from:
-		outbound = " from routing-instance " + (*inbound).String() + " "
+		outbound = "from routing-instance " + (*inbound).String()
 	case inbound_type == _Type_source && inbound_direction == _Type_to:
-		outbound = " to routing-instance " + (*inbound).String() + " "
+		outbound = "to routing-instance " + (*inbound).String()
 	case inbound_type == _Type_source && inbound_direction == _Type_pool:
-		outbound = " routing-instance " + (*inbound).String() + " "
+		outbound = "routing-instance " + (*inbound).String()
 	case inbound_type == _Type_source && inbound_direction == _Type_then:
-		outbound = " routing-instance " + (*inbound).String() + " "
+		outbound = "routing-instance " + (*inbound).String()
 
 	case inbound_type == _Type_destination && inbound_direction == _Type_from:
-		outbound = " from routing-instance " + (*inbound).String() + " "
+		outbound = "from routing-instance " + (*inbound).String()
 	case inbound_type == _Type_destination && inbound_direction == _Type_to:
-		outbound = " to routing-instance " + (*inbound).String() + " "
+		outbound = "to routing-instance " + (*inbound).String()
 	case inbound_type == _Type_destination && inbound_direction == _Type_pool:
-		outbound = " routing-instance " + (*inbound).String() + " "
+		outbound = "routing-instance " + (*inbound).String()
 	case inbound_type == _Type_destination && inbound_direction == _Type_then:
-		outbound = " routing-instance " + (*inbound).String() + " "
+		outbound = "routing-instance " + (*inbound).String()
 
 	case inbound_type == _Type_static && inbound_direction == _Type_from:
-		outbound = " from routing-instance " + (*inbound).String() + " "
+		outbound = "from routing-instance " + (*inbound).String()
 	case inbound_type == _Type_static && inbound_direction == _Type_to:
-		outbound = " to routing-instance " + (*inbound).String() + " "
+		outbound = "to routing-instance " + (*inbound).String()
 	case inbound_type == _Type_static && inbound_direction == _Type_pool:
-		outbound = " routing-instance " + (*inbound).String() + " "
+		outbound = "routing-instance " + (*inbound).String()
 	case inbound_type == _Type_static && inbound_direction == _Type_then:
-		outbound = " routing-instance " + (*inbound).String() + " "
+		outbound = "routing-instance " + (*inbound).String()
 
 	default:
 		log.Warnf("Peer '%v', AB '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
@@ -218,29 +218,29 @@ func (inbound *_Name) action_SZ(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	switch {
 
 	case inbound_type == _Type_source && inbound_direction == _Type_from:
-		outbound = " from zone " + (*inbound).String() + " "
+		outbound = "from zone " + (*inbound).String()
 	case inbound_type == _Type_source && inbound_direction == _Type_to:
-		outbound = " to zone " + (*inbound).String() + " "
+		outbound = "to zone " + (*inbound).String()
 
 	case inbound_type == _Type_destination && inbound_direction == _Type_from:
-		outbound = " from zone " + (*inbound).String() + " "
+		outbound = "from zone " + (*inbound).String()
 	case inbound_type == _Type_destination && inbound_direction == _Type_to:
-		outbound = " to zone " + (*inbound).String() + " "
+		outbound = "to zone " + (*inbound).String()
 
 	case inbound_type == _Type_static && inbound_direction == _Type_from:
-		outbound = " from-zone " + (*inbound).String() + " "
+		outbound = "from-zone " + (*inbound).String()
 	case inbound_type == _Type_static && inbound_direction == _Type_to:
-		outbound = " to-zone " + (*inbound).String() + " "
+		outbound = "to-zone " + (*inbound).String()
 
 	case inbound_type == _Type_exact && inbound_direction == _Type_from:
-		outbound = " from-zone " + (*inbound).String() + " "
+		outbound = "from-zone " + (*inbound).String()
 	case inbound_type == _Type_exact && inbound_direction == _Type_to:
-		outbound = " to-zone " + (*inbound).String() + " "
+		outbound = "to-zone " + (*inbound).String()
 
 	case inbound_type == _Type_global && inbound_direction == _Type_from:
-		outbound = " from-zone " + (*inbound).String() + " "
+		outbound = "from-zone " + (*inbound).String()
 	case inbound_type == _Type_global && inbound_direction == _Type_to:
-		outbound = " to-zone " + (*inbound).String() + " "
+		outbound = "to-zone " + (*inbound).String()
 
 	default:
 		log.Warnf("Peer '%v', AB '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
@@ -257,5 +257,5 @@ func (inbound *_Name) action_IF(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 		log.Warnf("Peer '%v', unknown SZ '%v', type '%v', subtype '%v'; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
 		return
 	}
-	return " interface " + (*inbound).String() + " "
+	return "interface " + (*inbound).String()
 }

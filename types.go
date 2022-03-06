@@ -17,8 +17,6 @@ type _Description string
 type _FQDN string
 type _Mask string
 type _Name string
-
-// type _Names []_Name
 type _PName string
 type _Port uint16
 type _Protocol string
