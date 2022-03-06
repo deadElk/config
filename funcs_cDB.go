@@ -1124,8 +1124,8 @@ func parse_cDB_AB_add_Address(public, private bool, ab_name _Name, inbound ...in
 			var (
 				bits = 32
 			)
-			switch value.Is6() {
-			case true:
+			switch {
+			case value.Is6():
 				bits = 128
 			}
 			interim = append(interim, parse_interface(value.Prefix(bits)).(netip.Prefix))

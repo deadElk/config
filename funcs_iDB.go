@@ -32,9 +32,7 @@ func peer_iDB_recurse_AB(interim *map[_Name]*i_AB, inbound _Name) (ok bool) {
 	(*interim)[inbound] = i_ab[inbound]
 	for a, b := range i_ab[inbound].Set {
 		switch {
-		case b.Type != _Type_set:
-			peer_iDB_recurse_AB(interim, a)
-		case (*interim)[a] == nil:
+		case b.Type != _Type_set || (*interim)[a] == nil:
 			peer_iDB_recurse_AB(interim, a)
 		}
 	}
