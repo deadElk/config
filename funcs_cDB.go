@@ -389,7 +389,7 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 
 		var (
 			_first, _second, _total _VI_Peer_ID
-			_if                     = _Name(strings_join(".", c_Type[_Type_st], b.ID))
+			_if                     = _Name(strings_join(".", c_Name[_Name_st], b.ID))
 		)
 		switch _total = _VI_Peer_ID(len(v_vi_peer_list)); {
 		case _total != 2:
@@ -405,7 +405,7 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 			i_peer[v_vi_peer_list[_first].ASN].VI_Remote[b.ID] = i_vi_peer[b.ID][_second]
 
 			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].IF[_if] = i_Peer_RI_IF{
-				IFM:           _Name(c_Type[_Type_st]),
+				IFM:           c_Name[_Name_st],
 				IFsM:          _Name(b.ID.String()),
 				Communication: _Defaults[_comm_vi].(_Communication),
 				IP: map[netip.Prefix]i_Peer_RI_IF_IP{
