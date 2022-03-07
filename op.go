@@ -114,9 +114,9 @@ func upload_config() (ok bool) {
 			asn = "AS" + pad(b, 10).String()
 			fn  = _Defaults[_path_out].(string) + "./" + asn
 		)
-		switch err = os.WriteFile(fn, config[_ASN(b)], 0600); {
+		switch err = os.WriteFile(fn, config[b], 0600); {
 		case err == nil:
-			log.Infof("OK %v", asn)
+			log.Infof("OK '%v'", asn)
 		default:
 			log.Errorf("Fail '%v' with error '%v'", asn, err)
 		}
