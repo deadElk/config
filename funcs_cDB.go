@@ -12,12 +12,12 @@ func parse_cDB(xml_db *cDB) (ok bool) {
 	// set_loglevel(xml_db.Verbosity)
 	log.SetLevel(xml_db.Verbosity)
 	_Defaults[_group] = _Name(xml_db.XMLName.Local)
-	switch len(xml_db.GT_Path) == 0 {
-	case false:
+	switch {
+	case len(xml_db.GT_Path) != 0:
 		_Defaults[_path_GT] = xml_db.GT_Path
 	}
-	switch read_GT() {
-	case false:
+	switch {
+	case !read_GT():
 		log.Warnf("templates read error; ACTION: skip.")
 		return
 	}
@@ -27,8 +27,8 @@ func parse_cDB(xml_db *cDB) (ok bool) {
 	for _, b := range re_period.Split(xml_db.GT_List, -1) {
 		_Defaults[_GT_list] = append(_Defaults[_GT_list].([]_Name), _Name(b))
 	}
-	switch len(xml_db.Upload_Path) == 0 {
-	case false:
+	switch {
+	case len(xml_db.Upload_Path) != 0:
 		_Defaults[_path_out] = xml_db.Upload_Path
 	}
 	parse_cDB_AB_create_Set("OUTER_LIST", &_Attribute_List{})
@@ -45,10 +45,10 @@ func parse_cDB(xml_db *cDB) (ok bool) {
 
 func parse_cDB_AB(inbound []*cDB_AB) (ok bool) {
 	for _, b := range inbound {
-		switch b.Set {
-		case true:
-			switch parse_cDB_AB_create_Set(b.Name, &b._Attribute_List); {
-			case false:
+		switch {
+		case b.Set:
+			switch {
+			case !parse_cDB_AB_create_Set(b.Name, &b._Attribute_List):
 				continue
 			}
 		}
@@ -60,8 +60,8 @@ func parse_cDB_AB(inbound []*cDB_AB) (ok bool) {
 }
 func parse_cDB_JA(inbound []*cDB_JA) (ok bool) {
 	for _, b := range inbound {
-		switch _, flag := i_ja[b.Name]; flag {
-		case true:
+		switch _, flag := i_ja[b.Name]; {
+		case flag:
 			log.Debugf("Application '%v' already exist; ACTION: skip.", b.Name)
 			continue
 		}
@@ -89,8 +89,8 @@ func parse_cDB_JA(inbound []*cDB_JA) (ok bool) {
 }
 func parse_cDB_PL(inbound []*cDB_PO_PL) (ok bool) {
 	for _, b := range inbound {
-		switch _, flag := i_pl[b.Name]; flag {
-		case true:
+		switch _, flag := i_pl[b.Name]; {
+		case flag:
 			log.Debugf("Policy List '%v' already exist; ACTION: skip.", b.Name)
 			continue
 		}
@@ -116,8 +116,8 @@ func parse_cDB_PL(inbound []*cDB_PO_PL) (ok bool) {
 }
 func parse_cDB_PS(inbound []*cDB_PO_PS) (ok bool) {
 	for _, b := range inbound {
-		switch _, flag := i_ps[b.Name]; flag {
-		case true:
+		switch _, flag := i_ps[b.Name]; {
+		case flag:
 			log.Debugf("Policy Statement '%v' already exist; ACTION: skip.", b.Name)
 			continue
 		}
@@ -189,8 +189,8 @@ func parse_cDB_PS(inbound []*cDB_PO_PS) (ok bool) {
 }
 func parse_cDB_Peer(inbound []*cDB_Peer) (ok bool) {
 	for _, b := range inbound {
-		switch _, flag := i_peer[b.ASN]; flag {
-		case true:
+		switch _, flag := i_peer[b.ASN]; {
+		case flag:
 			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ASN)
 			continue
 		}
@@ -200,8 +200,8 @@ func parse_cDB_Peer(inbound []*cDB_Peer) (ok bool) {
 		parse_cDB_PS(b.PS)
 	}
 	for _, b := range inbound {
-		switch _, flag := i_peer[b.ASN]; flag {
-		case true:
+		switch _, flag := i_peer[b.ASN]; {
+		case flag:
 			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ASN)
 			continue
 		}
@@ -282,8 +282,8 @@ func parse_cDB_Peer(inbound []*cDB_Peer) (ok bool) {
 }
 func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 	for _, b := range inbound {
-		switch _, flag := i_vi[b.ID]; flag {
-		case true:
+		switch _, flag := i_vi[b.ID]; {
+		case flag:
 			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ID)
 			continue
 		}
@@ -298,8 +298,8 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 			Type:          _Type_st,
 			Communication: b.Communication,
 			Route_Metric: func() _Route_Weight {
-				switch b.Route_Metric > _Defaults[_ps_max_rms].(_Route_Weight) {
-				case true:
+				switch {
+				case b.Route_Metric > _Defaults[_ps_max_rms].(_Route_Weight):
 					return 0
 				}
 				return _Defaults[_ps_max_rms].(_Route_Weight) - b.Route_Metric
@@ -315,13 +315,13 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 		i_vi_peer[b.ID] = map[_VI_Peer_ID]*i_VI_Peer{}
 
 		for _, d := range b.Peer {
-			switch /*d.ID >= 0 &&*/ d.ID <= 1 {
-			case false:
+			switch {
+			case d.ID > 1:
 				log.Warnf("VI '%v', Peer '%v', index out of range; ACTION: skip.", b.ID, d.ID)
 				continue
 			}
-			switch _, flag := i_vi_peer[b.ID][d.ID]; flag {
-			case true:
+			switch _, flag := i_vi_peer[b.ID][d.ID]; {
+			case flag:
 				log.Warnf("VI '%v', Peer '%v' already exist; ACTION: skip.", b.ID, d.ID)
 				continue
 			}
@@ -355,13 +355,13 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 					value   i_Peer_RI_IF_IP
 				)
 				for interim, value = range i_peer[d.ASN].RI[v_RI].IF[v_IF].IP {
-					switch interim.Addr() == d.IP {
-					case true:
+					switch {
+					case interim.Addr() == d.IP:
 						return interim.Addr(), value.NAT
 					}
 				}
-				switch !interim.IsValid() && !i_peer[d.ASN].RI[v_RI].IF[v_IF].IP[interim].DHCP {
-				case true:
+				switch {
+				case !interim.IsValid() && !i_peer[d.ASN].RI[v_RI].IF[v_IF].IP[interim].DHCP:
 					log.Warnf("VI '%v', Peer '%v', IF '%v' no valid ip addresses found; ACTION: try to find something.", b.ID, d.ID, v_IF)
 				}
 				return interim.Addr(), value.NAT
@@ -396,8 +396,8 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 			_first, _second, _total _VI_Peer_ID
 			_if                     = _Name(strings_join(".", c_Type[_Type_st], b.ID))
 		)
-		switch _total = _VI_Peer_ID(len(v_vi_peer_list)); _total != 2 {
-		case true:
+		switch _total = _VI_Peer_ID(len(v_vi_peer_list)); {
+		case _total != 2:
 			continue
 		}
 
@@ -472,8 +472,8 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 				GT_Action:                "",
 				_Attribute_List:          _Attribute_List{},
 			}
-			switch _, flag := i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_Defaults[_group].(_Name)]; flag {
-			case false:
+			switch _, flag := i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_Defaults[_group].(_Name)]; {
+			case !flag:
 				i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_Defaults[_group].(_Name)] = _BGP_Group{
 					Local_ASN:  0,
 					Remote_ASN: 0,
@@ -500,8 +500,8 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 }
 
 func parse_cDB_Peer_Router_ID(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
-	switch peer.Router_ID.IsValid() {
-	case true:
+	switch {
+	case peer.Router_ID.IsValid():
 		v_Peer.Router_ID = peer.Router_ID
 	default:
 		v_Peer.Router_ID = func() netip.Addr {
@@ -550,8 +550,8 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		v_Peer.link_PS(_Name(strings_join("_", "redistribute", b.Name)))
 	}
 	for _, b := range peer.RI {
-		switch _, flag := v_Peer.RI[b.Name]; flag {
-		case true:
+		switch _, flag := v_Peer.RI[b.Name]; {
+		case flag:
 			log.Warnf("Peer '%v', RI '%v' already exist; ACTION: ignore.", peer.ASN, b.Name)
 			continue
 		}
@@ -560,8 +560,8 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			v_IF      = func() (outbound map[_Name]i_Peer_RI_IF) {
 				outbound = make(map[_Name]i_Peer_RI_IF)
 				for _, d := range b.IF {
-					switch value, flag := v_Peer.IF_2_RI[d.Name]; flag {
-					case true:
+					switch value, flag := v_Peer.IF_2_RI[d.Name]; {
+					case flag:
 						log.Warnf("Peer '%v', RI '%v', IF '%v' already exist in RI '%v'; ACTION: ignore.", peer.ASN, b.Name, d.Name, value)
 						continue
 					}
@@ -578,15 +578,15 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 						IP: func() (outbound map[netip.Prefix]i_Peer_RI_IF_IP) {
 							outbound = make(map[netip.Prefix]i_Peer_RI_IF_IP)
 							for _, f := range d.IP {
-								switch f.DHCP {
-								case false:
-									switch f.IPPrefix.IsValid() {
-									case false:
+								switch {
+								case !f.DHCP:
+									switch {
+									case !f.IPPrefix.IsValid():
 										log.Warnf("Peer '%v', RI '%v', IF '%v', invalid IP '%v'; ACTION: ignore.", peer.ASN, b.Name, d.Name, f.IPPrefix)
 										continue
 									}
-									switch value, flag := v_IP_2_IF[f.IPPrefix.Addr()]; flag {
-									case true:
+									switch value, flag := v_IP_2_IF[f.IPPrefix.Addr()]; {
+									case flag:
 										log.Warnf("Peer '%v', RI '%v', IF '%v', duplicate IP '%v' with IF '%v'; ACTION: ignore.", peer.ASN, b.Name, d.Name, f.IPPrefix, value)
 										continue
 									}
@@ -609,13 +609,13 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 						PARP: func() (outbound map[netip.Addr]i_Peer_RI_IF_PARP) {
 							outbound = make(map[netip.Addr]i_Peer_RI_IF_PARP)
 							for _, f := range d.PARP {
-								switch f.IP.IsValid() {
-								case false:
+								switch {
+								case !f.IP.IsValid():
 									log.Warnf("Peer '%v', RI '%v', IF '%v', invalid PARP IP '%v'; ACTION: ignore.", peer.ASN, b.Name, d.Name, f.IP)
 									continue
 								}
-								switch value, flag := v_IP_2_IF[f.IP]; flag {
-								case true:
+								switch value, flag := v_IP_2_IF[f.IP]; {
+								case flag:
 									log.Warnf("Peer '%v', RI '%v', IF '%v', duplicate IP '%v' on IF '%v'; ACTION: ignore.", peer.ASN, b.Name, d.Name, f.IP, value)
 									continue
 								}
@@ -638,8 +638,8 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			v_RT = func() (outbound map[netip.Prefix]i_Peer_RI_RO_RT) {
 				outbound = make(map[netip.Prefix]i_Peer_RI_RO_RT)
 				for _, d := range b.RT {
-					switch d.Identifier.IsValid() {
-					case false:
+					switch {
+					case !d.Identifier.IsValid():
 						log.Warnf("Peer '%v', RI '%v', route Identifier '%v' is invalid; ACTION: ignore.", peer.ASN, b.Name, d.Identifier)
 						continue
 					}
@@ -707,8 +707,8 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 									}
 									v_Name = _Name(hash(&v_GW).String())
 								)
-								switch _, flag := outbound[v_Name]; flag {
-								case true:
+								switch _, flag := outbound[v_Name]; {
+								case flag:
 									log.Warnf("Peer '%v', RI '%v', Identifier '%v', GW '%v' already exist; ACTION: ignore.", peer.ASN, b.Name, d.Identifier, f)
 									continue
 								}
@@ -744,8 +744,8 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	return true
 }
 func parse_cDB_Peer_Hostname(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
-	switch len(peer.Hostname) == 0 {
-	case true:
+	switch {
+	case len(peer.Hostname) == 0:
 		v_Peer.Hostname = _FQDN(strings_join("", "gw_as", pad(&peer.ASN, 10)))
 		log.Warnf("Peer '%v', Hostname '%v' is invalid; ACTION: use '%v'.", peer.ASN, peer.Router_ID, v_Peer.Hostname)
 	default:
@@ -754,8 +754,8 @@ func parse_cDB_Peer_Hostname(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	return true
 }
 func parse_cDB_Peer_Domain_Name(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
-	switch len(peer.Domain_Name) == 0 {
-	case true:
+	switch {
+	case len(peer.Domain_Name) == 0:
 		v_Peer.Domain_Name = _Defaults[_domain_name].(_FQDN)
 	default:
 		v_Peer.Domain_Name = peer.Domain_Name
@@ -777,8 +777,8 @@ func parse_cDB_Peer_Version(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 }
 
 func parse_cDB_Peer_GT_List(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
-	switch len(peer.GT_List) == 0 {
-	case false:
+	switch {
+	case len(peer.GT_List) != 0:
 		for _, b := range peer.GT_List {
 			v_Peer.GT_List = append(v_Peer.GT_List, _Name(b))
 		}
@@ -817,8 +817,8 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		case _Defaults[_mgmt_RI].(_Name):
 			continue
 		}
-		switch _, flag := v_Peer.SZ[a]; flag {
-		case false:
+		switch _, flag := v_Peer.SZ[a]; {
+		case !flag:
 			v_Peer.SZ[a] = i_Peer_SZ{
 				Screen:                     "",
 				IF:                         map[_Name]i_Peer_SZ_IF{},
@@ -828,8 +828,8 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			}
 		}
 		for e := range v_Peer.RI[a].IF {
-			switch _, flag := v_Peer.SZ[a].IF[e]; flag {
-			case true:
+			switch _, flag := v_Peer.SZ[a].IF[e]; {
+			case flag:
 				continue
 			}
 			v_Peer.SZ[a].IF[e] = i_Peer_SZ_IF{
@@ -904,8 +904,8 @@ func parse_cDB_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				var (
 					t = &v_Peer.SP.Exact[len(v_Peer.SP.Exact)-1]
 				)
-				switch len(t.From) != 1 || len(t.To) != 1 {
-				case true:
+				switch {
+				case len(t.From) != 1 || len(t.To) != 1:
 					continue
 				}
 				t.GT_Action = strings_join(" ", "security policies from-zone", t.From[0].SZ, "to-zone", t.To[0].SZ)
@@ -1094,8 +1094,8 @@ func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inboun
 }
 
 func parse_cDB_AB_create_Set(ab_name _Name, sa *_Attribute_List) (ok bool) {
-	switch _, flag := i_ab[ab_name]; flag {
-	case true:
+	switch _, flag := i_ab[ab_name]; {
+	case flag:
 		log.Debugf("Address Book '%+v', already exist; ACTION: skip.", ab_name)
 		return
 	}
@@ -1137,14 +1137,14 @@ func parse_cDB_AB_add_Address(public, private bool, ab_name _Name, inbound ...in
 			}
 			interim = append(interim, value)
 		case _FQDN:
-			switch len(value) == 0 {
-			case true:
+			switch {
+			case len(value) == 0:
 				continue
 			}
 			interim = append(interim, value)
 		case _Name:
-			switch len(value) == 0 {
-			case true:
+			switch {
+			case len(value) == 0:
 				continue
 			}
 			interim = append(interim, value)

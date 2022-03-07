@@ -26,8 +26,8 @@ func hash(inbound interface{}) (outbound _ID) {
 	case flag:
 		log.Warnf("Daemon: hash error - zero result from hash_cache.Load(%+v); ACTION: try to recover.", interim)
 	}
-	switch value = sha3.Sum512([]uint8(interim)); value.([_hash_Size]uint8) != outbound {
-	case true:
+	switch value = sha3.Sum512([]uint8(interim)); {
+	case value.([_hash_Size]uint8) != outbound:
 		hash_cache.Store(interim, value.([_hash_Size]uint8))
 		return value.([_hash_Size]uint8)
 	default:
@@ -35,32 +35,16 @@ func hash(inbound interface{}) (outbound _ID) {
 	}
 	return
 }
-func set_loglevel(inbound ...string) (ok bool) {
-	switch len(inbound) == 0 {
-	case false:
-		switch loglevel, err := log.ParseLevel(inbound[0]); err == nil {
-		case true:
-			ok = true
-			log.SetLevel(loglevel)
-		default:
-			log.SetLevel(_Defaults[_loglevel].(log.Level))
-			// log.Warnf("verbosity level '%v' is not supported; ACTION: use '%v'.", *inbound[0], log.GetLevel())
-		}
-	default:
-		log.SetLevel(_Defaults[_loglevel].(log.Level))
-	}
-	return
-}
 func parse_interface(inbound interface{}, skip interface{}) interface{} {
 	switch value := skip.(type) {
 	case error:
-		switch value == nil {
-		case false:
+		switch {
+		case value != nil:
 			log.Debugf("'%v'", skip)
 		}
 	case bool:
-		switch value {
-		case false:
+		switch {
+		case !value:
 			log.Debugf("'%v'", skip)
 		}
 	}
@@ -69,14 +53,14 @@ func parse_interface(inbound interface{}, skip interface{}) interface{} {
 func parse_interface_error(inbound interface{}, skip interface{}) interface{} {
 	switch value := skip.(type) {
 	case error:
-		switch value == nil {
-		case false:
+		switch {
+		case value != nil:
 			log.Debugf("'%v'", skip)
 			return nil
 		}
 	case bool:
-		switch value {
-		case false:
+		switch {
+		case !value:
 			log.Debugf("'%v'", skip)
 			return nil
 		}
@@ -248,8 +232,8 @@ func pad(inbound interface{}, length int) _PName {
 		padding string
 		interim = convert_2_string("", inbound)
 	)
-	switch c := length - len(interim); c > 0 {
-	case true:
+	switch c := length - len(interim); {
+	case c > 0:
 		for a := 0; a < c; a++ {
 			padding += "0"
 		}
@@ -282,8 +266,8 @@ func get_VI_IPPrefix(vi_id _VI_ID, peer_id _VI_Peer_ID) netip.Prefix {
 	return netip.PrefixFrom(parse_interface(netip.AddrFromSlice(b)).(netip.Addr), 30)
 }
 func set_VI_IPPrefix(inbound ...netip.Prefix) (ok bool) {
-	switch len(inbound) == 1 && inbound[0].IsValid() {
-	case true:
+	switch {
+	case len(inbound) == 1 && inbound[0].IsValid():
 		_Defaults[_VI_IPPrefix] = inbound[0]
 		ok = true
 	}
@@ -291,8 +275,8 @@ func set_VI_IPPrefix(inbound ...netip.Prefix) (ok bool) {
 	return
 }
 func set_Domain_Name(inbound ..._FQDN) (ok bool) {
-	switch len(inbound) == 1 && len(inbound[0]) != 0 {
-	case true:
+	switch {
+	case len(inbound) == 1 && len(inbound[0]) != 0:
 		_Defaults[_domain_name] = inbound[0]
 		ok = true
 	}
@@ -345,37 +329,37 @@ func read_GT() (ok bool) {
 		data   []byte
 		err    error
 	)
-	switch dentry, err = os.ReadDir(_Defaults[_path_GT].(string)); err == nil {
-	case false:
+	switch dentry, err = os.ReadDir(_Defaults[_path_GT].(string)); {
+	case err != nil:
 		log.Warnf("template director '%v' read error '%v'; ACTION: skip.", _Defaults[_path_GT], err)
 		return
 	}
 	for _, fentry := range dentry {
-		switch fentry.Type().IsRegular() {
-		case false:
+		switch {
+		case !fentry.Type().IsRegular():
 			continue
 		}
 		var (
 			fsplit = re_dot.Split(fentry.Name(), -1)
 		)
-		switch len(fsplit) < 1 {
-		case true:
+		switch {
+		case len(fsplit) < 1:
 			continue
 		}
-		switch fsplit[len(fsplit)-1] == "tmpl" {
-		case false:
+		switch {
+		case fsplit[len(fsplit)-1] != "tmpl":
 			continue
 		}
 		var (
 			tname = _Name(fentry.Name()[:len(fentry.Name())-5])
 		)
-		switch data, err = os.ReadFile(strings_join("/", _Defaults[_path_GT], fentry.Name())); err == nil {
-		case false:
+		switch data, err = os.ReadFile(strings_join("/", _Defaults[_path_GT], fentry.Name())); {
+		case err != nil:
 			log.Warnf("template '%v' read error '%v'; ACTION: skip.", tname, err)
 			continue
 		}
-		switch _, flag := i_gt[tname]; flag {
-		case true:
+		switch _, flag := i_gt[tname]; {
+		case flag:
 			log.Warnf("template '%v' already exist; ACTION: skip.", tname)
 			continue
 		}
@@ -457,8 +441,8 @@ func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 	var (
 		v_RL_Import = func() (outbound []_Name) {
 			for _, b := range (*route_leak)[_Action_import].PS {
-				switch _, flag := i_ps[b]; flag {
-				case false:
+				switch _, flag := i_ps[b]; {
+				case !flag:
 					log.Warnf("Peer '%v', PL '%v' not found; ACTION: ignore.", v_Peer.ASN, b)
 					continue
 				}
@@ -469,8 +453,8 @@ func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 		}()
 		v_RL_Export = func() (outbound []_Name) {
 			for _, b := range (*route_leak)[_Action_export].PS {
-				switch _, flag := i_ps[b]; flag {
-				case false:
+				switch _, flag := i_ps[b]; {
+				case !flag:
 					log.Warnf("Peer '%v', PL '%v' not found; ACTION: ignore.", v_Peer.ASN, b)
 					continue
 				}

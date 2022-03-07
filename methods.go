@@ -8,36 +8,36 @@ import (
 )
 
 func (inbound *_Secret) validate(length uint, message ...string) _Secret {
-	switch len(*inbound) >= int(length) {
-	case true:
+	switch {
+	case len(*inbound) >= int(length):
 		return *inbound
 	}
 	var (
 		interim = make([]byte, length)
 	)
 	for i := 0; i < int(length); i++ {
-		switch next, err := rand.Int(rand.Reader, big.NewInt(int64(len(_passwd)))); err == nil && next != nil {
-		case true:
+		switch next, err := rand.Int(rand.Reader, big.NewInt(int64(len(_passwd)))); {
+		case err == nil && next != nil:
 			interim[i] = _passwd[next.Int64()]
 		default:
 			log.Panicf("rand.Int error: %#v", err)
 		}
 	}
-	switch len(message) > 0 {
-	case true:
+	switch {
+	case len(message) > 0:
 		log.Warnf("%v; ACTION: new value is '%v'.", message[0], string(interim))
 	}
 	return _Secret(interim)
 }
 func (inbound *_Name) validate_RI(decline ..._Name) (outbound _Name) {
 	outbound = _Defaults[_RI].(_Name)
-	switch len(*inbound) == 0 || *inbound == outbound {
-	case true:
+	switch {
+	case len(*inbound) == 0 || *inbound == outbound:
 		return
 	}
 	for _, interim := range decline {
-		switch *inbound == interim {
-		case true:
+		switch {
+		case *inbound == interim:
 			return
 		}
 	}
@@ -64,8 +64,8 @@ func (inbound *i_Peer) link_JA(name ..._Name) {
 }
 func (inbound *i_Peer) link_PL(name ..._Name) {
 	for _, value := range name {
-		switch i_pl[value] == nil {
-		case true:
+		switch {
+		case i_pl[value] == nil:
 			continue
 		}
 		inbound.PL[value] = i_pl[value]
@@ -73,8 +73,8 @@ func (inbound *i_Peer) link_PL(name ..._Name) {
 }
 func (inbound *i_Peer) link_PS(name ..._Name) {
 	for _, value := range name {
-		switch i_ps[value] == nil {
-		case true:
+		switch {
+		case i_ps[value] == nil:
 			continue
 		}
 		inbound.PS[value] = i_ps[value]
@@ -82,8 +82,8 @@ func (inbound *i_Peer) link_PS(name ..._Name) {
 }
 
 func (inbound *_Host_Inbound_Traffic_List) parse(enable ...interface{}) (outbound _Host_Inbound_Traffic_List) {
-	switch inbound == nil {
-	case false:
+	switch {
+	case inbound != nil:
 		outbound = *inbound
 	default:
 		outbound = _Host_Inbound_Traffic_List{
