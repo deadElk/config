@@ -388,10 +388,11 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 		}
 
 		var (
-			_first, _second, _total _VI_Peer_ID
-			_if                     = _Name(strings_join(".", c_Name[_Name_st], b.ID))
+			_first, _second _VI_Peer_ID
+			_total          = _VI_Peer_ID(len(v_vi_peer_list))
+			_if             = _Name(strings_join(".", c_Name[_Name_st], b.ID))
 		)
-		switch _total = _VI_Peer_ID(len(v_vi_peer_list)); {
+		switch {
 		case _total != 2:
 			continue
 		}
