@@ -72,12 +72,14 @@ var (
 		_Name_any:        _Name_any,
 		_Name_fxp0:       _Name_fxp0,
 		_Name_fxp0_0:     _Name_fxp0_0,
-		_Name_gr:         _Name_gr,
+		_Name_gr0:        _Name_gr0,
 		_Name_junos_host: _Name_junos_host,
-		_Name_lt:         _Name_lt,
+		_Name_lo0:        _Name_lo0,
+		_Name_lo0_0:      _Name_lo0_0,
+		_Name_lt0:        _Name_lt0,
 		_Name_master:     _Name_master,
 		_Name_mgmt_junos: _Name_mgmt_junos,
-		_Name_st:         _Name_st,
+		_Name_st0:        _Name_st0,
 	}
 	c_Protocol = map[_Protocol]_Protocol{
 		_Protocol_access_internal: _Protocol_access_internal,

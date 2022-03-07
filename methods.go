@@ -108,7 +108,7 @@ func (inbound *_Name) action_AB(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	case len(*inbound) == 0:
 		return
 	case !flag && *inbound != c_Name[_Name_any]:
-		log.Warnf("Peer '%v', unknown AB '%v', type '%v', subtype '%v'; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
+		log.Warnf("Peer '%v', unknown AB '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
 		return
 	case flag && *inbound != c_Name[_Name_any]:
 		v_Peer.link_AB(*inbound)
@@ -149,8 +149,8 @@ func (inbound *_Name) action_AB(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	case inbound_type == _Type_static && inbound_direction == _Type_then:
 		outbound = strings_join(" ", "prefix-name", inbound)
 
-	case peer != nil:
-		log.Warnf("Peer '%v', AB '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
+	case v_Peer != nil:
+		log.Warnf("Peer '%v', AB '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
 	}
 
 	return
@@ -184,10 +184,10 @@ func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	switch {
 	case len(*inbound) == 0:
 		return
-	case peer != nil && v_Peer != nil:
+	case v_Peer != nil:
 		switch _, flag := v_Peer.RI[*inbound]; {
 		case !flag && *inbound != _Defaults[_host_RI].(_Name):
-			log.Warnf("Peer '%v', unknown RI '%v', type '%v', subtype '%v'; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
+			log.Warnf("Peer '%v', unknown RI '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
 			return
 		}
 	}
@@ -231,8 +231,8 @@ func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	case inbound_type == _Type_policy_statement:
 		outbound = strings_join(" ", c_Type[_Type_routing_instance], inbound)
 
-	case peer != nil:
-		log.Warnf("Peer '%v', RI '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
+	case v_Peer != nil:
+		log.Warnf("Peer '%v', RI '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
 	}
 	return
 }
@@ -242,7 +242,7 @@ func (inbound *_Name) action_SZ(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	case len(*inbound) == 0:
 		return
 	case !flag && *inbound != _Name_any && *inbound != _Defaults[_host_RI].(_Name):
-		log.Warnf("Peer '%v', unknown SZ '%v', type '%v', subtype '%v'; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
+		log.Warnf("Peer '%v', unknown SZ '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
 		return
 	}
 
@@ -273,8 +273,8 @@ func (inbound *_Name) action_SZ(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	case inbound_type == _Type_global && inbound_direction == _Type_to:
 		outbound = strings_join(" ", c_Type[_Type_to]+"-"+c_Type[_Type_zone], inbound)
 
-	case peer != nil:
-		log.Warnf("Peer '%v', SZ '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
+	case v_Peer != nil:
+		log.Warnf("Peer '%v', SZ '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
 	}
 
 	return
@@ -285,7 +285,7 @@ func (inbound *_Name) action_IF(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	case len(*inbound) == 0:
 		return
 	case !flag:
-		log.Warnf("Peer '%v', unknown IF '%v', type '%v', subtype '%v'; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
+		log.Warnf("Peer '%v', unknown IF '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
 		return
 	}
 	return strings_join(" ", c_Type[_Type_interface], inbound)
@@ -295,8 +295,8 @@ func (inbound *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	switch _, flag := i_pl[*inbound]; {
 	case len(*inbound) == 0:
 		return
-	case !flag && peer != nil && v_Peer != nil:
-		log.Warnf("Peer '%v', unknown PL '%v', type '%v', subtype '%v'; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
+	case !flag && v_Peer != nil:
+		log.Warnf("Peer '%v', unknown PL '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
 		return
 	}
 
@@ -310,8 +310,8 @@ func (inbound *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	case inbound_type == _Type_policy_statement:
 		outbound = strings_join(" ", "prefix-list-filter", inbound)
 
-	case peer != nil:
-		log.Warnf("Peer '%v', PL '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", peer.ASN, *inbound, inbound_type, inbound_direction)
+	case v_Peer != nil:
+		log.Warnf("Peer '%v', PL '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
 	}
 
 	return
