@@ -128,26 +128,33 @@ func parse_cDB_PS(inbound []*cDB_PO_PS) (ok bool) {
 							Name: d.Name,
 							From: func() (outbound []i_PO_PS_From) {
 								for _, f := range d.From {
-									var (
-										v_Action string
-									)
-									switch {
-									case len(f.RI) != 0:
-										v_Action = strings_join(" ", "routing-instance", f.RI)
-									case len(f.Protocol) != 0:
-										v_Action = strings_join(" ", "protocol", f.Protocol)
-									case len(f.Route_Type) != 0:
-										v_Action = strings_join(" ", "route-type", f.Route_Type)
-									case len(f.PL) != 0:
-										v_Action = strings_join(" ", "prefix-list-filter", f.PL, f.Mask)
-									}
+									// var (
+									// 	v_Action string
+									// )
+									// switch {
+									// case len(f.RI) != 0:
+									// 	v_Action = strings_join(" ", "routing-instance", f.RI)
+									// case len(f.Protocol) != 0:
+									// 	v_Action = strings_join(" ", "protocol", f.Protocol)
+									// case len(f.Route_Type) != 0:
+									// 	v_Action = strings_join(" ", "route-type", f.Route_Type)
+									// case len(f.PL) != 0:
+									// 	v_Action = strings_join(" ", "prefix-list-filter", f.PL, f.Mask)
+									// }
 									outbound = append(outbound, i_PO_PS_From{
-										RI:              f.RI,
-										Protocol:        f.Protocol,
-										Route_Type:      f.Route_Type,
-										PL:              f.PL,
-										Mask:            f.Mask,
-										GT_Action:       strings_join(" ", "from", v_Action),
+										RI:         f.RI,
+										Protocol:   f.Protocol,
+										Route_Type: f.Route_Type,
+										PL:         f.PL,
+										Mask:       f.Mask,
+										GT_Action: strings_join(" ", "from",
+											// f.RI.action_RI(nil, nil, _Type_, ""),
+											f.Protocol.action_Protocol(nil, nil, "", ""),
+											f.Route_Type.action_Route_Type(nil, nil, "", ""),
+											f.PL.action_PL(nil, nil, "", ""),
+											f.Mask,
+										),
+										// GT_Action:       strings_join(" ", "from", v_Action),
 										_Attribute_List: f._Attribute_List,
 									})
 								}
@@ -235,6 +242,7 @@ func parse_cDB_Peer(inbound []*cDB_Peer) (ok bool) {
 					Option_List: _SP_Option_List{},
 					Exact:       nil,
 					Global:      nil,
+					GT_Action:   "",
 				},
 				FW:               nil,
 				_IKE_Option_List: _IKE_Option_List{},
@@ -268,9 +276,7 @@ func parse_cDB_Peer(inbound []*cDB_Peer) (ok bool) {
 		parse_cDB_Peer_GT_List(b, v_Peer)
 		parse_cDB_Peer_SZ(b, v_Peer)
 		parse_cDB_Peer_NAT(b, v_Peer)
-		parse_cDB_Peer_SP_Option_List(b, v_Peer)
-		parse_cDB_Peer_SP_Exact(b, v_Peer)
-		parse_cDB_Peer_SP_Global(b, v_Peer)
+		parse_cDB_Peer_SP(b, v_Peer)
 		parse_cDB_Peer_FW(b, v_Peer)
 
 		i_peer[b.ASN] = v_Peer
@@ -872,7 +878,7 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	}
 	return true
 }
-func parse_cDB_Peer_SP_Option_List(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
+func parse_cDB_Peer_SP(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	v_Peer.SP.Option_List = _SP_Option_List{
 		Default_Policy: func() _Action {
 			switch value := peer.SP_Option_List.Default_Policy; value {
@@ -887,9 +893,6 @@ func parse_cDB_Peer_SP_Option_List(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		}(),
 		GT_Action: "",
 	}
-	return true
-}
-func parse_cDB_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	for _, j := range peer.SP_Exact {
 		for _, l := range j.To {
 			for _, n := range j.From {
@@ -911,9 +914,6 @@ func parse_cDB_Peer_SP_Exact(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			}
 		}
 	}
-	return true
-}
-func parse_cDB_Peer_SP_Global(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	for _, j := range peer.SP_Global {
 		v_Peer.SP.Global = append(v_Peer.SP.Global, i_Rule{
 			Name:            j.Name,
@@ -927,7 +927,6 @@ func parse_cDB_Peer_SP_Global(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	}
 	return true
 }
-
 func parse_cDB_Peer_FW(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	for _, b := range peer.FW {
 		v_Peer.FW = append(v_Peer.FW, i_FW{
