@@ -22,30 +22,30 @@ func op() (ok bool) {
 			data   []byte
 		)
 		for _, value := range _Defaults[_file_list_config].([]string) {
-			switch data, err = os.ReadFile(value); err == nil {
-			case false:
+			switch data, err = os.ReadFile(value); {
+			case err != nil:
 				log.Warnf("file '%v' read error: '%v'; ACTION: skip.", value, err)
 				continue
 			}
-			switch err = xml.Unmarshal(data, &xml_db); err == nil {
-			case false:
+			switch err = xml.Unmarshal(data, &xml_db); {
+			case err != nil:
 				log.Warnf("configuration file '%v' parse error: '%v'; ACTION: skip.", value, err)
 				continue
 			}
 			log.Debugf("configuration file '%v' loaded.", value)
-			switch parse_cDB(&xml_db) {
-			case false:
+			switch {
+			case !parse_cDB(&xml_db):
 				log.Warnf("configuration file '%v' cDB parse error; ACTION: skip.", value)
 				continue
 			}
-			switch parse_iDB() {
-			case false:
+			switch {
+			case !parse_iDB():
 				log.Warnf("configuration file '%v' iDB parse error; ACTION: skip.", value)
 				continue
 			}
 			log.Infof("DB '%v' parsed.", xml_db.XMLName.Local)
-			switch parse_GT() {
-			case false:
+			switch {
+			case !parse_GT():
 				log.Warnf("configuration file '%v' GT parse error; ACTION: skip.", value)
 				continue
 			}
@@ -53,8 +53,8 @@ func op() (ok bool) {
 			return
 		}
 	}()
-	switch upload_config() {
-	case false:
+	switch {
+	case !upload_config():
 		log.Warnf("config upload error.")
 		return
 	}
@@ -65,31 +65,33 @@ func parse_GT() (ok bool) {
 		err error
 	)
 	for index, value := range i_peer {
-		switch value.Reserved {
-		case false:
-			func() {
-				for _, gt_v := range value.GT_List {
-					var (
-						vGT  *template.Template
-						vBuf bytes.Buffer
-					)
-					// switch vGT, err = template.New(gt_v.String()).Funcs(gt_fm).Parse(i_gt[gt_v].Content.String()); err == nil && vGT != nil {
-					switch vGT, err = template.New(gt_v.String()).Parse(i_gt[gt_v].Content.String()); err == nil && vGT != nil {
-					case true:
-						switch err = vGT.Execute(&vBuf, value); err == nil && vGT != nil {
-						case true:
-							config[index] = append(config[index], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
-						default:
-							log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), gt_v, err)
-							return
-						}
+		switch {
+		case value.Reserved:
+			continue
+		}
+		func() {
+			for _, gt_v := range value.GT_List {
+				var (
+					vGT  *template.Template
+					vBuf bytes.Buffer
+				)
+				// switch vGT, err = template.New(gt_v.String()).Funcs(gt_fm).Parse(i_gt[gt_v].Content.String()); err == nil && vGT != nil {
+				switch vGT, err = template.New(gt_v.String()).Parse(i_gt[gt_v].Content.String()); {
+				case err == nil && vGT != nil:
+					switch err = vGT.Execute(&vBuf, value); {
+					// case err == nil && vGT != nil:
+					case err == nil:
+						config[index] = append(config[index], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
 					default:
-						log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: skip.", index.String(), gt_v, err)
+						log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), gt_v, err)
 						return
 					}
+				default:
+					log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: skip.", index.String(), gt_v, err)
+					return
 				}
-			}()
-		}
+			}
+		}()
 	}
 	return err == nil
 }
@@ -112,10 +114,10 @@ func upload_config() (ok bool) {
 			asn = "AS" + pad(b, 10).String()
 			fn  = _Defaults[_path_out].(string) + "./" + asn
 		)
-		switch err = os.WriteFile(fn, config[_ASN(b)], 0600); err == nil {
-		case true:
+		switch err = os.WriteFile(fn, config[_ASN(b)], 0600); {
+		case err == nil:
 			log.Infof("OK %v", asn)
-		case false:
+		default:
 			log.Errorf("Fail '%v' with error '%v'", asn, err)
 		}
 
@@ -144,10 +146,10 @@ func upload_config() (ok bool) {
 			for _, f := range s_target {
 				var (
 					host = func() string {
-						switch addr, err := netip.ParseAddr(f); err == nil {
-						case true:
+						switch addr, err := netip.ParseAddr(f); {
+						case err == nil:
 							return addr.String()
-						case false:
+						default:
 							prefix, _ := netip.ParsePrefix(f)
 							return prefix.Addr().String()
 						}
@@ -166,10 +168,10 @@ func upload_config() (ok bool) {
 		}()
 	}
 
-	switch err = os.WriteFile(_Defaults[_path_out].(string)+"./hosts.txt", []byte(hosts), 0600); err == nil {
-	case true:
+	switch err = os.WriteFile(_Defaults[_path_out].(string)+"./hosts.txt", []byte(hosts), 0600); {
+	case err == nil:
 		log.Infof("OK 'hosts.txt'")
-	case false:
+	default:
 		log.Errorf("Fail 'hosts.txt' with error '%v'", err)
 	}
 

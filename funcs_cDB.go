@@ -506,8 +506,8 @@ func parse_cDB_Peer_Router_ID(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	default:
 		v_Peer.Router_ID = func() netip.Addr {
 			for a := range v_Peer.RI["master"].IF["lo0.0"].IP {
-				switch a.IsValid() {
-				case true:
+				switch {
+				case a.IsValid():
 					return a.Addr()
 				}
 			}
@@ -1116,8 +1116,8 @@ func parse_cDB_AB_add_Address(public, private bool, ab_name _Name, inbound ...in
 	for _, address := range inbound {
 		switch value := (address).(type) {
 		case netip.Addr:
-			switch is_private, is_valid := value.IsPrivate(), value.IsValid(); !is_valid || (is_private && !private) || (!is_private && !public) {
-			case true:
+			switch is_private, is_valid := value.IsPrivate(), value.IsValid(); {
+			case !is_valid || (is_private && !private) || (!is_private && !public):
 				log.Debugf("AB '%v', address '%v' is valid '%v' against public '%v' / private '%v': address not suitable; ACTION: skip.", ab_name, value, value.IsValid(), public, private)
 				continue
 			}
@@ -1130,8 +1130,8 @@ func parse_cDB_AB_add_Address(public, private bool, ab_name _Name, inbound ...in
 			}
 			interim = append(interim, parse_interface(value.Prefix(bits)).(netip.Prefix))
 		case netip.Prefix:
-			switch is_private, is_valid := value.Masked().Addr().IsPrivate(), value.IsValid(); !is_valid || (is_private && !private) || (!is_private && !public) {
-			case true:
+			switch is_private, is_valid := value.Masked().Addr().IsPrivate(), value.IsValid(); {
+			case !is_valid || (is_private && !private) || (!is_private && !public):
 				log.Debugf("AB '%v', address '%v' is valid '%v' against public '%v' / private '%v': address not suitable; ACTION: skip.", ab_name, value, value.IsValid(), public, private)
 				continue
 			}

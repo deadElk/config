@@ -29,8 +29,8 @@ func init() {
 	log.SetReportCaller(false)
 }
 func main() {
-	switch op() {
-	case false:
+	switch {
+	case !op():
 		log.Fatalf("something wrong ....")
 	}
 }

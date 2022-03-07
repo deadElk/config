@@ -46,8 +46,8 @@ func (inbound *_Name) validate_RI(decline ..._Name) (outbound _Name) {
 
 func (inbound *i_Peer) link_AB(name ..._Name) {
 	for _, value := range name {
-		switch i_ab[value] == nil {
-		case true:
+		switch {
+		case i_ab[value] == nil:
 			continue
 		}
 		inbound.AB[value] = i_ab[value]
@@ -55,8 +55,8 @@ func (inbound *i_Peer) link_AB(name ..._Name) {
 }
 func (inbound *i_Peer) link_JA(name ..._Name) {
 	for _, value := range name {
-		switch i_ja[value] == nil {
-		case true:
+		switch {
+		case i_ja[value] == nil:
 			continue
 		}
 		inbound.JA[value] = i_ja[value]
