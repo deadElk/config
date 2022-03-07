@@ -163,6 +163,22 @@ func (inbound *_Name) action_Pool(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _
 	return strings_join(" ", "pool", inbound)
 }
 
+func (inbound *_Protocol) action_Protocol(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
+	switch {
+	case len(*inbound) == 0:
+		return
+	}
+	return strings_join(" ", "protocol", inbound)
+}
+
+func (inbound *_Type) action_Route_Type(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
+	switch {
+	case len(*inbound) == 0:
+		return
+	}
+	return strings_join(" ", "route-type", inbound)
+}
+
 func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
 	switch _, flag := v_Peer.RI[*inbound]; {
 	case len(*inbound) == 0:
