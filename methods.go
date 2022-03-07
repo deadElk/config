@@ -319,7 +319,7 @@ func (inbound *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 
 func (inbound *_Name) next_ID() (outbound _Name) {
 	switch {
-	case *inbound != empty_Name && len(*inbound) != 0:
+	case *inbound != _next_IDName && len(*inbound) != 0:
 		return *inbound
 	}
 	outbound = _Name(strings_join("", "ID", pad(next_ID, 10)))
@@ -329,7 +329,7 @@ func (inbound *_Name) next_ID() (outbound _Name) {
 
 func (inbound *_ID) next_ID() (outbound _ID) {
 	switch {
-	case *inbound != empty_ID && *inbound != _next_ID:
+	case *inbound != _next_ID && *inbound != 0:
 		return *inbound
 	}
 	outbound = next_ID
