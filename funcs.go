@@ -15,7 +15,7 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-func hash(inbound interface{}) (outbound _ID) {
+func hash(inbound interface{}) (outbound _hash_ID) {
 	var (
 		interim     = convert_2_string("", inbound)
 		value, flag = hash_cache.Load(interim)
@@ -109,6 +109,12 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 		return (*value).String()
 	case *_FQDN:
 		return (*value).String()
+	case *_hash_ID:
+		return (*value).String()
+	case *_ID:
+		return (*value).String()
+	case *_IDName:
+		return (*value).String()
 	case *_Mask:
 		return (*value).String()
 	case *_Name:
@@ -152,39 +158,45 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 	case _ASN:
 		return strconv.FormatUint(uint64(value), 10)
 	case _Action:
-		return (value).String()
+		return value.String()
 	case _Communication:
-		return (value).String()
+		return value.String()
 	case _Content:
-		return (value).String()
+		return value.String()
 	case _Default:
-		return (value).String()
+		return value.String()
 	case _Description:
-		return (value).String()
+		return value.String()
 	case _FQDN:
-		return (value).String()
+		return value.String()
+	case _hash_ID:
+		return value.String()
+	case _ID:
+		return value.String()
+	case _IDName:
+		return value.String()
 	case _Mask:
-		return (value).String()
+		return value.String()
 	case _Name:
-		return (value).String()
+		return value.String()
 	case _PName:
-		return (value).String()
+		return value.String()
 	case _Port:
-		return (value).String()
+		return value.String()
 	case _Protocol:
-		return (value).String()
+		return value.String()
 	case _Route_Weight:
-		return (value).String()
+		return value.String()
 	case _Secret:
-		return (value).String()
+		return value.String()
 	case _Service:
-		return (value).String()
+		return value.String()
 	case _Type:
-		return (value).String()
+		return value.String()
 	case _VI_ID:
-		return (value).String()
+		return value.String()
 	case _VI_Peer_ID:
-		return (value).String()
+		return value.String()
 	case []byte:
 		return string(value)
 	case uint:
@@ -198,9 +210,9 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 	case uint64:
 		return strconv.FormatUint(value, 10)
 	case netip.Addr:
-		return (value).String()
+		return value.String()
 	case netip.Prefix:
-		return (value).String()
+		return value.String()
 
 	case []_Name:
 		var (
@@ -228,18 +240,21 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 	}
 }
 func pad(inbound interface{}, length int) _PName {
+	return _PName(pad_string(convert_2_string("", inbound), length))
+}
+func pad_string(inbound string, length int) string {
 	var (
 		padding string
-		interim = convert_2_string("", inbound)
 	)
-	switch c := length - len(interim); {
+	switch c := length - len(inbound); {
 	case c > 0:
 		for a := 0; a < c; a++ {
 			padding += "0"
 		}
 	}
-	return _PName(padding + interim)
+	return padding + inbound
 }
+
 func trim_space(inbound interface{}) _Content {
 	var (
 		interim string
@@ -262,22 +277,22 @@ func get_VI_IPPrefix(vi_id _VI_ID, peer_id _VI_Peer_ID) netip.Prefix {
 	var (
 		b = make([]byte, 4)
 	)
-	binary.BigEndian.PutUint32(b, _Defaults[_VI_IPShift].(uint32)+uint32(vi_id*4)+uint32(peer_id))
+	binary.BigEndian.PutUint32(b, _Settings[_VI_IPShift].(uint32)+uint32(vi_id*4)+uint32(peer_id))
 	return netip.PrefixFrom(parse_interface(netip.AddrFromSlice(b)).(netip.Addr), 30)
 }
 func set_VI_IPPrefix(inbound ...netip.Prefix) (ok bool) {
 	switch {
 	case len(inbound) == 1 && inbound[0].IsValid():
-		_Defaults[_VI_IPPrefix] = inbound[0]
+		_Settings[_VI_IPPrefix] = inbound[0]
 		ok = true
 	}
-	_Defaults[_VI_IPShift] = binary.BigEndian.Uint32(_Defaults[_VI_IPPrefix].(netip.Prefix).Addr().AsSlice())
+	_Settings[_VI_IPShift] = binary.BigEndian.Uint32(_Settings[_VI_IPPrefix].(netip.Prefix).Addr().AsSlice())
 	return
 }
 func set_Domain_Name(inbound ..._FQDN) (ok bool) {
 	switch {
 	case len(inbound) == 1 && len(inbound[0]) != 0:
-		_Defaults[_domain_name] = inbound[0]
+		_Settings[_domain_name] = inbound[0]
 		ok = true
 	}
 	return
@@ -299,10 +314,10 @@ func parse_Communication(_peer *_ASN, _if *_Name, inbound *_Communication) _Comm
 	case *inbound == _Communication_ptp || *inbound == _Communication_ptmp:
 		return *inbound
 	case len(*inbound) != 0:
-		log.Warnf("Peer '%v', IF '%v', invalid Communication type '%v'; ACTION: use '%v'.", _peer, _if, *inbound, _Defaults[_comm_if].(_Communication))
+		log.Warnf("Peer '%v', IF '%v', invalid Communication type '%v'; ACTION: use '%v'.", _peer, _if, *inbound, _Settings[_comm_if].(_Communication))
 		fallthrough
 	default:
-		return _Defaults[_comm_if].(_Communication)
+		return _Settings[_comm_if].(_Communication)
 	}
 }
 func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound _Host_Inbound_Traffic_List) {
@@ -329,9 +344,9 @@ func read_GT() (ok bool) {
 		data   []byte
 		err    error
 	)
-	switch dentry, err = os.ReadDir(_Defaults[_path_GT].(string)); {
+	switch dentry, err = os.ReadDir(_Settings[_path_GT].(string)); {
 	case err != nil:
-		log.Warnf("template director '%v' read error '%v'; ACTION: skip.", _Defaults[_path_GT], err)
+		log.Warnf("template director '%v' read error '%v'; ACTION: skip.", _Settings[_path_GT], err)
 		return
 	}
 	for _, fentry := range dentry {
@@ -353,7 +368,7 @@ func read_GT() (ok bool) {
 		var (
 			tname = _Name(fentry.Name()[:len(fentry.Name())-5])
 		)
-		switch data, err = os.ReadFile(strings_join("/", _Defaults[_path_GT], fentry.Name())); {
+		switch data, err = os.ReadFile(strings_join("/", _Settings[_path_GT], fentry.Name())); {
 		case err != nil:
 			log.Warnf("template '%v' read error '%v'; ACTION: skip.", tname, err)
 			continue

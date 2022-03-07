@@ -30,7 +30,7 @@ func (inbound *_Secret) validate(length uint, message ...string) _Secret {
 	return _Secret(interim)
 }
 func (inbound *_Name) validate_RI(decline ..._Name) (outbound _Name) {
-	outbound = _Defaults[_RI].(_Name)
+	outbound = _Settings[_RI].(_Name)
 	switch {
 	case len(*inbound) == 0 || *inbound == outbound:
 		return
@@ -186,7 +186,7 @@ func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 		return
 	case v_Peer != nil:
 		switch _, flag := v_Peer.RI[*inbound]; {
-		case !flag && *inbound != _Defaults[_host_RI].(_Name):
+		case !flag && *inbound != _Settings[_host_RI].(_Name):
 			log.Warnf("Peer '%v', unknown RI '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
 			return
 		}
@@ -241,7 +241,7 @@ func (inbound *_Name) action_SZ(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	switch _, flag := v_Peer.SZ[*inbound]; {
 	case len(*inbound) == 0:
 		return
-	case !flag && *inbound != _Name_any && *inbound != _Defaults[_host_RI].(_Name):
+	case !flag && *inbound != _Name_any && *inbound != _Settings[_host_RI].(_Name):
 		log.Warnf("Peer '%v', unknown SZ '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
 		return
 	}
@@ -314,5 +314,25 @@ func (inbound *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 		log.Warnf("Peer '%v', PL '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
 	}
 
+	return
+}
+
+func (inbound *_Name) next_ID() (outbound _Name) {
+	switch {
+	case *inbound != empty_Name && len(*inbound) != 0:
+		return *inbound
+	}
+	outbound = _Name(strings_join("", "ID", pad(next_ID, 10)))
+	next_ID++
+	return
+}
+
+func (inbound *_ID) next_ID() (outbound _ID) {
+	switch {
+	case *inbound != empty_ID && *inbound != _next_ID:
+		return *inbound
+	}
+	outbound = next_ID
+	next_ID++
 	return
 }

@@ -10,10 +10,10 @@ import (
 
 func parse_cDB(xml_db *cDB) (ok bool) {
 	log.SetLevel(xml_db.Verbosity)
-	_Defaults[_group] = _Name(xml_db.XMLName.Local)
+	_Settings[_group] = _Name(xml_db.XMLName.Local)
 	switch {
 	case len(xml_db.GT_Path) != 0:
-		_Defaults[_path_GT] = xml_db.GT_Path
+		_Settings[_path_GT] = xml_db.GT_Path
 	}
 	switch {
 	case !read_GT():
@@ -22,13 +22,13 @@ func parse_cDB(xml_db *cDB) (ok bool) {
 	}
 	set_VI_IPPrefix(xml_db.VI_IPPrefix)
 	set_Domain_Name(xml_db.Domain_Name)
-	_Defaults[_GT_list] = []_Name{}
+	_Settings[_GT_list] = []_Name{}
 	for _, b := range re_period.Split(xml_db.GT_List, -1) {
-		_Defaults[_GT_list] = append(_Defaults[_GT_list].([]_Name), _Name(b))
+		_Settings[_GT_list] = append(_Settings[_GT_list].([]_Name), _Name(b))
 	}
 	switch {
 	case len(xml_db.Upload_Path) != 0:
-		_Defaults[_path_out] = xml_db.Upload_Path
+		_Settings[_path_out] = xml_db.Upload_Path
 	}
 	parse_cDB_AB_create_Set("OUTER_LIST", &_Attribute_List{})
 
@@ -294,10 +294,10 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 			Communication: b.Communication,
 			Route_Metric: func() _Route_Weight {
 				switch {
-				case b.Route_Metric > _Defaults[_ps_max_rms].(_Route_Weight):
+				case b.Route_Metric > _Settings[_ps_max_rms].(_Route_Weight):
 					return 0
 				}
-				return _Defaults[_ps_max_rms].(_Route_Weight) - b.Route_Metric
+				return _Settings[_ps_max_rms].(_Route_Weight) - b.Route_Metric
 			}(),
 			PSK: b.PSK.validate(64),
 			// _IKE_Option_List: &_IKE_Option_List{
@@ -321,13 +321,13 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 				continue
 			}
 			var (
-				v_RI                = d.RI.validate_RI(_Defaults[_mgmt_RI].(_Name))
+				v_RI                = d.RI.validate_RI(_Settings[_mgmt_RI].(_Name))
 				v_IF                _Name
 				v_IP                netip.Addr
 				v_NAT               netip.Addr
 				v_IKE_Local_Address bool
 				v_IKE_Dynamic       bool
-				v_Inner_RI          = d.Inner_RI.validate_RI(_Defaults[_mgmt_RI].(_Name))
+				v_Inner_RI          = d.Inner_RI.validate_RI(_Settings[_mgmt_RI].(_Name))
 			)
 			switch _, flag := i_peer[d.ASN].RI[v_RI].IF[d.IF]; {
 			case len(d.IF) == 0:
@@ -408,7 +408,7 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].IF[_if] = i_Peer_RI_IF{
 				IFM:           c_Name[_Name_st0],
 				IFsM:          _Name(b.ID.String()),
-				Communication: _Defaults[_comm_vi].(_Communication),
+				Communication: _Settings[_comm_vi].(_Communication),
 				IP: map[netip.Prefix]i_Peer_RI_IF_IP{
 					i_vi_peer[b.ID][_first].Inner_IPPrefix: {
 						Masked:          i_vi_peer[b.ID][_first].Inner_IPPrefix.Masked(),
@@ -468,17 +468,17 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 				GT_Action:                "",
 				_Attribute_List:          _Attribute_List{},
 			}
-			switch _, flag := i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_Defaults[_group].(_Name)]; {
+			switch _, flag := i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_Settings[_group].(_Name)]; {
 			case !flag:
-				i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_Defaults[_group].(_Name)] = _BGP_Group{
+				i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_Settings[_group].(_Name)] = _BGP_Group{
 					Local_ASN:  0,
 					Remote_ASN: 0,
 					Passive:    false,
 					Neighbor:   map[netip.Addr]_BGP_Group_Neighbor{},
-					GT_Action:  strings_join(" ", "group", _Defaults[_group]),
+					GT_Action:  strings_join(" ", "group", _Settings[_group]),
 				}
 			}
-			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_Defaults[_group].(_Name)].Neighbor[i_vi_peer[b.ID][_second].Inner_IP] = _BGP_Group_Neighbor{
+			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_Settings[_group].(_Name)].Neighbor[i_vi_peer[b.ID][_second].Inner_IP] = _BGP_Group_Neighbor{
 				Local_ASN:  i_vi_peer[b.ID][_first].ASN,
 				Remote_ASN: i_vi_peer[b.ID][_second].ASN,
 				Passive:    i_vi_peer[b.ID][_first].Hub,
@@ -501,7 +501,7 @@ func parse_cDB_Peer_Router_ID(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		v_Peer.Router_ID = peer.Router_ID
 	default:
 		v_Peer.Router_ID = func() netip.Addr {
-			for a := range v_Peer.RI[_Defaults[_RI].(_Name)].IF[c_Name[_Name_lo0_0]].IP {
+			for a := range v_Peer.RI[_Settings[_RI].(_Name)].IF[c_Name[_Name_lo0_0]].IP {
 				switch {
 				case a.IsValid():
 					return a.Addr()
@@ -534,6 +534,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		parse_cDB_PS([]*cDB_PO_PS{
 			0: {Name: _Name(strings_join("_", "redistribute", b.Name)),
 				Term: []cDB_PO_PS_Term{
+					// 0: {Name: empty_Name.next_ID(),
 					0: {Name: "PERMIT",
 						From:            []cDB_PO_PS_From{0: {RI: b.Name, _Attribute_List: _Attribute_List{}}},
 						Then:            []cDB_PO_PS_Then{0: {Action: _Action_accept, _Attribute_List: _Attribute_List{}}},
@@ -719,7 +720,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			}()
 			v_Action = func() string {
 				switch {
-				case b.Name != _Defaults[_RI].(_Name):
+				case b.Name != _Settings[_RI].(_Name):
 					return strings_join(" ", "routing-instances", b.Name)
 				}
 				return ""
@@ -752,7 +753,7 @@ func parse_cDB_Peer_Hostname(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 func parse_cDB_Peer_Domain_Name(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	switch {
 	case len(peer.Domain_Name) == 0:
-		v_Peer.Domain_Name = _Defaults[_domain_name].(_FQDN)
+		v_Peer.Domain_Name = _Settings[_domain_name].(_FQDN)
 	default:
 		v_Peer.Domain_Name = peer.Domain_Name
 	}
@@ -779,14 +780,14 @@ func parse_cDB_Peer_GT_List(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			v_Peer.GT_List = append(v_Peer.GT_List, _Name(b))
 		}
 	default:
-		v_Peer.GT_List = _Defaults[_GT_list].([]_Name)
+		v_Peer.GT_List = _Settings[_GT_list].([]_Name)
 	}
 	return true
 }
 func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	for _, b := range peer.SZ {
 		switch {
-		case b.Name == _Defaults[_mgmt_RI].(_Name):
+		case b.Name == _Settings[_mgmt_RI].(_Name):
 			log.Warnf("Peer '%v', SZ '%v' cannot be defined; ACTION: ignore.", peer.ASN, b.Name)
 			continue
 		}
@@ -810,7 +811,7 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	}
 	for a := range v_Peer.RI {
 		switch a {
-		case _Defaults[_mgmt_RI].(_Name):
+		case _Settings[_mgmt_RI].(_Name):
 			continue
 		}
 		switch _, flag := v_Peer.SZ[a]; {
@@ -876,10 +877,10 @@ func parse_cDB_Peer_SP(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			case _Action_permit_all, _Action_deny_all:
 				return value
 			case "":
-				return _Defaults[_sp_default_policy].(_Action)
+				return _Settings[_sp_default_policy].(_Action)
 			default:
-				log.Warnf("Peer '%v', unknown default security policy '%v'; ACTION: use '%v'.", peer.ASN, value, _Defaults[_sp_default_policy])
-				return _Defaults[_sp_default_policy].(_Action)
+				log.Warnf("Peer '%v', unknown default security policy '%v'; ACTION: use '%v'.", peer.ASN, value, _Settings[_sp_default_policy])
+				return _Settings[_sp_default_policy].(_Action)
 			}
 		}(),
 		GT_Action: "",

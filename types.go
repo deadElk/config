@@ -6,7 +6,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type _ID [_hash_Size]uint8 // _ID here is a result of sha3.Sum512.
+type _hash_ID [_hash_Size]uint8 // _hash_ID here is a result of sha3.Sum512.
+type _ID uint
+type _IDName string
 
 type _ASN uint32
 type _Action string

@@ -21,7 +21,7 @@ func op() (ok bool) {
 			xml_db cDB
 			data   []byte
 		)
-		for _, value := range _Defaults[_file_list_config].([]string) {
+		for _, value := range _Settings[_file_list_config].([]string) {
 			switch data, err = os.ReadFile(value); {
 			case err != nil:
 				log.Warnf("file '%v' read error: '%v'; ACTION: skip.", value, err)
@@ -112,7 +112,7 @@ func upload_config() (ok bool) {
 	for _, b := range i_peer_list {
 		var (
 			asn = "AS" + pad(b, 10).String()
-			fn  = _Defaults[_path_out].(string) + "./" + asn
+			fn  = _Settings[_path_out].(string) + "./" + asn
 		)
 		switch err = os.WriteFile(fn, config[b], 0600); {
 		case err == nil:
@@ -168,7 +168,7 @@ func upload_config() (ok bool) {
 		}()
 	}
 
-	switch err = os.WriteFile(_Defaults[_path_out].(string)+"./hosts.txt", []byte(hosts), 0600); {
+	switch err = os.WriteFile(_Settings[_path_out].(string)+"./hosts.txt", []byte(hosts), 0600); {
 	case err == nil:
 		log.Infof("OK 'hosts.txt'")
 	default:

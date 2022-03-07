@@ -6,8 +6,14 @@ import (
 	"strings"
 )
 
-func (inbound _ID) String() string {
+func (inbound _hash_ID) String() string {
 	return strings.ToUpper(hex.EncodeToString(inbound[:]))
+}
+func (inbound _ID) String() string {
+	return pad_string(strconv.FormatUint(uint64(inbound), 10), 10)
+}
+func (inbound _IDName) String() string {
+	return string(inbound)
 }
 
 func (inbound _ASN) String() string {

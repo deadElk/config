@@ -18,6 +18,11 @@ var (
 	// 	"sum_string": sum_string_gt_fm,
 	// }
 
+	// empty_Name _Name = ""
+	empty_Name = _next_IDName
+	empty_ID   = _next_ID
+	next_ID    = empty_ID
+
 	config    = make(_i_config)
 	i_ab      = make(_i_ab)
 	i_ja      = make(_i_ja)
@@ -145,7 +150,7 @@ var (
 		_Type_vi:               _Type_vi,
 		_Type_zone:             _Type_zone,
 	}
-	_Defaults = map[interface{}]interface{}{
+	_Settings = map[interface{}]interface{}{
 		_group:             _Name("4200000000"),
 		_loglevel:          log.InfoLevel,
 		_sp_default_policy: _Action_permit_all,
