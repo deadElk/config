@@ -9,7 +9,6 @@ import (
 )
 
 func parse_cDB(xml_db *cDB) (ok bool) {
-	// set_loglevel(xml_db.Verbosity)
 	log.SetLevel(xml_db.Verbosity)
 	_Defaults[_group] = _Name(xml_db.XMLName.Local)
 	switch {
@@ -522,7 +521,7 @@ func parse_cDB_Peer_IFM(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	for _, b := range peer.IFM {
 		v_Peer.IFM[b.Name] = i_Peer_IFM{
 			Communication:   parse_Communication(&peer.ASN, &b.Name, &b.Communication),
-			GT_Action:       strings_join(" ", "interfaces", b.Name.String()),
+			GT_Action:       strings_join(" ", "interfaces", b.Name),
 			_Attribute_List: b._Attribute_List,
 		}
 	}
@@ -653,7 +652,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 									v_RT_Table       _Name
 									v_RT_Action      = c_Action[f.Action]
 									v_RT_Action_Flag _Action
-									v_Action         = strings_join(" ", "static route", d.Identifier.String())
+									v_Action         = strings_join(" ", "static route", d.Identifier)
 								)
 								switch v_RT_Action = c_Action[f.Action]; {
 								case v_RT_Action == _Action_discard:
