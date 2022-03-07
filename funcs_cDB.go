@@ -97,6 +97,10 @@ func parse_cDB_PL(inbound []*cDB_PO_PL) (ok bool) {
 			outbound = &i_PO_PL{
 				Match: func() (outbound []i_PO_PL_Match) {
 					for _, d := range b.Match {
+						switch {
+						case !d.IPPrefix.IsValid():
+							log.Warnf("Policy List '%v', invalid IP '%v'; ACTION: skip.", b.Name, d.IPPrefix.String())
+						}
 						outbound = append(outbound, i_PO_PL_Match{
 							IPPrefix:        d.IPPrefix,
 							GT_Action:       d.IPPrefix.String(),
@@ -128,19 +132,6 @@ func parse_cDB_PS(inbound []*cDB_PO_PS) (ok bool) {
 							Name: d.Name,
 							From: func() (outbound []i_PO_PS_From) {
 								for _, f := range d.From {
-									// var (
-									// 	v_Action string
-									// )
-									// switch {
-									// case len(f.RI) != 0:
-									// 	v_Action = strings_join(" ", "routing-instance", f.RI)
-									// case len(f.Protocol) != 0:
-									// 	v_Action = strings_join(" ", "protocol", f.Protocol)
-									// case len(f.Route_Type) != 0:
-									// 	v_Action = strings_join(" ", "route-type", f.Route_Type)
-									// case len(f.PL) != 0:
-									// 	v_Action = strings_join(" ", "prefix-list-filter", f.PL, f.Mask)
-									// }
 									outbound = append(outbound, i_PO_PS_From{
 										RI:         f.RI,
 										Protocol:   f.Protocol,
@@ -154,7 +145,6 @@ func parse_cDB_PS(inbound []*cDB_PO_PS) (ok bool) {
 											f.PL.action_PL(nil, nil, _Type_policy_statement, ""),
 											f.Mask,
 										),
-										// GT_Action:       strings_join(" ", "from", v_Action),
 										_Attribute_List: f._Attribute_List,
 									})
 								}
