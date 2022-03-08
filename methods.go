@@ -155,7 +155,6 @@ func (inbound *_Name) action_AB(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 
 	return
 }
-
 func (inbound *_Name) action_Pool(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
 	switch {
 	case len(*inbound) == 0:
@@ -163,7 +162,6 @@ func (inbound *_Name) action_Pool(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _
 	}
 	return strings_join(" ", c_Type[_Type_pool], inbound)
 }
-
 func (inbound *_Protocol) action_Protocol(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
 	switch {
 	case len(*inbound) == 0:
@@ -171,7 +169,6 @@ func (inbound *_Protocol) action_Protocol(peer *cDB_Peer, v_Peer *i_Peer, inboun
 	}
 	return strings_join(" ", c_Type[_Type_protocol], inbound)
 }
-
 func (inbound *_Type) action_Route_Type(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
 	switch {
 	case len(*inbound) == 0:
@@ -179,7 +176,6 @@ func (inbound *_Type) action_Route_Type(peer *cDB_Peer, v_Peer *i_Peer, inbound_
 	}
 	return strings_join(" ", "route-type", inbound)
 }
-
 func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
 	switch {
 	case len(*inbound) == 0:
@@ -236,7 +232,6 @@ func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	}
 	return
 }
-
 func (inbound *_Name) action_SZ(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
 	switch _, flag := v_Peer.SZ[*inbound]; {
 	case len(*inbound) == 0:
@@ -279,7 +274,6 @@ func (inbound *_Name) action_SZ(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 
 	return
 }
-
 func (inbound *_Name) action_IF(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
 	switch _, flag := v_Peer.IF_2_RI[*inbound]; {
 	case len(*inbound) == 0:
@@ -290,7 +284,6 @@ func (inbound *_Name) action_IF(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	}
 	return strings_join(" ", c_Type[_Type_interface], inbound)
 }
-
 func (inbound *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
 	switch _, flag := i_pl[*inbound]; {
 	case len(*inbound) == 0:
@@ -319,20 +312,19 @@ func (inbound *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 
 func (inbound *_Name) next_ID() (outbound _Name) {
 	switch {
-	case *inbound != _next_IDName && len(*inbound) != 0:
-		return *inbound
+	case *inbound == _next_IDName || len(*inbound) == 0:
+		outbound = _Name(strings_join("", "ID", pad(next_ID, 10)))
+		next_ID++
+		return
 	}
-	outbound = _Name(strings_join("", "ID", pad(next_ID, 10)))
-	next_ID++
-	return
+	return *inbound
 }
-
 func (inbound *_ID) next_ID() (outbound _ID) {
 	switch {
-	case *inbound != _next_ID && *inbound != 0:
-		return *inbound
+	case *inbound == _next_ID || *inbound == 0:
+		outbound = next_ID
+		next_ID++
+		return
 	}
-	outbound = next_ID
-	next_ID++
-	return
+	return *inbound
 }
