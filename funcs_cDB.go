@@ -485,7 +485,7 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 				Local_IP:   i_vi_peer[b.ID][_first].Inner_IP,
 				Route_Leak: parse_iDB_Route_Leak(nil, i_peer[v_vi_peer_list[_first].ASN], "", "", &map[_Action]i_Route_Leak_FromTo{
 					_Action_import: {PS: []_Name{0: _Name(strings_join("_", "import_metric", pad(i_vi[b.ID].Route_Metric, 2)))}},
-					_Action_export: {PS: []_Name{0: "aggregate"}},
+					_Action_export: {PS: []_Name{0: "aggregate", 1: _Name(strings_join("_", "export_metric", pad(i_vi[b.ID].Route_Metric, 2)))}},
 				}),
 				GT_Action:       strings_join(" ", "neighbor", i_vi_peer[b.ID][_second].Inner_IP),
 				_Attribute_List: _Attribute_List{Description: _Description(strings_join("", "TI", i_vi[b.ID].PName))},
@@ -1200,9 +1200,5 @@ func parse_cDB_AB_add_Address(public, private bool, ab_name _Name, inbound ...in
 			}
 		}
 	}
-	return
-}
-
-func parse_cDB_Peer_add_IF(peer *cDB_Peer, v_Peer *i_Peer) {
 	return
 }
