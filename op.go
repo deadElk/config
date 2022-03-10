@@ -168,7 +168,7 @@ func upload_config() (ok bool) {
 		}()
 	}
 
-	switch err = os.WriteFile(_Settings[_path_out].(string)+"./hosts.txt", []byte(hosts), 0600); {
+	switch err = os.WriteFile(_Settings[_path_out].(string)+"hosts.txt", []byte(hosts), 0600); {
 	case err == nil:
 		log.Infof("OK 'hosts.txt'")
 	default:
