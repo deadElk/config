@@ -324,9 +324,8 @@ func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound _Host_Inbound_
 	outbound = _Host_Inbound_Traffic_List{
 		Services:  map[_Service]bool{},
 		Protocols: map[_Protocol]bool{},
-		GT_Action: "host-inbound-traffic ",
+		GT_Action: _Action_host_inbound_traffic.String() + " ",
 	}
-	// _GT_Action_List: _GT_Action_List{GT_Action: "host-inbound-traffic "},
 	for _, b := range enabled {
 		switch value := b.(type) {
 		case _Service:
@@ -393,17 +392,17 @@ func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_dir
 		outbound = port_low.String()
 		fallthrough
 	case port_low != 0 && port_high != 0:
-		outbound = strings_join(" ", outbound, "to", port_high)
+		outbound = strings_join(" ", outbound, _Action_to, port_high)
 	default:
 		return
 	}
 	switch {
 	case inbound_type == _Type_static && inbound_direction == _Type_from:
-		outbound = strings_join(" ", "source-port", outbound)
+		outbound = strings_join(" ", _Action_source__port, outbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_to:
-		outbound = strings_join(" ", "destination-port", outbound)
+		outbound = strings_join(" ", _Action_destination__port, outbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_then:
-		outbound = strings_join(" ", "mapped-port", outbound)
+		outbound = strings_join(" ", _Action_mapped__port, outbound)
 	}
 
 	return
@@ -483,7 +482,7 @@ func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 	case len(v_RL_Import) != 0:
 		outbound[_Action_import] = i_Route_Leak_FromTo{
 			PS:              v_RL_Import,
-			GT_Action:       strings_join(" ", _Action_import.String(), "[", v_RL_Import, "]"),
+			GT_Action:       strings_join(" ", _Action_import, "[", v_RL_Import, "]"),
 			_Attribute_List: (*route_leak)[_Action_import]._Attribute_List,
 		}
 	}
@@ -491,7 +490,7 @@ func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 	case len(v_RL_Export) != 0:
 		outbound[_Action_export] = i_Route_Leak_FromTo{
 			PS:              v_RL_Export,
-			GT_Action:       strings_join(" ", _Action_export.String(), "[", v_RL_Export, "]"),
+			GT_Action:       strings_join(" ", _Action_export, "[", v_RL_Export, "]"),
 			_Attribute_List: (*route_leak)[_Action_export]._Attribute_List,
 		}
 	}

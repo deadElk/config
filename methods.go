@@ -244,29 +244,29 @@ func (inbound *_Name) action_SZ(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	switch {
 
 	case inbound_type == _Type_source && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _Action_from, _Action_zone, inbound)
+		outbound = strings_join(" ", _Action_from___zone, inbound)
 	case inbound_type == _Type_source && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _Action_to, _Action_zone, inbound)
+		outbound = strings_join(" ", _Action_to___zone, inbound)
 
 	case inbound_type == _Type_destination && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _Action_from, _Action_zone, inbound)
+		outbound = strings_join(" ", _Action_from___zone, inbound)
 	case inbound_type == _Type_destination && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _Action_to, _Action_zone, inbound)
+		outbound = strings_join(" ", _Action_to___zone, inbound)
 
 	case inbound_type == _Type_static && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _Action_from+"-"+_Action_zone, inbound)
+		outbound = strings_join(" ", _Action_from__zone, inbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _Action_to+"-"+_Action_zone, inbound)
+		outbound = strings_join(" ", _Action_to__zone, inbound)
 
 	case inbound_type == _Type_exact && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _Action_from+"-"+_Action_zone, inbound)
+		outbound = strings_join(" ", _Action_from__zone, inbound)
 	case inbound_type == _Type_exact && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _Action_to+"-"+_Action_zone, inbound)
+		outbound = strings_join(" ", _Action_to__zone, inbound)
 
 	case inbound_type == _Type_global && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _Action_from+"-"+_Action_zone, inbound)
+		outbound = strings_join(" ", _Action_from__zone, inbound)
 	case inbound_type == _Type_global && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _Action_to+"-"+_Action_zone, inbound)
+		outbound = strings_join(" ", _Action_to__zone, inbound)
 
 	case v_Peer != nil:
 		log.Warnf("Peer '%v', SZ '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)

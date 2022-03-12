@@ -35,6 +35,8 @@ func parse_cDB(xml_db *cDB) (ok bool) {
 	parse_cDB_AB(xml_db.AB)
 	parse_cDB_JA(xml_db.JA)
 	parse_cDB_PL(xml_db.PL)
+
+	define_iDB_PS()
 	parse_cDB_PS(xml_db.PS)
 	parse_cDB_Peer(xml_db.Peer)
 	parse_cDB_VI(xml_db.VI)
@@ -175,7 +177,7 @@ func parse_cDB_PS(inbound []*cDB_PO_PS) (ok bool) {
 					}
 					return
 				}(),
-				GT_Action:       strings_join(" ", _Action_policy__options, _Action_policy__statement, b.Name),
+				GT_Action:       strings_join(" ", _Action_policy__options___policy__statement, b.Name),
 				_Attribute_List: b._Attribute_List,
 			}
 			return
@@ -294,10 +296,10 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 			Communication: b.Communication,
 			Route_Metric: func() _Route_Weight {
 				switch {
-				case b.Route_Metric > _Settings[_ps_max_rms].(_Route_Weight):
+				case b.Route_Metric > _Route_Weight_max_rm:
 					return 0
 				}
-				return _Settings[_ps_max_rms].(_Route_Weight) - b.Route_Metric
+				return _Route_Weight_max_rm - b.Route_Metric
 			}(),
 			PSK: b.PSK.validate(64),
 			// _IKE_Option_List: &_IKE_Option_List{
@@ -913,7 +915,7 @@ func parse_cDB_Peer_SP(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			From:            parse_cDB_FromTo(peer, v_Peer, _Type_global, _Type_from, &j.From),
 			To:              parse_cDB_FromTo(peer, v_Peer, _Type_global, _Type_to, &j.To),
 			Then:            parse_cDB_Then(peer, v_Peer, _Type_global, _Type_then, &j.Then),
-			GT_Action:       strings_join(" ", _Action_security___policies, _Action_global, _Action_policy, j.Name),
+			GT_Action:       strings_join(" ", _Action_security___policies___global___policy, j.Name),
 			_Attribute_List: j._Attribute_List,
 		})
 	}
@@ -965,7 +967,7 @@ func parse_cDB_Peer_FW(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				}
 				return
 			}(),
-			GT_Action:       strings_join(" ", _Action_firewall, _Action_filter, b.Name),
+			GT_Action:       strings_join(" ", _Action_firewall___filter, b.Name),
 			_Attribute_List: b._Attribute_List,
 		})
 	}
@@ -1094,7 +1096,7 @@ func parse_cDB_AB_create_Set(ab_name _Name, sa *_Attribute_List) (ok bool) {
 		IPPrefix:        netip.Prefix{},
 		FQDN:            "",
 		Set:             map[_Name]i_AB_Set{},
-		GT_Action:       strings_join(" ", _Action_security, _Action_address__book, _Action_global, _Action_address__set, ab_name),
+		GT_Action:       strings_join(" ", _Action_security___address__book___global___address__set, ab_name),
 		_Attribute_List: *sa,
 	}
 	return true
@@ -1184,7 +1186,7 @@ func parse_cDB_AB_add_Address(public, private bool, ab_name _Name, inbound ...in
 					IPPrefix:        netip.Prefix{},
 					FQDN:            value,
 					Set:             nil,
-					GT_Action:       strings_join(" ", _Action_security, _Action_address__book, _Action_global, _Action_address, ab_name, _Action_dns__name, value),
+					GT_Action:       strings_join(" ", _Action_security___address__book___global___address, ab_name, _Action_dns__name, value),
 					_Attribute_List: _Attribute_List{},
 				}
 			case netip.Prefix:
@@ -1194,7 +1196,7 @@ func parse_cDB_AB_add_Address(public, private bool, ab_name _Name, inbound ...in
 					IPPrefix:        value,
 					FQDN:            "",
 					Set:             nil,
-					GT_Action:       strings_join(" ", _Action_security, _Action_address__book, _Action_global, _Action_address, ab_name, _Action_address, value),
+					GT_Action:       strings_join(" ", _Action_security___address__book___global___address, ab_name, _Action_address, value),
 					_Attribute_List: _Attribute_List{},
 				}
 			}

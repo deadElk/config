@@ -136,8 +136,6 @@ var (
 		_host_RI:            _Name_junos_host,
 		_mgmt_Description:   _Description("MANAGEMENT-INSTANCE"),
 		_domain_name:        _FQDN("example.com"),
-		_ps_bits_per_rm:     _Route_Weight(2),        // ____
-		_ps_max_rms:         _Route_Weight(32/2 - 1), // ^^^^
 		_GT_list:            []_Name{},
 		_dirname_GT:         "./templates/",
 		_dirname_out:        "./tmp/",
@@ -149,5 +147,7 @@ var (
 			"/usr/local/etc/" + _serviced + ".xml",
 			"/etc/" + _serviced + ".xml",
 		},
+		// _Route_Weight_bits_per_rm:     _Route_Weight(2),        // ____
+		// _Route_Weight_max_rm:         _Route_Weight(32/2 - 1), // ^^^^
 	}
 )
