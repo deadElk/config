@@ -390,7 +390,7 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 		var (
 			_first, _second _VI_Peer_ID
 			_total          = _VI_Peer_ID(len(v_vi_peer_list))
-			_if             = _Name(strings_join(".", c_Name[_Name_st0], b.ID))
+			_if             = _Name(strings_join(".", _Name_st0, b.ID))
 		)
 		switch {
 		case _total != 2:
@@ -406,7 +406,7 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 			i_peer[v_vi_peer_list[_first].ASN].VI_Remote[b.ID] = i_vi_peer[b.ID][_second]
 
 			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].IF[_if] = i_Peer_RI_IF{
-				IFM:           c_Name[_Name_st0],
+				IFM:           _Name_st0,
 				IFsM:          _Name(b.ID.String()),
 				Communication: _Settings[_comm_vi].(_Communication),
 				IP: map[netip.Prefix]i_Peer_RI_IF_IP{
@@ -501,7 +501,7 @@ func parse_cDB_Peer_Router_ID(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		v_Peer.Router_ID = peer.Router_ID
 	default:
 		v_Peer.Router_ID = func() netip.Addr {
-			for a := range v_Peer.RI[_Settings[_RI].(_Name)].IF[c_Name[_Name_lo0_0]].IP {
+			for a := range v_Peer.RI[_Settings[_RI].(_Name)].IF[_Name_lo0_0].IP {
 				switch {
 				case a.IsValid():
 					return a.Addr()
@@ -648,11 +648,11 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 									v_RT_IP          netip.Addr
 									v_RT_IF          _Name
 									v_RT_Table       _Name
-									v_RT_Action      = c_Action[f.Action]
+									v_RT_Action      = f.Action.validate(nil, v_Peer)
 									v_RT_Action_Flag _Action
 									v_Action         = strings_join(" ", "static route", d.Identifier)
 								)
-								switch v_RT_Action = c_Action[f.Action]; {
+								switch {
 								case v_RT_Action == _Action_discard:
 									v_Action = strings_join(" ", v_Action, v_RT_Action)
 								case v_RT_Action == _Action_next_table && len(f.Table) != 0:
