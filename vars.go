@@ -151,25 +151,26 @@ var (
 		_Type_zone:             _Type_zone,
 	}
 	_Settings = map[interface{}]interface{}{
-		_group:             _Name("4200000000"),
-		_loglevel:          log.InfoLevel,
-		_sp_default_policy: _Action_permit_all,
-		_comm_if:           _Communication_ptmp,
-		_comm_vi:           _Communication_ptp,
-		_VI_IPPrefix:       parse_interface(netip.ParsePrefix("10.90.0.0/16")).(netip.Prefix),
-		_VI_IPShift:        uint32(0),
-		_RI:                c_Name[_Name_master],
-		_mgmt_RI:           c_Name[_Name_mgmt_junos],
-		_mgmt_IF:           c_Name[_Name_fxp0_0],
-		_host_RI:           c_Name[_Name_junos_host],
-		_mgmt_Description:  _Description("MANAGEMENT-INSTANCE"),
-		_domain_name:       _FQDN("example.com"),
-		_ps_bits_per_rm:    _Route_Weight(2),        // ____
-		_ps_max_rms:        _Route_Weight(32/2 - 1), // ^^^^
-		_GT_list:           []_Name{},
-		_path_GT:           "./templates",
-		_path_out:          "./tmp",
-		_file_list_config: []string{
+		_group:              _Name("4200000000"),
+		_loglevel:           log.InfoLevel,
+		_sp_default_policy:  _Action_permit_all,
+		_comm_if:            _Communication_ptmp,
+		_comm_vi:            _Communication_ptp,
+		_VI_IPPrefix:        parse_interface(netip.ParsePrefix("10.90.0.0/16")).(netip.Prefix),
+		_VI_IPShift:         uint32(0),
+		_RI:                 c_Name[_Name_master],
+		_mgmt_RI:            c_Name[_Name_mgmt_junos],
+		_mgmt_IF:            c_Name[_Name_fxp0_0],
+		_host_RI:            c_Name[_Name_junos_host],
+		_mgmt_Description:   _Description("MANAGEMENT-INSTANCE"),
+		_domain_name:        _FQDN("example.com"),
+		_ps_bits_per_rm:     _Route_Weight(2),        // ____
+		_ps_max_rms:         _Route_Weight(32/2 - 1), // ^^^^
+		_GT_list:            []_Name{},
+		_dirname_GT:         "./templates/",
+		_dirname_out:        "./tmp/",
+		_filename_host_list: "host_list.txt",
+		_filename_list_config: []string{
 			"./" + _serviced + ".xml",
 			"/usr/local/opt/etc/" + _serviced + ".xml",
 			"/opt/etc/" + _serviced + ".xml",

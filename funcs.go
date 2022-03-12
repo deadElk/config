@@ -344,9 +344,9 @@ func read_GT() (ok bool) {
 		data   []byte
 		err    error
 	)
-	switch dentry, err = os.ReadDir(_Settings[_path_GT].(string)); {
+	switch dentry, err = os.ReadDir(_Settings[_dirname_GT].(string)); {
 	case err != nil:
-		log.Warnf("template director '%v' read error '%v'; ACTION: skip.", _Settings[_path_GT], err)
+		log.Warnf("template director '%v' read error '%v'; ACTION: skip.", _Settings[_dirname_GT], err)
 		return
 	}
 	for _, fentry := range dentry {
@@ -368,7 +368,7 @@ func read_GT() (ok bool) {
 		var (
 			tname = _Name(fentry.Name()[:len(fentry.Name())-5])
 		)
-		switch data, err = os.ReadFile(strings_join("/", _Settings[_path_GT], fentry.Name())); {
+		switch data, err = os.ReadFile(strings_join("/", _Settings[_dirname_GT], fentry.Name())); {
 		case err != nil:
 			log.Warnf("template '%v' read error '%v'; ACTION: skip.", tname, err)
 			continue

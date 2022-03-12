@@ -21,7 +21,7 @@ func op() (ok bool) {
 			xml_db cDB
 			data   []byte
 		)
-		for _, value := range _Settings[_file_list_config].([]string) {
+		for _, value := range _Settings[_filename_list_config].([]string) {
 			switch data, err = os.ReadFile(value); {
 			case err != nil:
 				log.Warnf("file '%v' read error: '%v'; ACTION: skip.", value, err)
@@ -99,7 +99,7 @@ func upload_config() (ok bool) {
 	var (
 		err         error
 		i_peer_list []_ASN
-		hosts       string
+		host_list   string
 	)
 
 	for a := range i_peer {
@@ -112,7 +112,7 @@ func upload_config() (ok bool) {
 	for _, b := range i_peer_list {
 		var (
 			asn = "AS" + pad(b, 10).String()
-			fn  = _Settings[_path_out].(string) + "./" + asn
+			fn  = _Settings[_dirname_out].(string) + "./" + asn
 		)
 		switch err = os.WriteFile(fn, config[b], 0600); {
 		case err == nil:
@@ -142,7 +142,7 @@ func upload_config() (ok bool) {
 			s_target = append(s_target, d)
 			ip_list += tabber(d, 3) + "\t"
 		}
-		hosts += func() (outbound string) {
+		host_list += func() (outbound string) {
 			for _, f := range s_target {
 				var (
 					host = func() string {
@@ -153,7 +153,6 @@ func upload_config() (ok bool) {
 							prefix, _ := netip.ParsePrefix(f)
 							return prefix.Addr().String()
 						}
-						return ""
 					}()
 				)
 				outbound += tabber(host, 2) +
@@ -168,13 +167,13 @@ func upload_config() (ok bool) {
 		}()
 	}
 
-	switch err = os.WriteFile(_Settings[_path_out].(string)+"hosts.txt", []byte(hosts), 0600); {
+	switch err = os.WriteFile(_Settings[_dirname_out].(string)+_Settings[_filename_host_list].(string), []byte(host_list), 0600); {
 	case err == nil:
-		log.Infof("OK 'hosts.txt'")
+		log.Infof("OK '%v'", _Settings[_filename_host_list])
 	default:
-		log.Errorf("Fail 'hosts.txt' with error '%v'", err)
+		log.Errorf("Fail '%v' with error '%v'", _Settings[_filename_host_list], err)
 	}
 
-	log.Debugf("\n%s\n", hosts)
+	log.Debugf("\n%s\n", host_list)
 	return err == nil
 }

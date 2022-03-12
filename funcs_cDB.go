@@ -13,7 +13,7 @@ func parse_cDB(xml_db *cDB) (ok bool) {
 	_Settings[_group] = _Name(xml_db.XMLName.Local)
 	switch {
 	case len(xml_db.GT_Path) != 0:
-		_Settings[_path_GT] = xml_db.GT_Path
+		_Settings[_dirname_GT] = xml_db.GT_Path
 	}
 	switch {
 	case !read_GT():
@@ -28,7 +28,7 @@ func parse_cDB(xml_db *cDB) (ok bool) {
 	}
 	switch {
 	case len(xml_db.Upload_Path) != 0:
-		_Settings[_path_out] = xml_db.Upload_Path
+		_Settings[_dirname_out] = xml_db.Upload_Path
 	}
 	parse_cDB_AB_create_Set("OUTER_LIST", &_Attribute_List{})
 
