@@ -117,37 +117,37 @@ func (inbound *_Name) action_AB(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	switch {
 
 	case inbound_type == _Type_exact && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _Action_source_address, inbound)
+		outbound = strings_join(" ", _Action_source__address, inbound)
 	case inbound_type == _Type_global && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _Action_source_address, inbound)
+		outbound = strings_join(" ", _Action_source__address, inbound)
 	case inbound_type == _Type_source && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _Action_source_address_name, inbound)
+		outbound = strings_join(" ", _Action_source__address__name, inbound)
 	case inbound_type == _Type_destination && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _Action_source_address_name, inbound)
+		outbound = strings_join(" ", _Action_source__address__name, inbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _Action_source_address_name, inbound)
+		outbound = strings_join(" ", _Action_source__address__name, inbound)
 
 	case inbound_type == _Type_exact && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _Action_destination_address, inbound)
+		outbound = strings_join(" ", _Action_destination__address, inbound)
 	case inbound_type == _Type_global && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _Action_destination_address, inbound)
+		outbound = strings_join(" ", _Action_destination__address, inbound)
 	case inbound_type == _Type_source && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _Action_destination_address_name, inbound)
+		outbound = strings_join(" ", _Action_destination__address__name, inbound)
 	case inbound_type == _Type_destination && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _Action_destination_address_name, inbound)
+		outbound = strings_join(" ", _Action_destination__address__name, inbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _Action_destination_address_name, inbound)
+		outbound = strings_join(" ", _Action_destination__address__name, inbound)
 
 	case inbound_type == _Type_exact && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _Action_source_address, inbound)
+		outbound = strings_join(" ", _Action_source__address, inbound)
 	case inbound_type == _Type_global && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _Action_source_address, inbound)
+		outbound = strings_join(" ", _Action_source__address, inbound)
 	case inbound_type == _Type_source && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _Action_source_address_name, inbound)
+		outbound = strings_join(" ", _Action_source__address__name, inbound)
 	case inbound_type == _Type_destination && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _Action_destination_address_name, inbound)
+		outbound = strings_join(" ", _Action_destination__address__name, inbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _Action_prefix_name, inbound)
+		outbound = strings_join(" ", _Action_prefix__name, inbound)
 
 	case v_Peer != nil:
 		log.Warnf("Peer '%v', AB '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
@@ -174,7 +174,7 @@ func (inbound *_Type) action_Route_Type(peer *cDB_Peer, v_Peer *i_Peer, inbound_
 	case len(*inbound) == 0:
 		return
 	}
-	return strings_join(" ", _Action_route_type, inbound)
+	return strings_join(" ", _Action_route__type, inbound)
 }
 func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
 	switch {
@@ -191,41 +191,41 @@ func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	switch {
 
 	case inbound_type == _Type_source && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _Action_from, _Action_routing_instance, inbound)
+		outbound = strings_join(" ", _Action_from, _Action_routing__instance, inbound)
 	case inbound_type == _Type_source && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _Action_to, _Action_routing_instance, inbound)
+		outbound = strings_join(" ", _Action_to, _Action_routing__instance, inbound)
 	case inbound_type == _Type_source && inbound_direction == _Type_pool:
-		outbound = strings_join(" ", _Action_routing_instance, inbound)
+		outbound = strings_join(" ", _Action_routing__instance, inbound)
 	case inbound_type == _Type_source && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _Action_routing_instance, inbound)
+		outbound = strings_join(" ", _Action_routing__instance, inbound)
 
 	case inbound_type == _Type_destination && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _Action_from, _Action_routing_instance, inbound)
+		outbound = strings_join(" ", _Action_from, _Action_routing__instance, inbound)
 	case inbound_type == _Type_destination && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _Action_to, _Action_routing_instance, inbound)
+		outbound = strings_join(" ", _Action_to, _Action_routing__instance, inbound)
 	case inbound_type == _Type_destination && inbound_direction == _Type_pool:
-		outbound = strings_join(" ", _Action_routing_instance, inbound)
+		outbound = strings_join(" ", _Action_routing__instance, inbound)
 	case inbound_type == _Type_destination && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _Action_routing_instance, inbound)
+		outbound = strings_join(" ", _Action_routing__instance, inbound)
 
 	case inbound_type == _Type_static && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _Action_from, _Action_routing_instance, inbound)
+		outbound = strings_join(" ", _Action_from, _Action_routing__instance, inbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _Action_to, _Action_routing_instance, inbound)
+		outbound = strings_join(" ", _Action_to, _Action_routing__instance, inbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_pool:
-		outbound = strings_join(" ", _Action_routing_instance, inbound)
+		outbound = strings_join(" ", _Action_routing__instance, inbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _Action_routing_instance, inbound)
+		outbound = strings_join(" ", _Action_routing__instance, inbound)
 
 	case inbound_type == _Type_firewall && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _Action_from, _Action_routing_instance, inbound)
+		outbound = strings_join(" ", _Action_from, _Action_routing__instance, inbound)
 	case inbound_type == _Type_firewall && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _Action_to, _Action_routing_instance, inbound)
+		outbound = strings_join(" ", _Action_to, _Action_routing__instance, inbound)
 	case inbound_type == _Type_firewall && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _Action_routing_instance, inbound)
+		outbound = strings_join(" ", _Action_routing__instance, inbound)
 
 	case inbound_type == _Type_policy_statement:
-		outbound = strings_join(" ", _Action_routing_instance, inbound)
+		outbound = strings_join(" ", _Action_routing__instance, inbound)
 
 	case v_Peer != nil:
 		log.Warnf("Peer '%v', RI '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
@@ -296,12 +296,12 @@ func (inbound *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	switch {
 
 	case inbound_type == _Type_firewall && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _Action_from, _Action_source_prefix_list, inbound)
+		outbound = strings_join(" ", _Action_from, _Action_source__prefix__list, inbound)
 	case inbound_type == _Type_firewall && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _Action_from, _Action_destination_prefix_list, inbound)
+		outbound = strings_join(" ", _Action_from, _Action_destination__prefix__list, inbound)
 
 	case inbound_type == _Type_policy_statement:
-		outbound = strings_join(" ", _Action_prefix_list_filter, inbound)
+		outbound = strings_join(" ", _Action_prefix__list__filter, inbound)
 
 	case v_Peer != nil:
 		log.Warnf("Peer '%v', PL '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
@@ -313,7 +313,7 @@ func (inbound *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 func (inbound *_Name) next_ID() (outbound _Name) {
 	switch {
 	case *inbound == _next_IDName || len(*inbound) == 0:
-		outbound = _Name(strings_join("", _Action_ID, pad(next_ID, 10)))
+		outbound = _Name(strings_join("", _Name_ID, pad(next_ID, 10)))
 		next_ID++
 		return
 	}
