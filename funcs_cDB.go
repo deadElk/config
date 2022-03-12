@@ -34,6 +34,8 @@ func parse_cDB(xml_db *cDB) (ok bool) {
 
 	parse_cDB_AB(xml_db.AB)
 	parse_cDB_JA(xml_db.JA)
+
+	define_iDB_PL()
 	parse_cDB_PL(xml_db.PL)
 
 	define_iDB_PS()

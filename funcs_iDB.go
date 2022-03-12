@@ -1,10 +1,13 @@
 package main
 
 import (
+	"net/netip"
+
 	log "github.com/sirupsen/logrus"
 )
 
 func parse_iDB() (ok bool) {
+	// define_iDB_PL()
 	// define_iDB_PS()
 	parse_iDB_Peer_Vocabulary()
 	return true
@@ -44,6 +47,53 @@ func peer_iDB_recurse_AB(interim *map[_Name]*i_AB, inbound _Name) (ok bool) {
 	return true
 }
 
+func define_iDB_PL() (ok bool) {
+	i_pl["any_v4"] = &i_PO_PL{
+		Match: []i_PO_PL_Match{
+			0: {
+				IPPrefix:  parse_interface(netip.ParsePrefix("0.0.0.0/0")).(netip.Prefix),
+				GT_Action: parse_interface(netip.ParsePrefix("0.0.0.0/0")).(netip.Prefix).String(),
+			},
+		},
+		GT_Action: strings_join(" ", _Action_policy__options___prefix__list, "any_v4"),
+	}
+	i_pl["loopback_v4"] = &i_PO_PL{
+		Match: []i_PO_PL_Match{
+			0: {
+				IPPrefix:  parse_interface(netip.ParsePrefix("127.0.0.0/8")).(netip.Prefix),
+				GT_Action: parse_interface(netip.ParsePrefix("127.0.0.0/8")).(netip.Prefix).String(),
+			},
+		},
+		GT_Action: strings_join(" ", _Action_policy__options___prefix__list, "loopback_v4"),
+	}
+	i_pl["private_v4"] = &i_PO_PL{
+		Match: []i_PO_PL_Match{
+			0: {
+				IPPrefix:  parse_interface(netip.ParsePrefix("10.0.0.0/8")).(netip.Prefix),
+				GT_Action: parse_interface(netip.ParsePrefix("10.0.0.0/8")).(netip.Prefix).String(),
+			},
+			1: {
+				IPPrefix:  parse_interface(netip.ParsePrefix("172.16.0.0/12")).(netip.Prefix),
+				GT_Action: parse_interface(netip.ParsePrefix("172.16.0.0/12")).(netip.Prefix).String(),
+			},
+			2: {
+				IPPrefix:  parse_interface(netip.ParsePrefix("192.168.0.0/16")).(netip.Prefix),
+				GT_Action: parse_interface(netip.ParsePrefix("192.168.0.0/16")).(netip.Prefix).String(),
+			},
+		},
+		GT_Action: strings_join(" ", _Action_policy__options___prefix__list, "private_v4"),
+	}
+	i_pl["linklocal_v4"] = &i_PO_PL{
+		Match: []i_PO_PL_Match{
+			0: {
+				IPPrefix:  parse_interface(netip.ParsePrefix("169.254.0.0/16")).(netip.Prefix),
+				GT_Action: parse_interface(netip.ParsePrefix("169.254.0.0/16")).(netip.Prefix).String(),
+			},
+		},
+		GT_Action: strings_join(" ", _Action_policy__options___prefix__list, "linklocal_v4"),
+	}
+	return true
+}
 func define_iDB_PS() (ok bool) {
 	for a, b := uint32(0), _Route_Weight(1); a <= uint32(_Route_Weight_max_rm); a, b = a+1, b<<int(_Route_Weight_bits_per_rm) {
 		var (
