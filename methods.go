@@ -296,9 +296,9 @@ func (inbound *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	switch {
 
 	case inbound_type == _Type_firewall && inbound_direction == _Type_from:
-		outbound = strings_join(" ", c_Type[_Type_from], "source-prefix-list", inbound)
+		outbound = strings_join(" ", c_Type[_Type_from], c_Type[_Type_source_prefix_list], inbound)
 	case inbound_type == _Type_firewall && inbound_direction == _Type_to:
-		outbound = strings_join(" ", c_Type[_Type_from], "destination-prefix-list", inbound)
+		outbound = strings_join(" ", c_Type[_Type_from], c_Type[_Type_destination_prefix_list], inbound)
 
 	case inbound_type == _Type_policy_statement:
 		outbound = strings_join(" ", "prefix-list-filter", inbound)
