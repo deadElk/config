@@ -19,7 +19,7 @@ const (
 	_Action_address                                          _Action        = "address"
 	_Action_address__book                                                   = _Action_address + "-" + _Action_book
 	_Action_address__set                                                    = _Action_address + "-" + _Action_set
-	_Action_aggregate                                        _Action        = "aggregate"
+	_Action_aggregate                                                       = _Action(_Protocol_aggregate)
 	_Action_all                                              _Action        = "all"
 	_Action_application                                      _Action        = "application"
 	_Action_applications                                                    = _Action_application + "s"
