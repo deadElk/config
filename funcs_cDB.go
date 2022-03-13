@@ -783,6 +783,7 @@ func parse_cDB_Peer_GT_List(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		}
 	default:
 		v_Peer.GT_List = _Settings[_GT_list].([]_Name)
+		v_Peer.GT_List = append(v_Peer.GT_List, _Name("AS"+pad(v_Peer.ASN, 10)))
 	}
 	return true
 }
