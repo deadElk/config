@@ -39,6 +39,7 @@ var (
 		_Action_discard:              _Action_discard,
 		_Action_interface:            _Action_next__hop,
 		_Action_next__hop:            _Action_next__hop,
+		_Action_next__table:          _Action_next__table,
 		_Action_qnh:                  _Action_qualified__next__hop,
 		_Action_qualified__next__hop: _Action_qualified__next__hop,
 		_Action_table:                _Action_next__table,
