@@ -14,9 +14,7 @@ type _i_vi map[_VI_ID]*i_VI
 type _i_vi_peer map[_VI_ID]map[_VI_Peer_ID]*i_VI_Peer
 type _i_gt map[_Name]*i_GT
 type _i_config map[_ASN][]byte
-type _i_ldap map[*url.URL]bool
-
-// type _i_ldap map[*url.URL]i_LDAP
+type _i_ldap map[*url.URL]i_LDAP
 
 // 				GT_Action: []string{0: ""},
 

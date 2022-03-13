@@ -36,7 +36,7 @@ var (
 )
 
 var (
-	c_RO_GW = map[_W]_W{
+	c_RO_GW_Action = map[_W]_W{
 		_W_discard:              _W_discard,
 		_W_interface:            _W_next__hop,
 		_W_next__hop:            _W_next__hop,

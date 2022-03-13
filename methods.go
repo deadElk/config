@@ -191,36 +191,36 @@ func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	switch {
 
 	case inbound_type == _Type_source && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_from, _W_routing__instance, inbound)
+		outbound = strings_join(" ", _W_from___routing__instance, inbound)
 	case inbound_type == _Type_source && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_to, _W_routing__instance, inbound)
+		outbound = strings_join(" ", _W_to___routing__instance, inbound)
 	case inbound_type == _Type_source && inbound_direction == _Type_pool:
 		outbound = strings_join(" ", _W_routing__instance, inbound)
 	case inbound_type == _Type_source && inbound_direction == _Type_then:
 		outbound = strings_join(" ", _W_routing__instance, inbound)
 
 	case inbound_type == _Type_destination && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_from, _W_routing__instance, inbound)
+		outbound = strings_join(" ", _W_from___routing__instance, inbound)
 	case inbound_type == _Type_destination && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_to, _W_routing__instance, inbound)
+		outbound = strings_join(" ", _W_to___routing__instance, inbound)
 	case inbound_type == _Type_destination && inbound_direction == _Type_pool:
 		outbound = strings_join(" ", _W_routing__instance, inbound)
 	case inbound_type == _Type_destination && inbound_direction == _Type_then:
 		outbound = strings_join(" ", _W_routing__instance, inbound)
 
 	case inbound_type == _Type_static && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_from, _W_routing__instance, inbound)
+		outbound = strings_join(" ", _W_from___routing__instance, inbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_to, _W_routing__instance, inbound)
+		outbound = strings_join(" ", _W_to___routing__instance, inbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_pool:
 		outbound = strings_join(" ", _W_routing__instance, inbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_then:
 		outbound = strings_join(" ", _W_routing__instance, inbound)
 
 	case inbound_type == _Type_firewall && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_from, _W_routing__instance, inbound)
+		outbound = strings_join(" ", _W_from___routing__instance, inbound)
 	case inbound_type == _Type_firewall && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_to, _W_routing__instance, inbound)
+		outbound = strings_join(" ", _W_to___routing__instance, inbound)
 	case inbound_type == _Type_firewall && inbound_direction == _Type_then:
 		outbound = strings_join(" ", _W_routing__instance, inbound)
 
@@ -296,9 +296,9 @@ func (inbound *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	switch {
 
 	case inbound_type == _Type_firewall && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_from, _W_source__prefix__list, inbound)
+		outbound = strings_join(" ", _W_from___source__prefix__list, inbound)
 	case inbound_type == _Type_firewall && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_from, _W_destination__prefix__list, inbound)
+		outbound = strings_join(" ", _W_from___destination__prefix__list, inbound)
 
 	case inbound_type == _Type_policy__statement:
 		outbound = strings_join(" ", _W_prefix__list__filter, inbound)
@@ -329,8 +329,8 @@ func (inbound *_ID) next_ID() (outbound _ID) {
 	return *inbound
 }
 
-func (inbound *_W) validate(peer *cDB_Peer, v_Peer *i_Peer) (outbound _W) {
-	outbound = c_RO_GW[*inbound]
+func (inbound *_W) validate_RO_GW_Action(peer *cDB_Peer, v_Peer *i_Peer) (outbound _W) {
+	outbound = c_RO_GW_Action[*inbound]
 	switch {
 	case len(*inbound) == 0:
 		return

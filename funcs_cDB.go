@@ -654,7 +654,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 									v_RT_IP          netip.Addr
 									v_RT_IF          _Name
 									v_RT_Table       _Name
-									v_RT_Action      = f.Action.validate(nil, v_Peer)
+									v_RT_Action      = f.Action.validate_RO_GW_Action(nil, v_Peer)
 									v_RT_Action_Flag _W
 									v_Action         = strings_join(" ", _W_static___route, d.Identifier)
 								)
@@ -1099,6 +1099,7 @@ func parse_cDB_LDAP(inbound []*cDB_LDAP) (ok bool) {
 		case flag:
 			log.Warnf("LDAP '%v' already defined; ACTION: skip.", a)
 		}
+		i_ldap[a] = i_LDAP{}
 	}
 	return true
 }
