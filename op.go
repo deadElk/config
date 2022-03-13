@@ -111,14 +111,13 @@ func upload_config() (ok bool) {
 
 	for _, b := range i_peer_list {
 		var (
-			asn = "AS" + pad(b, 10).String()
-			fn  = _Settings[_dirname_out].(string) + "./" + asn
+			fn = strings_join("/", _Settings[_dirname_out], i_peer[b].ASName)
 		)
 		switch err = os.WriteFile(fn, config[b], 0600); {
 		case err == nil:
-			log.Infof("OK '%v'", asn)
+			log.Infof("OK '%v'", i_peer[b].ASName)
 		default:
-			log.Errorf("Fail '%v' with error '%v'", asn, err)
+			log.Errorf("Fail '%v' with error '%v'", i_peer[b].ASName, err)
 		}
 
 		var (

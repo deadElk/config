@@ -42,7 +42,7 @@ const (
 	_Action_export_metric                                                   = _Action_export + "_" + _Action_metric
 	_Action_filter                                           _Action        = "filter"
 	_Action_firewall                                                        = _Action(_Type_firewall)
-	_Action_firewall___filter                                               = _Action_firewall + _Action_filter
+	_Action_firewall___filter                                               = _Action_firewall + " " + _Action_filter
 	_Action_fqdn                                             _Action        = "fqdn"
 	_Action_from                                             _Action        = "from"
 	_Action_from___zone                                                     = _Action_from + " " + _Action_zone

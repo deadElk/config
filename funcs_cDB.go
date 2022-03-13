@@ -206,6 +206,7 @@ func parse_cDB_Peer(inbound []*cDB_Peer) (ok bool) {
 		var (
 			v_Peer = &i_Peer{
 				ASN:          b.ASN,
+				ASName:       _Name(strings_join("", _Name_AS, pad(b.ASN, 10))),
 				PName:        pad(&b.ASN, 10),
 				Router_ID:    netip.Addr{},
 				IF_2_RI:      map[_Name]_Name{},
@@ -424,7 +425,7 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 				},
 				PARP:            nil,
 				GT_Action:       "",
-				_Attribute_List: _Attribute_List{Description: _Description(strings_join("_", i_vi_peer[b.ID][_first].IF, "AS"+pad(i_vi_peer[b.ID][_second].ASN, 10), i_vi_peer[b.ID][_second].IF))},
+				_Attribute_List: _Attribute_List{Description: _Description(strings_join("_", i_vi_peer[b.ID][_first].IF, i_peer[v_vi_peer_list[_second].ASN].ASName, i_vi_peer[b.ID][_second].IF))},
 			}
 			i_peer[v_vi_peer_list[_first].ASN].SZ[i_vi_peer[b.ID][_first].Inner_RI].IF[_if] = i_Peer_SZ_IF{
 				_Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh, _Protocol_bgp),
@@ -783,7 +784,7 @@ func parse_cDB_Peer_GT_List(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		}
 	default:
 		v_Peer.GT_List = _Settings[_GT_list].([]_Name)
-		v_Peer.GT_List = append(v_Peer.GT_List, _Name("AS"+pad(v_Peer.ASN, 10)))
+		v_Peer.GT_List = append(v_Peer.GT_List, v_Peer.ASName)
 	}
 	return true
 }
