@@ -30,7 +30,7 @@ func (inbound *_Secret) validate(length uint, message ...string) _Secret {
 	return _Secret(interim)
 }
 func (inbound *_Name) validate_RI(decline ..._Name) (outbound _Name) {
-	outbound = _Settings[_RI].(_Name)
+	outbound = _S_RI
 	switch {
 	case len(*inbound) == 0 || *inbound == outbound:
 		return
@@ -182,7 +182,7 @@ func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 		return
 	case v_Peer != nil:
 		switch _, flag := v_Peer.RI[*inbound]; {
-		case !flag && *inbound != _Settings[_host_RI].(_Name):
+		case !flag && *inbound != _S_host_RI:
 			log.Warnf("Peer '%v', unknown RI '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
 			return
 		}
@@ -236,7 +236,7 @@ func (inbound *_Name) action_SZ(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Ty
 	switch _, flag := v_Peer.SZ[*inbound]; {
 	case len(*inbound) == 0:
 		return
-	case !flag && *inbound != _Name_any && *inbound != _Settings[_host_RI].(_Name):
+	case !flag && *inbound != _Name_any && *inbound != _S_host_RI:
 		log.Warnf("Peer '%v', unknown SZ '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
 		return
 	}

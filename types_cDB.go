@@ -11,8 +11,6 @@ type cDB struct {
 	Domain_Name _FQDN        `xml:"domain_name,attr"`
 	VI_IPPrefix netip.Prefix `xml:"VI_IPprefix,attr"`
 	GT_List     string       `xml:"GT_list,attr"`
-	Upload_Path string       `xml:"upload_path,attr"`
-	GT_Path     string       `xml:"GT_path,attr"`
 	Peer        []*cDB_Peer  `xml:"Peer_List>Peer"`
 	VI          []*cDB_VI    `xml:"VI_List>VI"`
 	LDAP        []*cDB_LDAP  `xml:"LDAP_List>LDAP"`

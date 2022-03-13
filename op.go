@@ -14,45 +14,48 @@ import (
 
 func op() (ok bool) {
 	var (
-		err error
+		err    error
+		xml_db = make(map[_Name]*cDB)
+		// data   []byte
 	)
-	func() {
+	switch {
+	case !read_file():
+		log.Warnf("file read error; ACTION: fatal.")
+		return
+	}
+	for _, b := range i_read_file[_S_Dir_List[_dir_list_etc]].sorted {
 		var (
-			xml_db cDB
-			data   []byte
+			// d = i_read_file[_S_Dir_List[_dir_list_etc]].data[b]
+			c cDB
 		)
-		for _, value := range _Settings[_filename_list_config].([]string) {
-			switch data, err = os.ReadFile(value); {
-			case err != nil:
-				log.Warnf("file '%v' read error: '%v'; ACTION: skip.", value, err)
-				continue
-			}
-			switch err = xml.Unmarshal(data, &xml_db); {
-			case err != nil:
-				log.Warnf("configuration file '%v' parse error: '%v'; ACTION: skip.", value, err)
-				continue
-			}
-			log.Debugf("configuration file '%v' loaded.", value)
-			switch {
-			case !parse_cDB(&xml_db):
-				log.Warnf("configuration file '%v' cDB parse error; ACTION: skip.", value)
-				continue
-			}
-			switch {
-			case !parse_iDB():
-				log.Warnf("configuration file '%v' iDB parse error; ACTION: skip.", value)
-				continue
-			}
-			log.Infof("DB '%v' parsed.", xml_db.XMLName.Local)
-			switch {
-			case !parse_GT():
-				log.Warnf("configuration file '%v' GT parse error; ACTION: skip.", value)
-				continue
-			}
-			log.Infof("GTs are parsed.")
-			return
+		// switch err = xml.Unmarshal(i_read_file[_S_Dir_List[_dir_list_etc]].data[b], xml_db[b]); {
+		switch err = xml.Unmarshal(i_read_file[_S_Dir_List[_dir_list_etc]].data[b], &c); {
+		case err != nil:
+			log.Warnf("configuration file '%v' parse error: '%v'; ACTION: skip.", b, err)
+			continue
 		}
-	}()
+		xml_db[b] = &c
+		log.Debugf("configuration file '%v' loaded.", b)
+	}
+	switch {
+	case !parse_cDB(xml_db):
+		log.Warnf("cDB parse error; ACTION: fatal.")
+		return
+	}
+	// 	switch {
+	// 	case !parse_iDB():
+	// 		log.Warnf("configuration file '%v' iDB parse error; ACTION: skip.", value)
+	// 		continue
+	// 	}
+	// 	log.Infof("DB '%v' parsed.", xml_db[index].XMLName.Local)
+	// 	switch {
+	// 	case !parse_GT():
+	// 		log.Warnf("configuration file '%v' GT parse error; ACTION: skip.", value)
+	// 		continue
+	// 	}
+	// 	log.Infof("GTs are parsed.")
+	// 	return
+	// }
 	switch {
 	case !upload_config():
 		log.Warnf("config upload error.")
@@ -111,7 +114,7 @@ func upload_config() (ok bool) {
 
 	for _, b := range i_peer_list {
 		var (
-			fn = strings_join("/", _Settings[_dirname_out], i_peer[b].ASName)
+			fn = strings_join("/", _S_Dir_List[_dir_list_Config], i_peer[b].ASName)
 		)
 		switch err = os.WriteFile(fn, config[b], 0600); {
 		case err == nil:
@@ -166,12 +169,12 @@ func upload_config() (ok bool) {
 		}()
 	}
 
-	switch err = os.WriteFile(_Settings[_dirname_out].(string)+_Settings[_filename_host_list].(string), []byte(host_list), 0600); {
-	case err == nil:
-		log.Infof("OK '%v'", _Settings[_filename_host_list])
-	default:
-		log.Errorf("Fail '%v' with error '%v'", _Settings[_filename_host_list], err)
-	}
+	// switch err = os.WriteFile(_S_Dir_List[_dir_list_Config]+_S_filename_host_list, []byte(host_list), 0600); {
+	// case err == nil:
+	// 	log.Infof("OK '%v'", _S_filename_host_list)
+	// default:
+	// 	log.Errorf("Fail '%v' with error '%v'", _S_filename_host_list, err)
+	// }
 
 	log.Debugf("\n%s\n", host_list)
 	return err == nil

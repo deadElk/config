@@ -28,7 +28,7 @@ func (inbound _Communication) String() string {
 func (inbound _Content) String() string {
 	return string(inbound)
 }
-func (inbound _Default) String() string {
+func (inbound _S) String() string {
 	return string(inbound)
 }
 func (inbound _Description) String() string {

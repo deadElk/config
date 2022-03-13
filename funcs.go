@@ -8,6 +8,7 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -103,7 +104,7 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 		return (*value).String()
 	case *_Content:
 		return (*value).String()
-	case *_Default:
+	case *_S:
 		return (*value).String()
 	case *_Description:
 		return (*value).String()
@@ -163,7 +164,7 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 		return value.String()
 	case _Content:
 		return value.String()
-	case _Default:
+	case _S:
 		return value.String()
 	case _Description:
 		return value.String()
@@ -277,22 +278,22 @@ func get_VI_IPPrefix(vi_id _VI_ID, peer_id _VI_Peer_ID) netip.Prefix {
 	var (
 		b = make([]byte, 4)
 	)
-	binary.BigEndian.PutUint32(b, _Settings[_VI_IPShift].(uint32)+uint32(vi_id*4)+uint32(peer_id))
+	binary.BigEndian.PutUint32(b, _S_VI_IPShift+uint32(vi_id*4)+uint32(peer_id))
 	return netip.PrefixFrom(parse_interface(netip.AddrFromSlice(b)).(netip.Addr), 30)
 }
 func set_VI_IPPrefix(inbound ...netip.Prefix) (ok bool) {
 	switch {
 	case len(inbound) == 1 && inbound[0].IsValid():
-		_Settings[_VI_IPPrefix] = inbound[0]
+		_S_VI_IPPrefix = inbound[0]
 		ok = true
 	}
-	_Settings[_VI_IPShift] = binary.BigEndian.Uint32(_Settings[_VI_IPPrefix].(netip.Prefix).Addr().AsSlice())
+	_S_VI_IPShift = binary.BigEndian.Uint32(_S_VI_IPPrefix.Addr().AsSlice())
 	return
 }
 func set_Domain_Name(inbound ..._FQDN) (ok bool) {
 	switch {
 	case len(inbound) == 1 && len(inbound[0]) != 0:
-		_Settings[_domain_name] = inbound[0]
+		_S_domain_name = inbound[0]
 		ok = true
 	}
 	return
@@ -314,10 +315,10 @@ func parse_Communication(_peer *_ASN, _if *_Name, inbound *_Communication) _Comm
 	case *inbound == _Communication_ptp || *inbound == _Communication_ptmp:
 		return *inbound
 	case len(*inbound) != 0:
-		log.Warnf("Peer '%v', IF '%v', invalid Communication type '%v'; ACTION: use '%v'.", _peer, _if, *inbound, _Settings[_comm_if].(_Communication))
+		log.Warnf("Peer '%v', IF '%v', invalid Communication type '%v'; ACTION: use '%v'.", _peer, _if, *inbound, _S_Comm[_comm_if])
 		fallthrough
 	default:
-		return _Settings[_comm_if].(_Communication)
+		return _S_Comm[_comm_if]
 	}
 }
 func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound _Host_Inbound_Traffic_List) {
@@ -337,15 +338,56 @@ func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound _Host_Inbound_
 	return
 }
 
+func read_file() (ok bool) {
+	var (
+		err error
+	)
+	for a, b := range i_read_file {
+		var (
+			direntry []os.DirEntry
+		)
+		switch direntry, err = os.ReadDir(string(a)); {
+		case err != nil:
+			log.Warnf("directory '%v' read error '%v'; ACTION: skip.", a, err)
+			return
+		}
+		for _, f := range direntry {
+			switch {
+			case !f.Type().IsRegular():
+				continue
+			}
+			var (
+				s = re_dot.Split(f.Name(), -1)
+			)
+			switch {
+			case len(s) != 2 || s[len(s)-1] != string(b.ext):
+				continue
+			}
+			var (
+				t = _Name(f.Name()[:len(f.Name())-1-len(s[len(s)-1])])
+			)
+			switch b.data[t], err = os.ReadFile(strings_join("/", a, f.Name())); {
+			case err != nil:
+				log.Warnf("file '%v' read error '%v'; ACTION: skip.", t, err)
+				continue
+			}
+			b.sorted = append(b.sorted, t)
+		}
+		sort.Slice(b.sorted, func(i, j int) bool {
+			return b.sorted[i] < b.sorted[j]
+		})
+	}
+	return true
+}
 func read_GT() (ok bool) {
 	var (
 		dentry []os.DirEntry
 		data   []byte
 		err    error
 	)
-	switch dentry, err = os.ReadDir(_Settings[_dirname_GT].(string)); {
+	switch dentry, err = os.ReadDir(string(_S_Dir_List[_dir_list_GT])); {
 	case err != nil:
-		log.Warnf("template director '%v' read error '%v'; ACTION: skip.", _Settings[_dirname_GT], err)
+		log.Warnf("template director '%v' read error '%v'; ACTION: skip.", _S_Dir_List[_dir_list_GT], err)
 		return
 	}
 	for _, fentry := range dentry {
@@ -367,7 +409,7 @@ func read_GT() (ok bool) {
 		var (
 			tname = _Name(fentry.Name()[:len(fentry.Name())-5])
 		)
-		switch data, err = os.ReadFile(strings_join("/", _Settings[_dirname_GT], fentry.Name())); {
+		switch data, err = os.ReadFile(strings_join("/", _S_Dir_List[_dir_list_GT], fentry.Name())); {
 		case err != nil:
 			log.Warnf("template '%v' read error '%v'; ACTION: skip.", tname, err)
 			continue
