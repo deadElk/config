@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/netip"
+	"net/url"
 )
 
 type _i_ab map[_Name]*i_AB
@@ -13,6 +14,9 @@ type _i_vi map[_VI_ID]*i_VI
 type _i_vi_peer map[_VI_ID]map[_VI_Peer_ID]*i_VI_Peer
 type _i_gt map[_Name]*i_GT
 type _i_config map[_ASN][]byte
+type _i_ldap map[*url.URL]bool
+
+// type _i_ldap map[*url.URL]i_LDAP
 
 // 				GT_Action: []string{0: ""},
 
@@ -21,6 +25,11 @@ type i_GT struct {
 	Content   _Content
 	GT_Action string
 	_Attribute_List
+}
+
+// LDAP
+type i_LDAP struct {
+	// URL *url.URL
 }
 
 // Peer

@@ -22,7 +22,7 @@ type cDB struct {
 
 // LDAP
 type cDB_LDAP struct {
-	// URL *url.URL `xml:"url,attr"`
+	URL string `xml:"url,attr"`
 }
 
 // Vocabulary

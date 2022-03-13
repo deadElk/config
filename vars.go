@@ -32,6 +32,7 @@ var (
 	i_vi_peer = make(_i_vi_peer)
 	i_peer    = make(_i_peer)
 	i_gt      = make(_i_gt)
+	i_ldap    = make(_i_ldap)
 )
 
 var (

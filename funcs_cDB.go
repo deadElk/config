@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/netip"
+	"net/url"
 	"regexp"
 	"strconv"
 
@@ -40,6 +41,8 @@ func parse_cDB(xml_db *cDB) (ok bool) {
 
 	parse_cDB_Peer(xml_db.Peer)
 	parse_cDB_VI(xml_db.VI)
+
+	parse_cDB_LDAP(xml_db.LDAP)
 
 	return true
 }
@@ -1085,4 +1088,17 @@ func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inboun
 		})
 	}
 	return
+}
+
+func parse_cDB_LDAP(inbound []*cDB_LDAP) (ok bool) {
+	for _, b := range inbound {
+		var (
+			a = parse_interface(url.Parse(b.URL)).(*url.URL)
+		)
+		switch _, flag := i_ldap[a]; {
+		case flag:
+			log.Warnf("LDAP '%v' already defined; ACTION: skip.", a)
+		}
+	}
+	return true
 }
