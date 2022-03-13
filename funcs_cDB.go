@@ -16,7 +16,6 @@ func parse_cDB(xml_db map[_Name]*cDB) (ok bool) {
 		log.Warnf("templates read error; ACTION: skip.")
 		return
 	}
-
 	for _, b := range xml_db {
 		log.SetLevel(b.Verbosity)
 		_S_group = _Name(b.XMLName.Local)
@@ -26,7 +25,6 @@ func parse_cDB(xml_db map[_Name]*cDB) (ok bool) {
 		for _, b := range re_period.Split(b.GT_List, -1) {
 			_S_GT_list = append(_S_GT_list, _Name(b))
 		}
-
 		parse_cDB_AB(b.AB)
 		parse_cDB_JA(b.JA)
 		parse_cDB_PL(b.PL)
@@ -41,7 +39,6 @@ func parse_cDB(xml_db map[_Name]*cDB) (ok bool) {
 	for _, b := range xml_db {
 		parse_cDB_LDAP(b.LDAP)
 	}
-
 	return true
 }
 
