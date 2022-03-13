@@ -49,12 +49,12 @@ func parse_cDB_AB(inbound []*cDB_AB) (ok bool) {
 		switch {
 		case b.Set:
 			switch {
-			case !parse_iDB_AB_create_Set(b.Name, &b._Attribute_List):
+			case !create_iDB_AB_Set(b.Name):
 				continue
 			}
 		}
 		for _, d := range b.Address {
-			parse_cDB_AB_add_Address_List(true, true, b.Name, d.AB, d.FQDN, d.IPPrefix)
+			add_iDB_AB_Address_List(true, true, b.Name, d.AB, d.FQDN, d.IPPrefix)
 		}
 	}
 	return true
@@ -242,8 +242,8 @@ func parse_cDB_Peer(inbound []*cDB_Peer) (ok bool) {
 				_Attribute_List:  b._Attribute_List,
 			}
 		)
-		parse_iDB_AB_create_Set(_Name(strings_join("", "O_AS", v_Peer.PName)), &_Attribute_List{})
-		parse_iDB_AB_create_Set(_Name(strings_join("", "I_AS", v_Peer.PName)), &_Attribute_List{})
+		create_iDB_AB_Set(_Name(strings_join("", "O_AS", v_Peer.PName)))
+		create_iDB_AB_Set(_Name(strings_join("", "I_AS", v_Peer.PName)))
 		v_Peer.link_AB(_Name_PUBLIC, _Name(strings_join("", "O_AS", v_Peer.PName)), _Name(strings_join("", "I_AS", v_Peer.PName)))
 		parse_cDB_Peer_Version(b, v_Peer)
 		v_Peer._IKE_Option_List.IKE_GCM = v_Peer.Major >= 12.3
@@ -591,9 +591,9 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 									}
 									v_IP_2_IF[f.IPPrefix.Addr()] = d.Name
 								}
-								parse_cDB_AB_add_Address_List(true, false, _Name_PUBLIC, f.IPPrefix.Addr(), f.NAT)
-								parse_cDB_AB_add_Address_List(true, false, _Name(strings_join("", "O_AS", v_Peer.PName)), f.IPPrefix, f.NAT)
-								parse_cDB_AB_add_Address_List(false, true, _Name(strings_join("", "I_AS", v_Peer.PName)), f.IPPrefix, f.NAT)
+								add_iDB_AB_Address_List(true, false, _Name_PUBLIC, f.IPPrefix.Addr(), f.NAT)
+								add_iDB_AB_Address_List(true, false, _Name(strings_join("", "O_AS", v_Peer.PName)), f.IPPrefix, f.NAT)
+								add_iDB_AB_Address_List(false, true, _Name(strings_join("", "I_AS", v_Peer.PName)), f.IPPrefix, f.NAT)
 								outbound[f.IPPrefix] = i_Peer_RI_IF_IP{
 									Masked:          f.IPPrefix.Masked(),
 									Primary:         f.Primary,
@@ -619,7 +619,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 									continue
 								}
 								v_IP_2_IF[f.IP] = d.Name
-								parse_cDB_AB_add_Address_List(true, false, _Name_PUBLIC, f.IP, f.NAT)
+								add_iDB_AB_Address_List(true, false, _Name_PUBLIC, f.IP, f.NAT)
 								outbound[f.IP] = i_Peer_RI_IF_PARP{
 									NAT:             f.NAT,
 									GT_Action:       strings_join(" ", _Action_security___nat___proxy__arp),
@@ -1081,283 +1081,6 @@ func parse_cDB_FromTo(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inboun
 			),
 			_Attribute_List: j._Attribute_List,
 		})
-	}
-	return
-}
-func parse_cDB_AB_add_Address_List(public, private bool, ab_name _Name, inbound ...interface{}) (ok bool) {
-	var (
-		interim        []interface{}
-		interim_AB     = make(map[_Name]bool)
-		interim_FQDN   = make(map[_FQDN]bool)
-		interim_Prefix = make(map[netip.Prefix]bool)
-	)
-	for _, address := range inbound {
-		switch value := (address).(type) {
-		case netip.Addr:
-			switch a := netip_Addr_to_Prefix(&value); {
-			case parse_iDB_AB_netip_Prefix(public, private, &ab_name, &a, &interim_Prefix) == true:
-				interim_Prefix[a] = true
-			}
-		case netip.Prefix:
-			switch {
-			case parse_iDB_AB_netip_Prefix(public, private, &ab_name, &value, &interim_Prefix) == true:
-				interim_Prefix[value] = true
-			}
-		case _FQDN:
-			switch {
-			case parse_iDB_AB_FQDN(public, private, &ab_name, &value, &interim_FQDN) == true:
-				interim_FQDN[value] = true
-			}
-		case _Name:
-			switch {
-			case parse_iDB_AB_Name(public, private, &ab_name, &value, &interim_AB) == true:
-				interim_AB[value] = true
-			}
-		case []netip.Addr:
-			for _, f := range value {
-				switch a := netip_Addr_to_Prefix(&f); {
-				case parse_iDB_AB_netip_Prefix(public, private, &ab_name, &a, &interim_Prefix) == true:
-					interim_Prefix[a] = true
-				}
-			}
-		case []netip.Prefix:
-			for _, f := range value {
-				switch {
-				case parse_iDB_AB_netip_Prefix(public, private, &ab_name, &f, &interim_Prefix) == true:
-					interim_Prefix[f] = true
-				}
-			}
-		case []_FQDN:
-			for _, f := range value {
-				switch {
-				case parse_iDB_AB_FQDN(public, private, &ab_name, &f, &interim_FQDN) == true:
-					interim_FQDN[f] = true
-				}
-			}
-		case []_Name:
-			for _, f := range value {
-				switch {
-				case parse_iDB_AB_Name(public, private, &ab_name, &f, &interim_AB) == true:
-					interim_AB[f] = true
-				}
-			}
-		}
-	}
-	// for _, address := range inbound {
-	// 	switch value := (address).(type) {
-	// 	case netip.Addr:
-	// 		var (
-	// 			a = netip_Addr_to_Prefix(value)
-	// 		)
-	// 		switch {
-	// 		case parse_iDB_AB_netip_Prefix(public, private, ab_name, a) == true:
-	// 			switch _, flag := interim_Prefix[a]; {
-	// 			case !flag:
-	// 				interim_Prefix[a] = true
-	// 			}
-	// 		}
-	// 	case netip.Prefix:
-	// 		switch _, flag := interim_Prefix[value]; {
-	// 		case !flag:
-	// 			interim_filtered[value] = true
-	// 		}
-	// 	case _FQDN:
-	// 		switch _, flag := interim_filtered[value]; {
-	// 		case !flag:
-	// 			interim_filtered[value] = true
-	// 		}
-	// 	case _Name:
-	// 		switch _, flag := interim_filtered[value]; {
-	// 		case !flag:
-	// 			interim_filtered[value] = true
-	// 		}
-	// 	case []netip.Addr:
-	// 		for _, f := range value {
-	// 			var (
-	// 				a = netip_Addr_to_Prefix(f)
-	// 			)
-	// 			switch {
-	// 			case parse_iDB_AB_netip_Prefix(public, private, ab_name, a) == true:
-	// 				switch _, flag := interim_Prefix[a]; {
-	// 				case !flag:
-	// 					interim_Prefix[a] = true
-	// 				}
-	// 			}
-	// 		}
-	// 	case []netip.Prefix:
-	// 		for _, f := range value {
-	// 			switch _, flag := interim_filtered[value]; {
-	// 			case !flag:
-	// 				interim_filtered[f] = true
-	// 			}
-	// 		}
-	// 	case []_FQDN:
-	// 		for _, f := range value {
-	// 			switch _, flag := interim_filtered[value]; {
-	// 			case !flag:
-	// 				interim_filtered[f] = true
-	// 			}
-	// 		}
-	// 	case []_Name:
-	// 		for _, f := range value {
-	// 			switch _, flag := interim_filtered[value]; {
-	// 			case !flag:
-	// 				interim_filtered[f] = true
-	// 			}
-	// 		}
-	// 	}
-	// }
-	// for _, address := range inbound {
-	// 	switch value := (address).(type) {
-	// 	case netip.Addr:
-	// 		switch a, b := parse_iDB_AB_netip_Addr(public, private, &ab_name, &value); {
-	// 		case b == true:
-	// 			interim = append(interim, a)
-	// 		}
-	// 	case netip.Prefix:
-	// 		switch {
-	// 		case parse_iDB_AB_netip_Prefix(public, private, &ab_name, &value) == true:
-	// 			interim = append(interim, value)
-	// 		}
-	// 	case _FQDN:
-	// 		switch {
-	// 		case parse_iDB_AB_FQDN(public, private, &ab_name, &value) == true:
-	// 			interim = append(interim, value)
-	// 		}
-	// 	case _Name:
-	// 		switch {
-	// 		case parse_iDB_AB_Name(public, private, &ab_name, &value) == true:
-	// 			interim = append(interim, value)
-	// 		}
-	// 	case []netip.Addr:
-	// 		for _, f := range value {
-	// 			switch a, b := parse_iDB_AB_netip_Addr(public, private, &ab_name, &f); b == true {
-	// 			case true:
-	// 				interim = append(interim, a)
-	// 			}
-	// 		}
-	// 	case []netip.Prefix:
-	// 		for _, f := range value {
-	// 			switch {
-	// 			case parse_iDB_AB_netip_Prefix(public, private, &ab_name, &f) == true:
-	// 				interim = append(interim, f)
-	// 			}
-	// 		}
-	// 	case []_FQDN:
-	// 		for _, f := range value {
-	// 			switch {
-	// 			case parse_iDB_AB_FQDN(public, private, &ab_name, &f) == true:
-	// 				interim = append(interim, f)
-	// 			}
-	// 		}
-	// 	case []_Name:
-	// 		for _, f := range value {
-	// 			switch {
-	// 			case parse_iDB_AB_Name(public, private, &ab_name, &f) == true:
-	// 				interim = append(interim, f)
-	// 			}
-	// 		}
-	// 	default:
-	// 		log.Warnf("AB '%v', address '%v'; unknown address type; ACTION: skip.", ab_name, value)
-	// 		continue
-	// 	}
-	// }
-
-	// for _, address := range interim {
-	// 	switch value := (address).(type) {
-	// 	case netip.Addr:
-	// 		switch is_private, is_valid := value.IsPrivate(), value.IsValid(); {
-	// 		case !is_valid || (is_private && !private) || (!is_private && !public):
-	// 			log.Debugf("AB '%v', address '%v' is valid '%v' against public '%v' / private '%v': address not suitable; ACTION: skip.", ab_name, value, value.IsValid(), public, private)
-	// 			continue
-	// 		}
-	// 		var (
-	// 			bits = 32
-	// 		)
-	// 		switch {
-	// 		case value.Is6():
-	// 			bits = 128
-	// 		}
-	// 		interim = append(interim, parse_interface(value.Prefix(bits)).(netip.Prefix))
-	// 	case netip.Prefix:
-	// 		switch is_private, is_valid := value.Masked().Addr().IsPrivate(), value.IsValid(); {
-	// 		case !is_valid || (is_private && !private) || (!is_private && !public):
-	// 			log.Debugf("AB '%v', address '%v' is valid '%v' against public '%v' / private '%v': address not suitable; ACTION: skip.", ab_name, value, value.IsValid(), public, private)
-	// 			continue
-	// 		}
-	// 		interim = append(interim, value)
-	// 	case _FQDN:
-	// 		switch {
-	// 		case len(value) == 0:
-	// 			continue
-	// 		}
-	// 		interim = append(interim, value)
-	// 	case _Name:
-	// 		switch {
-	// 		case len(value) == 0:
-	// 			continue
-	// 		}
-	// 		interim = append(interim, value)
-	// 	default:
-	// 		log.Warnf("AB '%v', address '%v'; unknown address type; ACTION: skip.", ab_name, value)
-	// 		continue
-	// 	}
-	// }
-
-	switch _, flag := i_ab[ab_name]; {
-	case flag && i_ab[ab_name].Type == _Type_set:
-
-	}
-	for _, address := range interim {
-		switch _, flag := i_ab[ab_name]; {
-		case flag && i_ab[ab_name].Type == _Type_set:
-			switch value := (address).(type) {
-			case _Name:
-				ok = true
-				i_ab[ab_name].Set[value] = i_AB_Set{
-					Type:      _Type_set,
-					GT_Action: strings_join(" ", _Action_address__set, value),
-				}
-			case _FQDN:
-				ok = true
-				i_ab[ab_name].Set[_Name(value)] = i_AB_Set{
-					Type:      _Type_fqdn,
-					GT_Action: strings_join(" ", _Action_address, value),
-				}
-				parse_iDB_AB_create_FQDN(&value, nil)
-			case netip.Prefix:
-				ok = true
-				i_ab[ab_name].Set[_Name(value.String())] = i_AB_Set{
-					Type:      _Type_ipprefix,
-					GT_Action: strings_join(" ", _Action_address, value),
-				}
-				parse_iDB_AB_create_Prefix(&value, nil)
-			}
-		case flag:
-			log.Debugf("AB '%+v''%+v', already exist; ACTION: skip.", ab_name, i_ab[ab_name])
-			continue
-		default:
-			switch value := (address).(type) {
-			case _FQDN:
-				ok = true
-				i_ab[ab_name] = &i_AB{
-					Type:      _Type_fqdn,
-					IPPrefix:  netip.Prefix{},
-					FQDN:      value,
-					Set:       nil,
-					GT_Action: strings_join(" ", _Action_security___address__book___global___address, ab_name, _Action_dns__name, value),
-				}
-			case netip.Prefix:
-				ok = true
-				i_ab[ab_name] = &i_AB{
-					Type:      _Type_ipprefix,
-					IPPrefix:  value,
-					FQDN:      "",
-					Set:       nil,
-					GT_Action: strings_join(" ", _Action_security___address__book___global___address, ab_name, _Action_address, value),
-				}
-			}
-		}
 	}
 	return
 }

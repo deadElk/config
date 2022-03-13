@@ -47,7 +47,7 @@ func peer_iDB_recurse_AB(interim *map[_Name]*i_AB, inbound _Name) (ok bool) {
 }
 
 func define_iDB_Vocabulary() (ok bool) {
-	parse_iDB_AB_create_Set(_Name_PUBLIC, &_Attribute_List{})
+	create_iDB_AB_Set(_Name_PUBLIC)
 
 	for a, b := range map[_Name][]string{
 		"any_v4":       {"0.0.0.0/0"},
@@ -55,13 +55,16 @@ func define_iDB_Vocabulary() (ok bool) {
 		"private_v4":   {"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"},
 		"linklocal_v4": {"169.254.0.0/16"},
 	} {
-		parse_iDB_AB_create_Set(a, &_Attribute_List{})
+		switch {
+		case len(b) > 1:
+			create_iDB_AB_Set(a)
+		}
 		i_pl[a] = &i_PO_PL{GT_Action: strings_join(" ", _Action_policy__options___prefix__list, a)}
 		for _, d := range b {
 			var (
 				e = parse_interface(netip.ParsePrefix(d)).(netip.Prefix)
 			)
-			parse_cDB_AB_add_Address_List(true, true, a, e)
+			add_iDB_AB_Address_List(true, true, a, e)
 			i_pl[a].Match = append(i_pl[a].Match, i_PO_PL_Match{
 				IPPrefix:  e,
 				GT_Action: d,
@@ -181,81 +184,148 @@ func define_iDB_Vocabulary() (ok bool) {
 	return true
 }
 
-func netip_Addr_to_Prefix(inbound *netip.Addr) (outbound netip.Prefix) {
-	return parse_interface((*inbound).Prefix((*inbound).BitLen())).(netip.Prefix)
-}
-func parse_iDB_AB_netip_Prefix(public, private bool, ab_name *_Name, inbound *netip.Prefix, interim *map[netip.Prefix]bool) (ok bool) {
-	switch _, flag := (*interim)[*inbound]; {
+func parse_iDB_AB_netip_Prefix(public, private bool, ab_name _Name, inbound netip.Prefix, interim *map[netip.Prefix]bool) {
+	switch _, flag := (*interim)[inbound]; {
 	case flag:
 		return
 	}
-	switch is_private, is_valid := (*inbound).Masked().Addr().IsPrivate(), (*inbound).IsValid(); {
+	switch is_private, is_valid := inbound.Masked().Addr().IsPrivate(), inbound.IsValid(); {
 	case !is_valid || (is_private && !private) || (!is_private && !public):
-		log.Debugf("AB '%v', address '%v' is valid '%v' against public '%v' / private '%v': address not suitable; ACTION: skip.", *ab_name, *inbound, is_valid, public, private)
+		log.Debugf("AB '%v', address '%v' is valid '%v' against public '%v' / private '%v': address not suitable; ACTION: skip.", ab_name, inbound, is_valid, public, private)
 		return
 	}
-	return true
+	(*interim)[inbound] = true
 }
-func parse_iDB_AB_FQDN(public, private bool, ab_name *_Name, inbound *_FQDN, interim *map[_FQDN]bool) (ok bool) {
-	switch _, flag := (*interim)[*inbound]; {
-	case flag || len(*inbound) == 0:
+func parse_iDB_AB_FQDN(public, private bool, ab_name _Name, inbound _FQDN, interim *map[_FQDN]bool) {
+	switch _, flag := (*interim)[inbound]; {
+	case flag || len(inbound) == 0:
 		return
 	}
-	return true
+	(*interim)[inbound] = true
 }
-func parse_iDB_AB_Name(public, private bool, ab_name *_Name, inbound *_Name, interim *map[_Name]bool) (ok bool) {
-	switch _, flag := (*interim)[*inbound]; {
-	case flag || len(*inbound) == 0:
+func parse_iDB_AB_Name(public, private bool, ab_name _Name, inbound _Name, interim *map[_Name]bool) {
+	switch _, flag := (*interim)[inbound]; {
+	case flag || len(inbound) == 0:
 		return
 	}
-	return true
+	(*interim)[inbound] = true
 }
 
-func parse_iDB_AB_create_Set(ab_name _Name, al *_Attribute_List) (ok bool) {
+func create_iDB_AB_Set(ab_name _Name) (ok bool) {
 	switch _, flag := i_ab[ab_name]; {
 	case flag:
 		log.Warnf("Address Book '%+v', already exist; ACTION: skip.", ab_name)
 		return
 	}
 	i_ab[ab_name] = &i_AB{
-		Type:            _Type_set,
-		Set:             map[_Name]i_AB_Set{},
-		GT_Action:       strings_join(" ", _Action_security___address__book___global___address__set, ab_name),
-		_Attribute_List: *al,
+		Type:      _Type_set,
+		Set:       map[_Name]i_AB_Set{},
+		GT_Action: strings_join(" ", _Action_security___address__book___global___address__set, ab_name),
 	}
 	return true
 }
-func parse_iDB_AB_create_Prefix(inbound *netip.Prefix, al *_Attribute_List) (ok bool) {
-	var (
-		ab_name = _Name((*inbound).String())
-	)
+func create_iDB_AB_FQDN(ab_name _Name, inbound _FQDN) (ok bool) {
+	switch {
+	case len(ab_name) == 0:
+		ab_name = _Name(inbound)
+	}
 	switch _, flag := i_ab[ab_name]; {
 	case flag:
 		log.Warnf("Address Book '%+v', already exist; ACTION: skip.", ab_name)
 		return
 	}
 	i_ab[ab_name] = &i_AB{
-		Type:            _Type_ipprefix,
-		IPPrefix:        *inbound,
-		GT_Action:       strings_join(" ", _Action_security___address__book___global___address, ab_name, _Action_address, *inbound),
-		_Attribute_List: *al,
+		Type:      _Type_fqdn,
+		FQDN:      inbound,
+		GT_Action: strings_join(" ", _Action_security___address__book___global___address, ab_name, _Action_dns__name, inbound),
 	}
 	return true
 }
-func parse_iDB_AB_create_FQDN(inbound *_FQDN, al *_Attribute_List) (ok bool) {
-	var (
-		ab_name = _Name(*inbound)
-	)
+func create_iDB_AB_Prefix(ab_name _Name, inbound netip.Prefix) (ok bool) {
+	switch {
+	case len(ab_name) == 0:
+		ab_name = _Name(inbound.String())
+	}
 	switch _, flag := i_ab[ab_name]; {
 	case flag:
 		log.Warnf("Address Book '%+v', already exist; ACTION: skip.", ab_name)
 		return
 	}
 	i_ab[ab_name] = &i_AB{
-		Type:            _Type_fqdn,
-		FQDN:            *inbound,
-		GT_Action:       strings_join(" ", _Action_security___address__book___global___address, ab_name, _Action_dns__name, *inbound),
-		_Attribute_List: *al,
+		Type:      _Type_ipprefix,
+		IPPrefix:  inbound,
+		GT_Action: strings_join(" ", _Action_security___address__book___global___address, ab_name, _Action_address, inbound),
+	}
+	return true
+}
+func add_iDB_AB_Address_List(public, private bool, ab_name _Name, inbound ...interface{}) (ok bool) {
+	var (
+		interim_AB     = make(map[_Name]bool)
+		interim_FQDN   = make(map[_FQDN]bool)
+		interim_Prefix = make(map[netip.Prefix]bool)
+	)
+	for _, address := range inbound {
+		switch value := (address).(type) {
+		case netip.Addr:
+			parse_iDB_AB_netip_Prefix(public, private, ab_name, convert_netip_Addr_Prefix(&value), &interim_Prefix)
+		case netip.Prefix:
+			parse_iDB_AB_netip_Prefix(public, private, ab_name, value, &interim_Prefix)
+		case _FQDN:
+			parse_iDB_AB_FQDN(public, private, ab_name, value, &interim_FQDN)
+		case _Name:
+			parse_iDB_AB_Name(public, private, ab_name, value, &interim_AB)
+		case []netip.Addr:
+			for _, f := range value {
+				parse_iDB_AB_netip_Prefix(public, private, ab_name, convert_netip_Addr_Prefix(&f), &interim_Prefix)
+			}
+		case []netip.Prefix:
+			for _, f := range value {
+				parse_iDB_AB_netip_Prefix(public, private, ab_name, f, &interim_Prefix)
+			}
+		case []_FQDN:
+			for _, f := range value {
+				parse_iDB_AB_FQDN(public, private, ab_name, f, &interim_FQDN)
+			}
+		case []_Name:
+			for _, f := range value {
+				parse_iDB_AB_Name(public, private, ab_name, f, &interim_AB)
+			}
+		}
+	}
+
+	switch _, flag := i_ab[ab_name]; {
+	case flag && i_ab[ab_name].Type == _Type_set:
+		for a := range interim_AB {
+			i_ab[ab_name].Set[a] = i_AB_Set{
+				Type:      _Type_set,
+				GT_Action: strings_join(" ", _Action_address__set, a),
+			}
+			// create_iDB_AB_Set(a)
+		}
+		for a := range interim_FQDN {
+			i_ab[ab_name].Set[_Name(a)] = i_AB_Set{
+				Type:      _Type_fqdn,
+				GT_Action: strings_join(" ", _Action_address, a),
+			}
+			create_iDB_AB_FQDN("", a)
+		}
+		for a := range interim_Prefix {
+			i_ab[ab_name].Set[_Name(a.String())] = i_AB_Set{
+				Type:      _Type_ipprefix,
+				GT_Action: strings_join(" ", _Action_address, a),
+			}
+			create_iDB_AB_Prefix("", a)
+		}
+	case flag:
+		log.Debugf("AB '%+v''%+v', already exist; ACTION: skip.", ab_name, i_ab[ab_name])
+		return
+	default:
+		for a := range interim_FQDN {
+			create_iDB_AB_FQDN(ab_name, a)
+		}
+		for a := range interim_Prefix {
+			create_iDB_AB_Prefix(ab_name, a)
+		}
 	}
 	return true
 }

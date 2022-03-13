@@ -496,3 +496,7 @@ func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 	}
 	return
 }
+
+func convert_netip_Addr_Prefix(inbound *netip.Addr) (outbound netip.Prefix) {
+	return parse_interface((*inbound).Prefix((*inbound).BitLen())).(netip.Prefix)
+}
