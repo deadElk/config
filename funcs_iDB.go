@@ -59,7 +59,7 @@ func define_iDB_Vocabulary() (ok bool) {
 		case len(b) > 1:
 			create_iDB_AB_Set(a)
 		}
-		i_pl[a] = &i_PO_PL{GT_Action: strings_join(" ", _Action_policy__options___prefix__list, a)}
+		i_pl[a] = &i_PO_PL{GT_Action: strings_join(" ", _W_policy__options___prefix__list, a)}
 		for _, d := range b {
 			var (
 				e = parse_interface(netip.ParsePrefix(d)).(netip.Prefix)
@@ -70,116 +70,116 @@ func define_iDB_Vocabulary() (ok bool) {
 				GT_Action: d,
 			})
 		}
-		i_ps[_Name(strings_join("_", _Action_aggregate, a))] = &i_PO_PS{
+		i_ps[_Name(strings_join("_", _W_aggregate, a))] = &i_PO_PS{
 			Term: []i_PO_PS_Term{
 				0: {
 					Name: "REJECT",
 					From: []i_PO_PS_From{
-						0: {PL: a, Mask: _Mask_longer, GT_Action: strings_join(" ", _Action_prefix__list__filter, a, _Mask_longer)},
+						0: {PL: a, Mask: _Mask_longer, GT_Action: strings_join(" ", _W_prefix__list__filter, a, _Mask_longer)},
 					},
 					Then: []i_PO_PS_Then{
-						0: {Action: _Action_load_balance, Action_Flag: _Action_per__packet, GT_Action: strings_join(" ", _Action_load_balance, _Action_per__packet)},
+						0: {Action: _W_load__balance, Action_Flag: _W_per__packet, GT_Action: strings_join(" ", _W_load__balance, _W_per__packet)},
 					},
-					GT_Action: strings_join(" ", _Action_term, "REJECT"),
+					GT_Action: strings_join(" ", _W_term, "REJECT"),
 				},
 			},
-			GT_Action: strings_join(" ", _Action_policy__options___policy__statement, _Name(strings_join("_", _Action_aggregate, a))),
+			GT_Action: strings_join(" ", _W_policy__options___policy__statement, _Name(strings_join("_", _W_aggregate, a))),
 		}
 	}
 
 	for a, b := uint32(0), _Route_Weight(1); a <= uint32(_Route_Weight_max_rm); a, b = a+1, b<<int(_Route_Weight_bits_per_rm) {
 		var (
-			c = _Name(strings_join("_", _Action_import_metric, pad(a, 2)))
-			d = _Name(strings_join("_", _Action_export_metric, pad(a, 2)))
+			c = _Name(strings_join("_", _W_import_metric, pad(a, 2)))
+			d = _Name(strings_join("_", _W_export_metric, pad(a, 2)))
 		)
 		i_ps[c] = &i_PO_PS{
 			Term: []i_PO_PS_Term{
 				0: {
 					Name: "ACCEPT",
 					Then: []i_PO_PS_Then{
-						0: {Action: _Action_metric, Action_Flag: _Action_add, Metric: b, GT_Action: strings_join(" ", _Action_then, _Action_metric, _Action_add, b)},
-						1: {Action: _Action_accept, GT_Action: strings_join(" ", _Action_then, _Action_accept)},
+						0: {Action: _W_metric, Action_Flag: _W_add, Metric: b, GT_Action: strings_join(" ", _W_then, _W_metric, _W_add, b)},
+						1: {Action: _W_accept, GT_Action: strings_join(" ", _W_then, _W_accept)},
 					},
-					GT_Action: strings_join(" ", _Action_term, "ACCEPT"),
+					GT_Action: strings_join(" ", _W_term, "ACCEPT"),
 				},
 			},
-			GT_Action: strings_join(" ", _Action_policy__options___policy__statement, c),
+			GT_Action: strings_join(" ", _W_policy__options___policy__statement, c),
 		}
 		i_ps[d] = &i_PO_PS{
 			Term: []i_PO_PS_Term{
 				0: {
 					Name: "LOCAL",
 					From: []i_PO_PS_From{
-						0: {Protocol: _Protocol_access_internal, GT_Action: strings_join(" ", _Action_from, _Action_protocol, _Protocol_access_internal)},
-						1: {Protocol: _Protocol_local, GT_Action: strings_join(" ", _Action_from, _Action_protocol, _Protocol_local)},
+						0: {Protocol: _Protocol_access__internal, GT_Action: strings_join(" ", _W_from, _W_protocol, _Protocol_access__internal)},
+						1: {Protocol: _Protocol_local, GT_Action: strings_join(" ", _W_from, _W_protocol, _Protocol_local)},
 					},
 					Then: []i_PO_PS_Then{
-						0: {Action: _Action_reject, GT_Action: strings_join(" ", _Action_then, _Action_reject)},
+						0: {Action: _W_reject, GT_Action: strings_join(" ", _W_then, _W_reject)},
 					},
-					GT_Action: strings_join(" ", _Action_term, "LOCAL"),
+					GT_Action: strings_join(" ", _W_term, "LOCAL"),
 				},
 
 				1: {
 					Name: "DIRECT",
 					From: []i_PO_PS_From{
-						0: {Protocol: _Protocol_direct, GT_Action: strings_join(" ", _Action_from, _Action_protocol, _Protocol_direct)},
-						1: {Protocol: _Protocol_static, GT_Action: strings_join(" ", _Action_from, _Action_protocol, _Protocol_static)},
-						2: {Protocol: _Protocol_aggregate, GT_Action: strings_join(" ", _Action_from, _Action_protocol, _Protocol_aggregate)},
+						0: {Protocol: _Protocol_direct, GT_Action: strings_join(" ", _W_from, _W_protocol, _Protocol_direct)},
+						1: {Protocol: _Protocol_static, GT_Action: strings_join(" ", _W_from, _W_protocol, _Protocol_static)},
+						2: {Protocol: _Protocol_aggregate, GT_Action: strings_join(" ", _W_from, _W_protocol, _Protocol_aggregate)},
 					},
 					Then: []i_PO_PS_Then{
-						0: {Action: _Action_metric, Metric: b, GT_Action: strings_join(" ", _Action_then, _Action_metric, b)},
-						1: {Action: _Action_next__hop, Action_Flag: _Action_self, GT_Action: strings_join(" ", _Action_then, _Action_next__hop, _Action_self)},
-						2: {Action: _Action_accept, GT_Action: strings_join(" ", _Action_then, _Action_accept)},
+						0: {Action: _W_metric, Metric: b, GT_Action: strings_join(" ", _W_then, _W_metric, b)},
+						1: {Action: _W_next__hop, Action_Flag: _W_self, GT_Action: strings_join(" ", _W_then, _W_next__hop, _W_self)},
+						2: {Action: _W_accept, GT_Action: strings_join(" ", _W_then, _W_accept)},
 					},
-					GT_Action: strings_join(" ", _Action_term, "DIRECT"),
+					GT_Action: strings_join(" ", _W_term, "DIRECT"),
 				},
 				2: {
 					Name: "INTERNAL",
 					From: []i_PO_PS_From{
-						0: {Route_Type: _Type_internal, GT_Action: strings_join(" ", _Action_from, _Action_route__type, _Type_internal)},
+						0: {Route_Type: _Type_internal, GT_Action: strings_join(" ", _W_from, _W_route__type, _Type_internal)},
 					},
 					Then: []i_PO_PS_Then{
-						0: {Action: _Action_metric, Action_Flag: _Action_add, Metric: b, GT_Action: strings_join(" ", _Action_then, _Action_metric, _Action_add, b+1)},
-						1: {Action: _Action_next__hop, Action_Flag: _Action_self, GT_Action: strings_join(" ", _Action_then, _Action_next__hop, _Action_self)},
-						2: {Action: _Action_accept, GT_Action: strings_join(" ", _Action_then, _Action_accept)},
+						0: {Action: _W_metric, Action_Flag: _W_add, Metric: b, GT_Action: strings_join(" ", _W_then, _W_metric, _W_add, b+1)},
+						1: {Action: _W_next__hop, Action_Flag: _W_self, GT_Action: strings_join(" ", _W_then, _W_next__hop, _W_self)},
+						2: {Action: _W_accept, GT_Action: strings_join(" ", _W_then, _W_accept)},
 					},
-					GT_Action: strings_join(" ", _Action_term, "INTERNAL"),
+					GT_Action: strings_join(" ", _W_term, "INTERNAL"),
 				},
 				3: {
 					Name: "EXTERNAL",
 					From: []i_PO_PS_From{
-						0: {Route_Type: _Type_external, GT_Action: strings_join(" ", _Action_from, _Action_route__type, _Type_external)},
+						0: {Route_Type: _Type_external, GT_Action: strings_join(" ", _W_from, _W_route__type, _Type_external)},
 					},
 					Then: []i_PO_PS_Then{
-						0: {Action: _Action_metric, Action_Flag: _Action_add, Metric: b, GT_Action: strings_join(" ", _Action_then, _Action_metric, _Action_add, b)},
-						1: {Action: _Action_next__hop, Action_Flag: _Action_self, GT_Action: strings_join(" ", _Action_then, _Action_next__hop, _Action_self)},
-						2: {Action: _Action_accept, GT_Action: strings_join(" ", _Action_then, _Action_accept)},
+						0: {Action: _W_metric, Action_Flag: _W_add, Metric: b, GT_Action: strings_join(" ", _W_then, _W_metric, _W_add, b)},
+						1: {Action: _W_next__hop, Action_Flag: _W_self, GT_Action: strings_join(" ", _W_then, _W_next__hop, _W_self)},
+						2: {Action: _W_accept, GT_Action: strings_join(" ", _W_then, _W_accept)},
 					},
-					GT_Action: strings_join(" ", _Action_term, "EXTERNAL"),
+					GT_Action: strings_join(" ", _W_term, "EXTERNAL"),
 				},
 
 				4: {
 					Name: "REJECT",
 					Then: []i_PO_PS_Then{
-						0: {Action: _Action_reject, GT_Action: strings_join(" ", _Action_then, _Action_reject)},
+						0: {Action: _W_reject, GT_Action: strings_join(" ", _W_then, _W_reject)},
 					},
-					GT_Action: strings_join(" ", _Action_term, "REJECT"),
+					GT_Action: strings_join(" ", _W_term, "REJECT"),
 				},
 			},
-			GT_Action: strings_join(" ", _Action_policy__options___policy__statement, d),
+			GT_Action: strings_join(" ", _W_policy__options___policy__statement, d),
 		}
 	}
-	i_ps[_Name(_Action_per__packet)] = &i_PO_PS{
+	i_ps[_Name(_W_per__packet)] = &i_PO_PS{
 		Term: []i_PO_PS_Term{
 			0: {
 				Name: "PER_PACKET",
 				Then: []i_PO_PS_Then{
-					0: {Action: _Action_load_balance, Action_Flag: _Action_per__packet, GT_Action: strings_join(" ", _Action_load_balance, _Action_per__packet)},
+					0: {Action: _W_load__balance, Action_Flag: _W_per__packet, GT_Action: strings_join(" ", _W_load__balance, _W_per__packet)},
 				},
-				GT_Action: strings_join(" ", _Action_term, "PER_PACKET"),
+				GT_Action: strings_join(" ", _W_term, "PER_PACKET"),
 			},
 		},
-		GT_Action: strings_join(" ", _Action_policy__options___policy__statement, _Name(_Action_per__packet)),
+		GT_Action: strings_join(" ", _W_policy__options___policy__statement, _Name(_W_per__packet)),
 	}
 	return true
 }
@@ -220,7 +220,7 @@ func create_iDB_AB_Set(ab_name _Name) (ok bool) {
 	i_ab[ab_name] = &i_AB{
 		Type:      _Type_set,
 		Set:       map[_Name]i_AB_Set{},
-		GT_Action: strings_join(" ", _Action_security___address__book___global___address__set, ab_name),
+		GT_Action: strings_join(" ", _W_security___address__book___global___address__set, ab_name),
 	}
 	return true
 }
@@ -237,7 +237,7 @@ func create_iDB_AB_FQDN(ab_name _Name, inbound _FQDN) (ok bool) {
 	i_ab[ab_name] = &i_AB{
 		Type:      _Type_fqdn,
 		FQDN:      inbound,
-		GT_Action: strings_join(" ", _Action_security___address__book___global___address, ab_name, _Action_dns__name, inbound),
+		GT_Action: strings_join(" ", _W_security___address__book___global___address, ab_name, _W_dns__name, inbound),
 	}
 	return true
 }
@@ -254,7 +254,7 @@ func create_iDB_AB_Prefix(ab_name _Name, inbound netip.Prefix) (ok bool) {
 	i_ab[ab_name] = &i_AB{
 		Type:      _Type_ipprefix,
 		IPPrefix:  inbound,
-		GT_Action: strings_join(" ", _Action_security___address__book___global___address, ab_name, _Action_address, inbound),
+		GT_Action: strings_join(" ", _W_security___address__book___global___address, ab_name, _W_address, inbound),
 	}
 	return true
 }
@@ -298,21 +298,21 @@ func add_iDB_AB_Address_List(public, private bool, ab_name _Name, inbound ...int
 		for a := range interim_AB {
 			i_ab[ab_name].Set[a] = i_AB_Set{
 				Type:      _Type_set,
-				GT_Action: strings_join(" ", _Action_address__set, a),
+				GT_Action: strings_join(" ", _W_address__set, a),
 			}
 			// create_iDB_AB_Set(a)
 		}
 		for a := range interim_FQDN {
 			i_ab[ab_name].Set[_Name(a)] = i_AB_Set{
 				Type:      _Type_fqdn,
-				GT_Action: strings_join(" ", _Action_address, a),
+				GT_Action: strings_join(" ", _W_address, a),
 			}
 			create_iDB_AB_FQDN("", a)
 		}
 		for a := range interim_Prefix {
 			i_ab[ab_name].Set[_Name(a.String())] = i_AB_Set{
 				Type:      _Type_ipprefix,
-				GT_Action: strings_join(" ", _Action_address, a),
+				GT_Action: strings_join(" ", _W_address, a),
 			}
 			create_iDB_AB_Prefix("", a)
 		}

@@ -324,7 +324,7 @@ func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound _Host_Inbound_
 	outbound = _Host_Inbound_Traffic_List{
 		Services:  map[_Service]bool{},
 		Protocols: map[_Protocol]bool{},
-		GT_Action: _Action_host_inbound_traffic.String() + " ",
+		GT_Action: _W_host__inbound__traffic.String() + " ",
 	}
 	for _, b := range enabled {
 		switch value := b.(type) {
@@ -392,17 +392,17 @@ func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_dir
 		outbound = port_low.String()
 		fallthrough
 	case port_low != 0 && port_high != 0:
-		outbound = strings_join(" ", outbound, _Action_to, port_high)
+		outbound = strings_join(" ", outbound, _W_to, port_high)
 	default:
 		return
 	}
 	switch {
 	case inbound_type == _Type_static && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _Action_source__port, outbound)
+		outbound = strings_join(" ", _W_source__port, outbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _Action_destination__port, outbound)
+		outbound = strings_join(" ", _W_destination__port, outbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _Action_mapped__port, outbound)
+		outbound = strings_join(" ", _W_mapped__port, outbound)
 	}
 
 	return
@@ -436,13 +436,13 @@ func strings_join(delimiter string, inbound ...interface{}) (outbound string) {
 func parse_cDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak *cDB_Peer_RI_RO_Route_Leak) (outbound map[_Action]i_Route_Leak_FromTo /* , ok bool */) {
 	// outbound = make(map[_Action]i_Route_Leak_FromTo)
 	return parse_iDB_Route_Leak(nil, v_Peer, "", "", &map[_Action]i_Route_Leak_FromTo{
-		_Action_import: {PS: func() (outbound []_Name) {
+		_W_import: {PS: func() (outbound []_Name) {
 			for _, b := range (*route_leak).Import {
 				outbound = append(outbound, b.PS)
 			}
 			return
 		}()},
-		_Action_export: {PS: func() (outbound []_Name) {
+		_W_export: {PS: func() (outbound []_Name) {
 			for _, b := range (*route_leak).Export {
 				outbound = append(outbound, b.PS)
 			}
@@ -454,7 +454,7 @@ func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 	outbound = make(map[_Action]i_Route_Leak_FromTo)
 	var (
 		v_RL_Import = func() (outbound []_Name) {
-			for _, b := range (*route_leak)[_Action_import].PS {
+			for _, b := range (*route_leak)[_W_import].PS {
 				switch _, flag := i_ps[b]; {
 				case !flag:
 					log.Warnf("Peer '%v', PL '%v' not found; ACTION: ignore.", v_Peer.ASN, b)
@@ -466,7 +466,7 @@ func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 			return
 		}()
 		v_RL_Export = func() (outbound []_Name) {
-			for _, b := range (*route_leak)[_Action_export].PS {
+			for _, b := range (*route_leak)[_W_export].PS {
 				switch _, flag := i_ps[b]; {
 				case !flag:
 					log.Warnf("Peer '%v', PL '%v' not found; ACTION: ignore.", v_Peer.ASN, b)
@@ -480,18 +480,18 @@ func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 	)
 	switch {
 	case len(v_RL_Import) != 0:
-		outbound[_Action_import] = i_Route_Leak_FromTo{
+		outbound[_W_import] = i_Route_Leak_FromTo{
 			PS:              v_RL_Import,
-			GT_Action:       strings_join(" ", _Action_import, "[", v_RL_Import, "]"),
-			_Attribute_List: (*route_leak)[_Action_import]._Attribute_List,
+			GT_Action:       strings_join(" ", _W_import, "[", v_RL_Import, "]"),
+			_Attribute_List: (*route_leak)[_W_import]._Attribute_List,
 		}
 	}
 	switch {
 	case len(v_RL_Export) != 0:
-		outbound[_Action_export] = i_Route_Leak_FromTo{
+		outbound[_W_export] = i_Route_Leak_FromTo{
 			PS:              v_RL_Export,
-			GT_Action:       strings_join(" ", _Action_export, "[", v_RL_Export, "]"),
-			_Attribute_List: (*route_leak)[_Action_export]._Attribute_List,
+			GT_Action:       strings_join(" ", _W_export, "[", v_RL_Export, "]"),
+			_Attribute_List: (*route_leak)[_W_export]._Attribute_List,
 		}
 	}
 	return

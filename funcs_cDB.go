@@ -74,13 +74,13 @@ func parse_cDB_JA(inbound []*cDB_JA) (ok bool) {
 							Name:             d.Name,
 							Protocol:         d.Protocol,
 							Destination_Port: d.Destination_Port,
-							GT_Action:        strings_join(" ", _Action_term, d.Name, _Action_protocol, d.Protocol, _Action_destination__port, d.Destination_Port),
+							GT_Action:        strings_join(" ", _W_term, d.Name, _W_protocol, d.Protocol, _W_destination__port, d.Destination_Port),
 							_Attribute_List:  d._Attribute_List,
 						})
 					}
 					return
 				}(),
-				GT_Action:       strings_join(" ", _Action_applications____application, b.Name),
+				GT_Action:       strings_join(" ", _W_applications____application, b.Name),
 				_Attribute_List: b._Attribute_List,
 			}
 			return
@@ -111,7 +111,7 @@ func parse_cDB_PL(inbound []*cDB_PO_PL) (ok bool) {
 					}
 					return
 				}(),
-				GT_Action:       strings_join(" ", _Action_policy__options___prefix__list, b.Name),
+				GT_Action:       strings_join(" ", _W_policy__options___prefix__list, b.Name),
 				_Attribute_List: b._Attribute_List,
 			}
 			return
@@ -140,11 +140,11 @@ func parse_cDB_PS(inbound []*cDB_PO_PS) (ok bool) {
 										Route_Type: f.Route_Type,
 										PL:         f.PL,
 										Mask:       f.Mask,
-										GT_Action: strings_join(" ", _Action_from,
-											f.RI.action_RI(nil, nil, _Type_policy_statement, ""),
+										GT_Action: strings_join(" ", _W_from,
+											f.RI.action_RI(nil, nil, _Type_policy__statement, ""),
 											f.Protocol.action_Protocol(nil, nil, "", ""),
 											f.Route_Type.action_Route_Type(nil, nil, "", ""),
-											f.PL.action_PL(nil, nil, _Type_policy_statement, ""),
+											f.PL.action_PL(nil, nil, _Type_policy__statement, ""),
 											f.Mask,
 										),
 										_Attribute_List: f._Attribute_List,
@@ -159,25 +159,25 @@ func parse_cDB_PS(inbound []*cDB_PO_PS) (ok bool) {
 									)
 									switch {
 									case f.Metric != 0:
-										v_Action = strings_join(" ", _Action_metric, f.Metric)
+										v_Action = strings_join(" ", _W_metric, f.Metric)
 									}
 									outbound = append(outbound, i_PO_PS_Then{
 										Action:          f.Action,
 										Action_Flag:     f.Action_Flag,
 										Metric:          f.Metric,
-										GT_Action:       strings_join(" ", _Action_then, f.Action, f.Action_Flag, v_Action),
+										GT_Action:       strings_join(" ", _W_then, f.Action, f.Action_Flag, v_Action),
 										_Attribute_List: f._Attribute_List,
 									})
 								}
 								return
 							}(),
-							GT_Action:       strings_join(" ", _Action_term, d.Name),
+							GT_Action:       strings_join(" ", _W_term, d.Name),
 							_Attribute_List: d._Attribute_List,
 						})
 					}
 					return
 				}(),
-				GT_Action:       strings_join(" ", _Action_policy__options___policy__statement, b.Name),
+				GT_Action:       strings_join(" ", _W_policy__options___policy__statement, b.Name),
 				_Attribute_List: b._Attribute_List,
 			}
 			return
@@ -429,7 +429,7 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 			}
 			i_peer[v_vi_peer_list[_first].ASN].SZ[i_vi_peer[b.ID][_first].Inner_RI].IF[_if] = i_Peer_SZ_IF{
 				_Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh, _Protocol_bgp),
-				GT_Action:                  strings_join(" ", _Action_interfaces, _if),
+				GT_Action:                  strings_join(" ", _W_interfaces, _if),
 				_Attribute_List:            _Attribute_List{},
 			}
 			i_peer[v_vi_peer_list[_first].ASN].IF_2_RI[_if] = i_vi_peer[b.ID][_first].Inner_RI
@@ -478,7 +478,7 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 					Remote_ASN: 0,
 					Passive:    false,
 					Neighbor:   map[netip.Addr]_BGP_Group_Neighbor{},
-					GT_Action:  strings_join(" ", _Action_group, _Settings[_group]),
+					GT_Action:  strings_join(" ", _W_group, _Settings[_group]),
 				}
 			}
 			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_Settings[_group].(_Name)].Neighbor[i_vi_peer[b.ID][_second].Inner_IP] = _BGP_Group_Neighbor{
@@ -487,10 +487,10 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 				Passive:    i_vi_peer[b.ID][_first].Hub,
 				Local_IP:   i_vi_peer[b.ID][_first].Inner_IP,
 				Route_Leak: parse_iDB_Route_Leak(nil, i_peer[v_vi_peer_list[_first].ASN], "", "", &map[_Action]i_Route_Leak_FromTo{
-					_Action_import: {PS: []_Name{0: _Name(strings_join("_", _Action_import_metric, pad(i_vi[b.ID].Route_Metric, 2)))}},
-					_Action_export: {PS: []_Name{0: _Name(_Action_aggregate), 1: _Name(strings_join("_", _Action_export_metric, pad(i_vi[b.ID].Route_Metric, 2)))}},
+					_W_import: {PS: []_Name{0: _Name(strings_join("_", _W_import_metric, pad(i_vi[b.ID].Route_Metric, 2)))}},
+					_W_export: {PS: []_Name{0: _Name(_W_aggregate), 1: _Name(strings_join("_", _W_export_metric, pad(i_vi[b.ID].Route_Metric, 2)))}},
 				}),
-				GT_Action:       strings_join(" ", _Action_neighbor, i_vi_peer[b.ID][_second].Inner_IP),
+				GT_Action:       strings_join(" ", _W_neighbor, i_vi_peer[b.ID][_second].Inner_IP),
 				_Attribute_List: _Attribute_List{Description: _Description(strings_join("", "TI", i_vi[b.ID].PName))},
 			}
 		}
@@ -521,7 +521,7 @@ func parse_cDB_Peer_IFM(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	for _, b := range peer.IFM {
 		v_Peer.IFM[b.Name] = i_Peer_IFM{
 			Communication:   parse_Communication(&peer.ASN, &b.Name, &b.Communication),
-			GT_Action:       strings_join(" ", _Action_interfaces, b.Name),
+			GT_Action:       strings_join(" ", _W_interfaces, b.Name),
 			_Attribute_List: b._Attribute_List,
 		}
 	}
@@ -535,19 +535,19 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			continue
 		}
 		parse_cDB_PS([]*cDB_PO_PS{
-			0: {Name: _Name(strings_join("_", _Action_redistribute, b.Name)),
+			0: {Name: _Name(strings_join("_", _W_redistribute, b.Name)),
 				Term: []cDB_PO_PS_Term{
 					// 0: {Name: empty_Name.next_ID(),
 					0: {Name: "PERMIT",
 						From:            []cDB_PO_PS_From{0: {RI: b.Name, _Attribute_List: _Attribute_List{}}},
-						Then:            []cDB_PO_PS_Then{0: {Action: _Action_accept, _Attribute_List: _Attribute_List{}}},
+						Then:            []cDB_PO_PS_Then{0: {Action: _W_accept, _Attribute_List: _Attribute_List{}}},
 						_Attribute_List: _Attribute_List{},
 					},
 				},
 				_Attribute_List: _Attribute_List{},
 			},
 		})
-		v_Peer.link_PS(_Name(strings_join("_", _Action_redistribute, b.Name)))
+		v_Peer.link_PS(_Name(strings_join("_", _W_redistribute, b.Name)))
 	}
 	for _, b := range peer.RI {
 		switch _, flag := v_Peer.RI[b.Name]; {
@@ -623,7 +623,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 								add_iDB_AB_Address_List(true, false, _Name_PUBLIC, f.IP, f.NAT)
 								outbound[f.IP] = i_Peer_RI_IF_PARP{
 									NAT:             f.NAT,
-									GT_Action:       strings_join(" ", _Action_security___nat___proxy__arp),
+									GT_Action:       strings_join(" ", _W_security___nat___proxy__arp),
 									_Attribute_List: f._Attribute_List,
 								}
 							}
@@ -653,34 +653,34 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 									v_RT_Table       _Name
 									v_RT_Action      = f.Action.validate(nil, v_Peer)
 									v_RT_Action_Flag _Action
-									v_Action         = strings_join(" ", _Action_static___route, d.Identifier)
+									v_Action         = strings_join(" ", _W_static___route, d.Identifier)
 								)
 								switch {
-								case v_RT_Action == _Action_discard:
+								case v_RT_Action == _W_discard:
 									v_Action = strings_join(" ", v_Action, v_RT_Action)
-								case v_RT_Action == _Action_next__table && len(f.Table) != 0:
+								case v_RT_Action == _W_next__table && len(f.Table) != 0:
 									v_RT_Table = f.Table
 									v_Action = strings_join(" ", v_Action, v_RT_Action, v_RT_Table)
-								case (v_RT_Action == _Action_next__hop || v_RT_Action == _Action_qualified__next__hop) && len(f.IF) != 0:
+								case (v_RT_Action == _W_next__hop || v_RT_Action == _W_qualified__next__hop) && len(f.IF) != 0:
 									v_RT_IF = f.IF
 									v_Action = strings_join(" ", v_Action, v_RT_Action, v_RT_IF)
-								case (v_RT_Action == _Action_next__hop || v_RT_Action == _Action_qualified__next__hop) && f.IP.IsValid():
+								case (v_RT_Action == _W_next__hop || v_RT_Action == _W_qualified__next__hop) && f.IP.IsValid():
 									v_RT_IP = f.IP
 									v_Action = strings_join(" ", v_Action, v_RT_Action, v_RT_IP)
 								case len(v_RT_Action) == 0 && len(f.Table) != 0:
-									v_RT_Action = _Action_next__table
+									v_RT_Action = _W_next__table
 									v_RT_Table = f.Table
 									v_Action = strings_join(" ", v_Action, v_RT_Action, v_RT_Table)
 								case len(v_RT_Action) == 0 && len(f.IF) != 0:
-									v_RT_Action = _Action_next__hop
+									v_RT_Action = _W_next__hop
 									v_RT_IF = f.IF
 									v_Action = strings_join(" ", v_Action, v_RT_Action, v_RT_IF)
 								case len(v_RT_Action) == 0 && f.IP.IsValid():
-									v_RT_Action = _Action_next__hop
+									v_RT_Action = _W_next__hop
 									v_RT_IP = f.IP
 									v_Action = strings_join(" ", v_Action, v_RT_Action, v_RT_IP)
 								case len(v_RT_Action) == 0:
-									v_RT_Action = _Action_discard
+									v_RT_Action = _W_discard
 									v_Action = strings_join(" ", v_Action, v_RT_Action)
 								default:
 									log.Warnf("Peer '%v', RI '%v', Identifier '%v', invalid GW '%v'; ACTION: ignore.", peer.ASN, b.Name, d.Identifier, f)
@@ -688,10 +688,10 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 								}
 								switch {
 								case f.Metric > 0:
-									v_Action = strings_join(" ", v_Action, _Action_metric, f.Metric)
+									v_Action = strings_join(" ", v_Action, _W_metric, f.Metric)
 									fallthrough
 								case f.Preference > 0:
-									v_Action = strings_join(" ", v_Action, _Action_preference, f.Preference)
+									v_Action = strings_join(" ", v_Action, _W_preference, f.Preference)
 								}
 								var (
 									v_GW = i_Peer_RI_RO_RT_GW{
@@ -724,7 +724,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			v_Action = func() string {
 				switch {
 				case b.Name != _Settings[_RI].(_Name):
-					return strings_join(" ", _Action_routing__instances, b.Name)
+					return strings_join(" ", _W_routing__instances, b.Name)
 				}
 				return ""
 			}()
@@ -736,7 +736,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			RT:              v_RT,
 			Route_Leak:      parse_cDB_Route_Leak(peer, v_Peer, "", "", &b.Route_Leak),
 			Protocol:        nil,
-			BGP:             _BGP{BGP_Group: map[_Name]_BGP_Group{}, GT_Action: strings_join(" ", _Action_protocols___bgp), _Attribute_List: _Attribute_List{}},
+			BGP:             _BGP{BGP_Group: map[_Name]_BGP_Group{}, GT_Action: strings_join(" ", _W_protocols___bgp), _Attribute_List: _Attribute_List{}},
 			GT_Action:       v_Action,
 			_Attribute_List: b._Attribute_List,
 		}
@@ -802,14 +802,14 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				for c := range v_Peer.RI[b.Name].IF {
 					outbound[c] = i_Peer_SZ_IF{
 						_Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh),
-						GT_Action:                  strings_join(" ", _Action_interfaces, c),
+						GT_Action:                  strings_join(" ", _W_interfaces, c),
 						_Attribute_List:            _Attribute_List{},
 					}
 				}
 				return
 			}(),
 			_Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(),
-			GT_Action:                  strings_join(" ", _Action_security__zones___security__zone, b.Name),
+			GT_Action:                  strings_join(" ", _W_security__zones___security__zone, b.Name),
 			_Attribute_List:            b._Attribute_List,
 		}
 	}
@@ -824,7 +824,7 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				Screen:                     "",
 				IF:                         map[_Name]i_Peer_SZ_IF{},
 				_Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(),
-				GT_Action:                  strings_join(" ", _Action_security__zones___security__zone, a),
+				GT_Action:                  strings_join(" ", _W_security__zones___security__zone, a),
 				_Attribute_List:            _Attribute_List{},
 			}
 		}
@@ -835,7 +835,7 @@ func parse_cDB_Peer_SZ(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			}
 			v_Peer.SZ[a].IF[e] = i_Peer_SZ_IF{
 				_Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh),
-				GT_Action:                  strings_join(" ", _Action_interfaces, e),
+				GT_Action:                  strings_join(" ", _W_interfaces, e),
 				_Attribute_List:            _Attribute_List{},
 			}
 		}
@@ -851,7 +851,7 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 		Address_Persistent: h.Address_Persistent,
 		Pool:               parse_cDB_Pool(peer, v_Peer, _Type_source, _Type_pool, &h.Pool),
 		Rule_Set:           parse_cDB_Rule_Set(peer, v_Peer, _Type_source, "", &h.Rule_Set),
-		GT_Action:          strings_join(" ", _Action_security___nat___source),
+		GT_Action:          strings_join(" ", _W_security___nat___source),
 		_Attribute_List:    h._Attribute_List,
 	}
 
@@ -860,7 +860,7 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	v_Peer.NAT[_Type_destination] = i_Peer_NAT_Type{
 		Pool:            parse_cDB_Pool(peer, v_Peer, _Type_destination, _Type_pool, &h.Pool),
 		Rule_Set:        parse_cDB_Rule_Set(peer, v_Peer, _Type_destination, "", &h.Rule_Set),
-		GT_Action:       strings_join(" ", _Action_security___nat___destination),
+		GT_Action:       strings_join(" ", _W_security___nat___destination),
 		_Attribute_List: h._Attribute_List,
 	}
 
@@ -869,7 +869,7 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	v_Peer.NAT[_Type_static] = i_Peer_NAT_Type{
 		Pool:            parse_cDB_Pool(peer, v_Peer, _Type_static, _Type_pool, &h.Pool),
 		Rule_Set:        parse_cDB_Rule_Set(peer, v_Peer, _Type_static, "", &h.Rule_Set),
-		GT_Action:       strings_join(" ", _Action_security___nat___static),
+		GT_Action:       strings_join(" ", _W_security___nat___static),
 		_Attribute_List: h._Attribute_List,
 	}
 	return true
@@ -878,7 +878,7 @@ func parse_cDB_Peer_SP(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	v_Peer.SP.Option_List = _SP_Option_List{
 		Default_Policy: func() _Action {
 			switch value := peer.SP_Option_List.Default_Policy; value {
-			case _Action_permit__all, _Action_deny__all:
+			case _W_permit__all, _W_deny__all:
 				return value
 			case "":
 				return _Settings[_sp_default_policy].(_Action)
@@ -906,7 +906,7 @@ func parse_cDB_Peer_SP(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 				case len(t.From) != 1 || len(t.To) != 1:
 					continue
 				}
-				t.GT_Action = strings_join(" ", _Action_security___policies, _Action_from__zone, t.From[0].SZ, _Action_to__zone, t.To[0].SZ)
+				t.GT_Action = strings_join(" ", _W_security___policies, _W_from__zone, t.From[0].SZ, _W_to__zone, t.To[0].SZ)
 			}
 		}
 	}
@@ -917,7 +917,7 @@ func parse_cDB_Peer_SP(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			From:            parse_cDB_FromTo(peer, v_Peer, _Type_global, _Type_from, &j.From),
 			To:              parse_cDB_FromTo(peer, v_Peer, _Type_global, _Type_to, &j.To),
 			Then:            parse_cDB_Then(peer, v_Peer, _Type_global, _Type_then, &j.Then),
-			GT_Action:       strings_join(" ", _Action_security___policies___global___policy, j.Name),
+			GT_Action:       strings_join(" ", _W_security___policies___global___policy, j.Name),
 			_Attribute_List: j._Attribute_List,
 		})
 	}
@@ -957,19 +957,19 @@ func parse_cDB_Peer_FW(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 									Action:          f.Action,
 									Action_Flag:     f.Action_Flag,
 									RI:              f.RI,
-									GT_Action:       strings_join(" ", _Action_then, f.Action, f.Action_Flag, f.RI.action_RI(peer, v_Peer, _Type_firewall, _Type_then)),
+									GT_Action:       strings_join(" ", _W_then, f.Action, f.Action_Flag, f.RI.action_RI(peer, v_Peer, _Type_firewall, _Type_then)),
 									_Attribute_List: f._Attribute_List,
 								})
 							}
 							return
 						}(),
-						GT_Action:       strings_join(" ", _Action_term, d.Name),
+						GT_Action:       strings_join(" ", _W_term, d.Name),
 						_Attribute_List: d._Attribute_List,
 					})
 				}
 				return
 			}(),
-			GT_Action:       strings_join(" ", _Action_firewall___filter, b.Name),
+			GT_Action:       strings_join(" ", _W_firewall___filter, b.Name),
 			_Attribute_List: b._Attribute_List,
 		})
 	}
@@ -1009,7 +1009,7 @@ func parse_cDB_Rule_Set(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbo
 			From:            parse_cDB_FromTo(peer, v_Peer, inbound_type, _Type_from, &j.From),
 			To:              parse_cDB_FromTo(peer, v_Peer, inbound_type, _Type_to, &j.To),
 			Rule:            parse_cDB_Rule(peer, v_Peer, inbound_type, inbound_direction, &j.Rule),
-			GT_Action:       strings_join(" ", _Action_rule__set, j.Name),
+			GT_Action:       strings_join(" ", _W_rule__set, j.Name),
 			_Attribute_List: j._Attribute_List,
 		}
 	}

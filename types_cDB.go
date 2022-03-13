@@ -15,8 +15,14 @@ type cDB struct {
 	GT_Path     string       `xml:"GT_path,attr"`
 	Peer        []*cDB_Peer  `xml:"Peer_List>Peer"`
 	VI          []*cDB_VI    `xml:"VI_List>VI"`
+	LDAP        []*cDB_LDAP  `xml:"LDAP_List>LDAP"`
 	cDB_Vocabulary
 	_Attribute_List
+}
+
+// LDAP
+type cDB_LDAP struct {
+	// URL *url.URL `xml:"url,attr"`
 }
 
 // Vocabulary

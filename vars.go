@@ -36,13 +36,13 @@ var (
 
 var (
 	c_Action = map[_Action]_Action{
-		_Action_discard:              _Action_discard,
-		_Action_interface:            _Action_next__hop,
-		_Action_next__hop:            _Action_next__hop,
-		_Action_next__table:          _Action_next__table,
-		_Action_qnh:                  _Action_qualified__next__hop,
-		_Action_qualified__next__hop: _Action_qualified__next__hop,
-		_Action_table:                _Action_next__table,
+		_W_discard:              _W_discard,
+		_W_interface:            _W_next__hop,
+		_W_next__hop:            _W_next__hop,
+		_W_next__table:          _W_next__table,
+		_W_qnh:                  _W_qualified__next__hop,
+		_W_qualified__next__hop: _W_qualified__next__hop,
+		_W_table:                _W_next__table,
 	}
 	// c_Communication = map[_Communication]_Communication{
 	// 	_Communication_ptmp: _Communication_ptmp,
@@ -58,16 +58,16 @@ var (
 	// 	_Name_fxp0:       _Name_fxp0,
 	// 	_Name_fxp0_0:     _Name_fxp0_0,
 	// 	_Name_gr0:        _Name_gr0,
-	// 	_Name_junos_host: _Name_junos_host,
+	// 	_Name_junos__host: _Name_junos__host,
 	// 	_Name_lo0:        _Name_lo0,
 	// 	_Name_lo0_0:      _Name_lo0_0,
 	// 	_Name_lt0:        _Name_lt0,
 	// 	_Name_master:     _Name_master,
-	// 	_Name_mgmt_junos: _Name_mgmt_junos,
+	// 	_Name_mgmt__junos: _Name_mgmt__junos,
 	// 	_Name_st0:        _Name_st0,
 	// }
 	// c_Protocol = map[_Protocol]_Protocol{
-	// 	_Protocol_access_internal: _Protocol_access_internal,
+	// 	_Protocol_access__internal: _Protocol_access__internal,
 	// 	_Protocol_aggregate:       _Protocol_aggregate,
 	// 	_Protocol_ah:              _Protocol_ah,
 	// 	_Protocol_all:             _Protocol_all,
@@ -91,7 +91,7 @@ var (
 	// }
 	// c_Service = map[_Service]_Service{
 	// 	_Service_all:         _Service_all,
-	// 	_Service_any_service: _Service_any_service,
+	// 	_Service_any__service: _Service_any__service,
 	// 	_Service_bootp:       _Service_bootp,
 	// 	_Service_dhcp:        _Service_dhcp,
 	// 	_Service_dhcpv6:      _Service_dhcpv6,
@@ -114,7 +114,7 @@ var (
 	// 	_Type_ipprefix:         _Type_ipprefix,
 	// 	_Type_lt:               _Type_lt,
 	// 	_Type_lo:               _Type_lo,
-	// 	_Type_policy_statement: _Type_policy_statement,
+	// 	_Type_policy__statement: _Type_policy__statement,
 	// 	_Type_pool:             _Type_pool,
 	// 	_Type_set:              _Type_set,
 	// 	_Type_source:           _Type_source,
@@ -126,15 +126,15 @@ var (
 	_Settings = map[interface{}]interface{}{
 		_group:              _Name("4200000000"),
 		_loglevel:           log.InfoLevel,
-		_sp_default_policy:  _Action_permit__all,
+		_sp_default_policy:  _W_permit__all,
 		_comm_if:            _Communication_ptmp,
 		_comm_vi:            _Communication_ptp,
 		_VI_IPPrefix:        parse_interface(netip.ParsePrefix("10.90.0.0/16")).(netip.Prefix),
 		_VI_IPShift:         uint32(0),
 		_RI:                 _Name_master,
-		_mgmt_RI:            _Name_mgmt_junos,
+		_mgmt_RI:            _Name_mgmt__junos,
 		_mgmt_IF:            _Name_fxp0_0,
-		_host_RI:            _Name_junos_host,
+		_host_RI:            _Name_junos__host,
 		_mgmt_Description:   _Description("MANAGEMENT-INSTANCE"),
 		_domain_name:        _FQDN("example.com"),
 		_GT_list:            []_Name{},
