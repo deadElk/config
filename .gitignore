@@ -5,9 +5,11 @@
 /sync.sh
 /templates
 /.DS_Store
+/etc
 config*.xml
 config*.json
 config
 sync.sh
 templates
 .DS_Store
+etc
