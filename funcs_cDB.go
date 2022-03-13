@@ -273,6 +273,7 @@ func parse_cDB_Peer(inbound []*cDB_Peer) (ok bool) {
 		parse_cDB_Peer_FW(b, v_Peer)
 
 		i_peer[b.ASN] = v_Peer
+		i_peer_list = append(i_peer_list, b.ASN)
 		ok = true
 
 	}
