@@ -23,7 +23,6 @@ var (
 	empty_ID   = _next_ID
 	next_ID    = empty_ID
 
-	config      = make(_i_config)
 	i_ab        = make(_i_ab)
 	i_ja        = make(_i_ja)
 	i_pl        = make(_i_pl)
@@ -34,14 +33,14 @@ var (
 	i_gt        = make(_i_gt)
 	i_ldap      = make(_i_ldap)
 	i_read_file = _i_file_data{
-		_S_Dir_List[_dir_list_etc]: {ext: "xml", data: map[_Name][]byte{}},
-		_S_Dir_List[_dir_list_GT]:  {ext: "tmpl", data: map[_Name][]byte{}},
+		_S_Dir_List[_dir_list_etc]: {ext: "xml", data: map[_Name]_Content{}},
+		_S_Dir_List[_dir_list_GT]:  {ext: "tmpl", data: map[_Name]_Content{}},
 	}
 	i_write_file = _i_file_data{
-		_S_Dir_List[_dir_list_Config]: {ext: "txt", data: map[_Name][]byte{}},
-		_S_Dir_List[_dir_list_PKI]:    {ext: "", data: map[_Name][]byte{}},
-		_S_Dir_List[_dir_list_Portal]: {ext: "", data: map[_Name][]byte{}},
-		_S_Dir_List[_dir_list_Data]:   {ext: "xml", data: map[_Name][]byte{}},
+		_S_Dir_List[_dir_list_Config]: {ext: "txt", data: map[_Name]_Content{}},
+		_S_Dir_List[_dir_list_PKI]:    {ext: "", data: map[_Name]_Content{}},
+		_S_Dir_List[_dir_list_Portal]: {ext: "", data: map[_Name]_Content{}},
+		_S_Dir_List[_dir_list_Data]:   {ext: "xml", data: map[_Name]_Content{}},
 	}
 )
 
@@ -190,5 +189,5 @@ var (
 	_S_host_RI                        = _Name_junos__host
 	_S_mgmt_Description  _Description = "MANAGEMENT-INSTANCE"
 	_S_domain_name       _FQDN        = "example.com"
-	_S_GT_list                        = []_Name{}
+	_S_GT_List                        = []_Name{}
 )

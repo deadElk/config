@@ -11,19 +11,21 @@ import (
 
 func parse_cDB(xml_db map[_Name]*cDB) (ok bool) {
 	define_iDB_Vocabulary()
-	switch {
-	case !read_GT():
-		log.Warnf("templates read error; ACTION: skip.")
-		return
-	}
+	var (
+		s = make(map[_Name]bool)
+	)
 	for _, b := range xml_db {
 		log.SetLevel(b.Verbosity)
 		_S_group = _Name(b.XMLName.Local)
 		set_VI_IPPrefix(b.VI_IPPrefix)
 		set_Domain_Name(b.Domain_Name)
-		_S_GT_list = []_Name{}
-		for _, b := range re_period.Split(b.GT_List, -1) {
-			_S_GT_list = append(_S_GT_list, _Name(b))
+		for _, d := range re_period.Split(b.GT_List, -1) {
+			switch _, flag := s[_Name(d)]; {
+			case flag:
+				continue
+			}
+			s[_Name(d)] = true
+			_S_GT_List = append(_S_GT_List, _Name(d))
 		}
 		parse_cDB_AB(b.AB)
 		parse_cDB_JA(b.JA)
@@ -781,7 +783,7 @@ func parse_cDB_Peer_GT_List(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 			v_Peer.GT_List = append(v_Peer.GT_List, _Name(b))
 		}
 	default:
-		v_Peer.GT_List = _S_GT_list
+		v_Peer.GT_List = _S_GT_List
 		v_Peer.GT_List = append(v_Peer.GT_List, v_Peer.ASName)
 	}
 	return true

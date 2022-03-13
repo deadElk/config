@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"math/big"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -339,4 +340,14 @@ func (inbound *_W) validate_RO_GW_Action(peer *cDB_Peer, v_Peer *i_Peer) (outbou
 		return
 	}
 	return
+}
+
+func (inbound *_Content) trim_space() _Content {
+	var (
+		interim string
+	)
+	for _, value := range strings.Split(convert_2_string("", inbound), "\n") {
+		interim += strings.TrimSpace(value) + "\n"
+	}
+	return _Content(interim)
 }

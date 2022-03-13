@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
@@ -92,7 +91,6 @@ func tabber(inbound string, tabs int) string {
 }
 
 func convert_2_string(delimiter string, inbound interface{}) string {
-	// return fmt.Sprintf("%s", inbound)
 	switch value := (inbound).(type) {
 	case *string:
 		return *value
@@ -256,15 +254,6 @@ func pad_string(inbound string, length int) string {
 	return padding + inbound
 }
 
-func trim_space(inbound interface{}) _Content {
-	var (
-		interim string
-	)
-	for _, value := range strings.Split(convert_2_string("", inbound), "\n") {
-		interim += strings.TrimSpace(value) + "\n"
-	}
-	return _Content(interim)
-}
 func split_2_string(inbound interface{}, re *regexp.Regexp, target ...*string) {
 	var (
 		interim = re.Split(convert_2_string("", inbound), -1)
@@ -365,12 +354,15 @@ func read_file() (ok bool) {
 			}
 			var (
 				t = _Name(f.Name()[:len(f.Name())-1-len(s[len(s)-1])])
+				g _Content
 			)
-			switch b.data[t], err = os.ReadFile(strings_join("/", a, f.Name())); {
+			// 			switch b.data[t], err = os.ReadFile(strings_join("/", ".", a, f.Name())); {
+			switch g, err = os.ReadFile(strings_join("/", ".", a, f.Name())); {
 			case err != nil:
 				log.Warnf("file '%v' read error '%v'; ACTION: skip.", t, err)
 				continue
 			}
+			b.data[t] = g.trim_space()
 			b.sorted = append(b.sorted, t)
 		}
 		sort.Slice(b.sorted, func(i, j int) bool {
@@ -378,52 +370,6 @@ func read_file() (ok bool) {
 		})
 	}
 	return true
-}
-func read_GT() (ok bool) {
-	var (
-		dentry []os.DirEntry
-		data   []byte
-		err    error
-	)
-	switch dentry, err = os.ReadDir(string(_S_Dir_List[_dir_list_GT])); {
-	case err != nil:
-		log.Warnf("template director '%v' read error '%v'; ACTION: skip.", _S_Dir_List[_dir_list_GT], err)
-		return
-	}
-	for _, fentry := range dentry {
-		switch {
-		case !fentry.Type().IsRegular():
-			continue
-		}
-		var (
-			fsplit = re_dot.Split(fentry.Name(), -1)
-		)
-		switch {
-		case len(fsplit) < 1:
-			continue
-		}
-		switch {
-		case fsplit[len(fsplit)-1] != "tmpl":
-			continue
-		}
-		var (
-			tname = _Name(fentry.Name()[:len(fentry.Name())-5])
-		)
-		switch data, err = os.ReadFile(strings_join("/", _S_Dir_List[_dir_list_GT], fentry.Name())); {
-		case err != nil:
-			log.Warnf("template '%v' read error '%v'; ACTION: skip.", tname, err)
-			continue
-		}
-		switch _, flag := i_gt[tname]; {
-		case flag:
-			log.Warnf("template '%v' already exist; ACTION: skip.", tname)
-			continue
-		}
-		i_gt[tname] = &i_GT{
-			Content: trim_space(&data),
-		}
-	}
-	return err == nil
 }
 
 func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, port, port_low, port_high _Port) (outbound string /* , ok bool */) {

@@ -13,7 +13,7 @@ type _IDName string
 type _ASN uint32
 type _W string
 type _Communication string
-type _Content string
+type _Content []byte
 type _S string
 type _Description string
 type _FQDN string

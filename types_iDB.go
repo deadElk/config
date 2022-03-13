@@ -20,7 +20,7 @@ type _i_file_data map[_Name]*i_File_Data
 type i_File_Data struct {
 	ext    _Name
 	sorted []_Name
-	data   map[_Name][]byte
+	data   map[_Name]_Content
 }
 
 // 				GT_Action: []string{0: ""},

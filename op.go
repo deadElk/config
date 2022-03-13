@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	"io/ioutil"
 	"net/netip"
-	"os"
 	"sort"
 	"text/template"
 
@@ -42,20 +41,18 @@ func op() (ok bool) {
 		log.Warnf("cDB parse error; ACTION: fatal.")
 		return
 	}
-	// 	switch {
-	// 	case !parse_iDB():
-	// 		log.Warnf("configuration file '%v' iDB parse error; ACTION: skip.", value)
-	// 		continue
-	// 	}
-	// 	log.Infof("DB '%v' parsed.", xml_db[index].XMLName.Local)
-	// 	switch {
-	// 	case !parse_GT():
-	// 		log.Warnf("configuration file '%v' GT parse error; ACTION: skip.", value)
-	// 		continue
-	// 	}
-	// 	log.Infof("GTs are parsed.")
-	// 	return
-	// }
+	switch {
+	case !parse_iDB():
+		log.Warnf("iDB parse error; ACTION: fatal.")
+		return
+	}
+	log.Infof("iDB parsed.")
+	switch {
+	case !parse_GT():
+		log.Warnf("GT parse error; ACTION: fatal.")
+		return
+	}
+	log.Infof("GTs are parsed.")
 	switch {
 	case !upload_config():
 		log.Warnf("config upload error.")
@@ -72,29 +69,23 @@ func parse_GT() (ok bool) {
 		case value.Reserved:
 			continue
 		}
-		func() {
-			for _, gt_v := range value.GT_List {
-				var (
-					vGT  *template.Template
-					vBuf bytes.Buffer
-				)
-				// switch vGT, err = template.New(gt_v.String()).Funcs(gt_fm).Parse(i_gt[gt_v].Content.String()); err == nil && vGT != nil {
-				switch vGT, err = template.New(gt_v.String()).Parse(i_gt[gt_v].Content.String()); {
-				case err == nil && vGT != nil:
-					switch err = vGT.Execute(&vBuf, value); {
-					// case err == nil && vGT != nil:
-					case err == nil:
-						config[index] = append(config[index], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
-					default:
-						log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: skip.", index.String(), gt_v, err)
-						return
-					}
-				default:
-					log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: skip.", index.String(), gt_v, err)
-					return
-				}
+		for _, gt_v := range value.GT_List {
+			var (
+				vGT  *template.Template
+				vBuf bytes.Buffer
+			)
+			switch vGT, err = template.New(gt_v.String()).Parse(string(i_read_file[_S_Dir_List[_dir_list_GT]].data[gt_v])); {
+			case err != nil || vGT == nil:
+				log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: ignore.", index.String(), gt_v, err)
+				continue
 			}
-		}()
+			switch err = vGT.Execute(&vBuf, value); {
+			case err != nil:
+				log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: ignore.", index.String(), gt_v, err)
+				continue
+			}
+			i_write_file[_S_Dir_List[_dir_list_Config]].data[value.ASName] = append(i_write_file[_S_Dir_List[_dir_list_Config]].data[value.ASName], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
+		}
 	}
 	return err == nil
 }
@@ -113,15 +104,15 @@ func upload_config() (ok bool) {
 	})
 
 	for _, b := range i_peer_list {
-		var (
-			fn = strings_join("/", _S_Dir_List[_dir_list_Config], i_peer[b].ASName)
-		)
-		switch err = os.WriteFile(fn, config[b], 0600); {
-		case err == nil:
-			log.Infof("OK '%v'", i_peer[b].ASName)
-		default:
-			log.Errorf("Fail '%v' with error '%v'", i_peer[b].ASName, err)
-		}
+		// var (
+		// 	fn = strings_join("/", _S_Dir_List[_dir_list_Config], i_peer[b].ASName)
+		// )
+		// switch err = os.WriteFile(fn, config[b], 0600); {
+		// case err == nil:
+		// 	log.Infof("OK '%v'", i_peer[b].ASName)
+		// default:
+		// 	log.Errorf("Fail '%v' with error '%v'", i_peer[b].ASName, err)
+		// }
 
 		var (
 			s_public  []string
