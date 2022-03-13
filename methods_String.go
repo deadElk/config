@@ -19,7 +19,7 @@ func (inbound _IDName) String() string {
 func (inbound _ASN) String() string {
 	return strconv.FormatUint(uint64(inbound), 10)
 }
-func (inbound _Action) String() string {
+func (inbound _W) String() string {
 	return string(inbound)
 }
 func (inbound _Communication) String() string {

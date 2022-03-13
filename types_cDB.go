@@ -77,9 +77,9 @@ type cDB_FW_FromTo struct {
 	_Attribute_List
 }
 type cDB_FW_Then struct {
-	Action      _Action `xml:"action,attr"`
-	Action_Flag _Action `xml:"action_flag,attr"`
-	RI          _Name   `xml:"RI,attr"`
+	Action      _W    `xml:"action,attr"`
+	Action_Flag _W    `xml:"action_flag,attr"`
+	RI          _Name `xml:"RI,attr"`
 	_Attribute_List
 }
 
@@ -130,8 +130,8 @@ type cDB_Peer_RI_RO_RT_GW struct {
 	IP          netip.Addr    `xml:"IP,attr"`
 	IF          _Name         `xml:"IF,attr"`
 	Table       _Name         `xml:"table,attr"`
-	Action      _Action       `xml:"action,attr"`
-	Action_Flag _Action       `xml:"action_flag,attr"`
+	Action      _W            `xml:"action,attr"`
+	Action_Flag _W            `xml:"action_flag,attr"`
 	Metric      _Route_Weight `xml:"metric,attr"`
 	Preference  _Route_Weight `xml:"preference,attr"`
 	_Attribute_List
@@ -217,13 +217,13 @@ type cDB_Match struct {
 	_Attribute_List
 }
 type cDB_Then struct {
-	Action      _Action `xml:"action,attr"`
-	Action_Flag _Action `xml:"action_flag,attr"`
-	Pool        _Name   `xml:"pool,attr"`
-	AB          _Name   `xml:"AB,attr"`
-	RI          _Name   `xml:"RI,attr"`
-	Port_Low    _Port   `xml:"port_low,attr"`
-	Port_High   _Port   `xml:"port_high,attr"`
+	Action      _W    `xml:"action,attr"`
+	Action_Flag _W    `xml:"action_flag,attr"`
+	Pool        _Name `xml:"pool,attr"`
+	AB          _Name `xml:"AB,attr"`
+	RI          _Name `xml:"RI,attr"`
+	Port_Low    _Port `xml:"port_low,attr"`
+	Port_High   _Port `xml:"port_high,attr"`
 	_Attribute_List
 }
 
@@ -285,14 +285,14 @@ type cDB_PO_PS_From struct {
 	_Attribute_List
 }
 type cDB_PO_PS_Then struct {
-	Action      _Action       `xml:"action,attr"`
-	Action_Flag _Action       `xml:"action_flag,attr"`
+	Action      _W            `xml:"action,attr"`
+	Action_Flag _W            `xml:"action_flag,attr"`
 	Metric      _Route_Weight `xml:"metric,attr"`
 	_Attribute_List
 }
 
 // Security Policies
 type cDB_SP_Option_List struct {
-	Default_Policy _Action `xml:"default_policy,attr"`
+	Default_Policy _W `xml:"default_policy,attr"`
 	_Attribute_List
 }

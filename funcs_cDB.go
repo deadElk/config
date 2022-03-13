@@ -486,7 +486,7 @@ func parse_cDB_VI(inbound []*cDB_VI) (ok bool) {
 				Remote_ASN: i_vi_peer[b.ID][_second].ASN,
 				Passive:    i_vi_peer[b.ID][_first].Hub,
 				Local_IP:   i_vi_peer[b.ID][_first].Inner_IP,
-				Route_Leak: parse_iDB_Route_Leak(nil, i_peer[v_vi_peer_list[_first].ASN], "", "", &map[_Action]i_Route_Leak_FromTo{
+				Route_Leak: parse_iDB_Route_Leak(nil, i_peer[v_vi_peer_list[_first].ASN], "", "", &map[_W]i_Route_Leak_FromTo{
 					_W_import: {PS: []_Name{0: _Name(strings_join("_", _W_import_metric, pad(i_vi[b.ID].Route_Metric, 2)))}},
 					_W_export: {PS: []_Name{0: _Name(_W_aggregate), 1: _Name(strings_join("_", _W_export_metric, pad(i_vi[b.ID].Route_Metric, 2)))}},
 				}),
@@ -652,7 +652,7 @@ func parse_cDB_Peer_RI(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 									v_RT_IF          _Name
 									v_RT_Table       _Name
 									v_RT_Action      = f.Action.validate(nil, v_Peer)
-									v_RT_Action_Flag _Action
+									v_RT_Action_Flag _W
 									v_Action         = strings_join(" ", _W_static___route, d.Identifier)
 								)
 								switch {
@@ -876,15 +876,15 @@ func parse_cDB_Peer_NAT(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 }
 func parse_cDB_Peer_SP(peer *cDB_Peer, v_Peer *i_Peer) (ok bool) {
 	v_Peer.SP.Option_List = _SP_Option_List{
-		Default_Policy: func() _Action {
+		Default_Policy: func() _W {
 			switch value := peer.SP_Option_List.Default_Policy; value {
 			case _W_permit__all, _W_deny__all:
 				return value
 			case "":
-				return _Settings[_sp_default_policy].(_Action)
+				return _Settings[_sp_default_policy].(_W)
 			default:
 				log.Warnf("Peer '%v', unknown default security policy '%v'; ACTION: use '%v'.", peer.ASN, value, _Settings[_sp_default_policy])
-				return _Settings[_sp_default_policy].(_Action)
+				return _Settings[_sp_default_policy].(_W)
 			}
 		}(),
 		GT_Action: "",

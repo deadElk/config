@@ -97,7 +97,7 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 		return *value
 	case *_ASN:
 		return strconv.FormatUint(uint64(*value), 10)
-	case *_Action:
+	case *_W:
 		return (*value).String()
 	case *_Communication:
 		return (*value).String()
@@ -157,7 +157,7 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 		return value
 	case _ASN:
 		return strconv.FormatUint(uint64(value), 10)
-	case _Action:
+	case _W:
 		return value.String()
 	case _Communication:
 		return value.String()
@@ -433,9 +433,9 @@ func strings_join(delimiter string, inbound ...interface{}) (outbound string) {
 	return buffer.String()
 }
 
-func parse_cDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak *cDB_Peer_RI_RO_Route_Leak) (outbound map[_Action]i_Route_Leak_FromTo /* , ok bool */) {
-	// outbound = make(map[_Action]i_Route_Leak_FromTo)
-	return parse_iDB_Route_Leak(nil, v_Peer, "", "", &map[_Action]i_Route_Leak_FromTo{
+func parse_cDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak *cDB_Peer_RI_RO_Route_Leak) (outbound map[_W]i_Route_Leak_FromTo /* , ok bool */) {
+	// outbound = make(map[_W]i_Route_Leak_FromTo)
+	return parse_iDB_Route_Leak(nil, v_Peer, "", "", &map[_W]i_Route_Leak_FromTo{
 		_W_import: {PS: func() (outbound []_Name) {
 			for _, b := range (*route_leak).Import {
 				outbound = append(outbound, b.PS)
@@ -450,8 +450,8 @@ func parse_cDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 		}()},
 	})
 }
-func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak *map[_Action]i_Route_Leak_FromTo) (outbound map[_Action]i_Route_Leak_FromTo /* , ok bool */) {
-	outbound = make(map[_Action]i_Route_Leak_FromTo)
+func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak *map[_W]i_Route_Leak_FromTo) (outbound map[_W]i_Route_Leak_FromTo /* , ok bool */) {
+	outbound = make(map[_W]i_Route_Leak_FromTo)
 	var (
 		v_RL_Import = func() (outbound []_Name) {
 			for _, b := range (*route_leak)[_W_import].PS {

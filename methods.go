@@ -329,13 +329,13 @@ func (inbound *_ID) next_ID() (outbound _ID) {
 	return *inbound
 }
 
-func (inbound *_Action) validate(peer *cDB_Peer, v_Peer *i_Peer) (outbound _Action) {
-	outbound = c_Action[*inbound]
+func (inbound *_W) validate(peer *cDB_Peer, v_Peer *i_Peer) (outbound _W) {
+	outbound = c_RO_GW[*inbound]
 	switch {
 	case len(*inbound) == 0:
 		return
 	case len(outbound) == 0:
-		log.Warnf("Peer '%v', unknown _Action '%v'; ACTION: return '%v'.", v_Peer.ASN, *inbound, outbound)
+		log.Warnf("Peer '%v', unknown _W '%v'; ACTION: return '%v'.", v_Peer.ASN, *inbound, outbound)
 		return
 	}
 	return

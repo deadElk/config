@@ -78,8 +78,8 @@ type i_FW_FromTo struct {
 	_Attribute_List
 }
 type i_FW_Then struct {
-	Action      _Action
-	Action_Flag _Action
+	Action      _W
+	Action_Flag _W
 	RI          _Name
 	GT_Action   string
 	_Attribute_List
@@ -100,7 +100,7 @@ type i_Peer_RI struct {
 	IP_2_IF    map[netip.Addr]_Name // interface's IP address to interface mapping. IP addresses within one RI must be unique.
 	IF         map[_Name]i_Peer_RI_IF
 	RT         map[netip.Prefix]i_Peer_RI_RO_RT
-	Route_Leak map[_Action]i_Route_Leak_FromTo
+	Route_Leak map[_W]i_Route_Leak_FromTo
 	Protocol   map[_Name]_Name
 	BGP        _BGP
 	GT_Action  string
@@ -139,8 +139,8 @@ type i_Peer_RI_RO_RT_GW struct {
 	IP          netip.Addr
 	IF          _Name
 	Table       _Name
-	Action      _Action
-	Action_Flag _Action
+	Action      _W
+	Action_Flag _W
 	Metric      _Route_Weight
 	Preference  _Route_Weight
 	GT_Action   string
@@ -283,8 +283,8 @@ type i_Rule struct {
 	_Attribute_List
 }
 type i_Then struct {
-	Action      _Action
-	Action_Flag _Action
+	Action      _W
+	Action_Flag _W
 	Pool        _Name
 	AB          _Name
 	RI          _Name
@@ -356,8 +356,8 @@ type i_PO_PS_From struct {
 	_Attribute_List
 }
 type i_PO_PS_Then struct {
-	Action      _Action
-	Action_Flag _Action
+	Action      _W
+	Action_Flag _W
 	Metric      _Route_Weight
 	GT_Action   string
 	_Attribute_List

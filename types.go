@@ -11,7 +11,7 @@ type _ID uint
 type _IDName string
 
 type _ASN uint32
-type _Action string
+type _W string
 type _Communication string
 type _Content string
 type _Default string
@@ -65,7 +65,7 @@ type _IKE_Option_List struct {
 }
 
 type _SP_Option_List struct {
-	Default_Policy _Action
+	Default_Policy _W
 	GT_Action      string
 }
 
@@ -89,7 +89,7 @@ type _BGP_Group_Neighbor struct {
 	Remote_ASN _ASN
 	Passive    bool
 	Local_IP   netip.Addr
-	Route_Leak map[_Action]i_Route_Leak_FromTo
+	Route_Leak map[_W]i_Route_Leak_FromTo
 	GT_Action  string
 	_Attribute_List
 }
