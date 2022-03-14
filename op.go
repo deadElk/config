@@ -9,7 +9,7 @@ import (
 func op() (ok bool) {
 	var (
 		err    error
-		xml_db = make(map[_Name]*cDB)
+		xml_db = make(cDB_List)
 	)
 	switch {
 	case !read_file():
@@ -28,12 +28,12 @@ func op() (ok bool) {
 		xml_db[b] = &c
 		log.Debugf("configuration file '%v' loaded.", b)
 	}
-	parse_cDB(xml_db)
+	xml_db.parse()
 	parse_iDB()
 	parse_GT()
 	write_file()
 	// switch {
-	// case !parse_cDB(xml_db):
+	// case !xml_db.parse():
 	// 	log.Warnf("cDB parse error; ACTION: fatal.")
 	// 	return
 	// }

@@ -97,7 +97,7 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 	case *string:
 		return *value
 	case *_ASN:
-		return strconv.FormatUint(uint64(*value), 10)
+		return value.String()
 	case *_W:
 		return (*value).String()
 	case *_Communication:
@@ -157,7 +157,7 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 	case string:
 		return value
 	case _ASN:
-		return strconv.FormatUint(uint64(value), 10)
+		return value.String()
 	case _W:
 		return value.String()
 	case _Communication:
@@ -236,8 +236,6 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 	default:
 		log.Debugf("unsupported type '%v' of '%s'; ACTION: use fmt.Sprintf().", reflect.TypeOf(inbound), inbound)
 		return fmt.Sprintf("%s", value)
-		// log.Fatalf("unsupported type '%v'; ACTION: fatal.", reflect.TypeOf(inbound))
-		// return ""
 	}
 }
 func pad(inbound interface{}, length int) _PName {
@@ -281,26 +279,6 @@ func set_VI_IPPrefix(inbound ...netip.Prefix) (ok bool) {
 	_S_VI_IPShift = binary.BigEndian.Uint32(_S_VI_IPPrefix.Addr().AsSlice())
 	return
 }
-func set_Domain_Name(inbound ..._FQDN) (ok bool) {
-	switch {
-	case len(inbound) == 1 && len(inbound[0]) != 0:
-		_S_domain_name = inbound[0]
-		ok = true
-	}
-	return
-}
-
-// func sum_string_gt_fm(inbound ...interface{}) (outbound string) {
-// 	switch len(inbound) {
-// 	case 0:
-// 		return
-// 	}
-// 	for _, value := range inbound {
-// 		outbound += convert_2_string("", value)
-// 	}
-// 	return
-// }
-
 func parse_Communication(_peer *_ASN, _if *_Name, inbound *_Communication) _Communication {
 	switch {
 	case *inbound == _Communication_ptp || *inbound == _Communication_ptmp:
@@ -370,14 +348,30 @@ func read_file() (ok bool) {
 			return b.sorted[i] < b.sorted[j]
 		})
 	}
-	return true
+	return err == nil
 }
 
 func write_file() (ok bool) {
 	var (
 		err error
 	)
-
+	for a, b := range i_write_file {
+		switch err = os.MkdirAll(string(a), os.ModeDir|0700); {
+		case err != nil:
+			log.Fatalf("directory '%v' create error '%v'; ACTION: fatal.", a, err)
+			// continue
+		}
+		for e, f := range b.data {
+			var (
+				g = strings_join("/", a, strings_join(".", e, b.ext))
+			)
+			switch err = os.WriteFile(g, f, 0600); {
+			case err != nil:
+				log.Fatalf("file '%v' write error '%v'; ACTION: fatal.", g, err)
+				continue
+			}
+		}
+	}
 	return err == nil
 }
 

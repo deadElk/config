@@ -42,9 +42,7 @@ var (
 		_S_Dir_List[_dir_list_Data]:   {ext: "xml", data: map[_Name]_Content{}},
 	}
 	i_peer_list []_ASN
-)
 
-var (
 	c_RO_GW_Action = map[_W]_W{
 		_W_discard:              _W_discard,
 		_W_interface:            _W_next__hop,

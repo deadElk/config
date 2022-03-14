@@ -5,15 +5,26 @@ import (
 	"net/netip"
 )
 
+type cDB_AB_List []*cDB_AB
+type cDB_Peer_List []*cDB_Peer
+type cDB_VI_List []*cDB_VI
+type cDB_LDAP_List []*cDB_LDAP
+type cDB_JA_List []*cDB_JA
+type cDB_PO_PL_List []*cDB_PO_PL
+type cDB_PO_PS_List []*cDB_PO_PS
+type cDB_List map[_Name]*cDB
+
+// type _List []*
+
 // DB root
 type cDB struct {
 	XMLName     xml.Name
-	Domain_Name _FQDN        `xml:"domain_name,attr"`
-	VI_IPPrefix netip.Prefix `xml:"VI_IPprefix,attr"`
-	GT_List     string       `xml:"GT_list,attr"`
-	Peer        []*cDB_Peer  `xml:"Peer_List>Peer"`
-	VI          []*cDB_VI    `xml:"VI_List>VI"`
-	LDAP        []*cDB_LDAP  `xml:"LDAP_List>LDAP"`
+	Domain_Name _FQDN         `xml:"domain_name,attr"`
+	VI_IPPrefix netip.Prefix  `xml:"VI_IPprefix,attr"`
+	GT_List     string        `xml:"GT_list,attr"`
+	Peer        cDB_Peer_List `xml:"Peer_List>Peer"`
+	VI          cDB_VI_List   `xml:"VI_List>VI"`
+	LDAP        cDB_LDAP_List `xml:"LDAP_List>LDAP"`
 	cDB_Vocabulary
 	_Attribute_List
 }
@@ -25,10 +36,10 @@ type cDB_LDAP struct {
 
 // Vocabulary
 type cDB_Vocabulary struct {
-	AB []*cDB_AB    `xml:"Vocabulary>AB_List>AB"`
-	JA []*cDB_JA    `xml:"Vocabulary>Application_List>Application"`
-	PL []*cDB_PO_PL `xml:"Vocabulary>PO>PL"`
-	PS []*cDB_PO_PS `xml:"Vocabulary>PO>PS"`
+	AB cDB_AB_List    `xml:"Vocabulary>AB_List>AB"`
+	JA cDB_JA_List    `xml:"Vocabulary>Application_List>Application"`
+	PL cDB_PO_PL_List `xml:"Vocabulary>PO>PL"`
+	PS cDB_PO_PS_List `xml:"Vocabulary>PO>PS"`
 	_Attribute_List
 }
 

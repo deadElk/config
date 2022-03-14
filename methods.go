@@ -346,8 +346,17 @@ func (inbound *_Content) trim_space() _Content {
 	var (
 		interim string
 	)
+	// for _, value := range strings.Split(string(*inbound), "\n") {
 	for _, value := range strings.Split(convert_2_string("", inbound), "\n") {
 		interim += strings.TrimSpace(value) + "\n"
 	}
 	return _Content(interim)
+}
+
+func (inbound *_FQDN) set_Domain_Name() {
+	switch {
+	case len(*inbound) != 0:
+		_S_domain_name = *inbound
+	}
+	return
 }

@@ -70,7 +70,7 @@ func parse_iDB() (ok bool) {
 	return true
 }
 
-func parse_iDB_Peer_Vocabulary() (ok bool) {
+func parse_iDB_Peer_Vocabulary() {
 	for y, v_Peer := range i_peer {
 
 		var (
@@ -91,7 +91,6 @@ func parse_iDB_Peer_Vocabulary() (ok bool) {
 
 		i_peer[y] = v_Peer
 	}
-	return true
 }
 func peer_iDB_recurse_AB(interim *map[_Name]*i_AB, inbound _Name) (ok bool) {
 	(*interim)[inbound] = i_ab[inbound]
@@ -104,7 +103,7 @@ func peer_iDB_recurse_AB(interim *map[_Name]*i_AB, inbound _Name) (ok bool) {
 	return true
 }
 
-func define_iDB_Vocabulary() (ok bool) {
+func define_iDB_Vocabulary() {
 	create_iDB_AB_Set(_Name_PUBLIC)
 
 	for a, b := range map[_Name][]string{
@@ -239,7 +238,6 @@ func define_iDB_Vocabulary() (ok bool) {
 		},
 		GT_Action: strings_join(" ", _W_policy__options___policy__statement, _Name(_W_per__packet)),
 	}
-	return true
 }
 
 func parse_iDB_AB_netip_Prefix(public, private bool, ab_name _Name, inbound netip.Prefix, interim *map[netip.Prefix]bool) {
@@ -387,11 +385,11 @@ func add_iDB_AB_Address_List(public, private bool, ab_name _Name, inbound ...int
 	}
 	return true
 }
-func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak *map[_W]i_Route_Leak_FromTo) (outbound map[_W]i_Route_Leak_FromTo /* , ok bool */) {
+func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak map[_W]*i_Route_Leak_FromTo) (outbound map[_W]i_Route_Leak_FromTo /* , ok bool */) {
 	outbound = make(map[_W]i_Route_Leak_FromTo)
 	var (
 		v_RL_Import = func() (outbound []_Name) {
-			for _, b := range (*route_leak)[_W_import].PS {
+			for _, b := range route_leak[_W_import].PS {
 				switch _, flag := i_ps[b]; {
 				case !flag:
 					log.Warnf("Peer '%v', PL '%v' not found; ACTION: ignore.", v_Peer.ASN, b)
@@ -403,7 +401,7 @@ func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 			return
 		}()
 		v_RL_Export = func() (outbound []_Name) {
-			for _, b := range (*route_leak)[_W_export].PS {
+			for _, b := range route_leak[_W_export].PS {
 				switch _, flag := i_ps[b]; {
 				case !flag:
 					log.Warnf("Peer '%v', PL '%v' not found; ACTION: ignore.", v_Peer.ASN, b)
@@ -420,7 +418,7 @@ func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 		outbound[_W_import] = i_Route_Leak_FromTo{
 			PS:              v_RL_Import,
 			GT_Action:       strings_join(" ", _W_import, "[", v_RL_Import, "]"),
-			_Attribute_List: (*route_leak)[_W_import]._Attribute_List,
+			_Attribute_List: route_leak[_W_import]._Attribute_List,
 		}
 	}
 	switch {
@@ -428,7 +426,7 @@ func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 		outbound[_W_export] = i_Route_Leak_FromTo{
 			PS:              v_RL_Export,
 			GT_Action:       strings_join(" ", _W_export, "[", v_RL_Export, "]"),
-			_Attribute_List: (*route_leak)[_W_export]._Attribute_List,
+			_Attribute_List: route_leak[_W_export]._Attribute_List,
 		}
 	}
 	return
