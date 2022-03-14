@@ -8,10 +8,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (inbound *_Secret) validate(length uint, message ...string) _Secret {
+func (receiver *_Secret) validate(length uint, message ...string) _Secret {
 	switch {
-	case len(*inbound) >= int(length):
-		return *inbound
+	case len(*receiver) >= int(length):
+		return *receiver
 	}
 	var (
 		interim = make([]byte, length)
@@ -30,62 +30,62 @@ func (inbound *_Secret) validate(length uint, message ...string) _Secret {
 	}
 	return _Secret(interim)
 }
-func (inbound *_Name) validate_RI(decline ..._Name) (outbound _Name) {
+func (receiver *_Name) validate_RI(decline ..._Name) (outbound _Name) {
 	outbound = _S_RI
 	switch {
-	case len(*inbound) == 0 || *inbound == outbound:
+	case len(*receiver) == 0 || *receiver == outbound:
 		return
 	}
 	for _, interim := range decline {
 		switch {
-		case *inbound == interim:
+		case *receiver == interim:
 			return
 		}
 	}
-	return *inbound
+	return *receiver
 }
 
-func (inbound *i_Peer) link_AB(name ..._Name) {
+func (receiver *i_Peer) link_AB(name ..._Name) {
 	for _, value := range name {
 		switch {
 		case i_ab[value] == nil:
 			continue
 		}
-		inbound.AB[value] = i_ab[value]
+		receiver.AB[value] = i_ab[value]
 	}
 }
-func (inbound *i_Peer) link_JA(name ..._Name) {
+func (receiver *i_Peer) link_JA(name ..._Name) {
 	for _, value := range name {
 		switch {
 		case i_ja[value] == nil:
 			continue
 		}
-		inbound.JA[value] = i_ja[value]
+		receiver.JA[value] = i_ja[value]
 	}
 }
-func (inbound *i_Peer) link_PL(name ..._Name) {
+func (receiver *i_Peer) link_PL(name ..._Name) {
 	for _, value := range name {
 		switch {
 		case i_pl[value] == nil:
 			continue
 		}
-		inbound.PL[value] = i_pl[value]
+		receiver.PL[value] = i_pl[value]
 	}
 }
-func (inbound *i_Peer) link_PS(name ..._Name) {
+func (receiver *i_Peer) link_PS(name ..._Name) {
 	for _, value := range name {
 		switch {
 		case i_ps[value] == nil:
 			continue
 		}
-		inbound.PS[value] = i_ps[value]
+		receiver.PS[value] = i_ps[value]
 	}
 }
 
-func (inbound *_Host_Inbound_Traffic_List) parse(enable ...interface{}) (outbound _Host_Inbound_Traffic_List) {
+func (receiver *_Host_Inbound_Traffic_List) parse(enable ...interface{}) (outbound _Host_Inbound_Traffic_List) {
 	switch {
-	case inbound != nil:
-		outbound = *inbound
+	case receiver != nil:
+		outbound = *receiver
 	default:
 		outbound = _Host_Inbound_Traffic_List{
 			Services:  map[_Service]bool{},
@@ -104,259 +104,259 @@ func (inbound *_Host_Inbound_Traffic_List) parse(enable ...interface{}) (outboun
 	return
 }
 
-func (inbound *_Name) action_AB(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
-	switch _, flag := i_ab[*inbound]; {
-	case len(*inbound) == 0:
+func (receiver *_Name) action_AB(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _Type, receiver_direction _Type) (outbound string /* , ok bool */) {
+	switch _, flag := i_ab[*receiver]; {
+	case len(*receiver) == 0:
 		return
-	case !flag && *inbound != _Name_any:
-		log.Warnf("Peer '%v', unknown AB '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
+	case !flag && *receiver != _Name_any:
+		log.Warnf("Peer '%v', unknown AB '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *receiver, receiver_type, receiver_direction)
 		return
-	case flag && *inbound != _Name_any:
-		v_Peer.link_AB(*inbound)
+	case flag && *receiver != _Name_any:
+		v_Peer.link_AB(*receiver)
 	}
 
 	switch {
 
-	case inbound_type == _Type_exact && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_source__address, inbound)
-	case inbound_type == _Type_global && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_source__address, inbound)
-	case inbound_type == _Type_source && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_source__address__name, inbound)
-	case inbound_type == _Type_destination && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_source__address__name, inbound)
-	case inbound_type == _Type_static && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_source__address__name, inbound)
+	case receiver_type == _Type_exact && receiver_direction == _Type_from:
+		outbound = strings_join(" ", _W_source__address, receiver)
+	case receiver_type == _Type_global && receiver_direction == _Type_from:
+		outbound = strings_join(" ", _W_source__address, receiver)
+	case receiver_type == _Type_source && receiver_direction == _Type_from:
+		outbound = strings_join(" ", _W_source__address__name, receiver)
+	case receiver_type == _Type_destination && receiver_direction == _Type_from:
+		outbound = strings_join(" ", _W_source__address__name, receiver)
+	case receiver_type == _Type_static && receiver_direction == _Type_from:
+		outbound = strings_join(" ", _W_source__address__name, receiver)
 
-	case inbound_type == _Type_exact && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_destination__address, inbound)
-	case inbound_type == _Type_global && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_destination__address, inbound)
-	case inbound_type == _Type_source && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_destination__address__name, inbound)
-	case inbound_type == _Type_destination && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_destination__address__name, inbound)
-	case inbound_type == _Type_static && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_destination__address__name, inbound)
+	case receiver_type == _Type_exact && receiver_direction == _Type_to:
+		outbound = strings_join(" ", _W_destination__address, receiver)
+	case receiver_type == _Type_global && receiver_direction == _Type_to:
+		outbound = strings_join(" ", _W_destination__address, receiver)
+	case receiver_type == _Type_source && receiver_direction == _Type_to:
+		outbound = strings_join(" ", _W_destination__address__name, receiver)
+	case receiver_type == _Type_destination && receiver_direction == _Type_to:
+		outbound = strings_join(" ", _W_destination__address__name, receiver)
+	case receiver_type == _Type_static && receiver_direction == _Type_to:
+		outbound = strings_join(" ", _W_destination__address__name, receiver)
 
-	case inbound_type == _Type_exact && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _W_source__address, inbound)
-	case inbound_type == _Type_global && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _W_source__address, inbound)
-	case inbound_type == _Type_source && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _W_source__address__name, inbound)
-	case inbound_type == _Type_destination && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _W_destination__address__name, inbound)
-	case inbound_type == _Type_static && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _W_prefix__name, inbound)
+	case receiver_type == _Type_exact && receiver_direction == _Type_then:
+		outbound = strings_join(" ", _W_source__address, receiver)
+	case receiver_type == _Type_global && receiver_direction == _Type_then:
+		outbound = strings_join(" ", _W_source__address, receiver)
+	case receiver_type == _Type_source && receiver_direction == _Type_then:
+		outbound = strings_join(" ", _W_source__address__name, receiver)
+	case receiver_type == _Type_destination && receiver_direction == _Type_then:
+		outbound = strings_join(" ", _W_destination__address__name, receiver)
+	case receiver_type == _Type_static && receiver_direction == _Type_then:
+		outbound = strings_join(" ", _W_prefix__name, receiver)
 
 	case v_Peer != nil:
-		log.Warnf("Peer '%v', AB '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
+		log.Warnf("Peer '%v', AB '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *receiver, receiver_type, receiver_direction)
 	}
 
 	return
 }
-func (inbound *_Name) action_Pool(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
+func (receiver *_Name) action_Pool(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _Type, receiver_direction _Type) (outbound string /* , ok bool */) {
 	switch {
-	case len(*inbound) == 0:
+	case len(*receiver) == 0:
 		return
 	}
-	return strings_join(" ", _W_pool, inbound)
+	return strings_join(" ", _W_pool, receiver)
 }
-func (inbound *_Protocol) action_Protocol(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
+func (receiver *_Protocol) action_Protocol(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _Type, receiver_direction _Type) (outbound string /* , ok bool */) {
 	switch {
-	case len(*inbound) == 0:
+	case len(*receiver) == 0:
 		return
 	}
-	return strings_join(" ", _W_protocol, inbound)
+	return strings_join(" ", _W_protocol, receiver)
 }
-func (inbound *_Type) action_Route_Type(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
+func (receiver *_Type) action_Route_Type(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _Type, receiver_direction _Type) (outbound string /* , ok bool */) {
 	switch {
-	case len(*inbound) == 0:
+	case len(*receiver) == 0:
 		return
 	}
-	return strings_join(" ", _W_route__type, inbound)
+	return strings_join(" ", _W_route__type, receiver)
 }
-func (inbound *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
+func (receiver *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _Type, receiver_direction _Type) (outbound string /* , ok bool */) {
 	switch {
-	case len(*inbound) == 0:
+	case len(*receiver) == 0:
 		return
 	case v_Peer != nil:
-		switch _, flag := v_Peer.RI[*inbound]; {
-		case !flag && *inbound != _S_host_RI:
-			log.Warnf("Peer '%v', unknown RI '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
+		switch _, flag := v_Peer.RI[*receiver]; {
+		case !flag && *receiver != _S_host_RI:
+			log.Warnf("Peer '%v', unknown RI '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *receiver, receiver_type, receiver_direction)
 			return
 		}
 	}
 
 	switch {
 
-	case inbound_type == _Type_source && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_from___routing__instance, inbound)
-	case inbound_type == _Type_source && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_to___routing__instance, inbound)
-	case inbound_type == _Type_source && inbound_direction == _Type_pool:
-		outbound = strings_join(" ", _W_routing__instance, inbound)
-	case inbound_type == _Type_source && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _W_routing__instance, inbound)
+	case receiver_type == _Type_source && receiver_direction == _Type_from:
+		outbound = strings_join(" ", _W_from___routing__instance, receiver)
+	case receiver_type == _Type_source && receiver_direction == _Type_to:
+		outbound = strings_join(" ", _W_to___routing__instance, receiver)
+	case receiver_type == _Type_source && receiver_direction == _Type_pool:
+		outbound = strings_join(" ", _W_routing__instance, receiver)
+	case receiver_type == _Type_source && receiver_direction == _Type_then:
+		outbound = strings_join(" ", _W_routing__instance, receiver)
 
-	case inbound_type == _Type_destination && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_from___routing__instance, inbound)
-	case inbound_type == _Type_destination && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_to___routing__instance, inbound)
-	case inbound_type == _Type_destination && inbound_direction == _Type_pool:
-		outbound = strings_join(" ", _W_routing__instance, inbound)
-	case inbound_type == _Type_destination && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _W_routing__instance, inbound)
+	case receiver_type == _Type_destination && receiver_direction == _Type_from:
+		outbound = strings_join(" ", _W_from___routing__instance, receiver)
+	case receiver_type == _Type_destination && receiver_direction == _Type_to:
+		outbound = strings_join(" ", _W_to___routing__instance, receiver)
+	case receiver_type == _Type_destination && receiver_direction == _Type_pool:
+		outbound = strings_join(" ", _W_routing__instance, receiver)
+	case receiver_type == _Type_destination && receiver_direction == _Type_then:
+		outbound = strings_join(" ", _W_routing__instance, receiver)
 
-	case inbound_type == _Type_static && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_from___routing__instance, inbound)
-	case inbound_type == _Type_static && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_to___routing__instance, inbound)
-	case inbound_type == _Type_static && inbound_direction == _Type_pool:
-		outbound = strings_join(" ", _W_routing__instance, inbound)
-	case inbound_type == _Type_static && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _W_routing__instance, inbound)
+	case receiver_type == _Type_static && receiver_direction == _Type_from:
+		outbound = strings_join(" ", _W_from___routing__instance, receiver)
+	case receiver_type == _Type_static && receiver_direction == _Type_to:
+		outbound = strings_join(" ", _W_to___routing__instance, receiver)
+	case receiver_type == _Type_static && receiver_direction == _Type_pool:
+		outbound = strings_join(" ", _W_routing__instance, receiver)
+	case receiver_type == _Type_static && receiver_direction == _Type_then:
+		outbound = strings_join(" ", _W_routing__instance, receiver)
 
-	case inbound_type == _Type_firewall && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_from___routing__instance, inbound)
-	case inbound_type == _Type_firewall && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_to___routing__instance, inbound)
-	case inbound_type == _Type_firewall && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _W_routing__instance, inbound)
+	case receiver_type == _Type_firewall && receiver_direction == _Type_from:
+		outbound = strings_join(" ", _W_from___routing__instance, receiver)
+	case receiver_type == _Type_firewall && receiver_direction == _Type_to:
+		outbound = strings_join(" ", _W_to___routing__instance, receiver)
+	case receiver_type == _Type_firewall && receiver_direction == _Type_then:
+		outbound = strings_join(" ", _W_routing__instance, receiver)
 
-	case inbound_type == _Type_policy__statement:
-		outbound = strings_join(" ", _W_routing__instance, inbound)
+	case receiver_type == _Type_policy__statement:
+		outbound = strings_join(" ", _W_routing__instance, receiver)
 
 	case v_Peer != nil:
-		log.Warnf("Peer '%v', RI '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
+		log.Warnf("Peer '%v', RI '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *receiver, receiver_type, receiver_direction)
 	}
 	return
 }
-func (inbound *_Name) action_SZ(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
-	switch _, flag := v_Peer.SZ[*inbound]; {
-	case len(*inbound) == 0:
+func (receiver *_Name) action_SZ(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _Type, receiver_direction _Type) (outbound string /* , ok bool */) {
+	switch _, flag := v_Peer.SZ[*receiver]; {
+	case len(*receiver) == 0:
 		return
-	case !flag && *inbound != _Name_any && *inbound != _S_host_RI:
-		log.Warnf("Peer '%v', unknown SZ '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
+	case !flag && *receiver != _Name_any && *receiver != _S_host_RI:
+		log.Warnf("Peer '%v', unknown SZ '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *receiver, receiver_type, receiver_direction)
 		return
 	}
 
 	switch {
 
-	case inbound_type == _Type_source && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_from___zone, inbound)
-	case inbound_type == _Type_source && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_to___zone, inbound)
+	case receiver_type == _Type_source && receiver_direction == _Type_from:
+		outbound = strings_join(" ", _W_from___zone, receiver)
+	case receiver_type == _Type_source && receiver_direction == _Type_to:
+		outbound = strings_join(" ", _W_to___zone, receiver)
 
-	case inbound_type == _Type_destination && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_from___zone, inbound)
-	case inbound_type == _Type_destination && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_to___zone, inbound)
+	case receiver_type == _Type_destination && receiver_direction == _Type_from:
+		outbound = strings_join(" ", _W_from___zone, receiver)
+	case receiver_type == _Type_destination && receiver_direction == _Type_to:
+		outbound = strings_join(" ", _W_to___zone, receiver)
 
-	case inbound_type == _Type_static && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_from__zone, inbound)
-	case inbound_type == _Type_static && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_to__zone, inbound)
+	case receiver_type == _Type_static && receiver_direction == _Type_from:
+		outbound = strings_join(" ", _W_from__zone, receiver)
+	case receiver_type == _Type_static && receiver_direction == _Type_to:
+		outbound = strings_join(" ", _W_to__zone, receiver)
 
-	case inbound_type == _Type_exact && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_from__zone, inbound)
-	case inbound_type == _Type_exact && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_to__zone, inbound)
+	case receiver_type == _Type_exact && receiver_direction == _Type_from:
+		outbound = strings_join(" ", _W_from__zone, receiver)
+	case receiver_type == _Type_exact && receiver_direction == _Type_to:
+		outbound = strings_join(" ", _W_to__zone, receiver)
 
-	case inbound_type == _Type_global && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_from__zone, inbound)
-	case inbound_type == _Type_global && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_to__zone, inbound)
+	case receiver_type == _Type_global && receiver_direction == _Type_from:
+		outbound = strings_join(" ", _W_from__zone, receiver)
+	case receiver_type == _Type_global && receiver_direction == _Type_to:
+		outbound = strings_join(" ", _W_to__zone, receiver)
 
 	case v_Peer != nil:
-		log.Warnf("Peer '%v', SZ '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
+		log.Warnf("Peer '%v', SZ '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *receiver, receiver_type, receiver_direction)
 	}
 
 	return
 }
-func (inbound *_Name) action_IF(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
-	switch _, flag := v_Peer.IF_2_RI[*inbound]; {
-	case len(*inbound) == 0:
+func (receiver *_Name) action_IF(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _Type, receiver_direction _Type) (outbound string /* , ok bool */) {
+	switch _, flag := v_Peer.IF_2_RI[*receiver]; {
+	case len(*receiver) == 0:
 		return
 	case !flag:
-		log.Warnf("Peer '%v', unknown IF '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
+		log.Warnf("Peer '%v', unknown IF '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *receiver, receiver_type, receiver_direction)
 		return
 	}
-	return strings_join(" ", _W_interface, inbound)
+	return strings_join(" ", _W_interface, receiver)
 }
-func (inbound *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type) (outbound string /* , ok bool */) {
-	switch _, flag := i_pl[*inbound]; {
-	case len(*inbound) == 0:
+func (receiver *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _Type, receiver_direction _Type) (outbound string /* , ok bool */) {
+	switch _, flag := i_pl[*receiver]; {
+	case len(*receiver) == 0:
 		return
 	case !flag && v_Peer != nil:
-		log.Warnf("Peer '%v', unknown PL '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
+		log.Warnf("Peer '%v', unknown PL '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *receiver, receiver_type, receiver_direction)
 		return
 	}
 
 	switch {
 
-	case inbound_type == _Type_firewall && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_from___source__prefix__list, inbound)
-	case inbound_type == _Type_firewall && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_from___destination__prefix__list, inbound)
+	case receiver_type == _Type_firewall && receiver_direction == _Type_from:
+		outbound = strings_join(" ", _W_from___source__prefix__list, receiver)
+	case receiver_type == _Type_firewall && receiver_direction == _Type_to:
+		outbound = strings_join(" ", _W_from___destination__prefix__list, receiver)
 
-	case inbound_type == _Type_policy__statement:
-		outbound = strings_join(" ", _W_prefix__list__filter, inbound)
+	case receiver_type == _Type_policy__statement:
+		outbound = strings_join(" ", _W_prefix__list__filter, receiver)
 
 	case v_Peer != nil:
-		log.Warnf("Peer '%v', PL '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *inbound, inbound_type, inbound_direction)
+		log.Warnf("Peer '%v', PL '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *receiver, receiver_type, receiver_direction)
 	}
 
 	return
 }
 
-func (inbound *_Name) next_ID() (outbound _Name) {
+func (receiver *_Name) next_ID() (outbound _Name) {
 	switch {
-	case *inbound == _next_IDName || len(*inbound) == 0:
+	case *receiver == _next_IDName || len(*receiver) == 0:
 		outbound = _Name(strings_join("", _Name_ID, pad(next_ID, 10)))
 		next_ID++
 		return
 	}
-	return *inbound
+	return *receiver
 }
-func (inbound *_ID) next_ID() (outbound _ID) {
+func (receiver *_ID) next_ID() (outbound _ID) {
 	switch {
-	case *inbound == _next_ID || *inbound == 0:
+	case *receiver == _next_ID || *receiver == 0:
 		outbound = next_ID
 		next_ID++
 		return
 	}
-	return *inbound
+	return *receiver
 }
 
-func (inbound *_W) validate_RO_GW_Action(peer *cDB_Peer, v_Peer *i_Peer) (outbound _W) {
-	outbound = c_RO_GW_Action[*inbound]
+func (receiver *_W) validate_RO_GW_Action(peer *cDB_Peer, v_Peer *i_Peer) (outbound _W) {
+	outbound = c_RO_GW_Action[*receiver]
 	switch {
-	case len(*inbound) == 0:
+	case len(*receiver) == 0:
 		return
 	case len(outbound) == 0:
-		log.Warnf("Peer '%v', unknown _W '%v'; ACTION: return '%v'.", v_Peer.ASN, *inbound, outbound)
+		log.Warnf("Peer '%v', unknown _W '%v'; ACTION: return '%v'.", v_Peer.ASN, *receiver, outbound)
 		return
 	}
 	return
 }
 
-func (inbound *_Content) trim_space() _Content {
+func (receiver *_Content) trim_space() _Content {
 	var (
 		interim string
 	)
-	// for _, value := range strings.Split(string(*inbound), "\n") {
-	for _, value := range strings.Split(convert_2_string("", inbound), "\n") {
+	// for _, value := range strings.Split(string(*receiver), "\n") {
+	for _, value := range strings.Split(convert_2_string("", receiver), "\n") {
 		interim += strings.TrimSpace(value) + "\n"
 	}
 	return _Content(interim)
 }
 
-func (inbound *_FQDN) set_Domain_Name() {
+func (receiver *_FQDN) set_Domain_Name() {
 	switch {
-	case len(*inbound) != 0:
-		_S_domain_name = *inbound
+	case len(*receiver) != 0:
+		_S_domain_name = *receiver
 	}
 	return
 }

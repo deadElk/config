@@ -6,74 +6,74 @@ import (
 	"strings"
 )
 
-func (inbound _hash_ID) String() string {
-	return strings.ToUpper(hex.EncodeToString(inbound[:]))
+func (receiver _hash_ID) String() string {
+	return strings.ToUpper(hex.EncodeToString(receiver[:]))
 }
-func (inbound _ID) String() string {
-	return strconv.FormatUint(uint64(inbound), 10)
+func (receiver _ID) String() string {
+	return strconv.FormatUint(uint64(receiver), 10)
 }
-func (inbound _IDName) String() string {
-	return string(inbound)
-}
-
-func (inbound _ASN) String() string {
-	return strconv.FormatUint(uint64(inbound), 10)
-}
-func (inbound _W) String() string {
-	return string(inbound)
-}
-func (inbound _Communication) String() string {
-	return string(inbound)
-}
-func (inbound _Content) String() string {
-	return string(inbound)
-}
-func (inbound _S) String() string {
-	return string(inbound)
-}
-func (inbound _Description) String() string {
-	return string(inbound)
-}
-func (inbound _FQDN) String() string {
-	return string(inbound)
-}
-func (inbound _Mask) String() string {
-	return string(inbound)
-}
-func (inbound _Name) String() string {
-	return string(inbound)
-}
-func (inbound _PName) String() string {
-	return string(inbound)
-}
-func (inbound _Port) String() string {
-	return strconv.FormatUint(uint64(inbound), 10)
-}
-func (inbound _Protocol) String() string {
-	return string(inbound)
-}
-func (inbound _Route_Weight) String() string {
-	return strconv.FormatUint(uint64(inbound), 10)
-}
-func (inbound _Secret) String() string {
-	return string(inbound)
-}
-func (inbound _Service) String() string {
-	return string(inbound)
-}
-func (inbound _Type) String() string {
-	return string(inbound)
-}
-func (inbound _VI_ID) String() string {
-	return strconv.FormatUint(uint64(inbound), 10)
-}
-func (inbound _VI_Peer_ID) String() string {
-	return strconv.FormatUint(uint64(inbound), 10)
+func (receiver _IDName) String() string {
+	return string(receiver)
 }
 
-func (inbound _netip_Prefix) String() string {
-	return string(parse_interface(inbound.MarshalText()).([]byte))
+func (receiver _ASN) String() string {
+	return strconv.FormatUint(uint64(receiver), 10)
 }
-func (inbound _netip_Addr) String() string {
-	return string(parse_interface(inbound.MarshalText()).([]byte))
+func (receiver _W) String() string {
+	return string(receiver)
+}
+func (receiver _Communication) String() string {
+	return string(receiver)
+}
+func (receiver _Content) String() string {
+	return string(receiver)
+}
+func (receiver _S) String() string {
+	return string(receiver)
+}
+func (receiver _Description) String() string {
+	return string(receiver)
+}
+func (receiver _FQDN) String() string {
+	return string(receiver)
+}
+func (receiver _Mask) String() string {
+	return string(receiver)
+}
+func (receiver _Name) String() string {
+	return string(receiver)
+}
+func (receiver _PName) String() string {
+	return string(receiver)
+}
+func (receiver _Port) String() string {
+	return strconv.FormatUint(uint64(receiver), 10)
+}
+func (receiver _Protocol) String() string {
+	return string(receiver)
+}
+func (receiver _Route_Weight) String() string {
+	return strconv.FormatUint(uint64(receiver), 10)
+}
+func (receiver _Secret) String() string {
+	return string(receiver)
+}
+func (receiver _Service) String() string {
+	return string(receiver)
+}
+func (receiver _Type) String() string {
+	return string(receiver)
+}
+func (receiver _VI_ID) String() string {
+	return strconv.FormatUint(uint64(receiver), 10)
+}
+func (receiver _VI_Peer_ID) String() string {
+	return strconv.FormatUint(uint64(receiver), 10)
+}
+
+func (receiver _netip_Prefix) String() string {
+	return string(parse_interface(receiver.MarshalText()).([]byte))
+}
+func (receiver _netip_Addr) String() string {
+	return string(parse_interface(receiver.MarshalText()).([]byte))
 }
