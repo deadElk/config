@@ -379,42 +379,30 @@ func write_file() (ok bool) {
 		host_list string
 	)
 
-	sort.Slice(i_peer_list, func(i, j int) bool {
-		return i_peer_list[i] < i_peer_list[j]
-	})
-
 	for _, b := range i_peer_list {
-		// var (
-		// 	fn = strings_join("/", _S_Dir_List[_dir_list_Config], i_peer[b].ASName)
-		// )
-		// switch err = os.WriteFile(fn, config[b], 0600); {
-		// case err == nil:
-		// 	log.Infof("OK '%v'", i_peer[b].ASName)
-		// default:
-		// 	log.Errorf("Fail '%v' with error '%v'", i_peer[b].ASName, err)
-		// }
-
 		var (
-			s_public  []string
-			s_private []string
+			s_public  *[]_Name
+			s_private *[]_Name
 			ip_list   = "\t"
 			s_target  = []string{0: i_peer[b].Router_ID.String()}
 		)
-		for c := range i_peer[b].AB["O_AS"+_Name(i_peer[b].PName)].Set {
-			s_public = append(s_public, c.String())
+		s_private = get_address_list(i_peer[b].AB["I_AS"+_Name(i_peer[b].PName)], s_private)
+		s_public = get_address_list(i_peer[b].AB["O_AS"+_Name(i_peer[b].PName)], s_public)
+		sort.Slice(*s_private, func(i, j int) bool {
+			return (*s_private)[i] < (*s_private)[j]
+		})
+		sort.Slice(*s_public, func(i, j int) bool {
+			return (*s_public)[i] < (*s_public)[j]
+		})
+
+		for _, d := range *s_private {
+			ip_list += tabber(d.String(), 3) + "\t"
 		}
-		for c := range i_peer[b].AB["I_AS"+_Name(i_peer[b].PName)].Set {
-			s_private = append(s_private, c.String())
+		for _, d := range *s_public {
+			s_target = append(s_target, d.String())
+			ip_list += tabber(d.String(), 3) + "\t"
 		}
-		sort.Strings(s_public)
-		sort.Strings(s_private)
-		for _, d := range s_private {
-			ip_list += tabber(d, 3) + "\t"
-		}
-		for _, d := range s_public {
-			s_target = append(s_target, d)
-			ip_list += tabber(d, 3) + "\t"
-		}
+
 		host_list += func() (outbound string) {
 			for _, f := range s_target {
 				var (
@@ -530,70 +518,29 @@ func strings_join(delimiter string, inbound ...interface{}) (outbound string) {
 	return buffer.String()
 }
 
-func parse_cDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak *cDB_Peer_RI_RO_Route_Leak) (outbound map[_W]i_Route_Leak_FromTo /* , ok bool */) {
-	// outbound = make(map[_W]i_Route_Leak_FromTo)
-	return parse_iDB_Route_Leak(nil, v_Peer, "", "", &map[_W]i_Route_Leak_FromTo{
-		_W_import: {PS: func() (outbound []_Name) {
-			for _, b := range (*route_leak).Import {
-				outbound = append(outbound, b.PS)
-			}
-			return
-		}()},
-		_W_export: {PS: func() (outbound []_Name) {
-			for _, b := range (*route_leak).Export {
-				outbound = append(outbound, b.PS)
-			}
-			return
-		}()},
-	})
-}
-func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak *map[_W]i_Route_Leak_FromTo) (outbound map[_W]i_Route_Leak_FromTo /* , ok bool */) {
-	outbound = make(map[_W]i_Route_Leak_FromTo)
-	var (
-		v_RL_Import = func() (outbound []_Name) {
-			for _, b := range (*route_leak)[_W_import].PS {
-				switch _, flag := i_ps[b]; {
-				case !flag:
-					log.Warnf("Peer '%v', PL '%v' not found; ACTION: ignore.", v_Peer.ASN, b)
-					continue
-				}
-				outbound = append(outbound, b)
-				v_Peer.link_PS(b)
-			}
-			return
-		}()
-		v_RL_Export = func() (outbound []_Name) {
-			for _, b := range (*route_leak)[_W_export].PS {
-				switch _, flag := i_ps[b]; {
-				case !flag:
-					log.Warnf("Peer '%v', PL '%v' not found; ACTION: ignore.", v_Peer.ASN, b)
-					continue
-				}
-				outbound = append(outbound, b)
-				v_Peer.link_PS(b)
-			}
-			return
-		}()
-	)
-	switch {
-	case len(v_RL_Import) != 0:
-		outbound[_W_import] = i_Route_Leak_FromTo{
-			PS:              v_RL_Import,
-			GT_Action:       strings_join(" ", _W_import, "[", v_RL_Import, "]"),
-			_Attribute_List: (*route_leak)[_W_import]._Attribute_List,
-		}
-	}
-	switch {
-	case len(v_RL_Export) != 0:
-		outbound[_W_export] = i_Route_Leak_FromTo{
-			PS:              v_RL_Export,
-			GT_Action:       strings_join(" ", _W_export, "[", v_RL_Export, "]"),
-			_Attribute_List: (*route_leak)[_W_export]._Attribute_List,
-		}
-	}
-	return
-}
-
 func convert_netip_Addr_Prefix(inbound *netip.Addr) (outbound netip.Prefix) {
 	return parse_interface((*inbound).Prefix((*inbound).BitLen())).(netip.Prefix)
+}
+
+func get_address_list(inbound *i_AB, interim *[]_Name) (outbound *[]_Name) {
+	switch inbound.Type {
+	case _Type_fqdn:
+		return &[]_Name{0: _Name(inbound.FQDN)}
+	case _Type_ipprefix:
+		return &[]_Name{0: _Name(inbound.IPPrefix.String())}
+	case _Type_set:
+		var (
+			t []_Name
+		)
+		for b := range inbound.Set {
+			var (
+				i = get_address_list(i_ab[b], interim)
+			)
+			for _, d := range *i {
+				t = append(t, d)
+			}
+		}
+		return &t
+	}
+	return
 }

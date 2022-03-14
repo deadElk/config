@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/netip"
+	"sort"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -9,6 +10,11 @@ import (
 func parse_iDB() (ok bool) {
 	// define_iDB_Vocabulary()
 	parse_iDB_Peer_Vocabulary()
+
+	sort.Slice(i_peer_list, func(i, j int) bool {
+		return i_peer_list[i] < i_peer_list[j]
+	})
+
 	return true
 }
 
@@ -328,4 +334,50 @@ func add_iDB_AB_Address_List(public, private bool, ab_name _Name, inbound ...int
 		}
 	}
 	return true
+}
+func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak *map[_W]i_Route_Leak_FromTo) (outbound map[_W]i_Route_Leak_FromTo /* , ok bool */) {
+	outbound = make(map[_W]i_Route_Leak_FromTo)
+	var (
+		v_RL_Import = func() (outbound []_Name) {
+			for _, b := range (*route_leak)[_W_import].PS {
+				switch _, flag := i_ps[b]; {
+				case !flag:
+					log.Warnf("Peer '%v', PL '%v' not found; ACTION: ignore.", v_Peer.ASN, b)
+					continue
+				}
+				outbound = append(outbound, b)
+				v_Peer.link_PS(b)
+			}
+			return
+		}()
+		v_RL_Export = func() (outbound []_Name) {
+			for _, b := range (*route_leak)[_W_export].PS {
+				switch _, flag := i_ps[b]; {
+				case !flag:
+					log.Warnf("Peer '%v', PL '%v' not found; ACTION: ignore.", v_Peer.ASN, b)
+					continue
+				}
+				outbound = append(outbound, b)
+				v_Peer.link_PS(b)
+			}
+			return
+		}()
+	)
+	switch {
+	case len(v_RL_Import) != 0:
+		outbound[_W_import] = i_Route_Leak_FromTo{
+			PS:              v_RL_Import,
+			GT_Action:       strings_join(" ", _W_import, "[", v_RL_Import, "]"),
+			_Attribute_List: (*route_leak)[_W_import]._Attribute_List,
+		}
+	}
+	switch {
+	case len(v_RL_Export) != 0:
+		outbound[_W_export] = i_Route_Leak_FromTo{
+			PS:              v_RL_Export,
+			GT_Action:       strings_join(" ", _W_export, "[", v_RL_Export, "]"),
+			_Attribute_List: (*route_leak)[_W_export]._Attribute_List,
+		}
+	}
+	return
 }

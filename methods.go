@@ -3,7 +3,6 @@ package main
 import (
 	"crypto/rand"
 	"math/big"
-	"net/netip"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -351,9 +350,4 @@ func (inbound *_Content) trim_space() _Content {
 		interim += strings.TrimSpace(value) + "\n"
 	}
 	return _Content(interim)
-}
-
-func (inbound *i_AB) get_address_list() []netip.Prefix {
-
-	return []netip.Prefix{}
 }
