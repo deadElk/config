@@ -14,6 +14,58 @@ func parse_iDB() (ok bool) {
 	sort.Slice(i_peer_list, func(i, j int) bool {
 		return i_peer_list[i] < i_peer_list[j]
 	})
+	var (
+		host_list string
+	)
+	for _, b := range i_peer_list {
+		var (
+			s_public  *[]_Name
+			s_private *[]_Name
+			ip_list   = "\t"
+			s_target  = []string{0: i_peer[b].Router_ID.String()}
+		)
+		s_private = get_address_list(i_peer[b].AB["I_AS"+_Name(i_peer[b].PName)], s_private)
+		s_public = get_address_list(i_peer[b].AB["O_AS"+_Name(i_peer[b].PName)], s_public)
+		sort.Slice(*s_private, func(i, j int) bool {
+			return (*s_private)[i] < (*s_private)[j]
+		})
+		sort.Slice(*s_public, func(i, j int) bool {
+			return (*s_public)[i] < (*s_public)[j]
+		})
+
+		for _, d := range *s_private {
+			ip_list += tabber(d.String(), 3) + "\t"
+		}
+		for _, d := range *s_public {
+			s_target = append(s_target, d.String())
+			ip_list += tabber(d.String(), 3) + "\t"
+		}
+
+		host_list += func() (outbound string) {
+			for _, f := range s_target {
+				var (
+					host = func() string {
+						switch addr, err := netip.ParseAddr(f); {
+						case err == nil:
+							return addr.String()
+						default:
+							prefix, _ := netip.ParsePrefix(f)
+							return prefix.Addr().String()
+						}
+					}()
+				)
+				outbound += tabber(host, 2) +
+					"\t####\t" +
+					tabber(i_peer[b].PName.String(), 2) + "\t" +
+					tabber(i_peer[b].Hostname.String(), 3) + "\t" +
+					tabber(i_peer[b].Manufacturer+" "+i_peer[b].Model, 3) + "\t####\t" +
+					ip_list + "\n"
+			}
+			outbound += "\n"
+			return
+		}()
+	}
+	i_write_file[_S_Dir_List[_dir_list_Config]].data["host_list"] = _Content(host_list)
 
 	return true
 }
