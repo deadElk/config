@@ -28,14 +28,14 @@ type i_LDAP struct {
 
 // Peer
 type i_Peer struct {
-	ASN          _ASN
-	ASName       _Name
-	PName        _PName
-	Router_ID    netip.Addr
-	IF_2_RI      map[_Name]_Name // interface to RI mapping. interfaces within one peer must be unique.
-	VI           map[_VI_ID]*i_VI
-	VI_Local     map[_VI_ID]*i_VI_Peer
-	VI_Remote    map[_VI_ID]*i_VI_Peer
+	ASN       _ASN
+	ASName    _Name
+	PName     _PName
+	Router_ID netip.Addr
+	IF_2_RI   map[_Name]_Name // interface to RI mapping. interfaces within one peer must be unique.
+	// VI           map[_VI_ID]*i_VI
+	// VI_Local     map[_VI_ID]*i_VI_Peer
+	// VI_Remote    map[_VI_ID]*i_VI_Peer
 	VI_GT        map[_VI_ID]*i_VI_GT
 	IFM          map[_Name]i_Peer_IFM
 	RI           map[_Name]i_Peer_RI

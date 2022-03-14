@@ -185,6 +185,10 @@ func (receiver cDB_Peer_List) parse() {
 		case flag:
 			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ASN)
 			continue
+		case b.Reserved:
+			log.Debugf("VI '%v' is reserved; ACTION: skip.", b.ASN)
+			i_peer[b.ASN] = &i_Peer{}
+			continue
 		}
 		b.AB.parse()
 		b.JA.parse()
@@ -216,7 +220,7 @@ func (receiver cDB_Peer_List) parse() {
 				Manufacturer: b.Manufacturer,
 				Model:        b.Model,
 				Serial:       b.Serial,
-				Root:         b.Root.validate(16),
+				Root:         b.Root.validate(16, b.ASN.String()),
 				GT_List:      []_Name{},
 				SZ:           map[_Name]i_Peer_SZ{},
 				NAT:          map[_Type]i_Peer_NAT_Type{},
@@ -274,19 +278,21 @@ func (receiver cDB_VI_List) parse() {
 	for _, b := range receiver {
 		switch _, flag := i_vi[b.ID]; {
 		case flag:
-			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ID)
+			log.Warnf("VI '%v' already exist; ACTION: skip.", b.ID)
+			continue
+		case b.Reserved:
+			log.Debugf("VI '%v' is reserved; ACTION: skip.", b.ID)
+			i_vi[b.ID] = nil
 			continue
 		}
 		var (
 			v_vi_peer_list = make(map[_VI_Peer_ID]*i_VI_Peer)
-			v_IKE_GCM      = true
-			v_IKE_No_NAT   = true
 		)
 		i_vi[b.ID] = &i_VI{
 			PName:         pad(&b.ID, 5),
 			IPPrefix:      get_VI_IPPrefix(b.ID, 0).Masked(),
 			Type:          _Type_st,
-			Communication: b.Communication,
+			Communication: b.Communication.parse(_S_Comm[_comm_vi]),
 			Route_Metric: func() _Route_Weight {
 				switch {
 				case b.Route_Metric > _Route_Weight_max_rm:
@@ -294,11 +300,10 @@ func (receiver cDB_VI_List) parse() {
 				}
 				return _Route_Weight_max_rm - b.Route_Metric
 			}(),
-			PSK: b.PSK.validate(64),
-			// _IKE_Option_List: &_IKE_Option_List{
-			IKE_GCM:    v_IKE_GCM,
-			IKE_No_NAT: v_IKE_No_NAT,
-			// },
+			PSK:             b.PSK.validate(64, b.ID.String()),
+			Hub:             false,
+			IKE_GCM:         true,
+			IKE_No_NAT:      true,
 			GT_Action:       "",
 			_Attribute_List: b._Attribute_List,
 		}
@@ -316,14 +321,18 @@ func (receiver cDB_VI_List) parse() {
 				continue
 			}
 			var (
-				v_RI                = d.RI.validate_RI(_S_mgmt_RI)
-				v_IF                _Name
-				v_IP                netip.Addr
+				v_RI                = d.RI
+				v_IF                = d.IF
+				v_IP                = d.IP
 				v_NAT               netip.Addr
 				v_IKE_Local_Address bool
 				v_IKE_Dynamic       bool
-				v_Inner_RI          = d.Inner_RI.validate_RI(_S_mgmt_RI)
 			)
+
+			switch {
+
+			}
+
 			switch _, flag := i_peer[d.ASN].RI[v_RI].IF[d.IF]; {
 			case len(d.IF) == 0:
 				for v_IF = range i_peer[d.ASN].RI[v_RI].IF {
@@ -370,7 +379,7 @@ func (receiver cDB_VI_List) parse() {
 				IP:                v_IP,
 				NAT:               v_NAT,
 				Hub:               d.Hub,
-				Inner_RI:          v_Inner_RI,
+				Inner_RI:          d.Inner_RI.validate_RI(_S_mgmt_RI),
 				Inner_IP:          get_VI_IPPrefix(b.ID, d.ID+1).Addr(),
 				Inner_IPPrefix:    get_VI_IPPrefix(b.ID, d.ID+1),
 				IKE_Local_Address: v_IKE_Local_Address,
@@ -521,7 +530,7 @@ func (receiver *cDB_Peer) parse_cDB_Peer_Router_ID(v_Peer *i_Peer) {
 func (receiver *cDB_Peer) parse_cDB_Peer_IFM(v_Peer *i_Peer) {
 	for _, b := range receiver.IFM {
 		v_Peer.IFM[b.Name] = i_Peer_IFM{
-			Communication:   parse_Communication(&receiver.ASN, &b.Name, &b.Communication),
+			Communication:   b.Communication.parse(_S_Comm[_comm_if]),
 			GT_Action:       strings_join(" ", _W_interfaces, b.Name),
 			_Attribute_List: b._Attribute_List,
 		}
@@ -574,7 +583,7 @@ func (receiver *cDB_Peer) parse_cDB_Peer_RI(v_Peer *i_Peer) {
 					outbound[d.Name] = i_Peer_RI_IF{
 						IFM:           _Name(v_IF_IFM),
 						IFsM:          _Name(v_IF_IFsM),
-						Communication: parse_Communication(&receiver.ASN, &d.Name, &d.Communication),
+						Communication: d.Communication.parse(_S_Comm[_comm_if]),
 						IP: func() (outbound map[netip.Prefix]i_Peer_RI_IF_IP) {
 							outbound = make(map[netip.Prefix]i_Peer_RI_IF_IP)
 							for _, f := range d.IP {

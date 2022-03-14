@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (receiver *_Secret) validate(length uint, message ...string) _Secret {
+func (receiver *_Secret) validate(length uint, message string) _Secret {
 	switch {
 	case len(*receiver) >= int(length):
 		return *receiver
@@ -26,7 +26,7 @@ func (receiver *_Secret) validate(length uint, message ...string) _Secret {
 	}
 	switch {
 	case len(message) > 0:
-		log.Warnf("%v; ACTION: new value is '%v'.", message[0], string(interim))
+		log.Warnf("%v: _Secret is too weak; ACTION: use '%v'.", message, string(interim))
 	}
 	return _Secret(interim)
 }
@@ -359,4 +359,16 @@ func (receiver *_FQDN) set_Domain_Name() {
 		_S_domain_name = *receiver
 	}
 	return
+}
+
+func (receiver *_Communication) parse(_comm _Communication) _Communication {
+	switch {
+	case *receiver == _Communication_ptp || *receiver == _Communication_ptmp:
+		return *receiver
+	case len(*receiver) != 0:
+		log.Warnf("invalid interface Communication type '%v'; ACTION: use '%v'.", *receiver, _comm)
+		fallthrough
+	default:
+		return _comm
+	}
 }

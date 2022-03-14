@@ -279,17 +279,6 @@ func set_VI_IPPrefix(inbound ...netip.Prefix) (ok bool) {
 	_S_VI_IPShift = binary.BigEndian.Uint32(_S_VI_IPPrefix.Addr().AsSlice())
 	return
 }
-func parse_Communication(_peer *_ASN, _if *_Name, inbound *_Communication) _Communication {
-	switch {
-	case *inbound == _Communication_ptp || *inbound == _Communication_ptmp:
-		return *inbound
-	case len(*inbound) != 0:
-		log.Warnf("Peer '%v', IF '%v', invalid Communication type '%v'; ACTION: use '%v'.", _peer, _if, *inbound, _S_Comm[_comm_if])
-		fallthrough
-	default:
-		return _S_Comm[_comm_if]
-	}
-}
 func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound _Host_Inbound_Traffic_List) {
 	outbound = _Host_Inbound_Traffic_List{
 		Services:  map[_Service]bool{},
