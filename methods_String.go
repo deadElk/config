@@ -15,7 +15,6 @@ func (receiver _ID) String() string {
 func (receiver _IDName) String() string {
 	return string(receiver)
 }
-
 func (receiver _ASN) String() string {
 	return strconv.FormatUint(uint64(receiver), 10)
 }
@@ -70,7 +69,6 @@ func (receiver _VI_ID) String() string {
 func (receiver _VI_Peer_ID) String() string {
 	return strconv.FormatUint(uint64(receiver), 10)
 }
-
 func (receiver _netip_Prefix) String() string {
 	return string(parse_interface(receiver.MarshalText()).([]byte))
 }
