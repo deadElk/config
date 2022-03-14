@@ -358,8 +358,8 @@ func write_file() (ok bool) {
 	for a, b := range i_write_file {
 		switch err = os.MkdirAll(string(a), os.ModeDir|0700); {
 		case err != nil:
-			log.Fatalf("directory '%v' create error '%v'; ACTION: fatal.", a, err)
-			// continue
+			log.Errorf("directory '%v' create error '%v'; ACTION: report.", a, err)
+			continue
 		}
 		for e, f := range b.data {
 			var (
@@ -367,7 +367,7 @@ func write_file() (ok bool) {
 			)
 			switch err = os.WriteFile(g, f, 0600); {
 			case err != nil:
-				log.Fatalf("file '%v' write error '%v'; ACTION: fatal.", g, err)
+				log.Errorf("file '%v' write error '%v'; ACTION: report.", g, err)
 				continue
 			}
 		}
