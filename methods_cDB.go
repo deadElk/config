@@ -195,7 +195,6 @@ func (receiver cDB_Peer_List) parse() {
 	for _, b := range receiver {
 		switch _, flag := i_peer[b.ASN]; {
 		case flag:
-			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ASN)
 			continue
 		}
 		var (
