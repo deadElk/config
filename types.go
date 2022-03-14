@@ -31,7 +31,7 @@ type _VI_Peer_ID uint16
 
 type _GT_Action_List map[interface{}][]string
 
-// Why return String() "invalid IP"???? What for???? Why not just return an empty String() "" ????
+// Why returning String() "invalid IP"???? What for???? Why not just return an empty String() "" ????
 type _netip_Prefix struct {
 	netip.Prefix
 }

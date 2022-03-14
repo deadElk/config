@@ -163,7 +163,7 @@ func (receiver *_Name) action_Pool(peer *cDB_Peer, v_Peer *i_Peer, receiver_type
 	}
 	return strings_join(" ", _W_pool, receiver)
 }
-func (receiver *_Protocol) action_Protocol(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _Type, receiver_direction _Type) (outbound string /* , ok bool */) {
+func (receiver *_Protocol) action(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _Type, receiver_direction _Type) (outbound string /* , ok bool */) {
 	switch {
 	case len(*receiver) == 0:
 		return

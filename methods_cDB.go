@@ -10,7 +10,6 @@ import (
 )
 
 func (receiver cDB_List) parse() {
-	define_iDB_Vocabulary()
 	var (
 		s = make(map[_Name]bool)
 	)
@@ -138,7 +137,7 @@ func (receiver cDB_PO_PS_List) parse() {
 										Mask:       f.Mask,
 										GT_Action: strings_join(" ", _W_from,
 											f.RI.action_RI(nil, nil, _Type_policy__statement, ""),
-											f.Protocol.action_Protocol(nil, nil, "", ""),
+											f.Protocol.action(nil, nil, "", ""),
 											f.Route_Type.action_Route_Type(nil, nil, "", ""),
 											f.PL.action_PL(nil, nil, _Type_policy__statement, ""),
 											f.Mask,

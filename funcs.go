@@ -307,78 +307,73 @@ func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound _Host_Inbound_
 	return
 }
 
-func read_file() (ok bool) {
-	var (
-		err error
-	)
+func read_file() (not_ok bool) {
 	for a, b := range i_read_file {
-		var (
-			direntry []os.DirEntry
-		)
-		switch direntry, err = os.ReadDir(string(a)); {
-		case err != nil:
-			log.Warnf("directory '%v' read error '%v'; ACTION: skip.", a, err)
+		switch direntry, err := os.ReadDir(string(a)); {
+		case err == nil:
+			for _, f := range direntry {
+				switch {
+				case !f.Type().IsRegular():
+					continue
+				}
+				var (
+					s = re_dot.Split(f.Name(), -1)
+				)
+				switch {
+				case len(s) < 2 || s[len(s)-1] != string(b.ext):
+					log.Warnf("inconsistent filename '%v'; ACTION: report.", a)
+					not_ok = true
+					continue
+				}
+				var (
+					t = _Name(f.Name()[:len(f.Name())-1-len(s[len(s)-1])])
+					g _Content
+				)
+				switch g, err = os.ReadFile(strings_join("/", ".", a, f.Name())); {
+				case err != nil:
+					log.Warnf("file '%v' read error '%v'; ACTION: report.", t, err)
+					not_ok = true
+					continue
+				}
+				b.data[t] = g.trim_space()
+				b.sorted = append(b.sorted, t)
+			}
+			sort.Slice(b.sorted, func(i, j int) bool {
+				return b.sorted[i] < b.sorted[j]
+			})
+		default:
+			log.Warnf("directory '%v' read error '%v'; ACTION: report.", a, err)
+			not_ok = true
 			continue
 		}
-		for _, f := range direntry {
-			switch {
-			case !f.Type().IsRegular():
-				continue
-			}
-			var (
-				s = re_dot.Split(f.Name(), -1)
-			)
-			switch {
-			case len(s) != 2 || s[len(s)-1] != string(b.ext):
-				continue
-			}
-			var (
-				t = _Name(f.Name()[:len(f.Name())-1-len(s[len(s)-1])])
-				g _Content
-			)
-			switch g, err = os.ReadFile(strings_join("/", ".", a, f.Name())); {
-			case err != nil:
-				log.Warnf("file '%v' read error '%v'; ACTION: skip.", t, err)
-				continue
-			}
-			b.data[t] = g.trim_space()
-			b.sorted = append(b.sorted, t)
-		}
-		sort.Slice(b.sorted, func(i, j int) bool {
-			return b.sorted[i] < b.sorted[j]
-		})
 	}
-	return err == nil
+	return !not_ok
 }
 
-func write_file() (ok bool) {
-	var (
-		err error
-	)
+func write_file() (not_ok bool) {
 	for a, b := range i_write_file {
-		switch err = os.MkdirAll(string(a), os.ModeDir|0700); {
+		switch err := os.MkdirAll(string(a), os.ModeDir|0700); {
 		case err != nil:
 			log.Errorf("directory '%v' create error '%v'; ACTION: report.", a, err)
+			not_ok = true
 			continue
 		}
 		for e, f := range b.data {
 			var (
 				g = strings_join("/", a, strings_join(".", e, b.ext))
 			)
-			switch err = os.WriteFile(g, f, 0600); {
+			switch err := os.WriteFile(g, f, 0600); {
 			case err != nil:
 				log.Errorf("file '%v' write error '%v'; ACTION: report.", g, err)
+				not_ok = true
 				continue
 			}
 		}
 	}
-	return err == nil
+	return !not_ok
 }
 
-func parse_GT() (ok bool) {
-	var (
-		err error
-	)
+func parse_GT() (not_ok bool) {
 	for index, value := range i_peer {
 		switch {
 		case value.Reserved:
@@ -386,26 +381,28 @@ func parse_GT() (ok bool) {
 		}
 		for _, gt_v := range value.GT_List {
 			var (
-				vGT  *template.Template
 				vBuf bytes.Buffer
 			)
-			switch vGT, err = template.New(gt_v.String()).Parse(string(i_read_file[_S_Dir_List[_dir_list_GT]].data[gt_v])); {
-			case err != nil || vGT == nil:
-				log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: ignore.", index.String(), gt_v, err)
+			switch vGT, err := template.New(gt_v.String()).Parse(string(i_read_file[_S_Dir_List[_dir_list_GT]].data[gt_v])); {
+			case err == nil || vGT != nil:
+				switch err = vGT.Execute(&vBuf, value); {
+				case err != nil:
+					log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: report.", index.String(), gt_v, err)
+					not_ok = true
+					continue
+				}
+				i_write_file[_S_Dir_List[_dir_list_Config]].data[value.ASName] = append(i_write_file[_S_Dir_List[_dir_list_Config]].data[value.ASName], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
+			default:
+				log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: report.", index.String(), gt_v, err)
+				not_ok = true
 				continue
 			}
-			switch err = vGT.Execute(&vBuf, value); {
-			case err != nil:
-				log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: ignore.", index.String(), gt_v, err)
-				continue
-			}
-			i_write_file[_S_Dir_List[_dir_list_Config]].data[value.ASName] = append(i_write_file[_S_Dir_List[_dir_list_Config]].data[value.ASName], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
 		}
 	}
-	return err == nil
+	return !not_ok
 }
 
-func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, port, port_low, port_high _Port) (outbound string /* , ok bool */) {
+func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, port, port_low, port_high _Port) (outbound string) {
 	switch {
 	// case port != 0:
 	// 	outbound = port.String()

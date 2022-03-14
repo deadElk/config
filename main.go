@@ -30,7 +30,24 @@ func init() {
 }
 func main() {
 	switch {
-	case !op():
-		log.Fatalf("something wrong ....")
+	case !read_file():
+		log.Fatalf("read_file() error; ACTION: fatal.")
+	}
+	define_iDB_Vocabulary()
+	switch {
+	case !read_cDB():
+		log.Fatalf("write_file() error; ACTION: fatal.")
+	}
+	switch {
+	case !parse_iDB():
+		log.Fatalf("iDB parse error; ACTION: fatal.")
+	}
+	switch {
+	case !parse_GT():
+		log.Fatalf("GT parse error; ACTION: fatal.")
+	}
+	switch {
+	case !write_file():
+		log.Fatalf("write_file() error; ACTION: fatal.")
 	}
 }

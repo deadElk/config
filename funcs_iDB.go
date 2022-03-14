@@ -8,7 +8,6 @@ import (
 )
 
 func parse_iDB() (ok bool) {
-	// define_iDB_Vocabulary()
 	parse_iDB_Peer_Vocabulary()
 
 	sort.Slice(i_peer_list, func(i, j int) bool {
