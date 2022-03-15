@@ -361,9 +361,14 @@ func (receiver cDB_VI_List) parse() {
 					}
 				}
 			}
+			for e, f := range i_peer[d.ASN].RI[v_RI].IF[v_IF].IP {
+				switch {
+				case e.Addr() == v_IP:
+					v_NAT = f.NAT
+				}
+			}
 			v_IKE_Dynamic = !v_IP.IsValid()
 			v_IKE_Local_Address = len(i_peer[d.ASN].RI[v_RI].IF[v_IF].IP) > 1
-			v_NAT = i_peer[d.ASN].RI[v_RI].IF[v_IF].IP[v_IP].NAT
 
 			switch {
 			// case :
@@ -406,7 +411,7 @@ func (receiver cDB_VI_List) parse() {
 			// i_peer[v_vi_peer_list[_first].ASN].VI_Local[b.ID] = i_vi_peer[b.ID][_first]
 			// i_peer[v_vi_peer_list[_first].ASN].VI_Remote[b.ID] = i_vi_peer[b.ID][_second]
 
-			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].IF[_if] = &i_Peer_RI_IF{
+			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].IF[_if] = i_Peer_RI_IF{
 				IFM:           _Name_st0,
 				IFsM:          _Name(b.ID.String()),
 				Communication: _S_Comm[_comm_vi],
@@ -562,9 +567,9 @@ func (receiver *cDB_Peer) parse_cDB_Peer_RI(v_Peer *i_Peer) {
 			continue
 		}
 		var (
-			v_IP_2_IF = make(map[netip.Addr]*i_Peer_RI_IF)
-			v_IF      = func() (outbound map[_Name]*i_Peer_RI_IF) {
-				outbound = make(map[_Name]*i_Peer_RI_IF)
+			v_IP_2_IF = make(map[netip.Addr]_Name)
+			v_IF      = func() (outbound map[_Name]i_Peer_RI_IF) {
+				outbound = make(map[_Name]i_Peer_RI_IF)
 				for _, d := range b.IF {
 					switch value, flag := v_Peer.IF_2_RI[d.Name]; {
 					case flag:
@@ -577,7 +582,7 @@ func (receiver *cDB_Peer) parse_cDB_Peer_RI(v_Peer *i_Peer) {
 						v_IF_IFsM string
 					)
 					split_2_string(&d.Name, re_dot, &v_IF_IFM, &v_IF_IFsM)
-					outbound[d.Name] = &i_Peer_RI_IF{
+					outbound[d.Name] = i_Peer_RI_IF{
 						IFM:           _Name(v_IF_IFM),
 						IFsM:          _Name(v_IF_IFsM),
 						Communication: d.Communication.parse(_S_Comm[_comm_if]),
