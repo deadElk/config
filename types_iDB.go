@@ -100,8 +100,8 @@ type i_Peer_IFM struct {
 	_Attribute_List
 }
 type i_Peer_RI struct {
-	IP_2_IF    map[netip.Addr]_Name // interface's IP address to interface mapping. IP addresses within one RI must be unique.
-	IF         map[_Name]i_Peer_RI_IF
+	IP_2_IF    map[netip.Addr]*i_Peer_RI_IF // interface's IP address to interface mapping. IP addresses within one RI must be unique.
+	IF         map[_Name]*i_Peer_RI_IF
 	RT         map[netip.Prefix]i_Peer_RI_RO_RT
 	Route_Leak map[_W]i_Route_Leak_FromTo
 	Protocol   map[_Name]_Name
@@ -111,6 +111,7 @@ type i_Peer_RI struct {
 }
 
 type i_Peer_RI_IF struct {
+	Name          _Name
 	IFM           _Name
 	IFsM          _Name
 	Communication _Communication
