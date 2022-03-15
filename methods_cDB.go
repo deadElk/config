@@ -348,7 +348,7 @@ func (receiver cDB_VI_List) parse() {
 				log.Warnf("VI '%v', Peer '%v', ASN '%v', RI '%v', IF'%v' not found; ACTION: skip.", b.ID, d.ID, d.ASN, v_RI, v_IF)
 				continue
 			}
-			switch _, flag := i_peer[d.ASN].RI[v_RI].IP_2_IF[v_IP]; {
+			switch _, flag := i_peer[d.ASN].RI[v_RI].IP_IF[v_IP]; {
 			case v_IP.IsValid() && !flag: // IP defined but not found
 				log.Warnf("VI '%v', Peer '%v', ASN '%v', RI '%v', IF '%v', IP '%v' not found; ACTION: skip.", b.ID, d.ID, d.ASN, v_RI, v_IF, v_IP)
 				continue
@@ -411,7 +411,7 @@ func (receiver cDB_VI_List) parse() {
 			// i_peer[v_vi_peer_list[_first].ASN].VI_Local[b.ID] = i_vi_peer[b.ID][_first]
 			// i_peer[v_vi_peer_list[_first].ASN].VI_Remote[b.ID] = i_vi_peer[b.ID][_second]
 
-			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].IF[_if] = i_Peer_RI_IF{
+			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].IF[_if] = &i_Peer_RI_IF{
 				IFM:           _Name_st0,
 				IFsM:          _Name(b.ID.String()),
 				Communication: _S_Comm[_comm_vi],
@@ -436,7 +436,7 @@ func (receiver cDB_VI_List) parse() {
 				_Attribute_List:            _Attribute_List{},
 			}
 			i_peer[v_vi_peer_list[_first].ASN].IF_2_RI[_if] = i_vi_peer[b.ID][_first].Inner_RI
-			// i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].IP_2_IF[i_vi_peer[b.ID][_first].Inner_IP] = _if
+			// i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].IP_IF[i_vi_peer[b.ID][_first].Inner_IP] = _if
 		}
 
 		for _first, _second = 0, _total-1; _first <= _total-1; _first, _second = _first+1, _second-1 {
@@ -567,9 +567,9 @@ func (receiver *cDB_Peer) parse_cDB_Peer_RI(v_Peer *i_Peer) {
 			continue
 		}
 		var (
-			v_IP_2_IF = make(map[netip.Addr]_Name)
-			v_IF      = func() (outbound map[_Name]i_Peer_RI_IF) {
-				outbound = make(map[_Name]i_Peer_RI_IF)
+			v_IP_IF = make(map[netip.Addr]*i_Peer_RI_IF)
+			v_IF    = func() (outbound map[_Name]*i_Peer_RI_IF) {
+				outbound = make(map[_Name]*i_Peer_RI_IF)
 				for _, d := range b.IF {
 					switch value, flag := v_Peer.IF_2_RI[d.Name]; {
 					case flag:
@@ -582,7 +582,7 @@ func (receiver *cDB_Peer) parse_cDB_Peer_RI(v_Peer *i_Peer) {
 						v_IF_IFsM string
 					)
 					split_2_string(&d.Name, re_dot, &v_IF_IFM, &v_IF_IFsM)
-					outbound[d.Name] = i_Peer_RI_IF{
+					outbound[d.Name] = &i_Peer_RI_IF{
 						IFM:           _Name(v_IF_IFM),
 						IFsM:          _Name(v_IF_IFsM),
 						Communication: d.Communication.parse(_S_Comm[_comm_if]),
@@ -596,12 +596,12 @@ func (receiver *cDB_Peer) parse_cDB_Peer_RI(v_Peer *i_Peer) {
 										log.Warnf("Peer '%v', RI '%v', IF '%v', invalid IP '%v'; ACTION: ignore.", receiver.ASN, b.Name, d.Name, f.IPPrefix)
 										continue
 									}
-									switch value, flag := v_IP_2_IF[f.IPPrefix.Addr()]; {
+									switch value, flag := v_IP_IF[f.IPPrefix.Addr()]; {
 									case flag:
 										log.Warnf("Peer '%v', RI '%v', IF '%v', duplicate IP '%v' with IF '%v'; ACTION: ignore.", receiver.ASN, b.Name, d.Name, f.IPPrefix, value)
 										continue
 									}
-									v_IP_2_IF[f.IPPrefix.Addr()] = d.Name
+									// v_IP_IF[f.IPPrefix.Addr()] = d.Name
 								}
 								add_iDB_AB_Address_List(true, false, _Name_PUBLIC, f.IPPrefix.Addr(), f.NAT)
 								add_iDB_AB_Address_List(true, false, _Name(strings_join("", "O_AS", v_Peer.PName)), f.IPPrefix, f.NAT)
@@ -625,12 +625,12 @@ func (receiver *cDB_Peer) parse_cDB_Peer_RI(v_Peer *i_Peer) {
 									log.Warnf("Peer '%v', RI '%v', IF '%v', invalid PARP IP '%v'; ACTION: ignore.", receiver.ASN, b.Name, d.Name, f.IP)
 									continue
 								}
-								switch value, flag := v_IP_2_IF[f.IP]; {
+								switch value, flag := v_IP_IF[f.IP]; {
 								case flag:
 									log.Warnf("Peer '%v', RI '%v', IF '%v', duplicate IP '%v' on IF '%v'; ACTION: ignore.", receiver.ASN, b.Name, d.Name, f.IP, value)
 									continue
 								}
-								v_IP_2_IF[f.IP] = d.Name
+								// v_IP_IF[f.IP] = d.Name
 								add_iDB_AB_Address_List(true, false, _Name_PUBLIC, f.IP, f.NAT)
 								outbound[f.IP] = i_Peer_RI_IF_PARP{
 									NAT:             f.NAT,
@@ -742,7 +742,7 @@ func (receiver *cDB_Peer) parse_cDB_Peer_RI(v_Peer *i_Peer) {
 		)
 
 		v_Peer.RI[b.Name] = i_Peer_RI{
-			IP_2_IF:         v_IP_2_IF,
+			IP_IF:           v_IP_IF,
 			IF:              v_IF,
 			RT:              v_RT,
 			Route_Leak:      receiver.parse_cDB_Route_Leak(v_Peer, "", "", &b.Route_Leak),
