@@ -42,13 +42,15 @@ func parse_interface(inbound interface{}, skip interface{}) interface{} {
 	case error:
 		switch {
 		case value != nil:
-			log.Debugf("'%v'", skip)
+			log.Debugf("'%v', '%v'", inbound, skip)
 		}
 	case bool:
 		switch {
 		case !value:
-			log.Debugf("'%v'", skip)
+			log.Debugf("'%v', '%v'", inbound, skip)
 		}
+	default:
+		log.Debugf("'%v', '%v'", inbound, skip)
 	}
 	return inbound
 }
@@ -57,15 +59,17 @@ func parse_interface_error(inbound interface{}, skip interface{}) interface{} {
 	case error:
 		switch {
 		case value != nil:
-			log.Debugf("'%v'", skip)
+			log.Debugf("'%v', '%v'", inbound, skip)
 			return nil
 		}
 	case bool:
 		switch {
 		case !value:
-			log.Debugf("'%v'", skip)
+			log.Debugf("'%v', '%v'", inbound, skip)
 			return nil
 		}
+	default:
+		log.Debugf("'%v', '%v'", inbound, skip)
 	}
 	return inbound
 }
@@ -215,6 +219,7 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 	case netip.Prefix:
 		return value.String()
 
+		// todo: dirty hack
 	case []_Name:
 		var (
 			inbounds = len(value) - 1
@@ -270,13 +275,12 @@ func get_VI_IPPrefix(vi_id _VI_ID, peer_id _VI_Peer_ID) netip.Prefix {
 	binary.BigEndian.PutUint32(b, _S_VI_IPShift+uint32(vi_id*4)+uint32(peer_id))
 	return netip.PrefixFrom(parse_interface(netip.AddrFromSlice(b)).(netip.Addr), 30)
 }
-func set_VI_IPPrefix(inbound ...netip.Prefix) (ok bool) {
+func set_VI_IPPrefix(inbound netip.Prefix) {
 	switch {
-	case len(inbound) == 1 && inbound[0].IsValid():
-		_S_VI_IPPrefix = inbound[0]
-		ok = true
+	case inbound.IsValid():
+		_S_VI_IPPrefix = inbound
+		_S_VI_IPShift = binary.BigEndian.Uint32(_S_VI_IPPrefix.Addr().AsSlice())
 	}
-	_S_VI_IPShift = binary.BigEndian.Uint32(_S_VI_IPPrefix.Addr().AsSlice())
 	return
 }
 func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound _Host_Inbound_Traffic_List) {
