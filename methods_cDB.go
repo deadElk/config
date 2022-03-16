@@ -20,6 +20,7 @@ func (receiver cDB_List) parse() {
 		b.JA.parse()
 		b.PL.parse()
 		b.PS.parse()
+		b.Peer.parse_Vocabulary()
 	}
 	for _, b := range receiver {
 		b.parse()
@@ -260,15 +261,10 @@ func (receiver cDB_PO_PS_List) parse() {
 		}()
 	}
 }
-func (receiver cDB_Peer_List) parse(v_PG_ASN _ASN) {
+func (receiver cDB_Peer_List) parse_Vocabulary() {
 	for _, b := range receiver {
 		switch _, flag := i_peer[b.ASN]; {
-		case flag:
-			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ASN)
-			continue
-		case b.Reserved:
-			log.Debugf("VI '%v' is reserved; ACTION: skip.", b.ASN)
-			i_peer[b.ASN] = &i_Peer{}
+		case flag || b.Reserved:
 			continue
 		}
 		b.AB.parse()
@@ -276,9 +272,16 @@ func (receiver cDB_Peer_List) parse(v_PG_ASN _ASN) {
 		b.PL.parse()
 		b.PS.parse()
 	}
+}
+func (receiver cDB_Peer_List) parse(v_PG_ASN _ASN) {
 	for _, b := range receiver {
 		switch _, flag := i_peer[b.ASN]; {
 		case flag:
+			log.Warnf("Peer '%v' already exist; ACTION: skip.", b.ASN)
+			continue
+		case b.Reserved:
+			log.Debugf("Peer '%v' is reserved; ACTION: skip.", b.ASN)
+			i_peer[b.ASN] = &i_Peer{_Attribute_List: b._Attribute_List}
 			continue
 		}
 		var (
