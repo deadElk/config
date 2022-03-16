@@ -122,7 +122,7 @@ func (receiver cDB_AB_List) parse() {
 		switch {
 		case b.Set:
 			switch {
-			case !create_iDB_AB_Set(nil, b.Name):
+			case !create_iDB_AB_Set(b.Name):
 				continue
 			}
 		}
@@ -318,9 +318,7 @@ func (receiver cDB_Peer_List) parse(v_PG_ASN _ASN) {
 				_Attribute_List: b._Attribute_List,
 			}
 		)
-		create_iDB_AB_Set(v_Peer, _Name(strings_join("_", "O", v_Peer.ASName)))
-		create_iDB_AB_Set(v_Peer, _Name(strings_join("_", "I", v_Peer.ASName)))
-		// v_Peer.link_AB(_Name_PUBLIC, _Name(strings_join("_", "O", v_Peer.ASName)), _Name(strings_join("_", "I", v_Peer.ASName)))
+		v_Peer.create_AB_Set(_Name(strings_join("_", "O", v_Peer.ASName)), _Name(strings_join("_", "I", v_Peer.ASName)))
 		b.parse_Version(v_Peer)
 		v_Peer.IKE_GCM = v_Peer.Major >= 12.3
 		b.parse_RI(v_Peer)
