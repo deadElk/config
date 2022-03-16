@@ -23,8 +23,9 @@ func parse_iDB() (ok bool) {
 			ip_list   = "\t"
 			s_target  = []string{0: i_peer[b].Router_ID.String()}
 		)
-		s_private = i_peer[b].AB["I_AS"+_Name(i_peer[b].PName)].get_address_list(s_private)
-		s_public = i_peer[b].AB["O_AS"+_Name(i_peer[b].PName)].get_address_list(s_public)
+		// todo: use strings_join
+		s_private = i_peer[b].AB["I_"+i_peer[b].ASName].get_address_list(s_private)
+		s_public = i_peer[b].AB["O_"+i_peer[b].ASName].get_address_list(s_public)
 		sort.Slice(*s_private, func(i, j int) bool {
 			return (*s_private)[i] < (*s_private)[j]
 		})

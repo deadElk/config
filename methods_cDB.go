@@ -322,9 +322,9 @@ func (receiver cDB_Peer_List) parse(v_PG_ASN _ASN) {
 				_Attribute_List:  b._Attribute_List,
 			}
 		)
-		create_iDB_AB_Set(_Name(strings_join("", "O_AS", v_Peer.PName)))
-		create_iDB_AB_Set(_Name(strings_join("", "I_AS", v_Peer.PName)))
-		v_Peer.link_AB(_Name_PUBLIC, _Name(strings_join("", "O_AS", v_Peer.PName)), _Name(strings_join("", "I_AS", v_Peer.PName)))
+		create_iDB_AB_Set(_Name(strings_join("_", "O", v_Peer.ASName)))
+		create_iDB_AB_Set(_Name(strings_join("_", "I", v_Peer.ASName)))
+		v_Peer.link_AB(_Name_PUBLIC, _Name(strings_join("_", "O", v_Peer.ASName)), _Name(strings_join("_", "I", v_Peer.ASName)))
 		b.parse_cDB_Peer_Version(v_Peer)
 		v_Peer._IKE_Option_List.IKE_GCM = v_Peer.Major >= 12.3
 		b.parse_cDB_Peer_RI(v_Peer)
@@ -685,8 +685,8 @@ func (receiver *cDB_Peer) parse_cDB_Peer_RI(v_Peer *i_Peer) {
 									v_IP_IF[f.IPPrefix] = d.Name
 								}
 								add_iDB_AB_Address_List(true, false, _Name_PUBLIC, f.IPPrefix.Addr(), f.NAT)
-								add_iDB_AB_Address_List(true, false, _Name(strings_join("", "O_AS", v_Peer.PName)), f.IPPrefix, f.NAT)
-								add_iDB_AB_Address_List(false, true, _Name(strings_join("", "I_AS", v_Peer.PName)), f.IPPrefix, f.NAT)
+								add_iDB_AB_Address_List(true, false, _Name(strings_join("_", "O", v_Peer.ASName)), f.IPPrefix, f.NAT)
+								add_iDB_AB_Address_List(false, true, _Name(strings_join("_", "I", v_Peer.ASName)), f.IPPrefix, f.NAT)
 								outbound[f.IPPrefix] = &i_Peer_RI_IF_IP{
 									Masked:          f.IPPrefix.Masked(),
 									Primary:         f.Primary,
