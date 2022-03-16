@@ -11,7 +11,7 @@ import (
 )
 
 func (receiver cDB_List) parse() {
-	for _, b := range receiver {
+	for _, b := range receiver { // parse all Vocabularies
 		switch {
 		case b.Reserved:
 			continue
@@ -22,21 +22,15 @@ func (receiver cDB_List) parse() {
 		b.PS.parse()
 		b.Peer.parse_Vocabulary()
 	}
-	for _, b := range receiver {
+	for _, b := range receiver { // parse Peer Groups, and their Peers (may depend on Vocabularies)
 		b.parse()
 	}
-	for _, b := range receiver {
+	for _, b := range receiver { // parse Virtual Interfaces and LDAP user databases (may depend on Peers)
 		switch {
 		case b.Reserved:
 			continue
 		}
 		b.VI.parse()
-	}
-	for _, b := range receiver {
-		switch {
-		case b.Reserved:
-			continue
-		}
 		b.LDAP.parse()
 	}
 }

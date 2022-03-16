@@ -36,14 +36,15 @@ var (
 	i_peer_group = make(_i_peer_group)
 	i_ldap       = make(_i_ldap)
 	i_read_file  = _i_file_data{
-		_S_Dir_List[_dir_list_etc]: {ext: "xml", data: map[_Name]_Content{}},
 		_S_Dir_List[_dir_list_GT]:  {ext: "tmpl", data: map[_Name]_Content{}},
+		_S_Dir_List[_dir_list_etc]: {ext: "xml", data: map[_Name]_Content{}},
 	}
 	i_write_file = _i_file_data{
 		_S_Dir_List[_dir_list_Config]: {ext: "txt", data: map[_Name]_Content{}},
+		_S_Dir_List[_dir_list_Data]:   {ext: "xml", data: map[_Name]_Content{}},
+		_S_Dir_List[_dir_list_LDAP]:   {ext: "xml", data: map[_Name]_Content{}},
 		_S_Dir_List[_dir_list_PKI]:    {ext: "", data: map[_Name]_Content{}},
 		_S_Dir_List[_dir_list_Portal]: {ext: "", data: map[_Name]_Content{}},
-		_S_Dir_List[_dir_list_Data]:   {ext: "xml", data: map[_Name]_Content{}},
 	}
 	i_peer_list []_ASN
 
@@ -57,12 +58,13 @@ var (
 		_W_table:                _W_next__table,
 	}
 	_S_Dir_List = map[_S]_Name{
-		_dir_list_etc:    "etc",
-		_dir_list_GT:     "tmp/templates",
 		_dir_list_Config: "tmp/CONFIG",
+		_dir_list_Data:   "tmp/data",
+		_dir_list_GT:     "tmp/templates",
+		_dir_list_LDAP:   "tmp/LDAP",
 		_dir_list_PKI:    "tmp/PKI",
 		_dir_list_Portal: "tmp/portal",
-		_dir_list_Data:   "tmp/data",
+		_dir_list_etc:    "etc",
 	}
 	_S_Comm = map[_S]_Communication{
 		_comm_if: _Communication_ptmp,
