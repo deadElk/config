@@ -76,7 +76,7 @@ func parse_iDB_Peer_Vocabulary() {
 			interim = make(map[_Name]*i_AB)
 		)
 		for a := range v_Peer.AB {
-			peer_iDB_recurse_AB(&interim, a)
+			peer_iDB_recurse_AB(interim, a)
 		}
 		v_Peer.AB = interim
 
@@ -91,11 +91,11 @@ func parse_iDB_Peer_Vocabulary() {
 		i_peer[y] = v_Peer
 	}
 }
-func peer_iDB_recurse_AB(interim *map[_Name]*i_AB, inbound _Name) (ok bool) {
-	(*interim)[inbound] = i_ab[inbound]
+func peer_iDB_recurse_AB(interim map[_Name]*i_AB, inbound _Name) (ok bool) {
+	interim[inbound] = i_ab[inbound]
 	for a, b := range i_ab[inbound].Set {
 		switch {
-		case b.Type != _Type_set || (*interim)[a] == nil:
+		case b.Type != _Type_set || interim[a] == nil:
 			peer_iDB_recurse_AB(interim, a)
 		}
 	}
@@ -239,8 +239,8 @@ func define_iDB_Vocabulary() {
 	}
 }
 
-func parse_iDB_AB_netip_Prefix(public, private bool, ab_name _Name, inbound netip.Prefix, interim *map[netip.Prefix]bool) {
-	switch _, flag := (*interim)[inbound]; {
+func parse_iDB_AB_Prefix(public, private bool, ab_name _Name, inbound netip.Prefix, interim map[netip.Prefix]bool) {
+	switch _, flag := interim[inbound]; {
 	case flag:
 		return
 	}
@@ -249,21 +249,21 @@ func parse_iDB_AB_netip_Prefix(public, private bool, ab_name _Name, inbound neti
 		log.Debugf("AB '%v', address '%v' is valid '%v' against public '%v' / private '%v': address not suitable; ACTION: skip.", ab_name, inbound, is_valid, public, private)
 		return
 	}
-	(*interim)[inbound] = true
+	interim[inbound] = true
 }
-func parse_iDB_AB_FQDN(public, private bool, ab_name _Name, inbound _FQDN, interim *map[_FQDN]bool) {
-	switch _, flag := (*interim)[inbound]; {
+func parse_iDB_AB_FQDN(public, private bool, ab_name _Name, inbound _FQDN, interim map[_FQDN]bool) {
+	switch _, flag := interim[inbound]; {
 	case flag || len(inbound) == 0:
 		return
 	}
-	(*interim)[inbound] = true
+	interim[inbound] = true
 }
-func parse_iDB_AB_Name(public, private bool, ab_name _Name, inbound _Name, interim *map[_Name]bool) {
-	switch _, flag := (*interim)[inbound]; {
+func parse_iDB_AB_Name(public, private bool, ab_name _Name, inbound _Name, interim map[_Name]bool) {
+	switch _, flag := interim[inbound]; {
 	case flag || len(inbound) == 0:
 		return
 	}
-	(*interim)[inbound] = true
+	interim[inbound] = true
 }
 
 func create_iDB_AB_Set(ab_name _Name) (ok bool) {
@@ -322,28 +322,28 @@ func add_iDB_AB_Address_List(public, private bool, ab_name _Name, inbound ...int
 	for _, address := range inbound {
 		switch value := (address).(type) {
 		case netip.Addr:
-			parse_iDB_AB_netip_Prefix(public, private, ab_name, convert_netip_Addr_Prefix(&value), &interim_Prefix)
+			parse_iDB_AB_Prefix(public, private, ab_name, convert_netip_Addr_Prefix(&value), interim_Prefix)
 		case netip.Prefix:
-			parse_iDB_AB_netip_Prefix(public, private, ab_name, value, &interim_Prefix)
+			parse_iDB_AB_Prefix(public, private, ab_name, value, interim_Prefix)
 		case _FQDN:
-			parse_iDB_AB_FQDN(public, private, ab_name, value, &interim_FQDN)
+			parse_iDB_AB_FQDN(public, private, ab_name, value, interim_FQDN)
 		case _Name:
-			parse_iDB_AB_Name(public, private, ab_name, value, &interim_AB)
+			parse_iDB_AB_Name(public, private, ab_name, value, interim_AB)
 		case []netip.Addr:
 			for _, f := range value {
-				parse_iDB_AB_netip_Prefix(public, private, ab_name, convert_netip_Addr_Prefix(&f), &interim_Prefix)
+				parse_iDB_AB_Prefix(public, private, ab_name, convert_netip_Addr_Prefix(&f), interim_Prefix)
 			}
 		case []netip.Prefix:
 			for _, f := range value {
-				parse_iDB_AB_netip_Prefix(public, private, ab_name, f, &interim_Prefix)
+				parse_iDB_AB_Prefix(public, private, ab_name, f, interim_Prefix)
 			}
 		case []_FQDN:
 			for _, f := range value {
-				parse_iDB_AB_FQDN(public, private, ab_name, f, &interim_FQDN)
+				parse_iDB_AB_FQDN(public, private, ab_name, f, interim_FQDN)
 			}
 		case []_Name:
 			for _, f := range value {
-				parse_iDB_AB_Name(public, private, ab_name, f, &interim_AB)
+				parse_iDB_AB_Name(public, private, ab_name, f, interim_AB)
 			}
 		}
 	}
