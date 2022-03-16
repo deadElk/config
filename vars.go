@@ -75,5 +75,5 @@ var (
 	_S_host_RI                        = _Name_junos__host
 	_S_mgmt_Description  _Description = "MANAGEMENT-INSTANCE"
 	_S_domain_name       _FQDN        = "example.com"
-	_S_GT_List                        = []_Name{}
+	_S_GT_List           []_Name
 )
