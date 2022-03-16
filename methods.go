@@ -45,43 +45,6 @@ func (receiver *_Name) validate_RI(decline ..._Name) (outbound _Name) {
 	return *receiver
 }
 
-func (v_Peer *i_Peer) link_AB(name ..._Name) {
-	for _, value := range name {
-		switch {
-		case i_ab[value] == nil:
-			continue
-		}
-		v_Peer.AB[value] = i_ab[value]
-	}
-}
-func (v_Peer *i_Peer) link_JA(name ..._Name) {
-	for _, value := range name {
-		switch {
-		case i_ja[value] == nil:
-			continue
-		}
-		v_Peer.JA[value] = i_ja[value]
-	}
-}
-func (v_Peer *i_Peer) link_PL(name ..._Name) {
-	for _, value := range name {
-		switch {
-		case i_pl[value] == nil:
-			continue
-		}
-		v_Peer.PL[value] = i_pl[value]
-	}
-}
-func (v_Peer *i_Peer) link_PS(name ..._Name) {
-	for _, value := range name {
-		switch {
-		case i_ps[value] == nil:
-			continue
-		}
-		v_Peer.PS[value] = i_ps[value]
-	}
-}
-
 func (receiver *_Host_Inbound_Traffic_List) parse(enable ...interface{}) (outbound _Host_Inbound_Traffic_List) {
 	switch {
 	case receiver != nil:

@@ -443,26 +443,3 @@ func strings_join(delimiter string, inbound ...interface{}) (outbound string) {
 func convert_netip_Addr_Prefix(inbound *netip.Addr) (outbound netip.Prefix) {
 	return parse_interface((*inbound).Prefix((*inbound).BitLen())).(netip.Prefix)
 }
-
-func get_address_list(inbound *i_AB, interim *[]_Name) (outbound *[]_Name) {
-	switch inbound.Type {
-	case _Type_fqdn:
-		return &[]_Name{0: _Name(inbound.FQDN)}
-	case _Type_ipprefix:
-		return &[]_Name{0: _Name(inbound.IPPrefix.String())}
-	case _Type_set:
-		var (
-			t []_Name
-		)
-		for b := range inbound.Set {
-			var (
-				i = get_address_list(i_ab[b], interim)
-			)
-			for _, d := range *i {
-				t = append(t, d)
-			}
-		}
-		return &t
-	}
-	return
-}

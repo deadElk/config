@@ -542,11 +542,11 @@ func (receiver *cDB_Peer) parse_cDB_Peer_RI(v_Peer *i_Peer) {
 		}
 		cDB_PO_PS_List{
 			0: {Name: _Name(strings_join("_", _W_redistribute, b.Name)),
-				Term: []cDB_PO_PS_Term{
+				Term: []*cDB_PO_PS_Term{
 					// 0: {Name: empty_Name.next_ID(),
 					0: {Name: "PERMIT",
-						From:            []cDB_PO_PS_From{0: {RI: b.Name, _Attribute_List: _Attribute_List{}}},
-						Then:            []cDB_PO_PS_Then{0: {Action: _W_accept, _Attribute_List: _Attribute_List{}}},
+						From:            []*cDB_PO_PS_From{0: {RI: b.Name, _Attribute_List: _Attribute_List{}}},
+						Then:            []*cDB_PO_PS_Then{0: {Action: _W_accept, _Attribute_List: _Attribute_List{}}},
 						_Attribute_List: _Attribute_List{},
 					},
 				},
@@ -848,8 +848,8 @@ func (receiver *cDB_Peer) parse_cDB_Peer_NAT(v_Peer *i_Peer) {
 	)
 	v_Peer.NAT[_Type_source] = &i_Peer_NAT_Type{
 		Address_Persistent: h.Address_Persistent,
-		Pool:               receiver.parse_cDB_Pool(v_Peer, _Type_source, _Type_pool, &h.Pool),
-		Rule_Set:           receiver.parse_cDB_Rule_Set(v_Peer, _Type_source, "", &h.Rule_Set),
+		Pool:               receiver.parse_cDB_Pool(v_Peer, _Type_source, _Type_pool, h.Pool),
+		Rule_Set:           receiver.parse_cDB_Rule_Set(v_Peer, _Type_source, "", h.Rule_Set),
 		GT_Action:          strings_join(" ", _W_security___nat___source),
 		_Attribute_List:    h._Attribute_List,
 	}
@@ -857,8 +857,8 @@ func (receiver *cDB_Peer) parse_cDB_Peer_NAT(v_Peer *i_Peer) {
 	h = receiver.NAT_Destination
 
 	v_Peer.NAT[_Type_destination] = &i_Peer_NAT_Type{
-		Pool:            receiver.parse_cDB_Pool(v_Peer, _Type_destination, _Type_pool, &h.Pool),
-		Rule_Set:        receiver.parse_cDB_Rule_Set(v_Peer, _Type_destination, "", &h.Rule_Set),
+		Pool:            receiver.parse_cDB_Pool(v_Peer, _Type_destination, _Type_pool, h.Pool),
+		Rule_Set:        receiver.parse_cDB_Rule_Set(v_Peer, _Type_destination, "", h.Rule_Set),
 		GT_Action:       strings_join(" ", _W_security___nat___destination),
 		_Attribute_List: h._Attribute_List,
 	}
@@ -866,8 +866,8 @@ func (receiver *cDB_Peer) parse_cDB_Peer_NAT(v_Peer *i_Peer) {
 	h = receiver.NAT_Static
 
 	v_Peer.NAT[_Type_static] = &i_Peer_NAT_Type{
-		Pool:            receiver.parse_cDB_Pool(v_Peer, _Type_static, _Type_pool, &h.Pool),
-		Rule_Set:        receiver.parse_cDB_Rule_Set(v_Peer, _Type_static, "", &h.Rule_Set),
+		Pool:            receiver.parse_cDB_Pool(v_Peer, _Type_static, _Type_pool, h.Pool),
+		Rule_Set:        receiver.parse_cDB_Rule_Set(v_Peer, _Type_static, "", h.Rule_Set),
 		GT_Action:       strings_join(" ", _W_security___nat___static),
 		_Attribute_List: h._Attribute_List,
 	}
@@ -891,9 +891,9 @@ func (receiver *cDB_Peer) parse_cDB_Peer_SP(v_Peer *i_Peer) {
 		for _, l := range j.To {
 			for _, n := range j.From {
 				v_Peer.SP.Exact = append(v_Peer.SP.Exact, &i_Rule_Set{
-					From:            receiver.parse_cDB_FromTo(v_Peer, _Type_exact, _Type_from, &[]cDB_FromTo{0: n}),
-					To:              receiver.parse_cDB_FromTo(v_Peer, _Type_exact, _Type_to, &[]cDB_FromTo{0: l}),
-					Rule:            receiver.parse_cDB_Rule(v_Peer, _Type_exact, "", &j.Rule),
+					From:            receiver.parse_cDB_FromTo(v_Peer, _Type_exact, _Type_from, []*cDB_FromTo{0: n}),
+					To:              receiver.parse_cDB_FromTo(v_Peer, _Type_exact, _Type_to, []*cDB_FromTo{0: l}),
+					Rule:            receiver.parse_cDB_Rule(v_Peer, _Type_exact, "", j.Rule),
 					GT_Action:       "",
 					_Attribute_List: j._Attribute_List,
 				})
@@ -911,10 +911,10 @@ func (receiver *cDB_Peer) parse_cDB_Peer_SP(v_Peer *i_Peer) {
 	for _, j := range receiver.SP_Global {
 		v_Peer.SP.Global = append(v_Peer.SP.Global, &i_Rule{
 			Name:            j.Name,
-			JA:              receiver.parse_cDB_Match_2_Name(v_Peer, &j.Match),
-			From:            receiver.parse_cDB_FromTo(v_Peer, _Type_global, _Type_from, &j.From),
-			To:              receiver.parse_cDB_FromTo(v_Peer, _Type_global, _Type_to, &j.To),
-			Then:            receiver.parse_cDB_Then(v_Peer, _Type_global, _Type_then, &j.Then),
+			JA:              receiver.parse_cDB_Match_2_Name(v_Peer, j.Match),
+			From:            receiver.parse_cDB_FromTo(v_Peer, _Type_global, _Type_from, j.From),
+			To:              receiver.parse_cDB_FromTo(v_Peer, _Type_global, _Type_to, j.To),
+			Then:            receiver.parse_cDB_Then(v_Peer, _Type_global, _Type_then, j.Then),
 			GT_Action:       strings_join(" ", _W_security___policies___global___policy, j.Name),
 			_Attribute_List: j._Attribute_List,
 		})
@@ -972,9 +972,9 @@ func (receiver *cDB_Peer) parse_cDB_Peer_FW(v_Peer *i_Peer) {
 	}
 }
 
-func (receiver *cDB_Peer) parse_cDB_Pool(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound *[]cDB_Pool) (outbound map[_Name]*i_Pool) {
+func (receiver *cDB_Peer) parse_cDB_Pool(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound []*cDB_Pool) (outbound map[_Name]*i_Pool) {
 	outbound = make(map[_Name]*i_Pool)
-	for _, j := range *inbound {
+	for _, j := range inbound {
 		switch {
 		case !j.IPPrefix.IsValid():
 			log.Warnf("Peer '%v', Pool '%v', invalid IP '%v'; ACTION: skip.", receiver.ASN, j.Name, j.IPPrefix)
@@ -997,36 +997,36 @@ func (receiver *cDB_Peer) parse_cDB_Pool(v_Peer *i_Peer, inbound_type _Type, inb
 	}
 	return
 }
-func (receiver *cDB_Peer) parse_cDB_Rule_Set(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound *[]cDB_Rule_Set) (outbound map[_Name]*i_Rule_Set) {
+func (receiver *cDB_Peer) parse_cDB_Rule_Set(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound []*cDB_Rule_Set) (outbound map[_Name]*i_Rule_Set) {
 	outbound = make(map[_Name]*i_Rule_Set)
-	for _, j := range *inbound {
+	for _, j := range inbound {
 		outbound[j.Name] = &i_Rule_Set{
 			Name:            j.Name,
-			From:            receiver.parse_cDB_FromTo(v_Peer, inbound_type, _Type_from, &j.From),
-			To:              receiver.parse_cDB_FromTo(v_Peer, inbound_type, _Type_to, &j.To),
-			Rule:            receiver.parse_cDB_Rule(v_Peer, inbound_type, inbound_direction, &j.Rule),
+			From:            receiver.parse_cDB_FromTo(v_Peer, inbound_type, _Type_from, j.From),
+			To:              receiver.parse_cDB_FromTo(v_Peer, inbound_type, _Type_to, j.To),
+			Rule:            receiver.parse_cDB_Rule(v_Peer, inbound_type, inbound_direction, j.Rule),
 			GT_Action:       strings_join(" ", _W_rule__set, j.Name),
 			_Attribute_List: j._Attribute_List,
 		}
 	}
 	return
 }
-func (receiver *cDB_Peer) parse_cDB_Rule(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound *[]cDB_Rule) (outbound []*i_Rule) {
-	for _, j := range *inbound {
+func (receiver *cDB_Peer) parse_cDB_Rule(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound []*cDB_Rule) (outbound []*i_Rule) {
+	for _, j := range inbound {
 		outbound = append(outbound, &i_Rule{
 			Name:            j.Name,
-			JA:              receiver.parse_cDB_Match_2_Name(v_Peer, &j.Match),
-			From:            receiver.parse_cDB_FromTo(v_Peer, inbound_type, _Type_from, &j.From),
-			To:              receiver.parse_cDB_FromTo(v_Peer, inbound_type, _Type_to, &j.To),
-			Then:            receiver.parse_cDB_Then(v_Peer, inbound_type, _Type_then, &j.Then),
+			JA:              receiver.parse_cDB_Match_2_Name(v_Peer, j.Match),
+			From:            receiver.parse_cDB_FromTo(v_Peer, inbound_type, _Type_from, j.From),
+			To:              receiver.parse_cDB_FromTo(v_Peer, inbound_type, _Type_to, j.To),
+			Then:            receiver.parse_cDB_Then(v_Peer, inbound_type, _Type_then, j.Then),
 			GT_Action:       j.Name.String(),
 			_Attribute_List: j._Attribute_List,
 		})
 	}
 	return
 }
-func (receiver *cDB_Peer) parse_cDB_Match_2_Name(v_Peer *i_Peer, inbound *[]cDB_Match) (outbound []_Name) {
-	for _, j := range *inbound {
+func (receiver *cDB_Peer) parse_cDB_Match_2_Name(v_Peer *i_Peer, inbound []*cDB_Match) (outbound []_Name) {
+	for _, j := range inbound {
 		switch _, flag := i_ja[j.Application]; {
 		// todo
 		case parse_interface(regexp.MatchString("^(junos-|any$)", string(j.Application))).(bool):
@@ -1039,8 +1039,8 @@ func (receiver *cDB_Peer) parse_cDB_Match_2_Name(v_Peer *i_Peer, inbound *[]cDB_
 	}
 	return
 }
-func (receiver *cDB_Peer) parse_cDB_Then(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound *[]cDB_Then) (outbound []*i_Then) {
-	for _, j := range *inbound {
+func (receiver *cDB_Peer) parse_cDB_Then(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound []*cDB_Then) (outbound []*i_Then) {
+	for _, j := range inbound {
 		outbound = append(outbound, &i_Then{
 			Action:      j.Action,
 			Action_Flag: j.Action_Flag,
@@ -1060,8 +1060,8 @@ func (receiver *cDB_Peer) parse_cDB_Then(v_Peer *i_Peer, inbound_type _Type, inb
 	}
 	return
 }
-func (receiver *cDB_Peer) parse_cDB_FromTo(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound *[]cDB_FromTo) (outbound []*i_FromTo) {
-	for _, j := range *inbound {
+func (receiver *cDB_Peer) parse_cDB_FromTo(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound []*cDB_FromTo) (outbound []*i_FromTo) {
+	for _, j := range inbound {
 		outbound = append(outbound, &i_FromTo{
 			AB:        j.AB,
 			IF:        j.IF,
