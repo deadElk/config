@@ -188,7 +188,7 @@ func (receiver *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _
 	case receiver_type == _Type_firewall && receiver_direction == _Type_then:
 		outbound = strings_join(" ", _W_routing__instance, receiver)
 
-	case receiver_type == _Type_policy__statement:
+	case receiver_type == _Type_policy_statement:
 		outbound = strings_join(" ", _W_routing__instance, receiver)
 
 	case v_Peer != nil:
@@ -264,7 +264,7 @@ func (receiver *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _
 	case receiver_type == _Type_firewall && receiver_direction == _Type_to:
 		outbound = strings_join(" ", _W_from___destination__prefix__list, receiver)
 
-	case receiver_type == _Type_policy__statement:
+	case receiver_type == _Type_policy_statement:
 		outbound = strings_join(" ", _W_prefix__list__filter, receiver)
 
 	case v_Peer != nil:

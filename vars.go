@@ -1,11 +1,10 @@
 package main
 
 import (
+	"encoding/binary"
 	"net/netip"
 	"regexp"
 	"sync"
-
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -57,7 +56,7 @@ var (
 		_W_qualified__next__hop: _W_qualified__next__hop,
 		_W_table:                _W_next__table,
 	}
-	_S_Dir_List = map[_S]_Name{
+	_S_Dir_List = map[_ID]_Name{
 		_dir_list_Config: "tmp/CONFIG",
 		_dir_list_Data:   "tmp/data",
 		_dir_list_GT:     "tmp/templates",
@@ -66,20 +65,11 @@ var (
 		_dir_list_Portal: "tmp/portal",
 		_dir_list_etc:    "etc",
 	}
-	_S_Comm = map[_S]_Communication{
+	_S_Comm = map[_ID]_Communication{
 		_comm_if: _Communication_ptmp,
 		_comm_vi: _Communication_ptp,
 	}
-	_S_Domain_Name         _FQDN = "example.com"
-	_S_GT_List             []_Name
-	_S_Group               _ASN         = 4200000000
-	_S_Host_RI                          = _Name_junos__host
-	_S_Master_RI                        = _Name_master
-	_S_Mgmt_IF                          = _Name_fxp0_0
-	_S_Mgmt_RI                          = _Name_mgmt__junos
-	_S_Mgmt_RI_Description _Description = "MANAGEMENT-INSTANCE"
-	_S_SP_Default_Policy                = _W_permit__all
-	_S_VI_IPPrefix                      = parse_interface(netip.ParsePrefix("10.90.0.0/16")).(netip.Prefix)
-	// _S_VI_IPShift                       = binary.BigEndian.Uint32(_S_VI_IPPrefix.Addr().AsSlice())
-	_S_Verbosity = log.InfoLevel
+	_S_GT_List     []_Name
+	_S_VI_IPPrefix = parse_interface(netip.ParsePrefix("10.90.0.0/16")).(netip.Prefix)
+	_S_VI_IPShift  = binary.BigEndian.Uint32(_S_VI_IPPrefix.Addr().AsSlice())
 )
