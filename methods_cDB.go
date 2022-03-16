@@ -312,25 +312,29 @@ func (receiver cDB_Peer_List) parse(v_PG_ASN _ASN) {
 					Global:      nil,
 					GT_Action:   "",
 				},
-				FW:               nil,
-				_IKE_Option_List: _IKE_Option_List{},
-				GT_Action:        "",
-				_Attribute_List:  b._Attribute_List,
+				FW:              nil,
+				IKE_GCM:         false,
+				GT_Action:       "",
+				_Attribute_List: b._Attribute_List,
 			}
 		)
 		create_iDB_AB_Set(v_Peer, _Name(strings_join("_", "O", v_Peer.ASName)))
 		create_iDB_AB_Set(v_Peer, _Name(strings_join("_", "I", v_Peer.ASName)))
 		// v_Peer.link_AB(_Name_PUBLIC, _Name(strings_join("_", "O", v_Peer.ASName)), _Name(strings_join("_", "I", v_Peer.ASName)))
 		b.parse_Version(v_Peer)
-		v_Peer._IKE_Option_List.IKE_GCM = v_Peer.Major >= 12.3
+		v_Peer.IKE_GCM = v_Peer.Major >= 12.3
 		b.parse_RI(v_Peer)
 
+		// Group
+		// ASN
+		// ASName
 		// PName
 		b.parse_Router_ID(v_Peer)
 		// IF_2_RI
 		// VI
 		// VI_Local
 		// VI_Remote
+		// VI_GT
 		b.parse_IFM(v_Peer)
 		// RI
 		b.parse_Hostname(v_Peer)
@@ -344,8 +348,13 @@ func (receiver cDB_Peer_List) parse(v_PG_ASN _ASN) {
 		b.parse_GT_List(v_Peer)
 		b.parse_SZ(v_Peer)
 		b.parse_NAT(v_Peer)
+		// AB
+		// JA
+		// PL
+		// PS
 		b.parse_SP(v_Peer)
 		b.parse_FW(v_Peer)
+		// IKE_GCM
 
 		i_peer[b.ASN] = v_Peer
 		i_peer_group[v_PG_ASN].Peer_List[b.ASN] = i_peer[b.ASN]

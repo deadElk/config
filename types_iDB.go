@@ -78,8 +78,8 @@ type i_Peer struct {
 	PS           map[_Name]*i_PO_PS
 	SP           *i_Peer_SP
 	FW           []*i_FW
-	_IKE_Option_List
-	GT_Action string
+	IKE_GCM      bool
+	GT_Action    string
 	_Attribute_List
 }
 
@@ -244,7 +244,7 @@ type i_VI_GT struct {
 	Remote_IKE_Local_Address bool
 	Remote_IKE_Dynamic       bool
 	// Local                    *i_VI_Peer
-	// Remoteп                   *i_VI_Peer
+	// Remote                   *i_VI_Peer
 	GT_Action string
 	_Attribute_List
 }

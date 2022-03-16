@@ -14,7 +14,7 @@ type cDB_PO_PL_List []*cDB_PO_PL
 type cDB_PO_PS_List []*cDB_PO_PS
 type cDB_List map[_Name]*cDB
 
-// DB root
+// cDB root
 type cDB struct {
 	XMLName     xml.Name
 	Domain_Name _FQDN         `xml:"domain_name,attr"`
@@ -64,7 +64,6 @@ type cDB_Peer struct {
 	SP_Global       []*cDB_Rule        `xml:"Security>SP>Global"`
 	FW              []*cDB_FW          `xml:"Security>FW_List>FW"`
 	cDB_Vocabulary
-	// cDB_Security
 	_Attribute_List
 }
 type cDB_FW struct {
