@@ -10,6 +10,7 @@ type _i_ja map[_Name]*i_JA
 type _i_pl map[_Name]*i_PO_PL
 type _i_ps map[_Name]*i_PO_PS
 type _i_peer map[_ASN]*i_Peer
+type _i_peer_group map[_ASN]*i_Peer_Group
 type _i_vi map[_VI_ID]*i_VI
 type _i_vi_peer map[_VI_ID]map[_VI_Peer_ID]*i_VI_Peer
 type _i_ldap map[*url.URL]*i_LDAP
@@ -26,8 +27,19 @@ type i_LDAP struct {
 	// URL *url.URL
 }
 
+// Peer Group
+type i_Peer_Group struct {
+	ASName      _Name
+	PName       _PName
+	Domain_Name _FQDN
+	GT_List     []_Name
+	GT_Action   string
+	_Attribute_List
+}
+
 // Peer
 type i_Peer struct {
+	Group     _ASN
 	ASN       _ASN
 	ASName    _Name
 	PName     _PName

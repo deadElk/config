@@ -23,15 +23,16 @@ var (
 	empty_ID   = _next_ID
 	next_ID    = empty_ID
 
-	i_ab        = make(_i_ab)
-	i_ja        = make(_i_ja)
-	i_pl        = make(_i_pl)
-	i_ps        = make(_i_ps)
-	i_vi        = make(_i_vi)
-	i_vi_peer   = make(_i_vi_peer)
-	i_peer      = make(_i_peer)
-	i_ldap      = make(_i_ldap)
-	i_read_file = _i_file_data{
+	i_ab         = make(_i_ab)
+	i_ja         = make(_i_ja)
+	i_pl         = make(_i_pl)
+	i_ps         = make(_i_ps)
+	i_vi         = make(_i_vi)
+	i_vi_peer    = make(_i_vi_peer)
+	i_peer       = make(_i_peer)
+	i_peer_group = make(_i_peer_group)
+	i_ldap       = make(_i_ldap)
+	i_read_file  = _i_file_data{
 		_S_Dir_List[_dir_list_etc]: {ext: "xml", data: map[_Name]_Content{}},
 		_S_Dir_List[_dir_list_GT]:  {ext: "tmpl", data: map[_Name]_Content{}},
 	}
