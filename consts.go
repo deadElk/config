@@ -252,7 +252,7 @@ const (
 	_W_security___nat___static                                        = _W_security___nat + " " + _W_static
 	_W_security___policies                                            = _W_security + " " + _W_policies
 	_W_security___policies___global                                   = _W_security___policies + " " + _W_global
-	_W_security___policies___global___policy                          = _W_security___policies___global + " " + _W_security___policy
+	_W_security___policies___global___policy                          = _W_security___policies___global + " " + _W_policy
 	_W_security___policy                                              = _W_security + " " + _W_policy
 	_W_security__zone                                                 = _W_security + "-" + _W_zone
 	_W_security__zones                                                = _W_security__zone + "s"

@@ -121,13 +121,13 @@ type cDB_Peer_RI_IF_IP struct {
 	Router_ID bool         `xml:"router_ID,attr"`
 	Primary   bool         `xml:"primary,attr"`
 	Preferred bool         `xml:"preferred,attr"`
-	NAT       netip.Addr   `xml:"NAT,attr"`
+	NAT       netip.Prefix `xml:"NAT,attr"`
 	DHCP      bool         `xml:"DHCP,attr"`
 	_Attribute_List
 }
 type cDB_Peer_RI_IF_PARP struct {
-	IP  netip.Addr `xml:"IP,attr"`
-	NAT netip.Addr `xml:"NAT,attr"`
+	IP  netip.Prefix `xml:"IP,attr"`
+	NAT netip.Prefix `xml:"NAT,attr"`
 	_Attribute_List
 }
 type cDB_Peer_RI_RO_RT struct {
@@ -165,7 +165,7 @@ type cDB_VI_Peer struct {
 	ASN        _ASN                      `xml:"ASN,attr"`
 	RI         _Name                     `xml:"RI,attr"`
 	IF         _Name                     `xml:"IF,attr"`
-	IP         netip.Addr                `xml:"IP,attr"`
+	IP         netip.Prefix              `xml:"IP,attr"`
 	Hub        bool                      `xml:"hub,attr"`
 	Inner_RI   _Name                     `xml:"inner_RI,attr"`
 	Route_Leak cDB_Peer_RI_RO_Route_Leak `xml:"Route_Leak"`

@@ -12,7 +12,7 @@ type _i_ps map[_Name]*i_PO_PS
 type _i_peer map[_ASN]*i_Peer
 type _i_vi map[_VI_ID]*i_VI
 type _i_vi_peer map[_VI_ID]map[_VI_Peer_ID]*i_VI_Peer
-type _i_ldap map[*url.URL]i_LDAP
+type _i_ldap map[*url.URL]*i_LDAP
 type _i_file_data map[_Name]*i_File_Data
 
 type i_File_Data struct {
@@ -37,8 +37,8 @@ type i_Peer struct {
 	// VI_Local     map[_VI_ID]*i_VI_Peer
 	// VI_Remote    map[_VI_ID]*i_VI_Peer
 	VI_GT        map[_VI_ID]*i_VI_GT
-	IFM          map[_Name]i_Peer_IFM
-	RI           map[_Name]i_Peer_RI
+	IFM          map[_Name]*i_Peer_IFM
+	RI           map[_Name]*i_Peer_RI
 	Hostname     _FQDN
 	Domain_Name  _FQDN
 	Version      string
@@ -48,14 +48,14 @@ type i_Peer struct {
 	Serial       string
 	Root         _Secret
 	GT_List      []_Name
-	SZ           map[_Name]i_Peer_SZ
-	NAT          map[_Type]i_Peer_NAT_Type
+	SZ           map[_Name]*i_Peer_SZ
+	NAT          map[_Type]*i_Peer_NAT_Type
 	AB           map[_Name]*i_AB
 	JA           map[_Name]*i_JA
 	PL           map[_Name]*i_PO_PL
 	PS           map[_Name]*i_PO_PS
-	SP           i_Peer_SP
-	FW           []i_FW
+	SP           *i_Peer_SP
+	FW           []*i_FW
 	_IKE_Option_List
 	GT_Action string
 	_Attribute_List
@@ -63,15 +63,15 @@ type i_Peer struct {
 
 type i_FW struct {
 	Name      _Name
-	Term      []i_FW_Term
+	Term      []*i_FW_Term
 	GT_Action string
 	_Attribute_List
 }
 type i_FW_Term struct {
 	Name      _Name
-	From      []i_FW_FromTo
-	To        []i_FW_FromTo
-	Then      []i_FW_Then
+	From      []*i_FW_FromTo
+	To        []*i_FW_FromTo
+	Then      []*i_FW_Then
 	GT_Action string
 	_Attribute_List
 }
@@ -90,8 +90,8 @@ type i_FW_Then struct {
 
 type i_Peer_SP struct {
 	Option_List _SP_Option_List
-	Exact       []i_Rule_Set
-	Global      []i_Rule
+	Exact       []*i_Rule_Set
+	Global      []*i_Rule
 	GT_Action   string
 }
 type i_Peer_IFM struct {
@@ -100,15 +100,15 @@ type i_Peer_IFM struct {
 	_Attribute_List
 }
 type i_Peer_RI struct {
-	IP_IF       map[netip.Addr]*i_Peer_RI_IF // interface's IP address to interface mapping. IP addresses within one RI must be unique.
-	IPPrefix_IF map[netip.Prefix]*i_Peer_RI_IF
-	IPMasked_IF map[netip.Prefix]*i_Peer_RI_IF
-	IF          map[_Name]*i_Peer_RI_IF
-	RT          map[netip.Prefix]i_Peer_RI_RO_RT
-	Route_Leak  map[_W]i_Route_Leak_FromTo
-	Protocol    map[_Name]_Name
-	BGP         _BGP
-	GT_Action   string
+	IP_IF map[netip.Prefix]_Name // interface's IP address to interface mapping. IP addresses within one RI must be unique.
+	// IPPrefix_IF map[netip.Prefix]*i_Peer_RI_IF
+	// IPMasked_IF map[netip.Prefix]*i_Peer_RI_IF
+	IF         map[_Name]*i_Peer_RI_IF
+	RT         map[netip.Prefix]*i_Peer_RI_RO_RT
+	Route_Leak map[_W]*i_Route_Leak_FromTo
+	Protocol   map[_Name]_Name
+	BGP        _BGP
+	GT_Action  string
 	_Attribute_List
 }
 
@@ -116,8 +116,8 @@ type i_Peer_RI_IF struct {
 	IFM           _Name
 	IFsM          _Name
 	Communication _Communication
-	IP            map[netip.Prefix]i_Peer_RI_IF_IP
-	PARP          map[netip.Addr]i_Peer_RI_IF_PARP
+	IP            map[netip.Prefix]*i_Peer_RI_IF_IP
+	PARP          map[netip.Prefix]*i_Peer_RI_IF_PARP
 	GT_Action     string
 	_Attribute_List
 }
@@ -125,18 +125,18 @@ type i_Peer_RI_IF_IP struct {
 	Masked    netip.Prefix
 	Primary   bool
 	Preferred bool
-	NAT       netip.Addr
+	NAT       netip.Prefix
 	DHCP      bool
 	GT_Action string
 	_Attribute_List
 }
 type i_Peer_RI_IF_PARP struct {
-	NAT       netip.Addr
+	NAT       netip.Prefix
 	GT_Action string
 	_Attribute_List
 }
 type i_Peer_RI_RO_RT struct {
-	GW        map[_Name]i_Peer_RI_RO_RT_GW
+	GW        map[_Name]*i_Peer_RI_RO_RT_GW
 	GT_Action string
 	_Attribute_List
 }
@@ -178,11 +178,11 @@ type i_VI_Peer struct {
 	ASN               _ASN
 	RI                _Name
 	IF                _Name
-	IP                netip.Addr
-	NAT               netip.Addr
+	IP                netip.Prefix
+	NAT               netip.Prefix
 	Hub               bool
 	Inner_RI          _Name
-	Inner_IP          netip.Addr
+	Inner_IP          netip.Prefix
 	Inner_IPPrefix    netip.Prefix
 	IKE_Local_Address bool
 	IKE_Dynamic       bool
@@ -230,7 +230,7 @@ type i_VI_GT struct {
 // Security
 type i_Peer_SZ struct {
 	Screen _Name
-	IF     map[_Name]i_Peer_SZ_IF
+	IF     map[_Name]*i_Peer_SZ_IF
 	_Host_Inbound_Traffic_List
 	GT_Action string
 	_Attribute_List
@@ -242,8 +242,8 @@ type i_Peer_SZ_IF struct {
 }
 type i_Peer_NAT_Type struct {
 	Address_Persistent bool
-	Pool               map[_Name]i_Pool
-	Rule_Set           map[_Name]i_Rule_Set
+	Pool               map[_Name]*i_Pool
+	Rule_Set           map[_Name]*i_Rule_Set
 	GT_Action          string
 	_Attribute_List
 }
@@ -261,9 +261,9 @@ type i_Pool struct {
 // Security Rules
 type i_Rule_Set struct {
 	Name      _Name
-	From      []i_FromTo
-	To        []i_FromTo
-	Rule      []i_Rule
+	From      []*i_FromTo
+	To        []*i_FromTo
+	Rule      []*i_Rule
 	GT_Action string
 	_Attribute_List
 }
@@ -279,11 +279,11 @@ type i_FromTo struct {
 	_Attribute_List
 }
 type i_Rule struct {
-	Name      _Name      // SP
-	JA        []_Name    // SP, NAT
-	From      []i_FromTo // SP, NAT
-	To        []i_FromTo // SP, NAT
-	Then      []i_Then   // SP, NAT
+	Name      _Name       // SP
+	JA        []_Name     // SP, NAT
+	From      []*i_FromTo // SP, NAT
+	To        []*i_FromTo // SP, NAT
+	Then      []*i_Then   // SP, NAT
 	GT_Action string
 	_Attribute_List
 }
@@ -304,7 +304,7 @@ type i_AB struct {
 	Type      _Type
 	IPPrefix  netip.Prefix
 	FQDN      _FQDN
-	Set       map[_Name]i_AB_Set
+	Set       map[_Name]*i_AB_Set
 	GT_Action string
 	_Attribute_List
 }
@@ -316,7 +316,7 @@ type i_AB_Set struct {
 
 // Junos Applications (JA)
 type i_JA struct {
-	Term      []i_JA_Term
+	Term      []*i_JA_Term
 	GT_Action string
 	_Attribute_List
 }
@@ -330,7 +330,7 @@ type i_JA_Term struct {
 
 // Policy Options
 type i_PO_PL struct {
-	Match     []i_PO_PL_Match
+	Match     []*i_PO_PL_Match
 	GT_Action string
 	_Attribute_List
 }
@@ -340,14 +340,14 @@ type i_PO_PL_Match struct {
 	_Attribute_List
 }
 type i_PO_PS struct {
-	Term      []i_PO_PS_Term
+	Term      []*i_PO_PS_Term
 	GT_Action string
 	_Attribute_List
 }
 type i_PO_PS_Term struct {
 	Name      _Name
-	From      []i_PO_PS_From
-	Then      []i_PO_PS_Then
+	From      []*i_PO_PS_From
+	Then      []*i_PO_PS_Then
 	GT_Action string
 	_Attribute_List
 }

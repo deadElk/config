@@ -70,7 +70,7 @@ type _SP_Option_List struct {
 }
 
 type _BGP struct {
-	BGP_Group map[_Name]_BGP_Group
+	BGP_Group map[_Name]*_BGP_Group
 	GT_Action string
 	_Attribute_List
 }
@@ -80,7 +80,7 @@ type _BGP_Group struct {
 	Passive    bool
 	// 	Type      _Type
 	// 	Multipath bool
-	Neighbor  map[netip.Addr]_BGP_Group_Neighbor
+	Neighbor  map[netip.Addr]*_BGP_Group_Neighbor
 	GT_Action string
 	_Attribute_List
 }
@@ -89,7 +89,7 @@ type _BGP_Group_Neighbor struct {
 	Remote_ASN _ASN
 	Passive    bool
 	Local_IP   netip.Addr
-	Route_Leak map[_W]i_Route_Leak_FromTo
+	Route_Leak map[_W]*i_Route_Leak_FromTo
 	GT_Action  string
 	_Attribute_List
 }
