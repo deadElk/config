@@ -268,20 +268,12 @@ func split_2_string(inbound interface{}, re *regexp.Regexp, target ...*string) {
 	}
 }
 
-func get_VI_IPPrefix(vi_id _VI_ID, peer_id _VI_Peer_ID) netip.Prefix {
+func get_VI_IPPrefix(v_Peer *i_Peer, vi_id _VI_ID, peer_id _VI_Peer_ID) netip.Prefix {
 	var (
 		b = make([]byte, 4)
 	)
-	binary.BigEndian.PutUint32(b, _S_VI_IPShift+uint32(vi_id*4)+uint32(peer_id))
+	binary.BigEndian.PutUint32(b, v_Peer.Group.VI_IPShift+uint32(vi_id*4)+uint32(peer_id))
 	return netip.PrefixFrom(parse_interface(netip.AddrFromSlice(b)).(netip.Addr), 30)
-}
-func set_VI_IPPrefix(inbound netip.Prefix) {
-	switch {
-	case inbound.IsValid():
-		_S_VI_IPPrefix = inbound
-		_S_VI_IPShift = binary.BigEndian.Uint32(_S_VI_IPPrefix.Addr().AsSlice())
-	}
-	return
 }
 func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound _Host_Inbound_Traffic_List) {
 	outbound = _Host_Inbound_Traffic_List{

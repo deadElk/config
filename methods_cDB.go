@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/binary"
 	"net/netip"
 	"net/url"
 	"regexp"
@@ -10,21 +11,10 @@ import (
 )
 
 func (receiver cDB_List) parse() {
-	var (
-		s = make(map[_Name]bool)
-	)
 	for _, b := range receiver {
-		log.SetLevel(b.Verbosity)
-		_S_group = _Name(b.XMLName.Local)
-		set_VI_IPPrefix(b.VI_IPPrefix)
-		b.Domain_Name.set_Domain_Name()
-		for _, d := range re_period.Split(b.GT_List, -1) {
-			switch _, flag := s[_Name(d)]; {
-			case flag:
-				continue
-			}
-			s[_Name(d)] = true
-			_S_GT_List = append(_S_GT_List, _Name(d))
+		switch {
+		case b.Reserved:
+			continue
 		}
 		b.AB.parse()
 		b.JA.parse()
@@ -32,14 +22,105 @@ func (receiver cDB_List) parse() {
 		b.PS.parse()
 	}
 	for _, b := range receiver {
-		b.Peer.parse()
+		b.parse()
 	}
 	for _, b := range receiver {
+		switch {
+		case b.Reserved:
+			continue
+		}
 		b.VI.parse()
 	}
 	for _, b := range receiver {
+		switch {
+		case b.Reserved:
+			continue
+		}
 		b.LDAP.parse()
 	}
+}
+
+func (receiver *cDB) parse() {
+	var (
+		v_PG_ASN = func() (outbound _ASN) {
+			outbound = _ASN(parse_interface(strconv.ParseUint(re_digit.FindString(receiver.XMLName.Local), 10, 32)).(uint64))
+			switch {
+			case outbound == 0:
+				return _S_Group
+			}
+			return
+		}()
+	)
+	switch _, flag := i_peer_group[v_PG_ASN]; {
+	case flag:
+		log.Warnf("Peer Group '%v' already exist; ACTION: skip.", v_PG_ASN)
+		return
+	case receiver.Reserved:
+		log.Debugf("Peer Group '%v' is reserved; ACTION: skip.", v_PG_ASN)
+		i_peer_group[v_PG_ASN] = &i_Peer_Group{
+			_Attribute_List: receiver._Attribute_List,
+		}
+		return
+	}
+
+	var (
+		v_PName       = pad(v_PG_ASN, 10)
+		v_ASName      = _Name(strings_join("", "AS", v_PName))
+		v_VI_IPPrefix = func() (outbound netip.Prefix) {
+			switch {
+			case receiver.VI_IPPrefix.IsValid():
+				return receiver.VI_IPPrefix
+			}
+			return _S_VI_IPPrefix
+		}()
+		v_VI_IPShift = binary.BigEndian.Uint32(v_VI_IPPrefix.Addr().AsSlice())
+		v_GT_List    = func() (outbound []_Name) {
+			var (
+				s = make(map[_Name]bool)
+			)
+			for _, d := range re_period.Split(receiver.GT_List, -1) {
+				switch _, flag := s[_Name(d)]; {
+				case flag:
+					continue
+				}
+				s[_Name(d)] = true
+				outbound = append(outbound, _Name(d))
+			}
+			switch {
+			case len(outbound) == 0:
+				return _S_GT_List
+			}
+			return
+		}()
+		v_Domain_Name = func() (outbound _FQDN) {
+			switch {
+			case len(receiver.Domain_Name) == 0:
+				return _S_Domain_Name
+			}
+			return receiver.Domain_Name
+		}()
+	)
+	i_peer_group[v_PG_ASN] = &i_Peer_Group{
+		// ASN:                 v_PG_ASN,
+		ASName:              v_ASName,
+		Domain_Name:         v_Domain_Name,
+		GT_List:             v_GT_List,
+		Host_RI:             _S_Host_RI,
+		Master_RI:           _S_Master_RI,
+		Mgmt_IF:             _S_Mgmt_IF,
+		Mgmt_RI:             _S_Mgmt_RI,
+		Mgmt_RI_Description: _S_Mgmt_RI_Description,
+		PName:               v_PName,
+		SP_Default_Policy:   _S_SP_Default_Policy,
+		VI_IPPrefix:         v_VI_IPPrefix,
+		VI_IPShift:          v_VI_IPShift,
+		Peer_List:           map[_ASN]*i_Peer{},
+		GT_Action:           "",
+		_Attribute_List:     receiver._Attribute_List,
+	}
+	log.SetLevel(i_peer_group[v_PG_ASN].Verbosity)
+	receiver.Peer.parse(v_PG_ASN)
+	return
 }
 
 func (receiver cDB_AB_List) parse() {
@@ -179,7 +260,7 @@ func (receiver cDB_PO_PS_List) parse() {
 		}()
 	}
 }
-func (receiver cDB_Peer_List) parse() {
+func (receiver cDB_Peer_List) parse(v_PG_ASN _ASN) {
 	for _, b := range receiver {
 		switch _, flag := i_peer[b.ASN]; {
 		case flag:
@@ -202,6 +283,7 @@ func (receiver cDB_Peer_List) parse() {
 		}
 		var (
 			v_Peer = &i_Peer{
+				Group:     i_peer_group[v_PG_ASN],
 				ASN:       b.ASN,
 				ASName:    _Name(strings_join("", _Name_AS, pad(b.ASN, 10))),
 				PName:     pad(&b.ASN, 10),
@@ -270,8 +352,8 @@ func (receiver cDB_Peer_List) parse() {
 		b.parse_cDB_Peer_FW(v_Peer)
 
 		i_peer[b.ASN] = v_Peer
+		i_peer_group[v_PG_ASN].Peer_List[b.ASN] = i_peer[b.ASN]
 		i_peer_list = append(i_peer_list, b.ASN)
-
 	}
 }
 func (receiver cDB_VI_List) parse() {
@@ -289,8 +371,8 @@ func (receiver cDB_VI_List) parse() {
 			v_vi_peer_list = make(map[_VI_Peer_ID]*i_VI_Peer)
 		)
 		i_vi[b.ID] = &i_VI{
-			PName:         pad(&b.ID, 5),
-			IPPrefix:      get_VI_IPPrefix(b.ID, 0).Masked(),
+			PName: pad(&b.ID, 5),
+			// IPPrefix:      get_VI_IPPrefix(nil, b.ID, 0).Masked(),
 			Type:          _Type_st,
 			Communication: b.Communication.parse(_S_Comm[_comm_vi]),
 			Route_Metric: func() _Route_Weight {
@@ -321,8 +403,12 @@ func (receiver cDB_VI_List) parse() {
 				log.Debugf("VI '%v', Peer '%v' is reserved; ACTION: skip.", b.ID, d.ID)
 				continue
 			}
+
+			// todo: WTF ....
+			i_vi[b.ID].IPPrefix = get_VI_IPPrefix(i_peer[d.ASN], b.ID, 0).Masked()
+
 			var (
-				v_RI                = d.RI.validate_RI(_S_mgmt_RI)
+				v_RI                = d.RI.validate_RI(i_peer[d.ASN], i_peer[d.ASN].Group.Mgmt_RI)
 				v_IF                = d.IF
 				v_IP                = d.IP
 				v_NAT               netip.Prefix
@@ -377,9 +463,9 @@ func (receiver cDB_VI_List) parse() {
 				IP:                v_IP,
 				NAT:               v_NAT,
 				Hub:               d.Hub,
-				Inner_RI:          d.Inner_RI.validate_RI(_S_mgmt_RI),
-				Inner_IP:          get_VI_IPPrefix(b.ID, d.ID+1),
-				Inner_IPPrefix:    get_VI_IPPrefix(b.ID, d.ID+1),
+				Inner_RI:          d.Inner_RI.validate_RI(i_peer[d.ASN], i_peer[d.ASN].Group.Mgmt_RI),
+				Inner_IP:          get_VI_IPPrefix(i_peer[d.ASN], b.ID, d.ID+1),
+				Inner_IPPrefix:    get_VI_IPPrefix(i_peer[d.ASN], b.ID, d.ID+1),
 				IKE_Local_Address: v_IKE_Local_Address,
 				IKE_Dynamic:       v_IKE_Dynamic,
 				GT_Action:         "",
@@ -469,17 +555,17 @@ func (receiver cDB_VI_List) parse() {
 				GT_Action:                "",
 				_Attribute_List:          _Attribute_List{},
 			}
-			switch _, flag := i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_S_group]; {
+			switch _, flag := i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[i_peer[v_vi_peer_list[_first].ASN].Group.ASName]; {
 			case !flag:
-				i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_S_group] = &_BGP_Group{
+				i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[i_peer[v_vi_peer_list[_first].ASN].Group.ASName] = &_BGP_Group{
 					Local_ASN:  0,
 					Remote_ASN: 0,
 					Passive:    false,
 					Neighbor:   map[netip.Addr]*_BGP_Group_Neighbor{},
-					GT_Action:  strings_join(" ", _W_group, _S_group),
+					GT_Action:  strings_join(" ", _W_group, i_peer[v_vi_peer_list[_first].ASN].Group.ASName),
 				}
 			}
-			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[_S_group].Neighbor[i_vi_peer[b.ID][_second].Inner_IP.Addr()] = &_BGP_Group_Neighbor{
+			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[i_peer[v_vi_peer_list[_first].ASN].Group.ASName].Neighbor[i_vi_peer[b.ID][_second].Inner_IP.Addr()] = &_BGP_Group_Neighbor{
 				Local_ASN:  i_vi_peer[b.ID][_first].ASN,
 				Remote_ASN: i_vi_peer[b.ID][_second].ASN,
 				Passive:    i_vi_peer[b.ID][_first].Hub,
@@ -513,7 +599,7 @@ func (receiver *cDB_Peer) parse_cDB_Peer_Router_ID(v_Peer *i_Peer) {
 		v_Peer.Router_ID = receiver.Router_ID
 	default:
 		v_Peer.Router_ID = func() netip.Addr {
-			for a := range v_Peer.RI[_S_RI].IF[_Name_lo0_0].IP {
+			for a := range v_Peer.RI[v_Peer.Group.Master_RI].IF[_Name_lo0_0].IP {
 				switch {
 				case a.IsValid():
 					return a.Addr()
@@ -729,7 +815,7 @@ func (receiver *cDB_Peer) parse_cDB_Peer_RI(v_Peer *i_Peer) {
 			}()
 			v_Action = func() string {
 				switch {
-				case b.Name != _S_RI:
+				case b.Name != v_Peer.Group.Master_RI:
 					return strings_join(" ", _W_routing__instances, b.Name)
 				}
 				return ""
@@ -760,7 +846,7 @@ func (receiver *cDB_Peer) parse_cDB_Peer_Hostname(v_Peer *i_Peer) {
 func (receiver *cDB_Peer) parse_cDB_Peer_Domain_Name(v_Peer *i_Peer) {
 	switch {
 	case len(receiver.Domain_Name) == 0:
-		v_Peer.Domain_Name = _S_domain_name
+		v_Peer.Domain_Name = v_Peer.Group.Domain_Name
 	default:
 		v_Peer.Domain_Name = receiver.Domain_Name
 	}
@@ -769,11 +855,11 @@ func (receiver *cDB_Peer) parse_cDB_Peer_Version(v_Peer *i_Peer) {
 	// var (
 	// 	v_Major string
 	// )
-	// split_2_string(&receiver.Version, re_caps, &v_Major)
+	// split_2_string(&receiver.Version, re_upper_case, &v_Major)
 	// v_Peer.Major = parse_interface(strconv.ParseFloat(v_Major, 64)).(float64)
 
 	var (
-		v_Version = re_caps.Split(receiver.Version, -1)
+		v_Version = re_upper_case.Split(receiver.Version, -1)
 	)
 	v_Peer.Major = parse_interface(strconv.ParseFloat(v_Version[0], 64)).(float64)
 }
@@ -785,14 +871,14 @@ func (receiver *cDB_Peer) parse_cDB_Peer_GT_List(v_Peer *i_Peer) {
 			v_Peer.GT_List = append(v_Peer.GT_List, _Name(b))
 		}
 	default:
-		v_Peer.GT_List = _S_GT_List
+		v_Peer.GT_List = v_Peer.Group.GT_List
 		v_Peer.GT_List = append(v_Peer.GT_List, v_Peer.ASName)
 	}
 }
 func (receiver *cDB_Peer) parse_cDB_Peer_SZ(v_Peer *i_Peer) {
 	for _, b := range receiver.SZ {
 		switch {
-		case b.Name == _S_mgmt_RI:
+		case b.Name == v_Peer.Group.Mgmt_RI:
 			log.Warnf("Peer '%v', SZ '%v' cannot be defined; ACTION: ignore.", receiver.ASN, b.Name)
 			continue
 		}
@@ -816,7 +902,7 @@ func (receiver *cDB_Peer) parse_cDB_Peer_SZ(v_Peer *i_Peer) {
 	}
 	for a := range v_Peer.RI {
 		switch a {
-		case _S_mgmt_RI:
+		case v_Peer.Group.Mgmt_RI:
 			continue
 		}
 		switch _, flag := v_Peer.SZ[a]; {
@@ -879,10 +965,10 @@ func (receiver *cDB_Peer) parse_cDB_Peer_SP(v_Peer *i_Peer) {
 			case _W_permit__all, _W_deny__all:
 				return value
 			case "":
-				return _S_sp_default_policy
+				return v_Peer.Group.SP_Default_Policy
 			default:
-				log.Warnf("Peer '%v', unknown default security policy '%v'; ACTION: use '%v'.", receiver.ASN, value, _S_sp_default_policy)
-				return _S_sp_default_policy
+				log.Warnf("Peer '%v', unknown default security policy '%v'; ACTION: use '%v'.", receiver.ASN, value, v_Peer.Group.SP_Default_Policy)
+				return v_Peer.Group.SP_Default_Policy
 			}
 		}(),
 		GT_Action: "",

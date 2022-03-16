@@ -1,18 +1,18 @@
 package main
 
 const (
-	_service     string = "config"
-	_serviced           = _service /*+ "d"*/
-	_SERVICE     string = "CONFIG"
-	_SERVICED           = _SERVICE /*+ "D"*/
-	_hash_Size   int    = 512 / 8
-	_passwd_Z    string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	_passwd_z    string = "abcdefghijklmnopqrstuvwxyz"
-	_passwd_0    string = "0123456789"
-	_passwd_oops string = "_" // carefully with a special symbols
-	_passwd             = _passwd_Z + _passwd_z + _passwd_0 + _passwd_oops
-	_next_IDName _Name  = "next_ID"
-	_next_ID     _ID    = 0
+	_service       string = "config"
+	_serviced             = _service /*+ "d"*/
+	_SERVICE       string = "CONFIG"
+	_SERVICED             = _SERVICE /*+ "D"*/
+	_hash_Size     int    = 512 / 8
+	_re_upper_case string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	_re_lower_case string = "abcdefghijklmnopqrstuvwxyz"
+	_re_digit      string = "0123456789"
+	_re_symbol     string = "_" // carefully with a special symbols
+	_passwd               = _re_upper_case + _re_lower_case + _re_digit + _re_symbol
+	_next_IDName   _Name  = "next_ID"
+	_next_ID       _ID    = 0
 
 	_Communication_ptmp                                               = _Communication(_W_ptmp)
 	_Communication_ptp                                                = _Communication(_W_ptp)

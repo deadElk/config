@@ -30,8 +30,8 @@ func (receiver *_Secret) validate(length uint, message string) _Secret {
 	}
 	return _Secret(interim)
 }
-func (receiver *_Name) validate_RI(decline ..._Name) (outbound _Name) {
-	outbound = _S_RI
+func (receiver *_Name) validate_RI(v_Peer *i_Peer, decline ..._Name) (outbound _Name) {
+	outbound = v_Peer.Group.Master_RI
 	switch {
 	case len(*receiver) == 0 || *receiver == outbound:
 		return
@@ -146,7 +146,7 @@ func (receiver *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _
 		return
 	case v_Peer != nil:
 		switch _, flag := v_Peer.RI[*receiver]; {
-		case !flag && *receiver != _S_host_RI:
+		case !flag && *receiver != v_Peer.Group.Host_RI:
 			log.Warnf("Peer '%v', unknown RI '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *receiver, receiver_type, receiver_direction)
 			return
 		}
@@ -200,7 +200,7 @@ func (receiver *_Name) action_SZ(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _
 	switch _, flag := v_Peer.SZ[*receiver]; {
 	case len(*receiver) == 0:
 		return
-	case !flag && *receiver != _Name_any && *receiver != _S_host_RI:
+	case !flag && *receiver != _Name_any && *receiver != v_Peer.Group.Host_RI:
 		log.Warnf("Peer '%v', unknown SZ '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *receiver, receiver_type, receiver_direction)
 		return
 	}
@@ -316,13 +316,13 @@ func (receiver *_Content) trim_space() _Content {
 	return _Content(interim)
 }
 
-func (receiver *_FQDN) set_Domain_Name() {
-	switch {
-	case len(*receiver) != 0:
-		_S_domain_name = *receiver
-	}
-	return
-}
+// func (receiver *_FQDN) parse_Domain_Name() (outbound _FQDN) {
+// 	switch {
+// 	case len(*receiver) == 0:
+// 		return
+// 	}
+// 	return *receiver
+// }
 
 func (receiver *_Communication) parse(_comm _Communication) _Communication {
 	switch {

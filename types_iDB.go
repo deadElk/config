@@ -29,17 +29,27 @@ type i_LDAP struct {
 
 // Peer Group
 type i_Peer_Group struct {
-	ASName      _Name
-	PName       _PName
-	Domain_Name _FQDN
-	GT_List     []_Name
-	GT_Action   string
+	// ASN                 _ASN
+	ASName              _Name
+	Domain_Name         _FQDN
+	GT_List             []_Name
+	Host_RI             _Name
+	Master_RI           _Name
+	Mgmt_IF             _Name
+	Mgmt_RI             _Name
+	Mgmt_RI_Description _Description
+	PName               _PName
+	SP_Default_Policy   _W
+	VI_IPPrefix         netip.Prefix
+	VI_IPShift          uint32
+	Peer_List           map[_ASN]*i_Peer
+	GT_Action           string
 	_Attribute_List
 }
 
 // Peer
 type i_Peer struct {
-	Group     _ASN
+	Group     *i_Peer_Group
 	ASN       _ASN
 	ASName    _Name
 	PName     _PName

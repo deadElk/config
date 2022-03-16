@@ -9,10 +9,13 @@ import (
 )
 
 var (
-	hash_cache sync.Map
-	re_caps    = regexp.MustCompile(`[A-Z]`)
-	re_dot     = regexp.MustCompile(`\.`)
-	re_period  = regexp.MustCompile(`,`)
+	hash_cache    sync.Map
+	re_upper_case = regexp.MustCompile(`[A-Z]+`)
+	re_lower_case = regexp.MustCompile(`[a-z]+`)
+	re_digit      = regexp.MustCompile(`[0-9]+`)
+	re_symbol     = regexp.MustCompile(`_+`)
+	re_dot        = regexp.MustCompile(`\.+`)
+	re_period     = regexp.MustCompile(`,+`)
 	// gt_fm      = template.FuncMap{
 	// 	"sum_uint32": sum_uint32_gt_fm,
 	// 	"sum_string": sum_string_gt_fm,
@@ -65,16 +68,16 @@ var (
 		_comm_if: _Communication_ptmp,
 		_comm_vi: _Communication_ptp,
 	}
-	_S_group             _Name        = "4200000000"
-	_S_loglevel                       = log.InfoLevel
-	_S_sp_default_policy              = _W_permit__all
-	_S_VI_IPPrefix                    = parse_interface(netip.ParsePrefix("10.90.0.0/16")).(netip.Prefix)
-	_S_VI_IPShift        uint32       = 0
-	_S_RI                             = _Name_master
-	_S_mgmt_RI                        = _Name_mgmt__junos
-	_S_mgmt_IF                        = _Name_fxp0_0
-	_S_host_RI                        = _Name_junos__host
-	_S_mgmt_Description  _Description = "MANAGEMENT-INSTANCE"
-	_S_domain_name       _FQDN        = "example.com"
-	_S_GT_List           []_Name
+	_S_Domain_Name         _FQDN = "example.com"
+	_S_GT_List             []_Name
+	_S_Group               _ASN         = 4200000000
+	_S_Host_RI                          = _Name_junos__host
+	_S_Master_RI                        = _Name_master
+	_S_Mgmt_IF                          = _Name_fxp0_0
+	_S_Mgmt_RI                          = _Name_mgmt__junos
+	_S_Mgmt_RI_Description _Description = "MANAGEMENT-INSTANCE"
+	_S_SP_Default_Policy                = _W_permit__all
+	_S_VI_IPPrefix                      = parse_interface(netip.ParsePrefix("10.90.0.0/16")).(netip.Prefix)
+	// _S_VI_IPShift                       = binary.BigEndian.Uint32(_S_VI_IPPrefix.Addr().AsSlice())
+	_S_Verbosity = log.InfoLevel
 )

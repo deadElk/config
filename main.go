@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	log.SetLevel(_S_loglevel)
+	log.SetLevel(_S_Verbosity)
 	log.SetFormatter(&log.TextFormatter{
 		ForceColors:               false,
 		DisableColors:             false,
