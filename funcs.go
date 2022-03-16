@@ -97,7 +97,7 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 	case *string:
 		return *value
 	case *_ASN:
-		return value.String()
+		return (*value).String()
 	case *_W:
 		return (*value).String()
 	case *_Communication:
