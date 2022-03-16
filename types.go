@@ -28,6 +28,8 @@ type _Service string
 type _Type string
 type _VI_ID uint16
 type _VI_Peer_ID uint16
+type __N_BGP_Group map[_Name]*_BGP_Group
+type __A_BGP_Group_Neighbor map[netip.Addr]*_BGP_Group_Neighbor
 
 // Why returning String() "invalid IP"???? What for???? Why not just return an empty String() "" ????
 type _netip_Prefix struct {
@@ -58,7 +60,7 @@ type _SP_Option_List struct {
 }
 
 type _BGP struct {
-	BGP_Group map[_Name]*_BGP_Group
+	BGP_Group __N_BGP_Group
 	GT_Action string
 	_Attribute_List
 }
@@ -68,7 +70,7 @@ type _BGP_Group struct {
 	Passive    bool
 	// 	Type      _Type
 	// 	Multipath bool
-	Neighbor  map[netip.Addr]*_BGP_Group_Neighbor
+	Neighbor  __A_BGP_Group_Neighbor
 	GT_Action string
 	_Attribute_List
 }
@@ -77,7 +79,7 @@ type _BGP_Group_Neighbor struct {
 	Remote_ASN _ASN
 	Passive    bool
 	Local_IP   netip.Addr
-	Route_Leak map[_W]*i_Route_Leak_FromTo
+	Route_Leak __W_Route_Leak_FromTo
 	GT_Action  string
 	_Attribute_List
 }

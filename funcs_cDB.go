@@ -8,7 +8,7 @@ import (
 
 func read_cDB() (not_ok bool) {
 	var (
-		xml_db = make(cDB_List)
+		xml_db = make(cDB_N_List)
 	)
 	for _, b := range i_read_file[_S_Dir_List[_dir_list_etc]].sorted {
 		var (

@@ -25,20 +25,20 @@ var (
 	empty_ID   = _next_ID
 	next_ID    = empty_ID
 
-	i_ab         = make(_i_ab)
-	i_ja         = make(_i_ja)
-	i_pl         = make(_i_pl)
-	i_ps         = make(_i_ps)
-	i_vi         = make(_i_vi)
-	i_vi_peer    = make(_i_vi_peer)
-	i_peer       = make(_i_peer)
-	i_peer_group = make(_i_peer_group)
-	i_ldap       = make(_i_ldap)
-	i_read_file  = _i_file_data{
+	i_ab         = make(__N_AB)
+	i_ja         = make(__N_JA)
+	i_pl         = make(__N_PO_PL)
+	i_ps         = make(__N_PO_PS)
+	i_vi         = make(__i_VI)
+	i_vi_peer    = make(__i_VI_ID_Peer)
+	i_peer       = make(__A_Peer)
+	i_peer_group = make(__A_Peer_Group)
+	i_ldap       = make(__U_LDAP)
+	i_read_file  = __N_File_Data{
 		_S_Dir_List[_dir_list_GT]:  {ext: "tmpl", data: map[_Name]_Content{}},
 		_S_Dir_List[_dir_list_etc]: {ext: "xml", data: map[_Name]_Content{}},
 	}
-	i_write_file = _i_file_data{
+	i_write_file = __N_File_Data{
 		_S_Dir_List[_dir_list_Config]: {ext: "txt", data: map[_Name]_Content{}},
 		_S_Dir_List[_dir_list_Data]:   {ext: "xml", data: map[_Name]_Content{}},
 		_S_Dir_List[_dir_list_LDAP]:   {ext: "xml", data: map[_Name]_Content{}},

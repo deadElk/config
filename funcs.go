@@ -413,7 +413,7 @@ func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_dir
 
 func strings_join(delimiter string, inbound ...interface{}) (outbound string) {
 	var (
-		interim []string
+		interim __string
 	)
 	for _, b := range inbound {
 		interim = append(interim, convert_2_string(delimiter, b))

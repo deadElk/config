@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (receiver cDB_List) parse() {
+func (receiver cDB_N_List) parse() {
 	for _, b := range receiver { // parse all Vocabularies
 		switch {
 		case b.Reserved:
@@ -108,7 +108,7 @@ func (receiver *cDB) parse() {
 		SP_Default_Policy:   _S_SP_Default_Policy,
 		VI_IPPrefix:         v_VI_IPPrefix,
 		VI_IPShift:          v_VI_IPShift,
-		Peer_List:           map[_ASN]*i_Peer{},
+		Peer_List:           __A_Peer{},
 		GT_Action:           "",
 		_Attribute_List:     receiver._Attribute_List,
 	}
@@ -140,7 +140,7 @@ func (receiver cDB_JA_List) parse() {
 		}
 		i_ja[b.Name] = func() (outbound *i_JA) {
 			outbound = &i_JA{
-				Term: func() (outbound []*i_JA_Term) {
+				Term: func() (outbound __i_JA_Term) {
 					for _, d := range b.Term {
 						outbound = append(outbound, &i_JA_Term{
 							Name:             d.Name,
@@ -168,7 +168,7 @@ func (receiver cDB_PO_PL_List) parse() {
 		}
 		i_pl[b.Name] = func() (outbound *i_PO_PL) {
 			outbound = &i_PO_PL{
-				Match: func() (outbound []*i_PO_PL_Match) {
+				Match: func() (outbound __i_PO_PL_Match) {
 					for _, d := range b.Match {
 						switch {
 						case !d.IPPrefix.IsValid():
@@ -198,11 +198,11 @@ func (receiver cDB_PO_PS_List) parse() {
 		}
 		i_ps[b.Name] = func() (outbound *i_PO_PS) {
 			outbound = &i_PO_PS{
-				Term: func() (outbound []*i_PO_PS_Term) {
+				Term: func() (outbound __i_PO_PS_Term) {
 					for _, d := range b.Term {
 						outbound = append(outbound, &i_PO_PS_Term{
 							Name: d.Name,
-							From: func() (outbound []*i_PO_PS_From) {
+							From: func() (outbound __i_PO_PS_From) {
 								for _, f := range d.From {
 									outbound = append(outbound, &i_PO_PS_From{
 										RI:         f.RI,
@@ -222,7 +222,7 @@ func (receiver cDB_PO_PS_List) parse() {
 								}
 								return
 							}(),
-							Then: func() (outbound []*i_PO_PS_Then) {
+							Then: func() (outbound __i_PO_PS_Then) {
 								for _, f := range d.Then {
 									var (
 										v_Action string
@@ -285,12 +285,12 @@ func (receiver cDB_Peer_List) parse(v_PG_ASN _ASN) {
 				PName:     pad(&b.ASN, 10),
 				Router_ID: netip.Addr{},
 				IF_2_RI:   map[_Name]_Name{},
-				// VI:           map[_VI_ID]*i_VI{},
-				// VI_Local:     map[_VI_ID]*i_VI_Peer{},
-				// VI_Remote:    map[_VI_ID]*i_VI_Peer{},
-				VI_GT:        map[_VI_ID]*i_VI_GT{},
-				IFM:          map[_Name]*i_Peer_IFM{},
-				RI:           map[_Name]*i_Peer_RI{},
+				// VI:           __i_VI{},
+				// VI_Local:     __i_VI_Peer{},
+				// VI_Remote:    __i_VI_Peer{},
+				VI_GT:        __i_VI_GT{},
+				IFM:          __N_Peer_IFM{},
+				RI:           __N_Peer_RI{},
 				Hostname:     "",
 				Domain_Name:  "",
 				Version:      b.Version,
@@ -300,12 +300,12 @@ func (receiver cDB_Peer_List) parse(v_PG_ASN _ASN) {
 				Serial:       b.Serial,
 				Root:         b.Root.validate(16, b.ASN.String()),
 				GT_List:      []_Name{},
-				SZ:           map[_Name]*i_Peer_SZ{},
-				NAT:          map[_Type]*i_Peer_NAT_Type{},
-				AB:           map[_Name]*i_AB{},
-				JA:           map[_Name]*i_JA{},
-				PL:           map[_Name]*i_PO_PL{},
-				PS:           map[_Name]*i_PO_PS{},
+				SZ:           __N_Peer_SZ{},
+				NAT:          __T_Peer_NAT_Type{},
+				AB:           __N_AB{},
+				JA:           __N_JA{},
+				PL:           __N_PO_PL{},
+				PS:           __N_PO_PS{},
 				SP: &i_Peer_SP{
 					Option_List: _SP_Option_List{},
 					Exact:       nil,
@@ -373,7 +373,7 @@ func (receiver cDB_VI_List) parse() {
 			continue
 		}
 		var (
-			v_vi_peer_list = make(map[_VI_Peer_ID]*i_VI_Peer)
+			v_vi_peer_list = make(__i_ID_Peer)
 		)
 		i_vi[b.ID] = &i_VI{
 			PName: pad(&b.ID, 5),
@@ -394,7 +394,7 @@ func (receiver cDB_VI_List) parse() {
 			GT_Action:       "",
 			_Attribute_List: b._Attribute_List,
 		}
-		i_vi_peer[b.ID] = map[_VI_Peer_ID]*i_VI_Peer{}
+		i_vi_peer[b.ID] = __i_ID_Peer{}
 
 		for _, d := range b.Peer {
 			switch _, flag := i_vi_peer[b.ID][d.ID]; {
@@ -501,7 +501,7 @@ func (receiver cDB_VI_List) parse() {
 				IFM:           _Name_st0,
 				IFsM:          _Name(b.ID.String()),
 				Communication: _S_Comm[_comm_vi],
-				IP: map[netip.Prefix]*i_Peer_RI_IF_IP{
+				IP: __P_Peer_RI_IF_IP{
 					i_vi_peer[b.ID][_first].Inner_IPPrefix: {
 						Masked:          i_vi_peer[b.ID][_first].Inner_IPPrefix.Masked(),
 						Primary:         false,
@@ -566,7 +566,7 @@ func (receiver cDB_VI_List) parse() {
 					Local_ASN:  0,
 					Remote_ASN: 0,
 					Passive:    false,
-					Neighbor:   map[netip.Addr]*_BGP_Group_Neighbor{},
+					Neighbor:   __A_BGP_Group_Neighbor{},
 					GT_Action:  strings_join(" ", _W_group, i_peer[v_vi_peer_list[_first].ASN].Group.ASName),
 				}
 			}
@@ -575,7 +575,7 @@ func (receiver cDB_VI_List) parse() {
 				Remote_ASN: i_vi_peer[b.ID][_second].ASN,
 				Passive:    i_vi_peer[b.ID][_first].Hub,
 				Local_IP:   i_vi_peer[b.ID][_first].Inner_IP.Addr(),
-				Route_Leak: parse_iDB_Route_Leak(nil, i_peer[v_vi_peer_list[_first].ASN], "", "", map[_W]*i_Route_Leak_FromTo{
+				Route_Leak: parse_iDB_Route_Leak(nil, i_peer[v_vi_peer_list[_first].ASN], "", "", __W_Route_Leak_FromTo{
 					_W_import: {PS: []_Name{0: _Name(strings_join("_", _W_import_metric, pad(i_vi[b.ID].Route_Metric, 2)))}},
 					_W_export: {PS: []_Name{0: _Name(_W_aggregate), 1: _Name(strings_join("_", _W_export_metric, pad(i_vi[b.ID].Route_Metric, 2)))}},
 				}),
@@ -633,11 +633,11 @@ func (receiver *cDB_Peer) parse_RI(v_Peer *i_Peer) {
 		}
 		cDB_PO_PS_List{
 			0: {Name: _Name(strings_join("_", _W_redistribute, b.Name)),
-				Term: []*cDB_PO_PS_Term{
+				Term: cDB_PO_PS_Term_List{
 					// 0: {Name: empty_Name.next_ID(),
 					0: {Name: "PERMIT",
-						From:            []*cDB_PO_PS_From{0: {RI: b.Name, _Attribute_List: _Attribute_List{}}},
-						Then:            []*cDB_PO_PS_Then{0: {Action: _W_accept, _Attribute_List: _Attribute_List{}}},
+						From:            cDB_PO_PS_From_List{0: {RI: b.Name, _Attribute_List: _Attribute_List{}}},
+						Then:            cDB_PO_PS_Then_List{0: {Action: _W_accept, _Attribute_List: _Attribute_List{}}},
 						_Attribute_List: _Attribute_List{},
 					},
 				},
@@ -654,8 +654,8 @@ func (receiver *cDB_Peer) parse_RI(v_Peer *i_Peer) {
 		}
 		var (
 			v_IP_IF = make(map[netip.Prefix]_Name)
-			v_IF    = func() (outbound map[_Name]*i_Peer_RI_IF) {
-				outbound = make(map[_Name]*i_Peer_RI_IF)
+			v_IF    = func() (outbound __N_Peer_RI_IF) {
+				outbound = make(__N_Peer_RI_IF)
 				for _, d := range b.IF {
 					switch value, flag := v_Peer.IF_2_RI[d.Name]; {
 					case flag:
@@ -672,8 +672,8 @@ func (receiver *cDB_Peer) parse_RI(v_Peer *i_Peer) {
 						IFM:           _Name(v_IF_IFM),
 						IFsM:          _Name(v_IF_IFsM),
 						Communication: d.Communication.parse(_S_Comm[_comm_if]),
-						IP: func() (outbound map[netip.Prefix]*i_Peer_RI_IF_IP) {
-							outbound = make(map[netip.Prefix]*i_Peer_RI_IF_IP)
+						IP: func() (outbound __P_Peer_RI_IF_IP) {
+							outbound = make(__P_Peer_RI_IF_IP)
 							for _, f := range d.IP {
 								switch {
 								case !f.DHCP:
@@ -703,8 +703,8 @@ func (receiver *cDB_Peer) parse_RI(v_Peer *i_Peer) {
 							}
 							return
 						}(),
-						PARP: func() (outbound map[netip.Prefix]*i_Peer_RI_IF_PARP) {
-							outbound = make(map[netip.Prefix]*i_Peer_RI_IF_PARP)
+						PARP: func() (outbound __P_Peer_RI_IF_PARP) {
+							outbound = make(__P_Peer_RI_IF_PARP)
 							for _, f := range d.PARP {
 								switch {
 								case !f.IP.IsValid():
@@ -732,8 +732,8 @@ func (receiver *cDB_Peer) parse_RI(v_Peer *i_Peer) {
 				}
 				return
 			}()
-			v_RT = func() (outbound map[netip.Prefix]*i_Peer_RI_RO_RT) {
-				outbound = make(map[netip.Prefix]*i_Peer_RI_RO_RT)
+			v_RT = func() (outbound __P_Peer_RI_RO_RT) {
+				outbound = make(__P_Peer_RI_RO_RT)
 				for _, d := range b.RT {
 					switch {
 					case !d.Identifier.IsValid():
@@ -741,8 +741,8 @@ func (receiver *cDB_Peer) parse_RI(v_Peer *i_Peer) {
 						continue
 					}
 					outbound[d.Identifier] = &i_Peer_RI_RO_RT{
-						GW: func() (outbound map[_Name]*i_Peer_RI_RO_RT_GW) {
-							outbound = make(map[_Name]*i_Peer_RI_RO_RT_GW)
+						GW: func() (outbound __N_Peer_RI_RO_RT_GW) {
+							outbound = make(__N_Peer_RI_RO_RT_GW)
 							for _, f := range d.GW {
 								var (
 									v_RT_IP          netip.Addr
@@ -833,7 +833,7 @@ func (receiver *cDB_Peer) parse_RI(v_Peer *i_Peer) {
 			RT:              v_RT,
 			Route_Leak:      receiver.parse_Route_Leak(v_Peer, "", "", &b.Route_Leak),
 			Protocol:        nil,
-			BGP:             _BGP{BGP_Group: map[_Name]*_BGP_Group{}, GT_Action: strings_join(" ", _W_protocols___bgp), _Attribute_List: _Attribute_List{}},
+			BGP:             _BGP{BGP_Group: __N_BGP_Group{}, GT_Action: strings_join(" ", _W_protocols___bgp), _Attribute_List: _Attribute_List{}},
 			GT_Action:       v_Action,
 			_Attribute_List: b._Attribute_List,
 		}
@@ -889,8 +889,8 @@ func (receiver *cDB_Peer) parse_SZ(v_Peer *i_Peer) {
 		}
 		v_Peer.SZ[b.Name] = &i_Peer_SZ{
 			Screen: b.Screen,
-			IF: func() (outbound map[_Name]*i_Peer_SZ_IF) {
-				outbound = make(map[_Name]*i_Peer_SZ_IF)
+			IF: func() (outbound __N_Peer_SZ_IF) {
+				outbound = make(__N_Peer_SZ_IF)
 				for c := range v_Peer.RI[b.Name].IF {
 					outbound[c] = &i_Peer_SZ_IF{
 						_Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(_Service_ping, _Service_traceroute, _Service_ssh),
@@ -914,7 +914,7 @@ func (receiver *cDB_Peer) parse_SZ(v_Peer *i_Peer) {
 		case !flag:
 			v_Peer.SZ[a] = &i_Peer_SZ{
 				Screen:                     "",
-				IF:                         map[_Name]*i_Peer_SZ_IF{},
+				IF:                         __N_Peer_SZ_IF{},
 				_Host_Inbound_Traffic_List: parse_Host_Inbound_Traffic(),
 				GT_Action:                  strings_join(" ", _W_security__zones___security__zone, a),
 				_Attribute_List:            _Attribute_List{},
@@ -982,8 +982,8 @@ func (receiver *cDB_Peer) parse_SP(v_Peer *i_Peer) {
 		for _, l := range j.To {
 			for _, n := range j.From {
 				v_Peer.SP.Exact = append(v_Peer.SP.Exact, &i_Rule_Set{
-					From:            receiver.parse_FromTo(v_Peer, _Type_exact, _Type_from, []*cDB_FromTo{0: n}),
-					To:              receiver.parse_FromTo(v_Peer, _Type_exact, _Type_to, []*cDB_FromTo{0: l}),
+					From:            receiver.parse_FromTo(v_Peer, _Type_exact, _Type_from, cDB_FromTo_List{0: n}),
+					To:              receiver.parse_FromTo(v_Peer, _Type_exact, _Type_to, cDB_FromTo_List{0: l}),
 					Rule:            receiver.parse_Rule(v_Peer, _Type_exact, "", j.Rule),
 					GT_Action:       "",
 					_Attribute_List: j._Attribute_List,
@@ -1015,11 +1015,11 @@ func (receiver *cDB_Peer) parse_FW(v_Peer *i_Peer) {
 	for _, b := range receiver.FW {
 		v_Peer.FW = append(v_Peer.FW, &i_FW{
 			Name: b.Name,
-			Term: func() (outbound []*i_FW_Term) {
+			Term: func() (outbound __i_FW_Term) {
 				for _, d := range b.Term {
 					outbound = append(outbound, &i_FW_Term{
 						Name: d.Name,
-						From: func() (outbound []*i_FW_FromTo) {
+						From: func() (outbound __i_FW_FromTo) {
 							for _, f := range d.From {
 								outbound = append(outbound, &i_FW_FromTo{
 									PL:              f.PL,
@@ -1029,7 +1029,7 @@ func (receiver *cDB_Peer) parse_FW(v_Peer *i_Peer) {
 							}
 							return
 						}(),
-						To: func() (outbound []*i_FW_FromTo) {
+						To: func() (outbound __i_FW_FromTo) {
 							for _, f := range d.To {
 								outbound = append(outbound, &i_FW_FromTo{
 									PL:              f.PL,
@@ -1039,7 +1039,7 @@ func (receiver *cDB_Peer) parse_FW(v_Peer *i_Peer) {
 							}
 							return
 						}(),
-						Then: func() (outbound []*i_FW_Then) {
+						Then: func() (outbound __i_FW_Then) {
 							for _, f := range d.Then {
 								outbound = append(outbound, &i_FW_Then{
 									Action:          f.Action,
@@ -1063,8 +1063,8 @@ func (receiver *cDB_Peer) parse_FW(v_Peer *i_Peer) {
 	}
 }
 
-func (receiver *cDB_Peer) parse_Pool(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound []*cDB_Pool) (outbound map[_Name]*i_Pool) {
-	outbound = make(map[_Name]*i_Pool)
+func (receiver *cDB_Peer) parse_Pool(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound cDB_Pool_List) (outbound __N_Pool) {
+	outbound = make(__N_Pool)
 	for _, j := range inbound {
 		switch {
 		case !j.IPPrefix.IsValid():
@@ -1088,8 +1088,8 @@ func (receiver *cDB_Peer) parse_Pool(v_Peer *i_Peer, inbound_type _Type, inbound
 	}
 	return
 }
-func (receiver *cDB_Peer) parse_Rule_Set(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound []*cDB_Rule_Set) (outbound map[_Name]*i_Rule_Set) {
-	outbound = make(map[_Name]*i_Rule_Set)
+func (receiver *cDB_Peer) parse_Rule_Set(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound cDB_Rule_Set_List) (outbound __N_Rule_Set) {
+	outbound = make(__N_Rule_Set)
 	for _, j := range inbound {
 		outbound[j.Name] = &i_Rule_Set{
 			Name:            j.Name,
@@ -1102,7 +1102,7 @@ func (receiver *cDB_Peer) parse_Rule_Set(v_Peer *i_Peer, inbound_type _Type, inb
 	}
 	return
 }
-func (receiver *cDB_Peer) parse_Rule(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound []*cDB_Rule) (outbound []*i_Rule) {
+func (receiver *cDB_Peer) parse_Rule(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound cDB_Rule_List) (outbound __i_Rule) {
 	for _, j := range inbound {
 		outbound = append(outbound, &i_Rule{
 			Name:            j.Name,
@@ -1116,7 +1116,7 @@ func (receiver *cDB_Peer) parse_Rule(v_Peer *i_Peer, inbound_type _Type, inbound
 	}
 	return
 }
-func (receiver *cDB_Peer) parse_Match_2_Name(v_Peer *i_Peer, inbound []*cDB_Match) (outbound []_Name) {
+func (receiver *cDB_Peer) parse_Match_2_Name(v_Peer *i_Peer, inbound cDB_Match_List) (outbound []_Name) {
 	for _, j := range inbound {
 		switch _, flag := i_ja[j.Application]; {
 		// todo
@@ -1130,7 +1130,7 @@ func (receiver *cDB_Peer) parse_Match_2_Name(v_Peer *i_Peer, inbound []*cDB_Matc
 	}
 	return
 }
-func (receiver *cDB_Peer) parse_Then(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound []*cDB_Then) (outbound []*i_Then) {
+func (receiver *cDB_Peer) parse_Then(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound cDB_Then_List) (outbound __i_Then) {
 	for _, j := range inbound {
 		outbound = append(outbound, &i_Then{
 			Action:      j.Action,
@@ -1151,7 +1151,7 @@ func (receiver *cDB_Peer) parse_Then(v_Peer *i_Peer, inbound_type _Type, inbound
 	}
 	return
 }
-func (receiver *cDB_Peer) parse_FromTo(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound []*cDB_FromTo) (outbound []*i_FromTo) {
+func (receiver *cDB_Peer) parse_FromTo(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound cDB_FromTo_List) (outbound __i_FromTo) {
 	for _, j := range inbound {
 		outbound = append(outbound, &i_FromTo{
 			AB:        j.AB,
@@ -1173,9 +1173,9 @@ func (receiver *cDB_Peer) parse_FromTo(v_Peer *i_Peer, inbound_type _Type, inbou
 	}
 	return
 }
-func (receiver *cDB_Peer) parse_Route_Leak(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak *cDB_Peer_RI_RO_Route_Leak) (outbound map[_W]*i_Route_Leak_FromTo) {
-	// outbound = make(map[_W]i_Route_Leak_FromTo)
-	return parse_iDB_Route_Leak(nil, v_Peer, "", "", map[_W]*i_Route_Leak_FromTo{
+func (receiver *cDB_Peer) parse_Route_Leak(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, route_leak *cDB_Peer_RI_RO_Route_Leak) (outbound __W_Route_Leak_FromTo) {
+	// outbound = make(__W_Route_Leak_FromTo)
+	return parse_iDB_Route_Leak(nil, v_Peer, "", "", __W_Route_Leak_FromTo{
 		_W_import: {PS: func() (outbound []_Name) {
 			for _, b := range (*route_leak).Import {
 				outbound = append(outbound, b.PS)
