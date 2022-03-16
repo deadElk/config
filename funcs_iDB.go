@@ -96,7 +96,7 @@ func parse_iDB_Peer_Vocabulary() {
 }
 
 func define_iDB_Vocabulary() {
-	create_iDB_AB_Set(nil, _Name_PUBLIC)
+	create_iDB_AB_Set(_Name_PUBLIC)
 
 	for a, b := range map[_Name]__string{
 		"any_v4":       {"0.0.0.0/0"},
@@ -106,7 +106,7 @@ func define_iDB_Vocabulary() {
 	} {
 		switch {
 		case len(b) > 1:
-			create_iDB_AB_Set(nil, a)
+			create_iDB_AB_Set(a)
 		}
 		i_pl[a] = &i_PO_PL{GT_Action: strings_join(" ", _W_policy__options___prefix__list, a)}
 		for _, d := range b {
@@ -259,7 +259,7 @@ func parse_iDB_AB_Name(public, private bool, ab_name _Name, inbound _Name, inter
 	interim[inbound] = true
 }
 
-func create_iDB_AB_Set(v_Peer *i_Peer, ab_name _Name) (ok bool) {
+func create_iDB_AB_Set(ab_name _Name) (ok bool) {
 	switch _, flag := i_ab[ab_name]; {
 	case flag:
 		log.Warnf("Address Book '%+v', already exist; ACTION: skip.", ab_name)
@@ -269,10 +269,6 @@ func create_iDB_AB_Set(v_Peer *i_Peer, ab_name _Name) (ok bool) {
 		Type:      _Type_set,
 		Set:       __N_AB_Set{},
 		GT_Action: strings_join(" ", _W_security___address__book___global___address__set, ab_name),
-	}
-	switch {
-	case v_Peer != nil:
-		v_Peer.link_AB(ab_name)
 	}
 	return true
 }
