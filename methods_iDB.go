@@ -36,6 +36,12 @@ func (receiver *i_Peer) link_PS(name ..._Name) {
 		receiver.PS[value] = i_ps[value]
 	}
 }
+func (receiver *i_Peer) create_AB_Set(name ..._Name) {
+	for _, value := range name {
+		create_iDB_AB_Set(value)
+		receiver.link_AB(value)
+	}
+}
 
 func (receiver *i_AB) get_address_list(interim *[]_Name) (outbound *[]_Name) {
 	switch receiver.Type {
@@ -59,6 +65,7 @@ func (receiver *i_AB) get_address_list(interim *[]_Name) (outbound *[]_Name) {
 	}
 	return
 }
+
 func (receiver __N_AB) peer_iDB_recurse_AB(inbound _Name) {
 	receiver[inbound] = i_ab[inbound]
 	for a, b := range i_ab[inbound].Set {
