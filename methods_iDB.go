@@ -65,13 +65,12 @@ func (receiver *i_AB) get_address_list(interim *[]_Name) (outbound *[]_Name) {
 	}
 	return
 }
-
-func (receiver __N_AB) peer_iDB_recurse_AB(inbound _Name) {
+func (receiver __N_AB) parse_recurse_AB(inbound _Name) {
 	receiver[inbound] = i_ab[inbound]
 	for a, b := range i_ab[inbound].Set {
 		switch {
 		case b.Type != _Type_set || receiver[a] == nil:
-			receiver.peer_iDB_recurse_AB(a)
+			receiver.parse_recurse_AB(a)
 		}
 	}
 }
