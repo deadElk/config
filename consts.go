@@ -27,13 +27,13 @@ const (
 	_comm_vi
 )
 const (
-	_dir_list_Config _ID = iota
-	_dir_list_Data
-	_dir_list_GT
-	_dir_list_LDAP
-	_dir_list_PKI
-	_dir_list_Portal
-	_dir_list_etc
+	_dir_Config _ID = iota
+	_dir_Data
+	_dir_GT
+	_dir_LDAP
+	_dir_PKI
+	_dir_Portal
+	_dir_etc
 )
 const (
 	_file_host_list _ID = iota

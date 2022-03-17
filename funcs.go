@@ -368,7 +368,7 @@ func parse_GT() (not_ok bool) {
 			var (
 				vBuf bytes.Buffer
 			)
-			switch vGT, err := template.New(gt_v.String()).Parse(string(i_read_file[_S_Dir_List[_dir_list_GT]].data[gt_v])); {
+			switch vGT, err := template.New(gt_v.String()).Parse(string(i_read_file[_S_Dir[_dir_GT]].data[gt_v])); {
 			case err == nil || vGT != nil:
 				switch err = vGT.Execute(&vBuf, value); {
 				case err != nil:
@@ -376,7 +376,7 @@ func parse_GT() (not_ok bool) {
 					not_ok = true
 					continue
 				}
-				i_write_file[_S_Dir_List[_dir_list_Config]].data[value.ASName] = append(i_write_file[_S_Dir_List[_dir_list_Config]].data[value.ASName], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
+				i_write_file[_S_Dir[_dir_Config]].data[value.ASName] = append(i_write_file[_S_Dir[_dir_Config]].data[value.ASName], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
 			default:
 				log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: report.", index.String(), gt_v, err)
 				not_ok = true

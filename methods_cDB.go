@@ -674,14 +674,12 @@ func (receiver *cDB_Peer) parse_RI(v_Peer *i_Peer) {
 							for _, f := range d.IP {
 								switch {
 								case !f.DHCP:
-									switch {
-									case !f.IPPrefix.IsValid():
-										log.Warnf("Peer '%v', RI '%v', IF '%v', invalid IP '%v'; ACTION: ignore.", receiver.ASN, b.Name, d.Name, f.IPPrefix)
-										continue
-									}
 									switch value, flag := v_IP_IF[f.IPPrefix]; {
 									case flag:
 										log.Warnf("Peer '%v', RI '%v', IF '%v', duplicate IP '%v' with IF '%v'; ACTION: ignore.", receiver.ASN, b.Name, d.Name, f.IPPrefix, value)
+										continue
+									case !f.IPPrefix.IsValid():
+										log.Warnf("Peer '%v', RI '%v', IF '%v', invalid IP '%v'; ACTION: ignore.", receiver.ASN, b.Name, d.Name, f.IPPrefix)
 										continue
 									}
 									v_IP_IF[f.IPPrefix] = d.Name

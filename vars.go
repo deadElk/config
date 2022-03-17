@@ -35,15 +35,15 @@ var (
 	i_peer_group = make(__A_Peer_Group)
 	i_ldap       = make(__U_LDAP)
 	i_read_file  = __N_File_Data{
-		_S_Dir_List[_dir_list_GT]:  {ext: "tmpl", data: map[_Name]_Content{}},
-		_S_Dir_List[_dir_list_etc]: {ext: "xml", data: map[_Name]_Content{}},
+		_S_Dir[_dir_GT]:  {ext: "tmpl", data: map[_Name]_Content{}},
+		_S_Dir[_dir_etc]: {ext: "xml", data: map[_Name]_Content{}},
 	}
 	i_write_file = __N_File_Data{
-		_S_Dir_List[_dir_list_Config]: {ext: "txt", data: map[_Name]_Content{}},
-		_S_Dir_List[_dir_list_Data]:   {ext: "xml", data: map[_Name]_Content{}},
-		_S_Dir_List[_dir_list_LDAP]:   {ext: "xml", data: map[_Name]_Content{}},
-		_S_Dir_List[_dir_list_PKI]:    {ext: "", data: map[_Name]_Content{}},
-		_S_Dir_List[_dir_list_Portal]: {ext: "", data: map[_Name]_Content{}},
+		_S_Dir[_dir_Config]: {ext: "txt", data: map[_Name]_Content{}},
+		_S_Dir[_dir_Data]:   {ext: "xml", data: map[_Name]_Content{}},
+		_S_Dir[_dir_LDAP]:   {ext: "xml", data: map[_Name]_Content{}},
+		_S_Dir[_dir_PKI]:    {ext: "", data: map[_Name]_Content{}},
+		_S_Dir[_dir_Portal]: {ext: "", data: map[_Name]_Content{}},
 	}
 	i_peer_list []_ASN
 
@@ -61,16 +61,16 @@ var (
 		_W_qualified__next__hop: _W_qualified__next__hop,
 		_W_table:                _W_next__table,
 	}
-	_S_Dir_List = map[_ID]_Name{
-		_dir_list_Config: "tmp/CONFIG",
-		_dir_list_Data:   "tmp/data",
-		_dir_list_GT:     "tmp/templates",
-		_dir_list_LDAP:   "tmp/LDAP",
-		_dir_list_PKI:    "tmp/PKI",
-		_dir_list_Portal: "tmp/portal",
-		_dir_list_etc:    "etc",
+	_S_Dir = map[_ID]_Name{
+		_dir_Config: "tmp/CONFIG",
+		_dir_Data:   "tmp/data",
+		_dir_GT:     "tmp/templates",
+		_dir_LDAP:   "tmp/LDAP",
+		_dir_PKI:    "tmp/PKI",
+		_dir_Portal: "tmp/portal",
+		_dir_etc:    "etc",
 	}
-	_S_File_List = map[_ID]_Name{
+	_S_File = map[_ID]_Name{
 		_file_host_list: "host_list",
 	}
 	_S_Comm = map[_ID]_Communication{
