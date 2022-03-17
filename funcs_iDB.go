@@ -2,13 +2,11 @@ package main
 
 import (
 	"bytes"
-	"crypto/tls"
 	"io/ioutil"
 	"net/netip"
 	"sort"
 	"text/template"
 
-	"github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -459,88 +457,6 @@ func parse_GT() (not_ok bool) {
 }
 
 func parse_LDAP() (not_ok bool) {
-	for a, b := range i_ldap {
-		func() {
-			var (
-				_ldap *ldap.Conn
-				err   error
-			)
-			switch _ldap, err = ldap.Dial("tcp", a.Host); {
-			case err != nil:
-				log.Errorf("LDAP '%v' connect error: '%v'; ACTION: fatal.", a.String(), err)
-				return
-			}
-			defer _ldap.Close()
-			switch err = _ldap.StartTLS(&tls.Config{InsecureSkipVerify: true}); {
-			case err != nil:
-				log.Errorf("LDAP '%v' TLS connect error: '%v'; ACTION: fatal.", a.String(), err)
-				return
-			}
-			switch err = _ldap.Bind(b.Bind_DN.String(), b.Secret.String()); {
-			case err != nil:
-				log.Errorf("LDAP '%v' bind error: '%v'; ACTION: fatal.", a.String(), err)
-				return
-			}
-			var (
-				_s_request = ldap.NewSearchRequest(a.RawPath,
-					ldap.ScopeWholeSubtree, ldap.DerefAlways, 0, 0, false,
-					"(&(objectClass=olcDatabaseConfig)(objectClass=olcMdbConfig))",
-					[]string{"olcSuffix"},
-					nil)
-				_s_result *ldap.SearchResult
-			)
-			switch _s_result, err = _ldap.Search(_s_request); {
-			case err != nil:
-				log.Errorf("LDAP '%v' search error: '%v'; ACTION: fatal.", a.String(), err)
-				return
-			}
-			for _, d := range _s_result.Entries {
-				var (
-					_dn = _DN(d.Attributes[0].Values[0])
-				)
-				switch {
-				case len(_dn) == 0:
-					continue
-				}
-				log.Infof("LDAP '%v' search result: '%v'; ACTION: fatal.", a.String(), _dn)
-				switch _, flag := i_ldap_domain[_dn]; {
-				case flag:
-					log.Warnf("LDAP Domain '%v' already defined; ACTION: skip.", a)
-					return
-				}
-				i_ldap_domain[_dn] = &i_LDAP_Domain{
-					Group: __DN_LDAP_Domain_Group{},
-					User:  __DN_LDAP_Domain_User{},
-				}
-
-				b.Domain[_dn] = i_ldap_domain[_dn]
-			}
-		}()
-	}
-
-	// // First bind with a read only user
-	// err = l.Bind(bindusername, bindpassword)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	//
-	// // Search for the given username
-	// searchRequest := ldap.NewSearchRequest(
-	// 	"dc=example,dc=com",
-	// 	ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
-	// 	fmt.Sprintf("(&(objectClass=organizationalPerson)(uid=%s))", username),
-	// 	[]string{"dn"},
-	// 	nil,
-	// )
-	//
-	// sr, err := l.Search(searchRequest)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	//
-	// if len(sr.Entries) != 1 {
-	// 	log.Fatal("User does not exist or too many entries returned")
-	// }
 
 	return !not_ok
 }

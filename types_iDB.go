@@ -3,6 +3,8 @@ package main
 import (
 	"net/netip"
 	"net/url"
+
+	"github.com/go-ldap/ldap/v3"
 )
 
 type __A_Peer map[_ASN]*i_Peer
@@ -62,21 +64,42 @@ type __DN_LDAP_Domain map[_DN]*i_LDAP_Domain
 type __DN_LDAP_Domain_Group map[_DN]*i_LDAP_Domain_Group
 type __DN_LDAP_Domain_User map[_DN]*i_LDAP_Domain_User
 type i_LDAP struct {
-	Bind_DN _DN
-	Secret  _Secret
-	Domain  __DN_LDAP_Domain
+	Bind_DN      _DN
+	Secret       _Secret
+	DB_Filter    _DN
+	DB_CN        _DN
+	Group_Filter _DN
+	Group_CN     _DN
+	User_Filter  _DN
+	User_CN      _DN
+	OLC          i_LDAP_OLC
+	Domain       __DN_LDAP_Domain
+}
+type i_LDAP_OLC struct {
 }
 type i_LDAP_Domain struct {
-	Group __DN_LDAP_Domain_Group
-	User  __DN_LDAP_Domain_User
+	OLC       i_LDAP_Domain_OLC
+	Group     __DN_LDAP_Domain_Group
+	User      __DN_LDAP_Domain_User
+	Raw_Group *ldap.SearchResult
+	Raw_User  *ldap.SearchResult
+}
+type i_LDAP_Domain_OLC struct {
+	DN _DN
 }
 type i_LDAP_Domain_Group struct {
-	ID _ID
-	CN _DN
+	CN         _DN          // cn
+	GID_Number _ID          // gidNumber
+	UID_List   map[_ID]bool // member: index = member (uidNumber here), value is ignored
 }
 type i_LDAP_Domain_User struct {
-	ID _ID
-	CN _DN
+	UID            _DN               // uid
+	UID_Number     _ID               // uidNumber
+	GID_Number     _ID               // gidNumber
+	IPPrefix       netip.Prefix      // ipHostNumber
+	GID_List       map[_ID]bool      // memberOf: index = memberOf (gidNumber here), value is ignored
+	SSH_Public_Key map[string][]byte // sshPublicKey: index = Comment, value = key
+	P12            map[string][]byte // userPKCS12: index = CN, value = p12
 }
 
 // Peer Group

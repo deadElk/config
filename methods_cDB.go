@@ -1,12 +1,14 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/binary"
 	"net/netip"
 	"net/url"
 	"regexp"
 	"strconv"
 
+	"github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -583,7 +585,7 @@ func (receiver cDB_VI_List) parse() {
 	}
 }
 func (receiver cDB_LDAP_List) parse() {
-	for _, b := range receiver {
+	for _, b := range receiver { // parse server params
 		var (
 			a = parse_interface(url.Parse(b.URL)).(*url.URL)
 		)
@@ -595,19 +597,144 @@ func (receiver cDB_LDAP_List) parse() {
 			log.Debugf("LDAP '%v' is reserved; ACTION: skip.", a)
 			continue
 		case len(a.RawQuery) == 0:
-			a.RawQuery = _S_cn_config
-		}
-		switch value := re_slash.Split(a.Path, -1); {
-		case len(value) < 1:
-			continue
-		default:
-			a.RawPath = value[len(value)-1]
+			a.RawQuery = _S_cn_config.String()
+			fallthrough
+		case len(b.DB_Filter) == 0:
+			b.DB_Filter = _S_filter_db
+			fallthrough
+		case len(b.DB_CN) == 0:
+			b.DB_CN = _S_cn_db
+			fallthrough
+		case len(b.Group_Filter) == 0:
+			b.Group_Filter = _S_filter_group
+			fallthrough
+		case len(b.Group_CN) == 0:
+			b.Group_CN = _S_cn_group
+			fallthrough
+		case len(b.User_Filter) == 0:
+			b.User_Filter = _S_filter_user
+			fallthrough
+		case len(b.User_CN) == 0:
+			b.User_CN = _S_cn_user
 		}
 		i_ldap[a] = &i_LDAP{
-			Bind_DN: b.Bind_DN,
-			Secret:  b.Secret,
-			Domain:  __DN_LDAP_Domain{},
+			Bind_DN:      b.Bind_DN,
+			Secret:       b.Secret,
+			DB_Filter:    b.DB_Filter,
+			DB_CN:        b.DB_CN,
+			Group_Filter: b.Group_Filter,
+			Group_CN:     b.Group_CN,
+			User_Filter:  b.User_Filter,
+			User_CN:      b.User_CN,
+			Domain:       __DN_LDAP_Domain{},
 		}
+
+		func() { // get server domain DB
+			var (
+				_ldap *ldap.Conn
+				err   error
+			)
+			switch _ldap, err = ldap.Dial("tcp", a.Host); {
+			case err != nil:
+				log.Errorf("LDAP '%v' connect error: '%v'; ACTION: skip.", a.String(), err)
+				return
+			}
+			defer _ldap.Close()
+			switch err = _ldap.StartTLS(&tls.Config{InsecureSkipVerify: true}); {
+			case err != nil:
+				log.Errorf("LDAP '%v' TLS connect error: '%v'; ACTION: skip.", a.String(), err)
+				return
+			}
+			switch err = _ldap.Bind(b.Bind_DN.String(), b.Secret.String()); {
+			case err != nil:
+				log.Errorf("LDAP '%v' bind error: '%v'; ACTION: skip.", a.String(), err)
+				return
+			}
+
+			var (
+				_db_request = ldap.NewSearchRequest(
+					a.RawQuery,
+					ldap.ScopeWholeSubtree,
+					ldap.DerefAlways,
+					0,
+					0,
+					false,
+					_S_filter_db.String(),
+					[]string{"olcSuffix"},
+					nil,
+				)
+				_db_result *ldap.SearchResult
+			)
+			switch _db_result, err = _ldap.Search(_db_request); {
+			case err != nil:
+				log.Errorf("LDAP '%v' search error: '%v'; ACTION: skip.", a.String(), err)
+				return
+			}
+			for _, d := range _db_result.Entries {
+				var (
+					_dn = _DN(d.Attributes[0].Values[0])
+				)
+				switch {
+				case len(_dn) == 0:
+					continue
+				}
+				log.Infof("LDAP '%v' search result: '%v'.", a.String(), _dn)
+				switch _, flag := i_ldap_domain[_dn]; {
+				case flag:
+					log.Warnf("LDAP Domain '%v' already defined; ACTION: skip.", a)
+					return
+				}
+
+				var (
+					_group_request = ldap.NewSearchRequest(
+						_dn.String(),
+						ldap.ScopeWholeSubtree,
+						ldap.DerefAlways,
+						0,
+						0,
+						false,
+						b.Group_Filter.String(),
+						[]string{b.Group_CN.String()},
+						nil,
+					)
+					_group_result *ldap.SearchResult
+				)
+				switch _group_result, err = _ldap.Search(_group_request); {
+				case err != nil:
+					log.Fatalf("LDAP '%v' search error: '%v'; ACTION: fatal.", a.String(), err)
+					return
+				}
+				var (
+					_user_request = ldap.NewSearchRequest(
+						_dn.String(),
+						ldap.ScopeWholeSubtree,
+						ldap.DerefAlways,
+						0,
+						0,
+						false,
+						b.User_Filter.String(),
+						[]string{b.User_CN.String()},
+						nil,
+					)
+					_user_result *ldap.SearchResult
+				)
+				switch _user_result, err = _ldap.Search(_user_request); {
+				case err != nil:
+					log.Fatalf("LDAP '%v' search error: '%v'; ACTION: fatal.", a.String(), err)
+					return
+				}
+				i_ldap_domain[_dn] = &i_LDAP_Domain{
+					OLC: i_LDAP_Domain_OLC{
+						DN: _DN(d.DN),
+					},
+					Group:     __DN_LDAP_Domain_Group{},
+					User:      __DN_LDAP_Domain_User{},
+					Raw_Group: _group_result,
+					Raw_User:  _user_result,
+				}
+				i_ldap[a].Domain[_dn] = i_ldap_domain[_dn]
+			}
+		}()
 	}
 }
 
