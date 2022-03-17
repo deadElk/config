@@ -47,6 +47,11 @@ var (
 	}
 	i_peer_list []_ASN
 
+	c_VI_Action = map[_Type]_W{
+		_Type_gr: _W_gr0,
+		_Type_lt: _W_lt0,
+		_Type_st: _W_st0,
+	}
 	c_RO_GW_Action = map[_W]_W{
 		_W_discard:              _W_discard,
 		_W_interface:            _W_next__hop,

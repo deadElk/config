@@ -463,11 +463,10 @@ func (receiver cDB_VI_List) parse() {
 				ASN:               d.ASN,
 				RI:                v_RI,
 				IF:                v_IF,
-				IP:                v_IP,
+				IPPrefix:          v_IP,
 				NAT:               v_NAT,
 				Hub:               d.Hub,
 				Inner_RI:          d.Inner_RI.validate_RI(i_peer[d.ASN], i_peer[d.ASN].Group.Mgmt_RI),
-				Inner_IP:          get_VI_IPPrefix(i_peer[d.ASN], b.ID, d.ID+1),
 				Inner_IPPrefix:    get_VI_IPPrefix(i_peer[d.ASN], b.ID, d.ID+1),
 				IKE_Local_Address: v_IKE_Local_Address,
 				IKE_Dynamic:       v_IKE_Dynamic,
@@ -480,7 +479,7 @@ func (receiver cDB_VI_List) parse() {
 		var (
 			_first, _second _VI_Peer_ID
 			_total          = _VI_Peer_ID(len(v_vi_peer_list))
-			_if             = _Name(strings_join(".", _Name_st0, b.ID))
+			_if             = _Name(strings_join(".", c_VI_Action[i_vi[b.ID].Type], b.ID))
 		)
 		switch {
 		case _total != 2:
@@ -496,7 +495,7 @@ func (receiver cDB_VI_List) parse() {
 			// i_peer[v_vi_peer_list[_first].ASN].VI_Remote[b.ID] = i_vi_peer[b.ID][_second]
 
 			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].IF[_if] = &i_Peer_RI_IF{
-				IFM:           _Name_st0,
+				IFM:           _Name(c_VI_Action[i_vi[b.ID].Type]),
 				IFsM:          _Name(b.ID.String()),
 				Communication: _S_Comm[_comm_vi],
 				IP: __P_Peer_RI_IF_IP{
@@ -520,7 +519,7 @@ func (receiver cDB_VI_List) parse() {
 				_Attribute_List:            _Attribute_List{},
 			}
 			i_peer[v_vi_peer_list[_first].ASN].IF_2_RI[_if] = i_vi_peer[b.ID][_first].Inner_RI
-			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].IP_IF[i_vi_peer[b.ID][_first].Inner_IP] = _if
+			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].IP_IF[i_vi_peer[b.ID][_first].Inner_IPPrefix] = _if
 		}
 
 		for _first, _second = 0, _total-1; _first <= _total-1; _first, _second = _first+1, _second-1 {
@@ -536,22 +535,22 @@ func (receiver cDB_VI_List) parse() {
 				Local_ASN:                i_vi_peer[b.ID][_first].ASN,
 				Local_RI:                 i_vi_peer[b.ID][_first].RI,
 				Local_IF:                 i_vi_peer[b.ID][_first].IF,
-				Local_IP:                 i_vi_peer[b.ID][_first].IP.Addr(),
+				Local_IP:                 i_vi_peer[b.ID][_first].IPPrefix.Addr(),
 				Local_NAT:                i_vi_peer[b.ID][_first].NAT.Addr(),
 				Local_Hub:                i_vi_peer[b.ID][_first].Hub,
 				Local_Inner_RI:           i_vi_peer[b.ID][_first].Inner_RI,
-				Local_Inner_IP:           i_vi_peer[b.ID][_first].Inner_IP.Addr(),
+				Local_Inner_IP:           i_vi_peer[b.ID][_first].Inner_IPPrefix.Addr(),
 				Local_Inner_IPPrefix:     i_vi_peer[b.ID][_first].Inner_IPPrefix,
 				Local_IKE_Local_Address:  i_vi_peer[b.ID][_first].IKE_Local_Address,
 				Local_IKE_Dynamic:        i_vi_peer[b.ID][_first].IKE_Dynamic,
 				Remote_ASN:               i_vi_peer[b.ID][_second].ASN,
 				Remote_RI:                i_vi_peer[b.ID][_second].RI,
 				Remote_IF:                i_vi_peer[b.ID][_second].IF,
-				Remote_IP:                i_vi_peer[b.ID][_second].IP.Addr(),
+				Remote_IP:                i_vi_peer[b.ID][_second].IPPrefix.Addr(),
 				Remote_NAT:               i_vi_peer[b.ID][_second].NAT.Addr(),
 				Remote_Hub:               i_vi_peer[b.ID][_second].Hub,
 				Remote_Inner_RI:          i_vi_peer[b.ID][_second].Inner_RI,
-				Remote_Inner_IP:          i_vi_peer[b.ID][_second].Inner_IP.Addr(),
+				Remote_Inner_IP:          i_vi_peer[b.ID][_second].Inner_IPPrefix.Addr(),
 				Remote_Inner_IPPrefix:    i_vi_peer[b.ID][_second].Inner_IPPrefix,
 				Remote_IKE_Local_Address: i_vi_peer[b.ID][_second].IKE_Local_Address,
 				Remote_IKE_Dynamic:       i_vi_peer[b.ID][_second].IKE_Dynamic,
@@ -568,16 +567,16 @@ func (receiver cDB_VI_List) parse() {
 					GT_Action:  strings_join(" ", _W_group, i_peer[v_vi_peer_list[_first].ASN].Group.ASName),
 				}
 			}
-			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[i_peer[v_vi_peer_list[_first].ASN].Group.ASName].Neighbor[i_vi_peer[b.ID][_second].Inner_IP.Addr()] = &_BGP_Group_Neighbor{
+			i_peer[v_vi_peer_list[_first].ASN].RI[i_vi_peer[b.ID][_first].Inner_RI].BGP.BGP_Group[i_peer[v_vi_peer_list[_first].ASN].Group.ASName].Neighbor[i_vi_peer[b.ID][_second].Inner_IPPrefix.Addr()] = &_BGP_Group_Neighbor{
 				Local_ASN:  i_vi_peer[b.ID][_first].ASN,
 				Remote_ASN: i_vi_peer[b.ID][_second].ASN,
 				Passive:    i_vi_peer[b.ID][_first].Hub,
-				Local_IP:   i_vi_peer[b.ID][_first].Inner_IP.Addr(),
+				Local_IP:   i_vi_peer[b.ID][_first].Inner_IPPrefix.Addr(),
 				Route_Leak: parse_iDB_Route_Leak(nil, i_peer[v_vi_peer_list[_first].ASN], "", "", __W_Route_Leak_FromTo{
 					_W_import: {PS: []_Name{0: _Name(strings_join("_", _W_import_metric, pad(i_vi[b.ID].Route_Metric, 2)))}},
 					_W_export: {PS: []_Name{0: _Name(_W_aggregate), 1: _Name(strings_join("_", _W_export_metric, pad(i_vi[b.ID].Route_Metric, 2)))}},
 				}),
-				GT_Action:       strings_join(" ", _W_neighbor, i_vi_peer[b.ID][_second].Inner_IP.Addr()),
+				GT_Action:       strings_join(" ", _W_neighbor, i_vi_peer[b.ID][_second].Inner_IPPrefix.Addr()),
 				_Attribute_List: _Attribute_List{Description: _Description(strings_join("", "TI", i_vi[b.ID].PName))},
 			}
 		}

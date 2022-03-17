@@ -236,11 +236,10 @@ type i_VI_Peer struct {
 	ASN               _ASN
 	RI                _Name
 	IF                _Name
-	IP                netip.Prefix
+	IPPrefix          netip.Prefix
 	NAT               netip.Prefix
 	Hub               bool
 	Inner_RI          _Name
-	Inner_IP          netip.Prefix
 	Inner_IPPrefix    netip.Prefix
 	IKE_Local_Address bool
 	IKE_Dynamic       bool
