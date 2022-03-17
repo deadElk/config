@@ -40,7 +40,7 @@ const (
 )
 const (
 	_S_Verbosity                        = log.InfoLevel
-	_S_Domain_Name         _FQDN        = "example.com"
+	_S_Domain_Name         _FQDN        = "example.net"
 	_S_Group               _ASN         = 4200000000
 	_S_Host_RI                          = _Name_junos_host
 	_S_Master_RI                        = _Name_master
@@ -48,6 +48,7 @@ const (
 	_S_Mgmt_RI                          = _Name_mgmt_junos
 	_S_Mgmt_RI_Description _Description = "MANAGEMENT-INSTANCE"
 	_S_SP_Default_Policy                = _W_permit__all
+	_S_cn_config                        = string(_W_cn____config)
 )
 const (
 	_Communication_ptmp = _Communication(_W_ptmp)
@@ -162,6 +163,9 @@ const (
 	_W_bgp                                              _W = "bgp"
 	_W_book                                             _W = "book"
 	_W_bootp                                            _W = "bootp"
+	_W_cn                                               _W = "cn"
+	_W_cn____config                                        = _W_cn + "=" + _W_config
+	_W_config                                           _W = "config"
 	_W_deny                                             _W = "deny"
 	_W_deny__all                                           = _W_deny + "-" + _W_all
 	_W_destination                                      _W = "destination"

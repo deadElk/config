@@ -15,6 +15,7 @@ var (
 	re_symbol     = regexp.MustCompile(`_+`)
 	re_dot        = regexp.MustCompile(`\.+`)
 	re_period     = regexp.MustCompile(`,+`)
+	re_slash      = regexp.MustCompile(`/+`)
 	// gt_fm      = template.FuncMap{
 	// 	"sum_uint32": sum_uint32_gt_fm,
 	// 	"sum_string": sum_string_gt_fm,
@@ -25,16 +26,17 @@ var (
 	empty_ID   = _next_ID
 	next_ID    = empty_ID
 
-	i_ab         = make(__N_AB)
-	i_ja         = make(__N_JA)
-	i_pl         = make(__N_PO_PL)
-	i_ps         = make(__N_PO_PS)
-	i_vi         = make(__i_VI)
-	i_vi_peer    = make(__i_VI_ID_Peer)
-	i_peer       = make(__A_Peer)
-	i_peer_group = make(__A_Peer_Group)
-	i_ldap       = make(__U_LDAP)
-	i_read_file  = __N_File_Data{
+	i_ab          = make(__N_AB)
+	i_ja          = make(__N_JA)
+	i_pl          = make(__N_PO_PL)
+	i_ps          = make(__N_PO_PS)
+	i_vi          = make(__i_VI)
+	i_vi_peer     = make(__i_VI_ID_Peer)
+	i_peer        = make(__A_Peer)
+	i_peer_group  = make(__A_Peer_Group)
+	i_ldap        = make(__U_LDAP)
+	i_ldap_domain = make(__DN_LDAP_Domain)
+	i_read_file   = __N_File_Data{
 		_S_Dir[_dir_GT]:  {ext: "tmpl", data: map[_Name]_Content{}},
 		_S_Dir[_dir_etc]: {ext: "xml", data: map[_Name]_Content{}},
 	}

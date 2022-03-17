@@ -47,6 +47,10 @@ func main() {
 		log.Fatalf("GT parse error; ACTION: fatal.")
 	}
 	switch {
+	case !parse_LDAP():
+		log.Fatalf("LDAP parse error; ACTION: fatal.")
+	}
+	switch {
 	case !write_file():
 		log.Fatalf("write_file() error; ACTION: fatal.")
 	}

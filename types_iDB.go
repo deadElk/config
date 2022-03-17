@@ -28,7 +28,6 @@ type __P_Peer_RI_IF_IP map[netip.Prefix]*i_Peer_RI_IF_IP
 type __P_Peer_RI_IF_PARP map[netip.Prefix]*i_Peer_RI_IF_PARP
 type __P_Peer_RI_RO_RT map[netip.Prefix]*i_Peer_RI_RO_RT
 type __T_Peer_NAT_Type map[_Type]*i_Peer_NAT_Type
-type __U_LDAP map[*url.URL]*i_LDAP
 type __W_Route_Leak_FromTo map[_W]*i_Route_Leak_FromTo
 type __i_FW []*i_FW
 type __i_FW_FromTo []*i_FW_FromTo
@@ -48,7 +47,6 @@ type __i_VI_GT map[_VI_ID]*i_VI_GT
 type __i_ID_Peer map[_VI_Peer_ID]*i_VI_Peer
 type __i_VI_ID_Peer map[_VI_ID]__i_ID_Peer
 type __i_VI_Peer map[_VI_ID]*i_VI_Peer
-type __string []string
 
 // file i/o
 type i_File_Data struct {
@@ -58,8 +56,27 @@ type i_File_Data struct {
 }
 
 // LDAP
+type _DN string
+type __U_LDAP map[*url.URL]*i_LDAP
+type __DN_LDAP_Domain map[_DN]*i_LDAP_Domain
+type __DN_LDAP_Domain_Group map[_DN]*i_LDAP_Domain_Group
+type __DN_LDAP_Domain_User map[_DN]*i_LDAP_Domain_User
 type i_LDAP struct {
-	// URL *url.URL
+	Bind_DN _DN
+	Secret  _Secret
+	Domain  __DN_LDAP_Domain
+}
+type i_LDAP_Domain struct {
+	Group __DN_LDAP_Domain_Group
+	User  __DN_LDAP_Domain_User
+}
+type i_LDAP_Domain_Group struct {
+	ID _ID
+	CN _DN
+}
+type i_LDAP_Domain_User struct {
+	ID _ID
+	CN _DN
 }
 
 // Peer Group

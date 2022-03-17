@@ -4,14 +4,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"io/ioutil"
 	"net/netip"
 	"os"
 	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
-	"text/template"
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
@@ -258,7 +256,6 @@ func pad_string(inbound string, length int) string {
 	}
 	return padding + inbound
 }
-
 func split_2_string(inbound interface{}, re *regexp.Regexp, target ...*string) {
 	var (
 		interim = re.Split(convert_2_string("", inbound), -1)
@@ -334,7 +331,6 @@ func read_file() (not_ok bool) {
 	}
 	return !not_ok
 }
-
 func write_file() (not_ok bool) {
 	for a, b := range i_write_file {
 		switch err := os.MkdirAll(string(a), os.ModeDir|0700); {
@@ -350,35 +346,6 @@ func write_file() (not_ok bool) {
 			switch err := os.WriteFile(g, f, 0600); {
 			case err != nil:
 				log.Errorf("file '%v' write error '%v'; ACTION: report.", g, err)
-				not_ok = true
-				continue
-			}
-		}
-	}
-	return !not_ok
-}
-
-func parse_GT() (not_ok bool) {
-	for index, value := range i_peer {
-		switch {
-		case value.Reserved:
-			continue
-		}
-		for _, gt_v := range value.GT_List {
-			var (
-				vBuf bytes.Buffer
-			)
-			switch vGT, err := template.New(gt_v.String()).Parse(string(i_read_file[_S_Dir[_dir_GT]].data[gt_v])); {
-			case err == nil || vGT != nil:
-				switch err = vGT.Execute(&vBuf, value); {
-				case err != nil:
-					log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: report.", index.String(), gt_v, err)
-					not_ok = true
-					continue
-				}
-				i_write_file[_S_Dir[_dir_Config]].data[value.ASName] = append(i_write_file[_S_Dir[_dir_Config]].data[value.ASName], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
-			default:
-				log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: report.", index.String(), gt_v, err)
 				not_ok = true
 				continue
 			}
@@ -413,7 +380,7 @@ func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_dir
 
 func strings_join(delimiter string, inbound ...interface{}) (outbound string) {
 	var (
-		interim __string
+		interim []string
 	)
 	for _, b := range inbound {
 		interim = append(interim, convert_2_string(delimiter, b))

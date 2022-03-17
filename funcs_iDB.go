@@ -1,9 +1,14 @@
 package main
 
 import (
+	"bytes"
+	"crypto/tls"
+	"io/ioutil"
 	"net/netip"
 	"sort"
+	"text/template"
 
+	"github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -25,7 +30,7 @@ func generate_iDB_host_list() {
 			s_public  *[]_Name
 			s_private *[]_Name
 			ip_list   = "\t"
-			s_target  = __string{0: i_peer[b].Router_ID.String()}
+			s_target  = []string{0: i_peer[b].Router_ID.String()}
 		)
 		// todo: use strings_join
 		s_private = i_peer[b].AB[_Name(strings_join("_", "I", i_peer[b].ASName))].get_address_list(s_private)
@@ -98,7 +103,7 @@ func parse_iDB_Peer_Vocabulary() {
 func define_iDB_Vocabulary() {
 	create_iDB_AB_Set(_Name_PUBLIC)
 
-	for a, b := range map[_Name]__string{
+	for a, b := range map[_Name][]string{
 		"any_v4":       {"0.0.0.0/0"},
 		"loopback_v4":  {"127.0.0.0/8"},
 		"private_v4":   {"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"},
@@ -422,4 +427,120 @@ func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 		}
 	}
 	return
+}
+
+func parse_GT() (not_ok bool) {
+	for index, value := range i_peer {
+		switch {
+		case value.Reserved:
+			continue
+		}
+		for _, gt_v := range value.GT_List {
+			var (
+				vBuf bytes.Buffer
+			)
+			switch vGT, err := template.New(gt_v.String()).Parse(string(i_read_file[_S_Dir[_dir_GT]].data[gt_v])); {
+			case err == nil || vGT != nil:
+				switch err = vGT.Execute(&vBuf, value); {
+				case err != nil:
+					log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: report.", index.String(), gt_v, err)
+					not_ok = true
+					continue
+				}
+				i_write_file[_S_Dir[_dir_Config]].data[value.ASName] = append(i_write_file[_S_Dir[_dir_Config]].data[value.ASName], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
+			default:
+				log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: report.", index.String(), gt_v, err)
+				not_ok = true
+				continue
+			}
+		}
+	}
+	return !not_ok
+}
+
+func parse_LDAP() (not_ok bool) {
+	for a, b := range i_ldap {
+		func() {
+			var (
+				_ldap *ldap.Conn
+				err   error
+			)
+			switch _ldap, err = ldap.Dial("tcp", a.Host); {
+			case err != nil:
+				log.Errorf("LDAP '%v' connect error: '%v'; ACTION: fatal.", a.String(), err)
+				return
+			}
+			defer _ldap.Close()
+			switch err = _ldap.StartTLS(&tls.Config{InsecureSkipVerify: true}); {
+			case err != nil:
+				log.Errorf("LDAP '%v' TLS connect error: '%v'; ACTION: fatal.", a.String(), err)
+				return
+			}
+			switch err = _ldap.Bind(b.Bind_DN.String(), b.Secret.String()); {
+			case err != nil:
+				log.Errorf("LDAP '%v' bind error: '%v'; ACTION: fatal.", a.String(), err)
+				return
+			}
+			var (
+				_s_request = ldap.NewSearchRequest(a.RawPath,
+					ldap.ScopeWholeSubtree, ldap.DerefAlways, 0, 0, false,
+					"(&(objectClass=olcDatabaseConfig)(objectClass=olcMdbConfig))",
+					[]string{"olcSuffix"},
+					nil)
+				_s_result *ldap.SearchResult
+			)
+			switch _s_result, err = _ldap.Search(_s_request); {
+			case err != nil:
+				log.Errorf("LDAP '%v' search error: '%v'; ACTION: fatal.", a.String(), err)
+				return
+			}
+			for _, d := range _s_result.Entries {
+				var (
+					_dn = _DN(d.Attributes[0].Values[0])
+				)
+				switch {
+				case len(_dn) == 0:
+					continue
+				}
+				log.Infof("LDAP '%v' search result: '%v'; ACTION: fatal.", a.String(), _dn)
+				switch _, flag := i_ldap_domain[_dn]; {
+				case flag:
+					log.Warnf("LDAP Domain '%v' already defined; ACTION: skip.", a)
+					return
+				}
+				i_ldap_domain[_dn] = &i_LDAP_Domain{
+					Group: __DN_LDAP_Domain_Group{},
+					User:  __DN_LDAP_Domain_User{},
+				}
+
+				b.Domain[_dn] = i_ldap_domain[_dn]
+			}
+		}()
+	}
+
+	// // First bind with a read only user
+	// err = l.Bind(bindusername, bindpassword)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	//
+	// // Search for the given username
+	// searchRequest := ldap.NewSearchRequest(
+	// 	"dc=example,dc=com",
+	// 	ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
+	// 	fmt.Sprintf("(&(objectClass=organizationalPerson)(uid=%s))", username),
+	// 	[]string{"dn"},
+	// 	nil,
+	// )
+	//
+	// sr, err := l.Search(searchRequest)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	//
+	// if len(sr.Entries) != 1 {
+	// 	log.Fatal("User does not exist or too many entries returned")
+	// }
+
+	return !not_ok
 }

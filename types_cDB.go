@@ -55,7 +55,10 @@ type cDB struct {
 
 // LDAP
 type cDB_LDAP struct {
-	URL string `xml:"url,attr"`
+	URL     string  `xml:"url,attr"`
+	Bind_DN _DN     `xml:"binddn,attr"`
+	Secret  _Secret `xml:"bindpw,attr"`
+	_Attribute_List
 }
 
 // Vocabulary

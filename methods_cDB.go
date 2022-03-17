@@ -590,8 +590,24 @@ func (receiver cDB_LDAP_List) parse() {
 		switch _, flag := i_ldap[a]; {
 		case flag:
 			log.Warnf("LDAP '%v' already defined; ACTION: skip.", a)
+			continue
+		case b.Reserved:
+			log.Debugf("LDAP '%v' is reserved; ACTION: skip.", a)
+			continue
+		case len(a.RawQuery) == 0:
+			a.RawQuery = _S_cn_config
 		}
-		i_ldap[a] = &i_LDAP{}
+		switch value := re_slash.Split(a.Path, -1); {
+		case len(value) < 1:
+			continue
+		default:
+			a.RawPath = value[len(value)-1]
+		}
+		i_ldap[a] = &i_LDAP{
+			Bind_DN: b.Bind_DN,
+			Secret:  b.Secret,
+			Domain:  __DN_LDAP_Domain{},
+		}
 	}
 }
 
