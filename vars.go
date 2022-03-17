@@ -70,6 +70,9 @@ var (
 		_dir_list_Portal: "tmp/portal",
 		_dir_list_etc:    "etc",
 	}
+	_S_File_List = map[_ID]_Name{
+		_file_host_list: "host_list",
+	}
 	_S_Comm = map[_ID]_Communication{
 		_comm_if: _Communication_ptmp,
 		_comm_vi: _Communication_ptp,

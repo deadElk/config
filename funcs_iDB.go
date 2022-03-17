@@ -69,7 +69,7 @@ func generate_iDB_host_list() {
 			return
 		}()
 	}
-	i_write_file[_S_Dir_List[_dir_list_Config]].data["host_list"] = _Content(host_list)
+	i_write_file[_S_Dir_List[_dir_list_Config]].data[_S_File_List[_file_host_list]] = _Content(host_list)
 }
 
 func parse_iDB_Peer_Vocabulary() {
