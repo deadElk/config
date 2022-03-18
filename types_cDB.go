@@ -44,6 +44,7 @@ type cDB_VI_Peer_List []*cDB_VI_Peer
 type cDB struct {
 	XMLName     xml.Name
 	Domain_Name _FQDN         `xml:"domain_name,attr"`
+	U_IPPrefix  netip.Prefix  `xml:"user_IPprefix,attr"`
 	VI_IPPrefix netip.Prefix  `xml:"VI_IPprefix,attr"`
 	GT_List     string        `xml:"GT_list,attr"`
 	Peer        cDB_Peer_List `xml:"Peer_List>Peer"`

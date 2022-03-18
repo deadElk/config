@@ -96,7 +96,7 @@ type i_LDAP_Domain_User struct {
 	UID            _DN               // uid
 	UID_Number     _ID               // uidNumber
 	GID_Number     _ID               // gidNumber
-	IPPrefix       netip.Prefix      // ipHostNumber
+	IPPrefix       netip.Prefix      // ipHostNumber (user's subnet)
 	GID_List       map[_ID]bool      // memberOf: index = memberOf (gidNumber here), value is ignored
 	SSH_Public_Key map[string][]byte // sshPublicKey: index = Comment, value = key
 	P12            map[string][]byte // userPKCS12: index = CN, value = p12
@@ -113,8 +113,10 @@ type i_Peer_Group struct {
 	Mgmt_IF             _Name
 	Mgmt_RI             _Name
 	Mgmt_RI_Description _Description
+	VI_RI               _Name
 	PName               _PName
 	SP_Default_Policy   _W
+	U_IPPrefix          netip.Prefix
 	VI_IPPrefix         netip.Prefix
 	VI_IPShift          uint32
 	Peer_List           __A_Peer

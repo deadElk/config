@@ -59,8 +59,15 @@ func (receiver *cDB) parse() {
 	}
 
 	var (
-		v_PName                     = pad(v_PG_ASN, 10)
-		v_ASName                    = _Name(strings_join("", "AS", v_PName))
+		v_PName      = pad(v_PG_ASN, 10)
+		v_ASName     = _Name(strings_join("", "AS", v_PName))
+		v_U_IPPrefix = func() (outbound netip.Prefix) {
+			switch {
+			case receiver.U_IPPrefix.IsValid():
+				return receiver.U_IPPrefix
+			}
+			return _S_U_IPPrefix
+		}()
 		v_VI_IPPrefix, v_VI_IPShift = func() (v_VI_IPPrefix netip.Prefix, v_VI_IPShift uint32) {
 			switch {
 			case receiver.VI_IPPrefix.IsValid():
@@ -96,6 +103,7 @@ func (receiver *cDB) parse() {
 	)
 	i_peer_group[v_PG_ASN] = &i_Peer_Group{
 		// ASN:                 v_PG_ASN,
+		// VI_RI:             _S_Master_RI,
 		ASName:              v_ASName,
 		Domain_Name:         v_Domain_Name,
 		GT_List:             v_GT_List,
@@ -104,8 +112,10 @@ func (receiver *cDB) parse() {
 		Mgmt_IF:             _S_Mgmt_IF,
 		Mgmt_RI:             _S_Mgmt_RI,
 		Mgmt_RI_Description: _S_Mgmt_RI_Description,
+		VI_RI:               _S_Master_RI, // _S_VI_RI,
 		PName:               v_PName,
 		SP_Default_Policy:   _S_SP_Default_Policy,
+		U_IPPrefix:          v_U_IPPrefix,
 		VI_IPPrefix:         v_VI_IPPrefix,
 		VI_IPShift:          v_VI_IPShift,
 		Peer_List:           __A_Peer{},
@@ -279,39 +289,34 @@ func (receiver cDB_Peer_List) parse(v_PG_ASN _ASN) {
 		}
 		var (
 			v_Peer = &i_Peer{
-				Group:     i_peer_group[v_PG_ASN],
-				ASN:       b.ASN,
-				ASName:    _Name(strings_join("", _Name_AS, pad(b.ASN, 10))),
-				PName:     pad(&b.ASN, 10),
-				Router_ID: netip.Addr{},
-				IF_2_RI:   map[_Name]_Name{},
 				// VI:           __i_VI{},
 				// VI_Local:     __i_VI_Peer{},
 				// VI_Remote:    __i_VI_Peer{},
-				VI_GT:        __i_VI_GT{},
-				IFM:          __N_Peer_IFM{},
-				RI:           __N_Peer_RI{},
-				Hostname:     "",
-				Domain_Name:  "",
-				Version:      b.Version,
-				Major:        0,
-				Manufacturer: b.Manufacturer,
-				Model:        b.Model,
-				Serial:       b.Serial,
-				Root:         b.Root.validate(16, b.ASN.String()),
-				GT_List:      []_Name{},
-				SZ:           __N_Peer_SZ{},
-				NAT:          __T_Peer_NAT_Type{},
-				AB:           __N_AB{},
-				JA:           __N_JA{},
-				PL:           __N_PO_PL{},
-				PS:           __N_PO_PS{},
-				SP: &i_Peer_SP{
-					Option_List: _SP_Option_List{},
-					Exact:       nil,
-					Global:      nil,
-					GT_Action:   "",
-				},
+				Group:           i_peer_group[v_PG_ASN],
+				ASN:             b.ASN,
+				ASName:          _Name(strings_join("", _Name_AS, pad(b.ASN, 10))),
+				PName:           pad(&b.ASN, 10),
+				Router_ID:       netip.Addr{},
+				IF_2_RI:         map[_Name]_Name{},
+				VI_GT:           __i_VI_GT{},
+				IFM:             __N_Peer_IFM{},
+				RI:              __N_Peer_RI{},
+				Hostname:        "",
+				Domain_Name:     "",
+				Version:         b.Version,
+				Major:           0,
+				Manufacturer:    b.Manufacturer,
+				Model:           b.Model,
+				Serial:          b.Serial,
+				Root:            b.Root.validate(16, b.ASN.String()),
+				GT_List:         []_Name{},
+				SZ:              __N_Peer_SZ{},
+				NAT:             __T_Peer_NAT_Type{},
+				AB:              __N_AB{},
+				JA:              __N_JA{},
+				PL:              __N_PO_PL{},
+				PS:              __N_PO_PS{},
+				SP:              &i_Peer_SP{Option_List: _SP_Option_List{}},
 				FW:              nil,
 				IKE_GCM:         false,
 				GT_Action:       "",
@@ -411,7 +416,7 @@ func (receiver cDB_VI_List) parse() {
 			i_vi[b.ID].IPPrefix = get_VI_IPPrefix(i_peer[d.ASN], b.ID, 0).Masked()
 
 			var (
-				v_RI                = d.RI.validate_RI(i_peer[d.ASN], i_peer[d.ASN].Group.Mgmt_RI)
+				v_RI                = d.RI.validate_RI(i_peer[d.ASN], "", i_peer[d.ASN].Group.Mgmt_RI)
 				v_IF                = d.IF
 				v_IP                = d.IP
 				v_NAT               netip.Prefix
@@ -466,7 +471,7 @@ func (receiver cDB_VI_List) parse() {
 				IPPrefix:          v_IP,
 				NAT:               v_NAT,
 				Hub:               d.Hub,
-				Inner_RI:          d.Inner_RI.validate_RI(i_peer[d.ASN], i_peer[d.ASN].Group.Mgmt_RI),
+				Inner_RI:          d.Inner_RI.validate_RI(i_peer[d.ASN], i_peer[d.ASN].Group.VI_RI, i_peer[d.ASN].Group.Mgmt_RI),
 				Inner_IPPrefix:    get_VI_IPPrefix(i_peer[d.ASN], b.ID, d.ID+1),
 				IKE_Local_Address: v_IKE_Local_Address,
 				IKE_Dynamic:       v_IKE_Dynamic,

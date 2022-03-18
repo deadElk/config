@@ -48,13 +48,14 @@ const (
 	_S_Mgmt_RI                          = _Name_mgmt_junos
 	_S_Mgmt_RI_Description _Description = "MANAGEMENT-INSTANCE"
 	_S_SP_Default_Policy                = _W_permit__all
+	_S_VI_RI                            = _Name_VI
 	_S_cn_config                        = _DN(_W_cn____config)
-	_S_filter_db                        = _DN(_W_objectClass_olcDatabaseConfig_objectClass_olcMdbConfig)
 	_S_cn_db                            = _DN(_W_olcSuffix)
-	_S_filter_group                     = _DN(_W_objectClass_posixGroup)
 	_S_cn_group                         = _DN(_W_cn)
-	_S_filter_user                      = _DN(_W_objectClass_posixAccount)
 	_S_cn_user                          = _DN(_W_uid)
+	_S_filter_db                        = _DN(_W_objectClass_olcDatabaseConfig_objectClass_olcMdbConfig)
+	_S_filter_group                     = _DN(_W_objectClass_posixGroup)
+	_S_filter_user                      = _DN(_W_objectClass_posixAccount)
 )
 const (
 	_Communication_ptmp = _Communication(_W_ptmp)
@@ -73,6 +74,7 @@ const (
 	_Name_AS         = _Name(_W_AS)
 	_Name_ID         = _Name(_W_ID)
 	_Name_PUBLIC     = _Name(_W_PUBLIC)
+	_Name_VI         = _Name(_W_VI)
 	_Name_any        = _Name(_W_any)
 	_Name_fxp0       = _Name(_W_fxp0)
 	_Name_fxp0_0     = _Name(_W_fxp0_0)
@@ -247,6 +249,7 @@ const (
 	_W_master                                                 _W = "master"
 	_W_metric                                                 _W = "metric"
 	_W_mgmt                                                   _W = "mgmt"
+	_W_VI                                                     _W = "VI"
 	_W_mgmt_junos                                                = _W_mgmt + "_" + _W_junos
 	_W_name                                                   _W = "name"
 	_W_nat                                                    _W = "nat"

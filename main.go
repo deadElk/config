@@ -28,6 +28,7 @@ func init() {
 	})
 	log.SetReportCaller(false)
 }
+
 func main() {
 	switch {
 	case !read_file():
@@ -51,6 +52,7 @@ func main() {
 
 	parse_LDAP()
 	parse_GT()
+
 	switch {
 	case !write_file():
 		log.Fatalf("write_file() error; ACTION: fatal.")

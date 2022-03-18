@@ -30,8 +30,13 @@ func (receiver *_Secret) validate(length uint, message string) _Secret {
 	}
 	return _Secret(interim)
 }
-func (receiver *_Name) validate_RI(v_Peer *i_Peer, decline ..._Name) (outbound _Name) {
-	outbound = v_Peer.Group.Master_RI
+func (receiver *_Name) validate_RI(v_Peer *i_Peer, default_RI _Name, decline ..._Name) (outbound _Name) {
+	switch {
+	case len(default_RI) == 0:
+		outbound = v_Peer.Group.Master_RI
+	default:
+		outbound = default_RI
+	}
 	switch {
 	case len(*receiver) == 0 || *receiver == outbound:
 		return
