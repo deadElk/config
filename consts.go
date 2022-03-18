@@ -49,13 +49,13 @@ const (
 	_S_Mgmt_RI_Description _Description = "MANAGEMENT-INSTANCE"
 	_S_SP_Default_Policy                = _W_permit__all
 	_S_VI_RI                            = _Name_VI
-	_S_cn_config                        = _DN(_W_cn____config)
-	_S_cn_db                            = _DN(_W_olcSuffix)
-	_S_cn_group                         = _DN(_W_cn)
-	_S_cn_user                          = _DN(_W_uid)
-	_S_filter_db                        = _DN(_W_objectClass_olcDatabaseConfig_objectClass_olcMdbConfig)
-	_S_filter_group                     = _DN(_W_objectClass_posixGroup)
-	_S_filter_user                      = _DN(_W_objectClass_posixAccount)
+	_S_cn_config                        = string(_W_cn____config)
+	_S_cn_db                            = string(_W_olcSuffix)
+	_S_cn_group                         = string(_W_cn)
+	_S_cn_user                          = string(_W_uid)
+	_S_filter_db                        = string(_W_objectClass_olcDatabaseConfig_objectClass_olcMdbConfig)
+	_S_filter_group                     = string(_W_objectClass_posixGroup)
+	_S_filter_user                      = string(_W_objectClass_posixAccount)
 )
 const (
 	_Communication_ptmp = _Communication(_W_ptmp)

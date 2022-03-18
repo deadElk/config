@@ -57,14 +57,14 @@ type cDB struct {
 // LDAP
 type cDB_LDAP struct {
 	URL          string  `xml:"url,attr"`
-	Bind_DN      _DN     `xml:"bind_dn,attr"`
+	Bind_DN      string  `xml:"bind_dn,attr"`
 	Secret       _Secret `xml:"bind_pw,attr"`
-	DB_Filter    _DN     `xml:"db_filter,attr"`
-	DB_CN        _DN     `xml:"db_cn,attr"`
-	Group_Filter _DN     `xml:"group_filter,attr"`
-	Group_CN     _DN     `xml:"group_cn,attr"`
-	User_Filter  _DN     `xml:"user_filter,attr"`
-	User_CN      _DN     `xml:"user_cn,attr"`
+	DB_Filter    string  `xml:"db_filter,attr"`
+	DB_CN        string  `xml:"db_cn,attr"`
+	Group_Filter string  `xml:"group_filter,attr"`
+	Group_CN     string  `xml:"group_cn,attr"`
+	User_Filter  string  `xml:"user_filter,attr"`
+	User_CN      string  `xml:"user_cn,attr"`
 	_Attribute_List
 }
 

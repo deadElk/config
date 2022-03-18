@@ -453,7 +453,51 @@ func parse_GT() (not_ok bool) {
 }
 
 func parse_LDAP() (not_ok bool) {
-
+	for _, b := range i_ldap {
+		for _, d := range b.Domain {
+			for _, f := range d.Raw_User.Entries {
+				var (
+					v_IPPrefix       = parse_interface(netip.ParsePrefix(f.GetAttributeValue("ipHostNumber"))).(netip.Prefix)
+					v_GID_List       = map[_GID_Number]bool{}
+					v_SSH_Public_Key = map[string]string{}
+					v_P12            = map[string]string{}
+					n                = _UID_Number(string_uint64(f.GetAttributeValue("uidNumber")))
+					u                = &i_LDAP_Domain_User{
+						UID_Number:     n,
+						UID:            _UID(f.GetAttributeValue(b.User_CN)),
+						GID_Number:     _GID_Number(string_uint64(f.GetAttributeValue("gidNumber"))),
+						IPPrefix:       v_IPPrefix,
+						GID_List:       v_GID_List,
+						SSH_Public_Key: v_SSH_Public_Key,
+						P12:            v_P12,
+					}
+				)
+				d.User[n] = u
+				b.M_CN_U[_DN(f.GetAttributeValue("entryDN"))] = u
+			}
+		}
+	}
+	for _, b := range i_ldap {
+		for _, d := range b.Domain {
+			for _, f := range d.Raw_Group.Entries {
+				var (
+					n = _GID_Number(string_uint64(f.GetAttributeValue("gidNumber")))
+					g = &i_LDAP_Domain_Group{
+						GID_Number: n,
+						GID:        _GID(f.GetAttributeValue(b.Group_CN)),
+						UID_List: func() (outbound map[_UID_Number]bool) {
+							outbound = make(map[_UID_Number]bool)
+							for _, h := range f.GetAttributeValues("member") {
+								outbound[b.M_CN_U[_DN(h)].UID_Number] = true
+							}
+							return
+						}(),
+					}
+				)
+				d.Group[n] = g
+			}
+		}
+	}
 	return !not_ok
 }
 func read_ldap() (not_ok bool) {
@@ -476,7 +520,7 @@ func read_ldap() (not_ok bool) {
 				not_ok = true
 				return
 			}
-			switch err = _ldap.Bind(b.Bind_DN.String(), b.Secret.String()); {
+			switch err = _ldap.Bind(b.Bind_DN, b.Secret.String()); {
 			case err != nil:
 				log.Errorf("LDAP '%v' bind error: '%v'; ACTION: skip.", a.String(), err)
 				not_ok = true
@@ -491,8 +535,7 @@ func read_ldap() (not_ok bool) {
 					0,
 					0,
 					false,
-					_S_filter_db.String(),
-					// []string{"olcSuffix"},
+					_S_filter_db,
 					[]string{"*", "+"},
 					nil,
 				)
@@ -506,8 +549,7 @@ func read_ldap() (not_ok bool) {
 			}
 			for _, d := range _db_result.Entries {
 				var (
-					// _dn = _DN(d.Attributes[0].Values[0])
-					_dn = _DN(d.GetAttributeValue(b.DB_CN.String()))
+					_dn = d.GetAttributeValue(b.DB_CN)
 				)
 				switch {
 				case len(_dn) == 0:
@@ -522,13 +564,13 @@ func read_ldap() (not_ok bool) {
 
 				var (
 					_group_request = ldap.NewSearchRequest(
-						_dn.String(),
+						_dn,
 						ldap.ScopeWholeSubtree,
 						ldap.DerefAlways,
 						0,
 						0,
 						false,
-						b.Group_Filter.String(),
+						b.Group_Filter,
 						[]string{"*", "+"},
 						nil,
 					)
@@ -542,13 +584,13 @@ func read_ldap() (not_ok bool) {
 				}
 				var (
 					_user_request = ldap.NewSearchRequest(
-						_dn.String(),
+						_dn,
 						ldap.ScopeWholeSubtree,
 						ldap.DerefAlways,
 						0,
 						0,
 						false,
-						b.User_Filter.String(),
+						b.User_Filter,
 						[]string{"*", "+"},
 						nil,
 					)
@@ -564,8 +606,8 @@ func read_ldap() (not_ok bool) {
 					OLC: i_LDAP_Domain_OLC{
 						DN: _DN(d.DN),
 					},
-					Group:     __DN_LDAP_Domain_Group{},
-					User:      __DN_LDAP_Domain_User{},
+					Group:     __GN_LDAP_Domain_Group{},
+					User:      __UN_LDAP_Domain_User{},
 					Raw_Group: _group_result,
 					Raw_User:  _user_result,
 				}

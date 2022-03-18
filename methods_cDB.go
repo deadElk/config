@@ -600,7 +600,7 @@ func (receiver cDB_LDAP_List) parse() {
 			log.Debugf("LDAP '%v' is reserved; ACTION: skip.", a)
 			continue
 		case len(a.RawQuery) == 0:
-			a.RawQuery = _S_cn_config.String()
+			a.RawQuery = _S_cn_config
 			fallthrough
 		case len(b.DB_Filter) == 0:
 			b.DB_Filter = _S_filter_db
@@ -631,6 +631,8 @@ func (receiver cDB_LDAP_List) parse() {
 			User_CN:      b.User_CN,
 			OLC:          i_LDAP_OLC{},
 			Domain:       __DN_LDAP_Domain{},
+			M_CN_G:       __DN_LDAP_Domain_Group{},
+			M_CN_U:       __DN_LDAP_Domain_User{},
 		}
 	}
 }
