@@ -462,8 +462,20 @@ func parse_LDAP() (not_ok bool) {
 					v_IPPrefix = func() (outbound netip.Prefix) {
 						outbound = parse_interface(netip.ParsePrefix(f.GetAttributeValue("ipHostNumber"))).(netip.Prefix)
 						switch value, flag := b.M_IP_U[outbound]; {
-						case !outbound.IsValid() || outbound.Bits() != _U_mask_per_user || !flag: // need ip assigment
-							log.Warnf("LDAP DB inconsistent! UID '%v', incorrect ipHostNumber '%v' declared (must be IPPrefix/%v); ACTION: correct.", v_DN, outbound, _U_mask_per_user)
+						case !outbound.IsValid() || outbound.Bits() != _U_mask_per_user || (value == nil && !flag): // need ip assigment
+							log.Warnf("LDAP DB inconsistent! UID '%v', incorrect ipHostNumber '%v' declared (must be IPPrefix/%v); ACTION: use ipHostNumber '%v'.", v_DN, outbound, _U_mask_per_user, func() (interim netip.Prefix) {
+								for y, z := range b.M_IP_U {
+									switch {
+									case z == nil:
+										outbound = y
+										break
+									}
+								}
+								return outbound
+							}())
+						case value != nil && flag: // duplicate ipHostNumber
+							log.Warnf("LDAP DB inconsistent! UID '%v', ipHostNumber '%v' already occupied by '%v'; ACTION: report.", v_DN, outbound, value.UID)
+							not_ok = true
 						case value == nil && flag:
 							log.Warnf("UID '%v', ipHostNumber '%v'.", v_DN, outbound)
 						}
