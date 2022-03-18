@@ -78,3 +78,6 @@ func (receiver _netip_Prefix) String() string {
 func (receiver _netip_Addr) String() string {
 	return string(parse_interface(receiver.MarshalText()).([]byte))
 }
+func (receiver _url_URL) String() string {
+	return receiver.String()
+}

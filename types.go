@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/netip"
+	"net/url"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -34,9 +35,10 @@ type _VI_Peer_ID uint16
 type _W string
 type __A_BGP_Group_Neighbor map[netip.Addr]*_BGP_Group_Neighbor
 type __N_BGP_Group map[_Name]*_BGP_Group
-type _hash_ID [_hash_Size]uint8           // _hash_ID here is a result of sha3.Sum512.
-type _netip_Addr struct{ netip.Addr }     // Why returning String() "invalid IP" ???? What for???? Why not just return an empty String() "" ????
-type _netip_Prefix struct{ netip.Prefix } // Why returning String() "invalid IP" ???? What for???? Why not just return an empty String() "" ????
+type _hash_ID [_hash_Size]uint8 // _hash_ID here is a result of sha3.Sum512.
+type _url_URL struct{ *url.URL }
+type _netip_Addr struct{ *netip.Addr }     // Why returning String() "invalid IP" ???? What for???? Why not just return an empty String() "" ????
+type _netip_Prefix struct{ *netip.Prefix } // Why returning String() "invalid IP" ???? What for???? Why not just return an empty String() "" ????
 
 type _Attribute_List struct {
 	Description _Description `xml:"description,attr"`

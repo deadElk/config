@@ -9,7 +9,7 @@ import (
 
 type __A_Peer map[_ASN]*i_Peer
 type __A_Peer_Group map[_ASN]*i_Peer_Group
-type __DN_LDAP_Domain map[string]*i_LDAP_Domain
+type __DN_LDAP_Domain map[_DN]*i_LDAP_Domain
 type __DN_LDAP_Domain_Group map[_DN]*i_LDAP_Domain_Group
 type __DN_LDAP_Domain_User map[_DN]*i_LDAP_Domain_User
 type __GN_LDAP_Domain_Group map[_GID_Number]*i_LDAP_Domain_Group
@@ -66,7 +66,7 @@ type i_File_Data struct {
 
 // LDAP
 type i_LDAP struct {
-	Bind_DN      string
+	Bind_DN      _DN
 	Secret       _Secret
 	DB_Filter    string
 	DB_CN        string
@@ -113,10 +113,14 @@ type i_LDAP_Domain_User struct { // uidNumber: index
 	P12            map[string]string      // userPKCS12: index = CN, value = p12
 	Modify         *ldap.ModifyRequest
 }
-type i_LDAP_Domain_User_Modify struct { // uidNumber: index
-	IPPrefix       bool
-	SSH_Public_Key bool
-	P12            bool
+
+// ShadowSocks
+type i_SS struct {
+	Proto  string
+	IP     string
+	Port   uint16
+	Cipher string
+	Secret _Secret
 }
 
 // Peer Group

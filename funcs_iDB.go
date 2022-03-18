@@ -525,7 +525,7 @@ func parse_LDAP() (not_ok bool) {
 								)
 								switch {
 								case u == nil:
-									log.Errorf("LDAP DB inconsistent! can't find member UID '%v' of GID '%v', search '%v'; ACTION: report.", h, v_DN)
+									log.Errorf("LDAP DB inconsistent! can't find member UID '%v' of GID '%v'; ACTION: report.", h, v_DN)
 									not_ok = true
 									continue
 								}
@@ -542,8 +542,8 @@ func parse_LDAP() (not_ok bool) {
 								)
 								switch {
 								case u == nil:
-									log.Errorf("LDAP DB inconsistent! can't find owner UID '%v' of GID '%v', search '%v'; ACTION: ignore.", h, v_DN)
-									// not_ok = true
+									log.Errorf("LDAP DB inconsistent! can't find owner UID '%v' of GID '%v'; ACTION: report.", h, v_DN)
+									not_ok = true
 									continue
 								}
 								outbound[u.UID_Number] = u
@@ -584,7 +584,7 @@ func read_ldap() (not_ok bool) {
 				not_ok = true
 				return
 			}
-			switch err = _ldap.Bind(b.Bind_DN, b.Secret.String()); {
+			switch err = _ldap.Bind(b.Bind_DN.String(), b.Secret.String()); {
 			case err != nil:
 				log.Errorf("LDAP '%v' bind error: '%v'; ACTION: skip.", a.String(), err)
 				not_ok = true
@@ -613,7 +613,7 @@ func read_ldap() (not_ok bool) {
 			}
 			for _, d := range _db_result.Entries {
 				var (
-					_dn = d.GetAttributeValue(b.DB_CN)
+					_dn = _DN(d.GetAttributeValue(b.DB_CN))
 				)
 				switch {
 				case len(_dn) == 0:
@@ -628,7 +628,7 @@ func read_ldap() (not_ok bool) {
 
 				var (
 					_group_request = ldap.NewSearchRequest(
-						_dn,
+						_dn.String(),
 						ldap.ScopeWholeSubtree,
 						ldap.DerefAlways,
 						0,
@@ -648,7 +648,7 @@ func read_ldap() (not_ok bool) {
 				}
 				var (
 					_user_request = ldap.NewSearchRequest(
-						_dn,
+						_dn.String(),
 						ldap.ScopeWholeSubtree,
 						ldap.DerefAlways,
 						0,
