@@ -316,7 +316,7 @@ func (receiver cDB_Peer_List) parse(v_PG_ASN _ASN) {
 				JA:              __N_JA{},
 				PL:              __N_PO_PL{},
 				PS:              __N_PO_PS{},
-				SP:              &i_Peer_SP{Option_List: _SP_Option_List{}},
+				SP:              &i_Peer_SP{Option_List: &_SP_Option_List{}},
 				FW:              nil,
 				IKE_GCM:         false,
 				GT_Action:       "",
@@ -629,7 +629,7 @@ func (receiver cDB_LDAP_List) parse() {
 			Group_CN:     b.Group_CN,
 			User_Filter:  b.User_Filter,
 			User_CN:      b.User_CN,
-			OLC:          i_LDAP_OLC{},
+			OLC:          &i_LDAP_OLC{},
 			Domain:       __DN_LDAP_Domain{},
 			M_CN_G:       __DN_LDAP_Domain_Group{},
 			M_CN_U:       __DN_LDAP_Domain_User{},
@@ -1012,7 +1012,7 @@ func (receiver *cDB_Peer) parse_NAT(v_Peer *i_Peer) {
 	}
 }
 func (receiver *cDB_Peer) parse_SP(v_Peer *i_Peer) {
-	v_Peer.SP.Option_List = _SP_Option_List{
+	v_Peer.SP.Option_List = &_SP_Option_List{
 		Default_Policy: func() _W {
 			switch value := receiver.SP_Option_List.Default_Policy; value {
 			case _W_permit__all, _W_deny__all:

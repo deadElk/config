@@ -74,7 +74,7 @@ type i_LDAP struct {
 	Group_CN     string
 	User_Filter  string
 	User_CN      string
-	OLC          i_LDAP_OLC
+	OLC          *i_LDAP_OLC
 	Domain       __DN_LDAP_Domain
 	M_CN_G       __DN_LDAP_Domain_Group
 	M_CN_U       __DN_LDAP_Domain_User
@@ -83,11 +83,14 @@ type i_LDAP struct {
 type i_LDAP_OLC struct {
 }
 type i_LDAP_Domain struct {
-	OLC       i_LDAP_Domain_OLC
-	Group     __GN_LDAP_Domain_Group
-	User      __UN_LDAP_Domain_User
-	Raw_Group *ldap.SearchResult
-	Raw_User  *ldap.SearchResult
+	OLC         *i_LDAP_Domain_OLC
+	Group       __GN_LDAP_Domain_Group
+	User        __UN_LDAP_Domain_User
+	Raw_Group   *ldap.SearchResult
+	Raw_User    *ldap.SearchResult
+	Modify_User *i_LDAP_Domain_Modify
+}
+type i_LDAP_Domain_Modify struct {
 }
 type i_LDAP_Domain_OLC struct {
 	DN _DN
@@ -209,7 +212,7 @@ type i_FW_Then struct {
 }
 
 type i_Peer_SP struct {
-	Option_List _SP_Option_List
+	Option_List *_SP_Option_List
 	Exact       __i_Rule_Set
 	Global      __i_Rule
 	GT_Action   string

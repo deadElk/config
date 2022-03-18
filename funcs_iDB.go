@@ -472,6 +472,7 @@ func parse_LDAP() (not_ok bool) {
 									}
 								}
 								return outbound
+
 							}())
 						case value != nil && flag: // duplicate ipHostNumber
 							log.Warnf("LDAP DB inconsistent! UID '%v', ipHostNumber '%v' already occupied by '%v'; ACTION: report.", v_DN, outbound, value.UID)
@@ -650,7 +651,7 @@ func read_ldap() (not_ok bool) {
 					continue
 				}
 				i_ldap_domain[_dn] = &i_LDAP_Domain{
-					OLC: i_LDAP_Domain_OLC{
+					OLC: &i_LDAP_Domain_OLC{
 						DN: _DN(d.DN),
 					},
 					Group:     __GN_LDAP_Domain_Group{},
