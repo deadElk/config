@@ -73,7 +73,7 @@ func parse_interface_error(inbound interface{}, skip interface{}) interface{} {
 }
 
 func string_uint64(inbound string) uint64 {
-	return parse_interface(strconv.ParseUint(re_digit.FindString(inbound), 10, 32)).(uint64)
+	return parse_interface(strconv.ParseUint(inbound, 10, 64)).(uint64)
 }
 
 func tabber(inbound string, tabs int) string {

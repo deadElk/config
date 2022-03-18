@@ -633,6 +633,17 @@ func (receiver cDB_LDAP_List) parse() {
 			Domain:       __DN_LDAP_Domain{},
 			M_CN_G:       __DN_LDAP_Domain_Group{},
 			M_CN_U:       __DN_LDAP_Domain_User{},
+			M_IP_U: func() (outbound __P_LDAP_Domain_User) {
+				outbound = make(__P_LDAP_Domain_User, _U_max_uX)
+				for c, d := 0, binary.BigEndian.Uint32(_S_U_IPPrefix.Addr().AsSlice()); c <= _U_max_uX; c, d = c+1, d+_U_ips_per_user {
+					var (
+						e = make([]byte, 4)
+					)
+					binary.BigEndian.PutUint32(e, d)
+					outbound[netip.PrefixFrom(parse_interface(netip.AddrFromSlice(e)).(netip.Addr), _U_mask_per_user)] = nil
+				}
+				return
+			}(),
 		}
 	}
 }

@@ -64,6 +64,7 @@ type __GN_LDAP_Domain_Group map[_GID_Number]*i_LDAP_Domain_Group
 type __UN_LDAP_Domain_User map[_UID_Number]*i_LDAP_Domain_User
 type __DN_LDAP_Domain_Group map[_DN]*i_LDAP_Domain_Group
 type __DN_LDAP_Domain_User map[_DN]*i_LDAP_Domain_User
+type __P_LDAP_Domain_User map[netip.Prefix]*i_LDAP_Domain_User
 type i_LDAP struct {
 	Bind_DN      string
 	Secret       _Secret
@@ -77,6 +78,7 @@ type i_LDAP struct {
 	Domain       __DN_LDAP_Domain
 	M_CN_G       __DN_LDAP_Domain_Group
 	M_CN_U       __DN_LDAP_Domain_User
+	M_IP_U       __P_LDAP_Domain_User
 }
 type i_LDAP_OLC struct {
 }
@@ -92,17 +94,18 @@ type i_LDAP_Domain_OLC struct {
 }
 type i_LDAP_Domain_Group struct { // gidNumber: index
 	GID_Number _GID_Number
-	GID        _GID                 // cn
-	UID_List   map[_UID_Number]bool // member: index = member (uidNumber here), value is ignored
+	GID        _GID                  // cn
+	UID_List   __UN_LDAP_Domain_User // member: index = member (uidNumber here), value is ignored
+	Owner      __UN_LDAP_Domain_User
 }
 type i_LDAP_Domain_User struct { // uidNumber: index
 	UID_Number     _UID_Number
-	UID            _UID                 // uid
-	GID_Number     _GID_Number          // gidNumber
-	IPPrefix       netip.Prefix         // ipHostNumber (user's subnet)
-	GID_List       map[_GID_Number]bool // memberOf: index = memberOf (gidNumber here), value is ignored
-	SSH_Public_Key map[string]string    // sshPublicKey: index = Comment, value = key
-	P12            map[string]string    // userPKCS12: index = CN, value = p12
+	UID            _UID                   // uid
+	GID_Number     _GID_Number            // gidNumber
+	IPPrefix       netip.Prefix           // ipHostNumber (user's subnet)
+	GID_List       __GN_LDAP_Domain_Group // memberOf: index = memberOf (gidNumber here), value is ignored
+	SSH_Public_Key map[string]string      // sshPublicKey: index = Comment, value = key
+	P12            map[string]string      // userPKCS12: index = CN, value = p12
 }
 
 // type i_LDAP_Domain_Group struct {

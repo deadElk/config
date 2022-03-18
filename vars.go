@@ -82,7 +82,7 @@ var (
 	_S_GT_List    []_Name
 	_S_U_IPPrefix = parse_interface(
 		parse_interface(
-			netip.ParseAddr("172.16.0.0")).(netip.Addr).Prefix(int(_U_subnet_bits))).(netip.Prefix)
+			netip.ParseAddr("172.16.0.0")).(netip.Addr).Prefix(int(_U_mask_bits))).(netip.Prefix)
 	_S_VI_IPPrefix = parse_interface(
 		parse_interface(
 			netip.ParseAddr("192.168.0.0")).(netip.Addr).Prefix(int(_VI_subnet_bits))).(netip.Prefix)

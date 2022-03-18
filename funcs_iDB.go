@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/netip"
 	"sort"
+	"strings"
 	"text/template"
 
 	"github.com/go-ldap/ldap/v3"
@@ -457,14 +458,24 @@ func parse_LDAP() (not_ok bool) {
 		for _, d := range b.Domain {
 			for _, f := range d.Raw_User.Entries {
 				var (
-					v_IPPrefix       = parse_interface(netip.ParsePrefix(f.GetAttributeValue("ipHostNumber"))).(netip.Prefix)
-					v_GID_List       = map[_GID_Number]bool{}
+					v_DN       = _DN(strings.ToLower(f.GetAttributeValue("entryDN")))
+					v_IPPrefix = func() (outbound netip.Prefix) {
+						outbound = parse_interface(netip.ParsePrefix(f.GetAttributeValue("ipHostNumber"))).(netip.Prefix)
+						switch value, flag := b.M_IP_U[outbound]; {
+						case !outbound.IsValid() || outbound.Bits() != _U_mask_per_user || !flag: // need ip assigment
+							log.Warnf("LDAP DB inconsistent! UID '%v', incorrect ipHostNumber '%v' declared (must be IPPrefix/%v); ACTION: correct.", v_DN, outbound, _U_mask_per_user)
+						case value == nil && flag:
+							log.Warnf("UID '%v', ipHostNumber '%v'.", v_DN, outbound)
+						}
+						return
+					}()
+					v_GID_List       = __GN_LDAP_Domain_Group{}
 					v_SSH_Public_Key = map[string]string{}
 					v_P12            = map[string]string{}
-					n                = _UID_Number(string_uint64(f.GetAttributeValue("uidNumber")))
-					u                = &i_LDAP_Domain_User{
-						UID_Number:     n,
-						UID:            _UID(f.GetAttributeValue(b.User_CN)),
+					v_UID_Number     = _UID_Number(string_uint64(f.GetAttributeValue("uidNumber")))
+					v_U              = &i_LDAP_Domain_User{
+						UID_Number:     v_UID_Number,
+						UID:            _UID(strings.ToLower(f.GetAttributeValue(b.User_CN))),
 						GID_Number:     _GID_Number(string_uint64(f.GetAttributeValue("gidNumber"))),
 						IPPrefix:       v_IPPrefix,
 						GID_List:       v_GID_List,
@@ -472,8 +483,9 @@ func parse_LDAP() (not_ok bool) {
 						P12:            v_P12,
 					}
 				)
-				d.User[n] = u
-				b.M_CN_U[_DN(f.GetAttributeValue("entryDN"))] = u
+				d.User[v_UID_Number] = v_U
+				b.M_CN_U[v_DN] = v_U
+				b.M_IP_U[v_IPPrefix] = v_U
 			}
 		}
 	}
@@ -481,20 +493,43 @@ func parse_LDAP() (not_ok bool) {
 		for _, d := range b.Domain {
 			for _, f := range d.Raw_Group.Entries {
 				var (
-					n = _GID_Number(string_uint64(f.GetAttributeValue("gidNumber")))
-					g = &i_LDAP_Domain_Group{
-						GID_Number: n,
-						GID:        _GID(f.GetAttributeValue(b.Group_CN)),
-						UID_List: func() (outbound map[_UID_Number]bool) {
-							outbound = make(map[_UID_Number]bool)
+					v_GID_Number = _GID_Number(string_uint64(f.GetAttributeValue("gidNumber")))
+					v_DN         = _DN(strings.ToLower(f.GetAttributeValue("entryDN")))
+					v_G          = &i_LDAP_Domain_Group{
+						GID_Number: v_GID_Number,
+						GID:        _GID(strings.ToLower(f.GetAttributeValue(b.Group_CN))),
+						UID_List: func() (outbound __UN_LDAP_Domain_User) {
+							outbound = make(__UN_LDAP_Domain_User)
 							for _, h := range f.GetAttributeValues("member") {
-								outbound[b.M_CN_U[_DN(h)].UID_Number] = true
+								var (
+									u = b.M_CN_U[_DN(strings.ToLower(h))]
+								)
+								outbound[u.UID_Number] = u
+							}
+							return
+						}(),
+						Owner: func() (outbound __UN_LDAP_Domain_User) {
+							outbound = make(__UN_LDAP_Domain_User)
+							for _, h := range f.GetAttributeValues("owner") {
+								var (
+									u = b.M_CN_U[_DN(strings.ToLower(h))]
+								)
+								switch {
+								case u == nil:
+									log.Warnf("LDAP DB inconsistent! can't find owner UID '%v' of GID '%v'; ACTION: ignore.", h, v_DN)
+									continue
+								}
+								outbound[u.UID_Number] = u
 							}
 							return
 						}(),
 					}
 				)
-				d.Group[n] = g
+				d.Group[v_GID_Number] = v_G
+				b.M_CN_G[v_DN] = v_G
+				for _, j := range d.Group[v_GID_Number].UID_List {
+					j.GID_List[v_GID_Number] = v_G
+				}
 			}
 		}
 	}

@@ -64,12 +64,16 @@ const (
 const (
 	_Route_Weight_bits_per_rm _Route_Weight = 2
 	_Route_Weight_max_rm                    = 32/_Route_Weight_bits_per_rm - 1
-	_VI_subnet_bits           _Route_Weight = 16 // mask /16
-	_VI_bit_per_if            _Route_Weight = 2
-	_VI_max_ifX                             = 1 << (_VI_subnet_bits - _VI_bit_per_if)
-	_U_subnet_bits            _Route_Weight = 20 // mask /12
-	_U_bit_per_user                         = 5
-	_U_max_uX                               = 1 << (_U_subnet_bits - _U_bit_per_user)
+	_VI_mask_bits                           = 16
+	_VI_subnet_bits                         = 32 - _VI_mask_bits
+	_VI_bits_per_if                         = 2
+	_VI_max_ifX                             = 1 << (_VI_subnet_bits - _VI_bits_per_if)
+	_U_mask_bits                            = 12
+	_U_subnet_bits                          = 32 - _U_mask_bits
+	_U_bits_per_user                        = 5
+	_U_mask_per_user                        = 32 - _U_bits_per_user
+	_U_ips_per_user                         = 1 << _U_bits_per_user
+	_U_max_uX                               = 1 << (_U_subnet_bits - _U_bits_per_user)
 )
 const (
 	_Mask_exact    = _Mask(_W_exact)
