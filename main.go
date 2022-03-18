@@ -58,7 +58,7 @@ func main() {
 		log.Fatalf("write_file() error; ACTION: fatal.")
 	}
 	switch {
-	case write_ldap():
+	case !write_ldap():
 		log.Fatalf("write_file() error; ACTION: fatal.")
 	}
 }

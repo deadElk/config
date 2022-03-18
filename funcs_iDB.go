@@ -458,118 +458,133 @@ func parse_LDAP() (not_ok bool) {
 }
 func read_ldap() (not_ok bool) {
 	for a, b := range i_ldap {
-		var (
-			_ldap *ldap.Conn
-			err   error
-		)
-		switch _ldap, err = ldap.Dial("tcp", a.Host); {
-		case err != nil:
-			log.Errorf("LDAP '%v' connect error: '%v'; ACTION: skip.", a.String(), err)
-			not_ok = true
-			continue
-		}
-		defer _ldap.Close()
-		switch err = _ldap.StartTLS(&tls.Config{InsecureSkipVerify: true}); {
-		case err != nil:
-			log.Errorf("LDAP '%v' TLS connect error: '%v'; ACTION: skip.", a.String(), err)
-			not_ok = true
-			continue
-		}
-		switch err = _ldap.Bind(b.Bind_DN.String(), b.Secret.String()); {
-		case err != nil:
-			log.Errorf("LDAP '%v' bind error: '%v'; ACTION: skip.", a.String(), err)
-			not_ok = true
-			continue
-		}
-
-		var (
-			_db_request = ldap.NewSearchRequest(
-				a.RawQuery,
-				ldap.ScopeWholeSubtree,
-				ldap.DerefAlways,
-				0,
-				0,
-				false,
-				_S_filter_db.String(),
-				[]string{"olcSuffix"},
-				nil,
-			)
-			_db_result *ldap.SearchResult
-		)
-		switch _db_result, err = _ldap.Search(_db_request); {
-		case err != nil:
-			log.Errorf("LDAP '%v' search error: '%v'; ACTION: skip.", a.String(), err)
-			return
-		}
-		for _, d := range _db_result.Entries {
+		func() {
 			var (
-				_dn = _DN(d.Attributes[0].Values[0])
+				_ldap *ldap.Conn
+				err   error
 			)
-			switch {
-			case len(_dn) == 0:
-				continue
+			switch _ldap, err = ldap.Dial("tcp", a.Host); {
+			case err != nil:
+				log.Errorf("LDAP '%v' connect error: '%v'; ACTION: skip.", a.String(), err)
+				not_ok = true
+				return
 			}
-			log.Infof("LDAP '%v' search result: '%v'.", a.String(), _dn)
-			switch _, flag := i_ldap_domain[_dn]; {
-			case flag:
-				log.Warnf("LDAP Domain '%v' already defined; ACTION: skip.", a)
-				continue
+			defer _ldap.Close()
+			switch err = _ldap.StartTLS(&tls.Config{InsecureSkipVerify: true}); {
+			case err != nil:
+				log.Errorf("LDAP '%v' TLS connect error: '%v'; ACTION: skip.", a.String(), err)
+				not_ok = true
+				return
+			}
+			switch err = _ldap.Bind(b.Bind_DN.String(), b.Secret.String()); {
+			case err != nil:
+				log.Errorf("LDAP '%v' bind error: '%v'; ACTION: skip.", a.String(), err)
+				not_ok = true
+				return
 			}
 
 			var (
-				_group_request = ldap.NewSearchRequest(
-					_dn.String(),
+				_db_request = ldap.NewSearchRequest(
+					a.RawQuery,
 					ldap.ScopeWholeSubtree,
 					ldap.DerefAlways,
 					0,
 					0,
 					false,
-					b.Group_Filter.String(),
-					[]string{b.Group_CN.String()},
+					_S_filter_db.String(),
+					[]string{"olcSuffix"},
 					nil,
 				)
-				_group_result *ldap.SearchResult
+				_db_result *ldap.SearchResult
 			)
-			switch _group_result, err = _ldap.Search(_group_request); {
+			switch _db_result, err = _ldap.Search(_db_request); {
 			case err != nil:
-				log.Fatalf("LDAP '%v' search error: '%v'; ACTION: fatal.", a.String(), err)
+				log.Errorf("LDAP '%v' search error: '%v'; ACTION: skip.", a.String(), err)
 				not_ok = true
-				continue
+				return
 			}
-			var (
-				_user_request = ldap.NewSearchRequest(
-					_dn.String(),
-					ldap.ScopeWholeSubtree,
-					ldap.DerefAlways,
-					0,
-					0,
-					false,
-					b.User_Filter.String(),
-					[]string{b.User_CN.String()},
-					nil,
+			for _, d := range _db_result.Entries {
+				var (
+					_dn = _DN(d.Attributes[0].Values[0])
 				)
-				_user_result *ldap.SearchResult
-			)
-			switch _user_result, err = _ldap.Search(_user_request); {
-			case err != nil:
-				log.Fatalf("LDAP '%v' search error: '%v'; ACTION: fatal.", a.String(), err)
-				not_ok = true
-				continue
+				switch {
+				case len(_dn) == 0:
+					continue
+				}
+				log.Infof("LDAP '%v' search result: '%v'.", a.String(), _dn)
+				switch _, flag := i_ldap_domain[_dn]; {
+				case flag:
+					log.Warnf("LDAP Domain '%v' already defined; ACTION: skip.", a)
+					continue
+				}
+
+				var (
+					_group_request = ldap.NewSearchRequest(
+						_dn.String(),
+						ldap.ScopeWholeSubtree,
+						ldap.DerefAlways,
+						0,
+						0,
+						false,
+						b.Group_Filter.String(),
+						[]string{
+							b.Group_CN.String(),
+							"member",
+						},
+						nil,
+					)
+					_group_result *ldap.SearchResult
+				)
+				switch _group_result, err = _ldap.Search(_group_request); {
+				case err != nil:
+					log.Fatalf("LDAP '%v' search error: '%v'; ACTION: fatal.", a.String(), err)
+					not_ok = true
+					continue
+				}
+				var (
+					_user_request = ldap.NewSearchRequest(
+						_dn.String(),
+						ldap.ScopeWholeSubtree,
+						ldap.DerefAlways,
+						0,
+						0,
+						false,
+						b.User_Filter.String(),
+						[]string{
+							b.User_CN.String(),
+							"uid",
+							"uidNumber",
+							"gidNumber",
+							"ipHostNumber",
+							"memberOf",
+							"sshPublicKey",
+							"userPKCS12",
+						},
+						nil,
+					)
+					_user_result *ldap.SearchResult
+				)
+				switch _user_result, err = _ldap.Search(_user_request); {
+				case err != nil:
+					log.Fatalf("LDAP '%v' search error: '%v'; ACTION: fatal.", a.String(), err)
+					not_ok = true
+					continue
+				}
+				i_ldap_domain[_dn] = &i_LDAP_Domain{
+					OLC: i_LDAP_Domain_OLC{
+						DN: _DN(d.DN),
+					},
+					Group:     __DN_LDAP_Domain_Group{},
+					User:      __DN_LDAP_Domain_User{},
+					Raw_Group: _group_result,
+					Raw_User:  _user_result,
+				}
+				i_ldap[a].Domain[_dn] = i_ldap_domain[_dn]
 			}
-			i_ldap_domain[_dn] = &i_LDAP_Domain{
-				OLC: i_LDAP_Domain_OLC{
-					DN: _DN(d.DN),
-				},
-				Group:     __DN_LDAP_Domain_Group{},
-				User:      __DN_LDAP_Domain_User{},
-				Raw_Group: _group_result,
-				Raw_User:  _user_result,
-			}
-			i_ldap[a].Domain[_dn] = i_ldap_domain[_dn]
-		}
+		}()
 	}
 	return !not_ok
 }
-func write_ldap() (ok bool) {
-	return
+func write_ldap() (not_ok bool) {
+	return !not_ok
 }

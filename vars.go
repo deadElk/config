@@ -79,8 +79,12 @@ var (
 		_comm_if: _Communication_ptmp,
 		_comm_vi: _Communication_ptp,
 	}
-	_S_GT_List     []_Name
-	_S_U_IPPrefix  = parse_interface(netip.ParsePrefix("172.16.0.0/12")).(netip.Prefix)
-	_S_VI_IPPrefix = parse_interface(netip.ParsePrefix("192.168.0.0/16")).(netip.Prefix)
-	_S_VI_IPShift  = binary.BigEndian.Uint32(_S_VI_IPPrefix.Addr().AsSlice())
+	_S_GT_List    []_Name
+	_S_U_IPPrefix = parse_interface(
+		parse_interface(
+			netip.ParseAddr("172.16.0.0")).(netip.Addr).Prefix(int(_U_subnet_bits))).(netip.Prefix)
+	_S_VI_IPPrefix = parse_interface(
+		parse_interface(
+			netip.ParseAddr("192.168.0.0")).(netip.Addr).Prefix(int(_VI_subnet_bits))).(netip.Prefix)
+	_S_VI_IPShift = binary.BigEndian.Uint32(_S_VI_IPPrefix.Addr().AsSlice())
 )
