@@ -492,7 +492,8 @@ func read_ldap() (not_ok bool) {
 					0,
 					false,
 					_S_filter_db.String(),
-					[]string{"olcSuffix"},
+					// []string{"olcSuffix"},
+					[]string{"*", "+"},
 					nil,
 				)
 				_db_result *ldap.SearchResult
@@ -505,7 +506,8 @@ func read_ldap() (not_ok bool) {
 			}
 			for _, d := range _db_result.Entries {
 				var (
-					_dn = _DN(d.Attributes[0].Values[0])
+					// _dn = _DN(d.Attributes[0].Values[0])
+					_dn = _DN(d.GetAttributeValue(b.DB_CN.String()))
 				)
 				switch {
 				case len(_dn) == 0:
@@ -527,10 +529,7 @@ func read_ldap() (not_ok bool) {
 						0,
 						false,
 						b.Group_Filter.String(),
-						[]string{
-							b.Group_CN.String(),
-							"member",
-						},
+						[]string{"*", "+"},
 						nil,
 					)
 					_group_result *ldap.SearchResult
@@ -550,16 +549,7 @@ func read_ldap() (not_ok bool) {
 						0,
 						false,
 						b.User_Filter.String(),
-						[]string{
-							b.User_CN.String(),
-							"uid",
-							"uidNumber",
-							"gidNumber",
-							"ipHostNumber",
-							"memberOf",
-							"sshPublicKey",
-							"userPKCS12",
-						},
+						[]string{"*", "+"},
 						nil,
 					)
 					_user_result *ldap.SearchResult
