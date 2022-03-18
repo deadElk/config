@@ -458,6 +458,11 @@ func parse_LDAP() (not_ok bool) {
 		for _, d := range b.Domain {
 			for _, f := range d.Raw_User.Entries {
 				var (
+					v_i_LDAP_Domain_Modify_User = &i_LDAP_Domain_Modify_User{
+						IPPrefix:       netip.Prefix{},
+						SSH_Public_Key: map[string]string{},
+						P12:            map[string]string{},
+					}
 					v_DN       = _DN(strings.ToLower(f.GetAttributeValue("entryDN")))
 					v_IPPrefix = func() (outbound netip.Prefix) {
 						outbound = parse_interface(netip.ParsePrefix(f.GetAttributeValue("ipHostNumber"))).(netip.Prefix)
@@ -472,8 +477,8 @@ func parse_LDAP() (not_ok bool) {
 									}
 								}
 								return outbound
-
 							}())
+							v_i_LDAP_Domain_Modify_User.IPPrefix = outbound
 						case value != nil && flag: // duplicate ipHostNumber
 							log.Warnf("LDAP DB inconsistent! UID '%v', ipHostNumber '%v' already occupied by '%v'; ACTION: report.", v_DN, outbound, value.UID)
 							not_ok = true
@@ -494,11 +499,13 @@ func parse_LDAP() (not_ok bool) {
 						GID_List:       v_GID_List,
 						SSH_Public_Key: v_SSH_Public_Key,
 						P12:            v_P12,
+						Modify:         v_i_LDAP_Domain_Modify_User,
 					}
 				)
 				d.User[v_UID_Number] = v_U
 				b.M_CN_U[v_DN] = v_U
 				b.M_IP_U[v_IPPrefix] = v_U
+				d.Modify_User[v_UID_Number] = v_U
 			}
 		}
 	}
@@ -654,10 +661,11 @@ func read_ldap() (not_ok bool) {
 					OLC: &i_LDAP_Domain_OLC{
 						DN: _DN(d.DN),
 					},
-					Group:     __GN_LDAP_Domain_Group{},
-					User:      __UN_LDAP_Domain_User{},
-					Raw_Group: _group_result,
-					Raw_User:  _user_result,
+					Group:       __GN_LDAP_Domain_Group{},
+					User:        __UN_LDAP_Domain_User{},
+					Raw_Group:   _group_result,
+					Raw_User:    _user_result,
+					Modify_User: __UN_LDAP_Domain_User{},
 				}
 				i_ldap[a].Domain[_dn] = i_ldap_domain[_dn]
 			}

@@ -1,1 +1,1 @@
-/Users/deadelk/go/go1.18rc1/bin/go
+/Users/deadelk/go/go1.18/bin/go

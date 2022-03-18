@@ -88,9 +88,12 @@ type i_LDAP_Domain struct {
 	User        __UN_LDAP_Domain_User
 	Raw_Group   *ldap.SearchResult
 	Raw_User    *ldap.SearchResult
-	Modify_User *i_LDAP_Domain_Modify
+	Modify_User __UN_LDAP_Domain_User
 }
-type i_LDAP_Domain_Modify struct {
+type i_LDAP_Domain_Modify_User struct {
+	IPPrefix       netip.Prefix
+	SSH_Public_Key map[string]string
+	P12            map[string]string
 }
 type i_LDAP_Domain_OLC struct {
 	DN _DN
@@ -109,6 +112,7 @@ type i_LDAP_Domain_User struct { // uidNumber: index
 	GID_List       __GN_LDAP_Domain_Group // memberOf: index = memberOf (gidNumber here), value is ignored
 	SSH_Public_Key map[string]string      // sshPublicKey: index = Comment, value = key
 	P12            map[string]string      // userPKCS12: index = CN, value = p12
+	Modify         *i_LDAP_Domain_Modify_User
 }
 
 // type i_LDAP_Domain_Group struct {
@@ -150,15 +154,15 @@ type i_Peer_Group struct {
 
 // Peer
 type i_Peer struct {
-	Group     *i_Peer_Group
-	ASN       _ASN
-	ASName    _Name
-	PName     _PName
-	Router_ID netip.Addr
-	IF_2_RI   __N_Name // interface to RI mapping. interfaces within one peer must be unique.
 	// VI           __i_VI
 	// VI_Local     __i_VI_Peer
 	// VI_Remote    __i_VI_Peer
+	Group        *i_Peer_Group
+	ASN          _ASN
+	ASName       _Name
+	PName        _PName
+	Router_ID    netip.Addr
+	IF_2_RI      __N_Name // interface to RI mapping. interfaces within one peer must be unique.
 	VI_GT        __i_VI_GT
 	IFM          __N_Peer_IFM
 	RI           __N_Peer_RI
