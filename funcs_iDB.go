@@ -533,7 +533,8 @@ func parse_LDAP() (not_ok bool) {
 							}
 							return
 						}(),
-						Owner: func() (outbound __UN_LDAP_Domain_User) {
+						GID_List: nil,
+						Owner_UID_List: func() (outbound __UN_LDAP_Domain_User) {
 							outbound = make(__UN_LDAP_Domain_User)
 							for _, h := range f.GetAttributeValues("owner") {
 								var (
@@ -549,7 +550,8 @@ func parse_LDAP() (not_ok bool) {
 							}
 							return
 						}(),
-						Modify: nil,
+						Owner_GID_List: nil,
+						Modify:         nil,
 					}
 				)
 				d.Group[v_GID_Number] = v_G
@@ -672,6 +674,7 @@ func read_ldap() (not_ok bool) {
 					User:      __UN_LDAP_Domain_User{},
 					Raw_Group: _group_result,
 					Raw_User:  _user_result,
+					Modify:    nil,
 				}
 				i_ldap[a].Domain[_dn] = i_ldap_domain[_dn]
 			}

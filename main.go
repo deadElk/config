@@ -39,7 +39,7 @@ func main() {
 
 	switch {
 	case !read_cDB():
-		log.Fatalf("write_file() error; ACTION: fatal.")
+		log.Fatalf("read_cDB() error; ACTION: fatal.")
 	}
 
 	parse_iDB_Vocabulary()
@@ -47,18 +47,22 @@ func main() {
 
 	switch {
 	case !read_ldap():
+		log.Fatalf("read_ldap() error; ACTION: fatal.")
+	}
+	switch {
+	case !parse_LDAP():
+		log.Fatalf("parse_LDAP() error; ACTION: fatal.")
+	}
+	switch {
+	case !parse_GT():
 		log.Fatalf("write_file() error; ACTION: fatal.")
 	}
-
-	parse_LDAP()
-	parse_GT()
-
 	switch {
 	case !write_file():
 		log.Fatalf("write_file() error; ACTION: fatal.")
 	}
 	switch {
 	case !write_ldap():
-		log.Fatalf("write_file() error; ACTION: fatal.")
+		log.Fatalf("write_ldap() error; ACTION: fatal.")
 	}
 }

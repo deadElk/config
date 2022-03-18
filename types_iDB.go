@@ -9,6 +9,10 @@ import (
 
 type __A_Peer map[_ASN]*i_Peer
 type __A_Peer_Group map[_ASN]*i_Peer_Group
+type __DN_LDAP_Domain map[string]*i_LDAP_Domain
+type __DN_LDAP_Domain_Group map[_DN]*i_LDAP_Domain_Group
+type __DN_LDAP_Domain_User map[_DN]*i_LDAP_Domain_User
+type __GN_LDAP_Domain_Group map[_GID_Number]*i_LDAP_Domain_Group
 type __N_AB map[_Name]*i_AB
 type __N_AB_Set map[_Name]*i_AB_Set
 type __N_Content map[_Name]_Content
@@ -25,17 +29,21 @@ type __N_Peer_SZ map[_Name]*i_Peer_SZ
 type __N_Peer_SZ_IF map[_Name]*i_Peer_SZ_IF
 type __N_Pool map[_Name]*i_Pool
 type __N_Rule_Set map[_Name]*i_Rule_Set
+type __P_LDAP_Domain_User map[netip.Prefix]*i_LDAP_Domain_User
 type __P_Peer_RI_IF map[netip.Prefix]*i_Peer_RI_IF
 type __P_Peer_RI_IF_IP map[netip.Prefix]*i_Peer_RI_IF_IP
 type __P_Peer_RI_IF_PARP map[netip.Prefix]*i_Peer_RI_IF_PARP
 type __P_Peer_RI_RO_RT map[netip.Prefix]*i_Peer_RI_RO_RT
 type __T_Peer_NAT_Type map[_Type]*i_Peer_NAT_Type
+type __UN_LDAP_Domain_User map[_UID_Number]*i_LDAP_Domain_User
+type __U_LDAP map[*url.URL]*i_LDAP
 type __W_Route_Leak_FromTo map[_W]*i_Route_Leak_FromTo
 type __i_FW []*i_FW
 type __i_FW_FromTo []*i_FW_FromTo
 type __i_FW_Term []*i_FW_Term
 type __i_FW_Then []*i_FW_Then
 type __i_FromTo []*i_FromTo
+type __i_ID_Peer map[_VI_Peer_ID]*i_VI_Peer
 type __i_JA_Term []*i_JA_Term
 type __i_PO_PL_Match []*i_PO_PL_Match
 type __i_PO_PS_From []*i_PO_PS_From
@@ -46,7 +54,6 @@ type __i_Rule_Set []*i_Rule_Set
 type __i_Then []*i_Then
 type __i_VI map[_VI_ID]*i_VI
 type __i_VI_GT map[_VI_ID]*i_VI_GT
-type __i_ID_Peer map[_VI_Peer_ID]*i_VI_Peer
 type __i_VI_ID_Peer map[_VI_ID]__i_ID_Peer
 type __i_VI_Peer map[_VI_ID]*i_VI_Peer
 
@@ -58,14 +65,6 @@ type i_File_Data struct {
 }
 
 // LDAP
-type __U_LDAP map[*url.URL]*i_LDAP
-type __DN_LDAP_Domain map[string]*i_LDAP_Domain
-type __GN_LDAP_Domain_Group map[_GID_Number]*i_LDAP_Domain_Group
-type __UN_LDAP_Domain_User map[_UID_Number]*i_LDAP_Domain_User
-type __DN_LDAP_Domain_Group map[_DN]*i_LDAP_Domain_Group
-type __DN_LDAP_Domain_User map[_DN]*i_LDAP_Domain_User
-type __P_LDAP_Domain_User map[netip.Prefix]*i_LDAP_Domain_User
-type __DN_LDAP_Modify map[_DN]*ldap.ModifyRequest
 type i_LDAP struct {
 	Bind_DN      string
 	Secret       _Secret
@@ -96,18 +95,20 @@ type i_LDAP_Domain_OLC struct {
 	DN _DN
 }
 type i_LDAP_Domain_Group struct { // gidNumber: index
-	GID_Number _GID_Number
-	GID        _GID                  // cn
-	UID_List   __UN_LDAP_Domain_User // member: index = member (uidNumber here), value is ignored
-	Owner      __UN_LDAP_Domain_User
-	Modify     *ldap.ModifyRequest
+	GID_Number     _GID_Number
+	GID            _GID                   // cn
+	UID_List       __UN_LDAP_Domain_User  // member: index = member (uidNumber here), value is a pointer.
+	GID_List       __GN_LDAP_Domain_Group // CAUTION >>>> GID includes GID <<<< member: index = member (gidNumber here), value is a pointer.
+	Owner_UID_List __UN_LDAP_Domain_User  // owner: index = owner (uidNumber here), value is a pointer.
+	Owner_GID_List __GN_LDAP_Domain_Group // CAUTION >>>> GID includes GID <<<< owner: index = owner (gidNumber here), value is a pointer.
+	Modify         *ldap.ModifyRequest
 }
 type i_LDAP_Domain_User struct { // uidNumber: index
 	UID_Number     _UID_Number
 	UID            _UID                   // uid
 	GID_Number     _GID_Number            // gidNumber
 	IPPrefix       netip.Prefix           // ipHostNumber (user's subnet)
-	GID_List       __GN_LDAP_Domain_Group // memberOf: index = memberOf (gidNumber here), value is ignored
+	GID_List       __GN_LDAP_Domain_Group // memberOf: index = memberOf (gidNumber here), value is a pointer.
 	SSH_Public_Key map[string]string      // sshPublicKey: index = Comment, value = key
 	P12            map[string]string      // userPKCS12: index = CN, value = p12
 	Modify         *ldap.ModifyRequest
