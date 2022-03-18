@@ -65,6 +65,7 @@ type __UN_LDAP_Domain_User map[_UID_Number]*i_LDAP_Domain_User
 type __DN_LDAP_Domain_Group map[_DN]*i_LDAP_Domain_Group
 type __DN_LDAP_Domain_User map[_DN]*i_LDAP_Domain_User
 type __P_LDAP_Domain_User map[netip.Prefix]*i_LDAP_Domain_User
+type __DN_LDAP_Modify map[_DN]*ldap.ModifyRequest
 type i_LDAP struct {
 	Bind_DN      string
 	Secret       _Secret
@@ -79,21 +80,17 @@ type i_LDAP struct {
 	M_CN_G       __DN_LDAP_Domain_Group
 	M_CN_U       __DN_LDAP_Domain_User
 	M_IP_U       __P_LDAP_Domain_User
+	Modify       *ldap.ModifyRequest
 }
 type i_LDAP_OLC struct {
 }
 type i_LDAP_Domain struct {
-	OLC         *i_LDAP_Domain_OLC
-	Group       __GN_LDAP_Domain_Group
-	User        __UN_LDAP_Domain_User
-	Raw_Group   *ldap.SearchResult
-	Raw_User    *ldap.SearchResult
-	Modify_User __UN_LDAP_Domain_User
-}
-type i_LDAP_Domain_Modify_User struct {
-	IPPrefix       netip.Prefix
-	SSH_Public_Key map[string]string
-	P12            map[string]string
+	OLC       *i_LDAP_Domain_OLC
+	Group     __GN_LDAP_Domain_Group
+	User      __UN_LDAP_Domain_User
+	Raw_Group *ldap.SearchResult
+	Raw_User  *ldap.SearchResult
+	Modify    *ldap.ModifyRequest
 }
 type i_LDAP_Domain_OLC struct {
 	DN _DN
@@ -103,6 +100,7 @@ type i_LDAP_Domain_Group struct { // gidNumber: index
 	GID        _GID                  // cn
 	UID_List   __UN_LDAP_Domain_User // member: index = member (uidNumber here), value is ignored
 	Owner      __UN_LDAP_Domain_User
+	Modify     *ldap.ModifyRequest
 }
 type i_LDAP_Domain_User struct { // uidNumber: index
 	UID_Number     _UID_Number
@@ -112,23 +110,13 @@ type i_LDAP_Domain_User struct { // uidNumber: index
 	GID_List       __GN_LDAP_Domain_Group // memberOf: index = memberOf (gidNumber here), value is ignored
 	SSH_Public_Key map[string]string      // sshPublicKey: index = Comment, value = key
 	P12            map[string]string      // userPKCS12: index = CN, value = p12
-	Modify         *i_LDAP_Domain_Modify_User
+	Modify         *ldap.ModifyRequest
 }
-
-// type i_LDAP_Domain_Group struct {
-// 	CN         string       // cn
-// 	GID_Number _ID          // gidNumber
-// 	UID_List   map[_ID]bool // member: index = member (uidNumber here), value is ignored
-// }
-// type i_LDAP_Domain_User struct {
-// 	UID            string            // uid
-// 	UID_Number     _ID               // uidNumber
-// 	GID_Number     _ID               // gidNumber
-// 	IPPrefix       netip.Prefix      // ipHostNumber (user's subnet)
-// 	GID_List       map[_ID]bool      // memberOf: index = memberOf (gidNumber here), value is ignored
-// 	SSH_Public_Key map[string][]byte // sshPublicKey: index = Comment, value = key
-// 	P12            map[string][]byte // userPKCS12: index = CN, value = p12
-// }
+type i_LDAP_Domain_User_Modify struct { // uidNumber: index
+	IPPrefix       bool
+	SSH_Public_Key bool
+	P12            bool
+}
 
 // Peer Group
 type i_Peer_Group struct {
