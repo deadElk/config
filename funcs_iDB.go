@@ -471,8 +471,8 @@ func parse_LDAP() (not_ok bool) {
 											return y
 										}
 									}
-									not_ok = true
 									log.Fatalf("not enough user ip space")
+									not_ok = true
 									return
 								}()
 							)
@@ -525,7 +525,8 @@ func parse_LDAP() (not_ok bool) {
 								)
 								switch {
 								case u == nil:
-									log.Errorf("LDAP DB inconsistent! can't find member UID '%v' of GID '%v', search '%v'; ACTION: ignore.", h, v_DN)
+									log.Errorf("LDAP DB inconsistent! can't find member UID '%v' of GID '%v', search '%v'; ACTION: report.", h, v_DN)
+									not_ok = true
 									continue
 								}
 								outbound[u.UID_Number] = u
@@ -541,6 +542,7 @@ func parse_LDAP() (not_ok bool) {
 								switch {
 								case u == nil:
 									log.Errorf("LDAP DB inconsistent! can't find owner UID '%v' of GID '%v', search '%v'; ACTION: ignore.", h, v_DN)
+									// not_ok = true
 									continue
 								}
 								outbound[u.UID_Number] = u
