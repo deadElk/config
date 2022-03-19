@@ -500,6 +500,7 @@ func parse_LDAP() (not_ok bool) {
 				v_U.IPPrefix = v_IPPrefix
 				v_U.SSH_Public_Key = v_SSH_Public_Key
 				v_U.P12 = v_P12
+
 				d.User[v_U.UID_Number] = v_U
 				b.M_CN_U[v_U.DN] = v_U
 				i_ui_ip[v_U.IPPrefix].User = v_U
@@ -559,6 +560,7 @@ func parse_LDAP() (not_ok bool) {
 				v_G.GID_List = v_GID_List
 				v_G.Owner_UID_List = v_Owner_UID_List
 				v_G.Owner_GID_List = v_Owner_GID_List
+
 				d.Group[v_G.GID_Number] = v_G
 				b.M_CN_G[v_G.DN] = v_G
 				for _, j := range d.Group[v_G.GID_Number].UID_List {
@@ -567,13 +569,18 @@ func parse_LDAP() (not_ok bool) {
 			}
 		}
 	}
-	// for _, b := range i_ldap { // group's second pass -> GID within GID's member/owner recursive parse
+
+	// for _, b := range i_ldap { // second pass
 	// 	for _, d := range b.Domain {
-	// 		for _, f := range d.Group {
+	// 		for _, f := range d.User { // user's primary GID check
+	// 			var ()
+	// 		}
+	// 		for _, f := range d.Group { // GID within GID member/owner recursive parse
 	// 			var ()
 	// 		}
 	// 	}
 	// }
+
 	return !not_ok
 }
 
