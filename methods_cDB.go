@@ -33,6 +33,7 @@ func (receiver cDB_N_List) parse() (not_ok bool) {
 		b.VI.parse()
 		b.LDAP.parse()
 	}
+	return !not_ok
 }
 
 func (receiver *cDB) parse() {
