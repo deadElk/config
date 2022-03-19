@@ -477,7 +477,7 @@ func parse_LDAP() (not_ok bool) {
 						case flag && value.User != nil: // ip found but occupied, so need ip assigment
 							log.Warnf("LDAP DB inconsistent! UID '%v', ipHostNumber '%v' occupied by '%v'; ACTION: find new.", v_U.DN, outbound, value.User.UID)
 						case !flag: // ip not found, so need ip assigment
-							log.Warnf("LDAP DB inconsistent! UID '%v', ipHostNumber '%v' not suitable; ACTION: find new.", v_U.DN, outbound)
+							log.Debugf("LDAP DB inconsistent! UID '%v', ipHostNumber '%v' not suitable; ACTION: find new.", v_U.DN, outbound)
 						}
 						for y, z := range i_ui_ip {
 							switch {
@@ -497,6 +497,15 @@ func parse_LDAP() (not_ok bool) {
 						return
 					}()
 				)
+				switch {
+				case v_U.UID_Number == 0:
+					log.Errorf("LDAP DB inconsistent! user's UID_Number is '%v'; ACTION: report.", v_U.GID_Number)
+					not_ok = true
+					fallthrough
+				case v_U.GID_Number == 0:
+					log.Warnf("LDAP DB inconsistent! primary GID_Number is not defined for UID '%v'; ACTION: ignore.", f.DN)
+				}
+
 				v_U.IPPrefix = v_IPPrefix
 				v_U.SSH_Public_Key = v_SSH_Public_Key
 				v_U.P12 = v_P12
@@ -556,6 +565,12 @@ func parse_LDAP() (not_ok bool) {
 					}()
 					v_Owner_GID_List = __GN_LDAP_Domain_Group{}
 				)
+				switch {
+				case v_G.GID_Number == 0:
+					log.Errorf("LDAP DB inconsistent! user's GID_Number is '%v'; ACTION: report.", v_G.GID_Number)
+					not_ok = true
+				}
+
 				v_G.UID_List = v_UID_List
 				v_G.GID_List = v_GID_List
 				v_G.Owner_UID_List = v_Owner_UID_List
@@ -570,16 +585,20 @@ func parse_LDAP() (not_ok bool) {
 		}
 	}
 
-	// for _, b := range i_ldap { // second pass
-	// 	for _, d := range b.Domain {
-	// 		for _, f := range d.User { // user's primary GID check
-	// 			var ()
-	// 		}
-	// 		for _, f := range d.Group { // GID within GID member/owner recursive parse
-	// 			var ()
-	// 		}
-	// 	}
-	// }
+	for _, b := range i_ldap { // second pass
+		for _, d := range b.Domain {
+			for _, f := range d.User { // user's primary GID check
+				switch {
+				case f.GID_Number != 0 && d.Group[f.GID_Number] == nil:
+					log.Errorf("LDAP DB inconsistent! can't find primary GID_Number '%v' for UID '%v'; ACTION: report.", f.GID_Number, f.DN)
+					not_ok = true
+				}
+			}
+			// for _, f := range d.Group { // GID within GID member/owner recursive parse
+			// 	var ()
+			// }
+		}
+	}
 
 	return !not_ok
 }
@@ -703,5 +722,18 @@ func read_ldap() (not_ok bool) {
 	return !not_ok
 }
 func write_ldap() (not_ok bool) {
+	for _, b := range i_ldap {
+		for _, d := range b.Domain {
+			for _, f := range d.User {
+				switch {
+				case f.Modify != nil:
+					log.Infof("found modifications for UID '%v'; ACTION: upload.", f.DN)
+				}
+			}
+			// for _, f := range d.Group { // GID within GID member/owner recursive parse
+			// 	var ()
+			// }
+		}
+	}
 	return !not_ok
 }
