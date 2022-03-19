@@ -457,9 +457,10 @@ func parse_LDAP() (not_ok bool) {
 		for _, d := range b.Domain {
 			for _, f := range d.Raw_User.Entries {
 				var (
-					v_DN       = _DN(f.GetAttributeValue("entryDN"))
-					v_Modify   = ldap.NewModifyRequest(v_DN.String(), nil)
-					v_IPPrefix = func() (outbound netip.Prefix) {
+					v_DN     = _DN(f.GetAttributeValue("entryDN"))
+					v_Modify = ldap.NewModifyRequest(v_DN.String(), nil)
+
+					v_IPPrefix = func() (outbound netip.Prefix) { // modification candidate -> user's ip space
 						outbound = parse_interface(netip.ParsePrefix(f.GetAttributeValue("ipHostNumber"))).(netip.Prefix)
 						switch value, flag := i_ui_ip[outbound]; {
 						case flag && value.User == nil: // ip found and free
@@ -480,11 +481,16 @@ func parse_LDAP() (not_ok bool) {
 						not_ok = true
 						return
 					}()
-					v_GID_List       = __GN_LDAP_Domain_Group{}
-					v_SSH_Public_Key = map[string]string{}
-					v_P12            = map[string]string{}
-					v_UID_Number     = _UID_Number(string_uint64(f.GetAttributeValue("uidNumber")))
-					v_U              = &i_LDAP_Domain_User{
+					v_SSH_Public_Key = func() (outbound map[string]string) { // modification candidate -> user's SSH keys
+						return
+					}()
+					v_P12 = func() (outbound map[string]string) { // modification candidate -> user's P12 (for vpn as example)
+						return
+					}()
+
+					v_GID_List   = __GN_LDAP_Domain_Group{}
+					v_UID_Number = _UID_Number(string_uint64(f.GetAttributeValue("uidNumber")))
+					v_U          = &i_LDAP_Domain_User{
 						UID_Number:     v_UID_Number,
 						UID:            _UID(f.GetAttributeValue(b.User_CN)),
 						GID_Number:     _GID_Number(string_uint64(f.GetAttributeValue("gidNumber"))),
