@@ -612,20 +612,20 @@ func read_ldap() (not_ok bool) {
 			)
 			switch _ldap, err = ldap.Dial("tcp", a.Host); {
 			case err != nil:
-				log.Errorf("LDAP '%v' connect error: '%v'; ACTION: skip.", a.String(), err)
+				log.Errorf("LDAP '%v': connect error '%v'; ACTION: skip.", a.String(), err)
 				not_ok = true
 				return
 			}
 			defer _ldap.Close()
 			switch err = _ldap.StartTLS(&tls.Config{InsecureSkipVerify: true}); {
 			case err != nil:
-				log.Errorf("LDAP '%v' TLS connect error: '%v'; ACTION: skip.", a.String(), err)
+				log.Errorf("LDAP '%v': TLS connect error '%v'; ACTION: skip.", a.String(), err)
 				not_ok = true
 				return
 			}
 			switch err = _ldap.Bind(b.Bind_DN.String(), b.Secret.String()); {
 			case err != nil:
-				log.Errorf("LDAP '%v' bind error: '%v'; ACTION: skip.", a.String(), err)
+				log.Errorf("LDAP '%v': bind error '%v'; ACTION: skip.", a.String(), err)
 				not_ok = true
 				return
 			}
@@ -646,7 +646,7 @@ func read_ldap() (not_ok bool) {
 			)
 			switch _db_result, err = _ldap.Search(_db_request); {
 			case err != nil:
-				log.Errorf("LDAP '%v' search error: '%v'; ACTION: skip.", a.String(), err)
+				log.Errorf("LDAP '%v': search error '%v'; ACTION: skip.", a.String(), err)
 				not_ok = true
 				return
 			}
@@ -661,7 +661,7 @@ func read_ldap() (not_ok bool) {
 				log.Infof("LDAP '%v' search result: '%v'.", a.String(), _dn)
 				switch _, flag := i_ldap_domain[_dn]; {
 				case flag:
-					log.Warnf("LDAP Domain '%v' already defined; ACTION: skip.", a)
+					log.Warnf("LDAP '%v': domain already defined; ACTION: skip.", a)
 					continue
 				}
 
@@ -681,7 +681,7 @@ func read_ldap() (not_ok bool) {
 				)
 				switch _group_result, err = _ldap.Search(_group_request); {
 				case err != nil:
-					log.Fatalf("LDAP '%v' search error: '%v'; ACTION: fatal.", a.String(), err)
+					log.Fatalf("LDAP '%v': search error '%v'; ACTION: fatal.", a.String(), err)
 					not_ok = true
 					continue
 				}
@@ -701,7 +701,7 @@ func read_ldap() (not_ok bool) {
 				)
 				switch _user_result, err = _ldap.Search(_user_request); {
 				case err != nil:
-					log.Fatalf("LDAP '%v' search error: '%v'; ACTION: fatal.", a.String(), err)
+					log.Fatalf("LDAP '%v': search error '%v'; ACTION: fatal.", a.String(), err)
 					not_ok = true
 					continue
 				}
@@ -722,18 +722,58 @@ func read_ldap() (not_ok bool) {
 	return !not_ok
 }
 func write_ldap() (not_ok bool) {
-	for _, b := range i_ldap {
-		for _, d := range b.Domain {
-			for _, f := range d.User {
-				switch {
-				case f.Modify != nil:
-					log.Infof("found modifications for UID '%v'; ACTION: upload.", f.DN)
-				}
+	for a, b := range i_ldap {
+		func() {
+			var (
+				_ldap   *ldap.Conn
+				err     error
+				_result *ldap.ModifyResult
+			)
+			switch _ldap, err = ldap.Dial("tcp", a.Host); {
+			case err != nil:
+				log.Errorf("LDAP '%v': connect error: '%v'; ACTION: report.", a.String(), err)
+				not_ok = true
+				return
 			}
-			// for _, f := range d.Group { // GID within GID member/owner recursive parse
-			// 	var ()
-			// }
-		}
+			defer _ldap.Close()
+			switch err = _ldap.StartTLS(&tls.Config{InsecureSkipVerify: true}); {
+			case err != nil:
+				log.Errorf("LDAP '%v': TLS connect error: '%v'; ACTION: report.", a.String(), err)
+				not_ok = true
+				return
+			}
+			switch err = _ldap.Bind(b.Bind_DN.String(), b.Secret.String()); {
+			case err != nil:
+				log.Errorf("LDAP '%v': bind error: '%v'; ACTION: report.", a.String(), err)
+				not_ok = true
+				return
+			}
+			for _, d := range b.Domain {
+				for _, f := range d.User {
+					switch {
+					case f.Modify != nil:
+						var (
+							_s string
+						)
+						switch {
+						case len(f.Modify.Changes) > 1:
+							_s = "s"
+						}
+						log.Infof("LDAP '%v': found modification%v for UID '%v'; ACTION: upload.", a.String(), _s, f.DN)
+						switch _result, err = _ldap.ModifyWithResult(f.Modify); {
+						case err != nil:
+							log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
+							not_ok = true
+						}
+						log.Infof("LDAP '%v': modification result: '%v'; ACTION: report.", a.String(), _result)
+					}
+					return
+				}
+				// for _, f := range d.Group { // GID within GID member/owner recursive parse
+				// 	var ()
+				// }
+			}
+		}()
 	}
 	return !not_ok
 }
