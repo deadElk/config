@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (receiver cDB_N_List) parse() {
+func (receiver cDB_N_List) parse() (not_ok bool) {
 	for _, b := range receiver { // parse all Vocabularies
 		switch {
 		case b.Reserved:
