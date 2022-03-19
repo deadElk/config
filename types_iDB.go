@@ -85,6 +85,7 @@ type i_LDAP struct {
 type i_LDAP_OLC struct {
 }
 type i_LDAP_Domain struct {
+	DN        _DN
 	OLC       *i_LDAP_Domain_OLC
 	Group     __GN_LDAP_Domain_Group
 	User      __UN_LDAP_Domain_User
@@ -96,6 +97,7 @@ type i_LDAP_Domain_OLC struct {
 	DN _DN
 }
 type i_LDAP_Domain_Group struct { // gidNumber: index
+	DN             _DN
 	GID_Number     _GID_Number
 	GID            _GID                   // cn
 	UID_List       __UN_LDAP_Domain_User  // member: index = member (uidNumber here), value is a pointer.
@@ -105,6 +107,7 @@ type i_LDAP_Domain_Group struct { // gidNumber: index
 	Modify         *ldap.ModifyRequest
 }
 type i_LDAP_Domain_User struct { // uidNumber: index
+	DN             _DN
 	UID_Number     _UID_Number
 	UID            _UID                   // uid
 	GID_Number     _GID_Number            // gidNumber

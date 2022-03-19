@@ -7,6 +7,7 @@ import (
 	"net/netip"
 	"strings"
 
+	"github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -423,4 +424,26 @@ func (receiver *__INet_UI_IP_Table) generate(inbound netip.Prefix, conn_bits _IN
 		}
 		(*receiver)[parse_interface(curr_IP.Prefix(int(conn_mask))).(netip.Prefix)] = v_Output
 	}
+}
+
+func (receiver *i_LDAP_Domain_User) modify(attrType string, attrVals []string) {
+	switch {
+	case receiver.Modify == nil:
+		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
+	}
+	receiver.Modify.Add(attrType, attrVals)
+}
+func (receiver *i_LDAP_Domain_Group) modify(attrType string, attrVals []string) {
+	switch {
+	case receiver.Modify == nil:
+		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
+	}
+	receiver.Modify.Add(attrType, attrVals)
+}
+func (receiver *i_LDAP_Domain) modify(attrType string, attrVals []string) {
+	switch {
+	case receiver.Modify == nil:
+		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
+	}
+	receiver.Modify.Add(attrType, attrVals)
 }
