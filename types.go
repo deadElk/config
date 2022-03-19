@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type _ASN uint32
+type _Inet_ASN uint32
 type _CN _Name
 type _Communication string
 type _Content []byte
@@ -21,24 +21,24 @@ type _IDName string
 type _Mask string
 type _Name string
 type _PName string
-type _Port uint16
+type _INet_Port uint16
 type _Protocol string
-type _Route_Weight uint32
+type _INet_Routing uint32
 type _S string
 type _Secret string
 type _Service string
 type _Type string
 type _UID _Name
 type _UID_Number _ID
-type _VI_ID uint16
-type _VI_Peer_ID uint16
+type _VI_ID _INet_Routing
+type _VI_Conn_ID _INet_Routing
 type _W string
 type __A_BGP_Group_Neighbor map[netip.Addr]*_BGP_Group_Neighbor
 type __N_BGP_Group map[_Name]*_BGP_Group
 type _hash_ID [_hash_Size]uint8 // _hash_ID here is a result of sha3.Sum512.
-type _url_URL struct{ *url.URL }
-type _netip_Addr struct{ *netip.Addr }     // Why returning String() "invalid IP" ???? What for???? Why not just return an empty String() "" ????
-type _netip_Prefix struct{ *netip.Prefix } // Why returning String() "invalid IP" ???? What for???? Why not just return an empty String() "" ????
+type _INet_URL struct{ *url.URL }
+type _INet_IPAddr struct{ *netip.Addr }     // Why returning String() "invalid IP" ???? What for???? Why not just return an empty String() "" ????
+type _INet_IPPrefix struct{ *netip.Prefix } // Why returning String() "invalid IP" ???? What for???? Why not just return an empty String() "" ????
 
 type _Attribute_List struct {
 	Description _Description `xml:"description,attr"`
@@ -66,8 +66,8 @@ type _BGP struct {
 	_Attribute_List
 }
 type _BGP_Group struct {
-	Local_ASN  _ASN
-	Remote_ASN _ASN
+	Local_ASN  _Inet_ASN
+	Remote_ASN _Inet_ASN
 	Passive    bool
 	// 	Type      _Type
 	// 	Multipath bool
@@ -76,11 +76,19 @@ type _BGP_Group struct {
 	_Attribute_List
 }
 type _BGP_Group_Neighbor struct {
-	Local_ASN  _ASN
-	Remote_ASN _ASN
+	Local_ASN  _Inet_ASN
+	Remote_ASN _Inet_ASN
 	Passive    bool
 	Local_IP   netip.Addr
 	Route_Leak __W_Route_Leak_FromTo
 	GT_Action  string
 	_Attribute_List
+}
+type _INet_VI_IP_Table struct {
+	IPPrefix netip.Prefix
+	Conn     []netip.Prefix
+}
+type _INet_UI_IP_Table struct {
+	User *i_LDAP_Domain_User
+	Conn []netip.Prefix
 }

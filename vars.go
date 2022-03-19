@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/binary"
 	"net/netip"
 	"regexp"
 	"sync"
@@ -47,7 +46,9 @@ var (
 		_S_Dir[_dir_PKI]:    {ext: "", data: map[_Name]_Content{}},
 		_S_Dir[_dir_Portal]: {ext: "", data: map[_Name]_Content{}},
 	}
-	i_peer_list []_ASN
+	i_peer_list []_Inet_ASN
+	i_vi_ip     = make(__INet_VI_IP_Table)
+	i_ui_ip     = make(__INet_UI_IP_Table)
 
 	c_VI_Action = map[_Type]_W{
 		_Type_gr: _W_gr0,
@@ -79,12 +80,11 @@ var (
 		_comm_if: _Communication_ptmp,
 		_comm_vi: _Communication_ptp,
 	}
-	_S_GT_List    []_Name
-	_S_U_IPPrefix = parse_interface(
-		parse_interface(
-			netip.ParseAddr("172.16.0.0")).(netip.Addr).Prefix(int(_U_mask_bits))).(netip.Prefix)
+	_S_GT_List     []_Name
 	_S_VI_IPPrefix = parse_interface(
 		parse_interface(
-			netip.ParseAddr("192.168.0.0")).(netip.Addr).Prefix(int(_VI_subnet_bits))).(netip.Prefix)
-	_S_VI_IPShift = binary.BigEndian.Uint32(_S_VI_IPPrefix.Addr().AsSlice())
+			netip.ParseAddr(_VIx_Addr)).(netip.Addr).Prefix(int(_VIx_bits))).(netip.Prefix)
+	_S_UI_IPPrefix = parse_interface(
+		parse_interface(
+			netip.ParseAddr(_UIx_Addr)).(netip.Addr).Prefix(int(_UIx_mask))).(netip.Prefix)
 )

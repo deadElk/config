@@ -18,7 +18,7 @@ func (receiver _ID) String() string {
 func (receiver _IDName) String() string {
 	return string(receiver)
 }
-func (receiver _ASN) String() string {
+func (receiver _Inet_ASN) String() string {
 	return strconv.FormatUint(uint64(receiver), 10)
 }
 func (receiver _W) String() string {
@@ -48,13 +48,13 @@ func (receiver _Name) String() string {
 func (receiver _PName) String() string {
 	return string(receiver)
 }
-func (receiver _Port) String() string {
+func (receiver _INet_Port) String() string {
 	return strconv.FormatUint(uint64(receiver), 10)
 }
 func (receiver _Protocol) String() string {
 	return string(receiver)
 }
-func (receiver _Route_Weight) String() string {
+func (receiver _INet_Routing) String() string {
 	return strconv.FormatUint(uint64(receiver), 10)
 }
 func (receiver _Secret) String() string {
@@ -69,15 +69,15 @@ func (receiver _Type) String() string {
 func (receiver _VI_ID) String() string {
 	return strconv.FormatUint(uint64(receiver), 10)
 }
-func (receiver _VI_Peer_ID) String() string {
+func (receiver _VI_Conn_ID) String() string {
 	return strconv.FormatUint(uint64(receiver), 10)
 }
-func (receiver _netip_Prefix) String() string {
+func (receiver _INet_IPPrefix) String() string {
 	return string(parse_interface(receiver.MarshalText()).([]byte))
 }
-func (receiver _netip_Addr) String() string {
+func (receiver _INet_IPAddr) String() string {
 	return string(parse_interface(receiver.MarshalText()).([]byte))
 }
-func (receiver _url_URL) String() string {
+func (receiver _INet_URL) String() string {
 	return receiver.String()
 }

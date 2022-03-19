@@ -5,6 +5,8 @@ import (
 	"net/netip"
 )
 
+// todo: write own xml unmarshaler to avoid double parsing -> get map[index]value instead of []values.
+
 type cDB_AB_Address_List []*cDB_AB_Address
 type cDB_AB_List []*cDB_AB
 type cDB_FW_FromTo_List []*cDB_FW_FromTo
@@ -44,8 +46,10 @@ type cDB_VI_Peer_List []*cDB_VI_Peer
 type cDB struct {
 	XMLName     xml.Name
 	Domain_Name _FQDN         `xml:"domain_name,attr"`
-	U_IPPrefix  netip.Prefix  `xml:"user_IPprefix,attr"`
 	VI_IPPrefix netip.Prefix  `xml:"VI_IPprefix,attr"`
+	VI_Bits     _INet_Routing `xml:"VI_bits,attr"`
+	UI_IPPrefix netip.Prefix  `xml:"UI_IPprefix,attr"`
+	UI_Bits     _INet_Routing `xml:"UI_bits,attr"`
 	GT_List     string        `xml:"GT_list,attr"`
 	Peer        cDB_Peer_List `xml:"Peer_List>Peer"`
 	VI          cDB_VI_List   `xml:"VI_List>VI"`
@@ -79,7 +83,7 @@ type cDB_Vocabulary struct {
 
 // Peer
 type cDB_Peer struct {
-	ASN             _ASN               `xml:"ASN,attr"`
+	ASN             _Inet_ASN          `xml:"ASN,attr"`
 	Router_ID       netip.Addr         `xml:"router_ID,attr"`
 	IFM             cDB_Peer_IFM_List  `xml:"IFM"`
 	RI              cDB_Peer_RI_List   `xml:"RI"`
@@ -174,8 +178,8 @@ type cDB_Peer_RI_RO_RT_GW struct {
 	Table       _Name         `xml:"table,attr"`
 	Action      _W            `xml:"action,attr"`
 	Action_Flag _W            `xml:"action_flag,attr"`
-	Metric      _Route_Weight `xml:"metric,attr"`
-	Preference  _Route_Weight `xml:"preference,attr"`
+	Metric      _INet_Routing `xml:"metric,attr"`
+	Preference  _INet_Routing `xml:"preference,attr"`
 	_Attribute_List
 }
 type cDB_Peer_RI_RO_Route_Leak_FromTo struct {
@@ -188,14 +192,14 @@ type cDB_VI struct {
 	ID            _VI_ID           `xml:"ID,attr"`
 	Type          _Type            `xml:"type,attr"`
 	Communication _Communication   `xml:"communication,attr"`
-	Route_Metric  _Route_Weight    `xml:"route_metric,attr"`
+	Route_Metric  _INet_Routing    `xml:"route_metric,attr"`
 	Peer          cDB_VI_Peer_List `xml:"Peer"`
 	PSK           _Secret          `xml:"PSK,attr"`
 	_Attribute_List
 }
 type cDB_VI_Peer struct {
-	ID         _VI_Peer_ID               `xml:"ID,attr"`
-	ASN        _ASN                      `xml:"ASN,attr"`
+	ID         _VI_Conn_ID               `xml:"ID,attr"`
+	ASN        _Inet_ASN                 `xml:"ASN,attr"`
 	RI         _Name                     `xml:"RI,attr"`
 	IF         _Name                     `xml:"IF,attr"`
 	IP         netip.Prefix              `xml:"IP,attr"`
@@ -222,9 +226,9 @@ type cDB_Pool struct {
 	IPPrefix  netip.Prefix `xml:"IPprefix,attr"`
 	RI        _Name        `xml:"RI,attr"`
 	SZ        _Name        `xml:"SZ,attr"`
-	Port      _Port        `xml:"port,attr"`
-	Port_Low  _Port        `xml:"port_low,attr"`
-	Port_High _Port        `xml:"port_high,attr"`
+	Port      _INet_Port   `xml:"port,attr"`
+	Port_Low  _INet_Port   `xml:"port_low,attr"`
+	Port_High _INet_Port   `xml:"port_high,attr"`
 	_Attribute_List
 }
 
@@ -237,13 +241,13 @@ type cDB_Rule_Set struct {
 	_Attribute_List
 }
 type cDB_FromTo struct {
-	AB        _Name `xml:"AB,attr"`        // NAT_Destination
-	IF        _Name `xml:"IF,attr"`        // NAT_Source
-	RG        _Name `xml:"RG,attr"`        // NAT_Source
-	RI        _Name `xml:"RI,attr"`        // NAT_Source
-	SZ        _Name `xml:"SZ,attr"`        // NAT_Source
-	Port_Low  _Port `xml:"port_low,attr"`  // NAT_Destination
-	Port_High _Port `xml:"port_high,attr"` // NAT_Destination
+	AB        _Name      `xml:"AB,attr"`        // NAT_Destination
+	IF        _Name      `xml:"IF,attr"`        // NAT_Source
+	RG        _Name      `xml:"RG,attr"`        // NAT_Source
+	RI        _Name      `xml:"RI,attr"`        // NAT_Source
+	SZ        _Name      `xml:"SZ,attr"`        // NAT_Source
+	Port_Low  _INet_Port `xml:"port_low,attr"`  // NAT_Destination
+	Port_High _INet_Port `xml:"port_high,attr"` // NAT_Destination
 	_Attribute_List
 }
 type cDB_Rule struct {
@@ -259,13 +263,13 @@ type cDB_Match struct {
 	_Attribute_List
 }
 type cDB_Then struct {
-	Action      _W    `xml:"action,attr"`
-	Action_Flag _W    `xml:"action_flag,attr"`
-	Pool        _Name `xml:"pool,attr"`
-	AB          _Name `xml:"AB,attr"`
-	RI          _Name `xml:"RI,attr"`
-	Port_Low    _Port `xml:"port_low,attr"`
-	Port_High   _Port `xml:"port_high,attr"`
+	Action      _W         `xml:"action,attr"`
+	Action_Flag _W         `xml:"action_flag,attr"`
+	Pool        _Name      `xml:"pool,attr"`
+	AB          _Name      `xml:"AB,attr"`
+	RI          _Name      `xml:"RI,attr"`
+	Port_Low    _INet_Port `xml:"port_low,attr"`
+	Port_High   _INet_Port `xml:"port_high,attr"`
 	_Attribute_List
 }
 
@@ -290,10 +294,10 @@ type cDB_JA struct {
 	_Attribute_List
 }
 type cDB_JA_Term struct {
-	Name             _Name     `xml:"name,attr"`
-	Protocol         _Protocol `xml:"protocol,attr"`
-	Source_Port      _Port     `xml:"source_port,attr"`
-	Destination_Port _Port     `xml:"destination_port,attr"`
+	Name             _Name      `xml:"name,attr"`
+	Protocol         _Protocol  `xml:"protocol,attr"`
+	Source_Port      _INet_Port `xml:"source_port,attr"`
+	Destination_Port _INet_Port `xml:"destination_port,attr"`
 	_Attribute_List
 }
 
@@ -329,7 +333,7 @@ type cDB_PO_PS_From struct {
 type cDB_PO_PS_Then struct {
 	Action      _W            `xml:"action,attr"`
 	Action_Flag _W            `xml:"action_flag,attr"`
-	Metric      _Route_Weight `xml:"metric,attr"`
+	Metric      _INet_Routing `xml:"metric,attr"`
 	_Attribute_List
 }
 

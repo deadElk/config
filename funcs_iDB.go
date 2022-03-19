@@ -135,7 +135,7 @@ func define_iDB_Vocabulary() {
 		}
 	}
 
-	for a, b := uint32(0), _Route_Weight(1); a <= uint32(_Route_Weight_max_rm); a, b = a+1, b<<int(_Route_Weight_bits_per_rm) {
+	for a, b := uint32(0), _INet_Routing(1); a <= uint32(_Route_Weight_max_rm); a, b = a+1, b<<int(_Route_Weight_bits_per_rm) {
 		var (
 			c = _Name(strings_join("_", _W_import_metric, pad(a, 2)))
 			d = _Name(strings_join("_", _W_export_metric, pad(a, 2)))
@@ -461,30 +461,23 @@ func parse_LDAP() (not_ok bool) {
 					v_Modify   = ldap.NewModifyRequest(v_DN.String(), nil)
 					v_IPPrefix = func() (outbound netip.Prefix) {
 						outbound = parse_interface(netip.ParsePrefix(f.GetAttributeValue("ipHostNumber"))).(netip.Prefix)
-						switch value, flag := b.M_IP_U[outbound]; {
-						case !outbound.IsValid() || outbound.Bits() != _U_mask_per_user || (value == nil && !flag): // need ip assigment
-							var (
-								interim = func() (interim netip.Prefix) {
-									for y, z := range b.M_IP_U {
-										switch {
-										case z == nil:
-											return y
-										}
-									}
-									log.Fatalf("not enough user ip space")
-									not_ok = true
-									return
-								}()
-							)
-							log.Debugf("LDAP DB inconsistent! UID '%v', incorrect ipHostNumber '%v' declared (must be IPPrefix/%v); ACTION: use ipHostNumber '%v'.", v_DN, outbound, _U_mask_per_user, interim)
-							v_Modify.Replace("ipHostNumber", []string{interim.String()})
-							return interim
-						case value != nil && flag: // duplicate ipHostNumber
-							log.Warnf("LDAP DB inconsistent! UID '%v', ipHostNumber '%v' already occupied by '%v'; ACTION: report.", v_DN, outbound, value.UID)
-							not_ok = true
-						case value == nil && flag:
+						switch value, flag := i_ui_ip[outbound]; {
+						case flag && value.User == nil: // ip found and free
 							log.Infof("UID '%v', ipHostNumber '%v'.", v_DN, outbound)
+							return
+						case flag && value.User != nil: // ip found but occupied, so need ip assigment
+							log.Warnf("LDAP DB inconsistent! UID '%v', ipHostNumber '%v' occupied by '%v'; ACTION: find new.", v_DN, outbound, value.User.UID)
+						case !flag: // ip not found, so need ip assigment
+							log.Warnf("LDAP DB inconsistent! UID '%v', ipHostNumber '%v' not suitable; ACTION: find new.", v_DN, outbound)
 						}
+						for y, z := range i_ui_ip {
+							switch {
+							case z.User == nil:
+								return y
+							}
+						}
+						log.Fatalf("not enough user ip space")
+						not_ok = true
 						return
 					}()
 					v_GID_List       = __GN_LDAP_Domain_Group{}
@@ -504,7 +497,7 @@ func parse_LDAP() (not_ok bool) {
 				)
 				d.User[v_UID_Number] = v_U
 				b.M_CN_U[v_DN] = v_U
-				b.M_IP_U[v_IPPrefix] = v_U
+				i_ui_ip[v_IPPrefix].User = v_U
 			}
 		}
 	}

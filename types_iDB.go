@@ -7,12 +7,14 @@ import (
 	"github.com/go-ldap/ldap/v3"
 )
 
-type __A_Peer map[_ASN]*i_Peer
-type __A_Peer_Group map[_ASN]*i_Peer_Group
+type __A_Peer map[_Inet_ASN]*i_Peer
+type __A_Peer_Group map[_Inet_ASN]*i_Peer_Group
 type __DN_LDAP_Domain map[_DN]*i_LDAP_Domain
 type __DN_LDAP_Domain_Group map[_DN]*i_LDAP_Domain_Group
 type __DN_LDAP_Domain_User map[_DN]*i_LDAP_Domain_User
 type __GN_LDAP_Domain_Group map[_GID_Number]*i_LDAP_Domain_Group
+type __INet_UI_IP_Table map[netip.Prefix]*_INet_UI_IP_Table
+type __INet_VI_IP_Table map[_VI_ID]*_INet_VI_IP_Table
 type __N_AB map[_Name]*i_AB
 type __N_AB_Set map[_Name]*i_AB_Set
 type __N_Content map[_Name]_Content
@@ -43,7 +45,7 @@ type __i_FW_FromTo []*i_FW_FromTo
 type __i_FW_Term []*i_FW_Term
 type __i_FW_Then []*i_FW_Then
 type __i_FromTo []*i_FromTo
-type __i_ID_Peer map[_VI_Peer_ID]*i_VI_Peer
+type __i_ID_Peer map[_VI_Conn_ID]*i_VI_Peer
 type __i_JA_Term []*i_JA_Term
 type __i_PO_PL_Match []*i_PO_PL_Match
 type __i_PO_PS_From []*i_PO_PS_From
@@ -78,7 +80,6 @@ type i_LDAP struct {
 	Domain       __DN_LDAP_Domain
 	M_CN_G       __DN_LDAP_Domain_Group
 	M_CN_U       __DN_LDAP_Domain_User
-	M_IP_U       __P_LDAP_Domain_User
 	Modify       *ldap.ModifyRequest
 }
 type i_LDAP_OLC struct {
@@ -125,7 +126,7 @@ type i_SS struct {
 
 // Peer Group
 type i_Peer_Group struct {
-	// ASN                 _ASN
+	// ASN                 _Inet_ASN
 	ASName              _Name
 	Domain_Name         _FQDN
 	GT_List             []_Name
@@ -137,9 +138,8 @@ type i_Peer_Group struct {
 	VI_RI               _Name
 	PName               _PName
 	SP_Default_Policy   _W
-	U_IPPrefix          netip.Prefix
-	VI_IPPrefix         netip.Prefix
-	VI_IPShift          uint32
+	VI_IP               __INet_VI_IP_Table
+	UI_IP               __INet_UI_IP_Table
 	Peer_List           __A_Peer
 	GT_Action           string
 	_Attribute_List
@@ -151,7 +151,7 @@ type i_Peer struct {
 	// VI_Local     __i_VI_Peer
 	// VI_Remote    __i_VI_Peer
 	Group        *i_Peer_Group
-	ASN          _ASN
+	ASN          _Inet_ASN
 	ASName       _Name
 	PName        _PName
 	Router_ID    netip.Addr
@@ -267,8 +267,8 @@ type i_Peer_RI_RO_RT_GW struct {
 	Table       _Name
 	Action      _W
 	Action_Flag _W
-	Metric      _Route_Weight
-	Preference  _Route_Weight
+	Metric      _INet_Routing
+	Preference  _INet_Routing
 	GT_Action   string
 	_Attribute_List
 }
@@ -284,7 +284,7 @@ type i_VI struct {
 	IPPrefix      netip.Prefix
 	Type          _Type
 	Communication _Communication
-	Route_Metric  _Route_Weight
+	Route_Metric  _INet_Routing
 	PSK           _Secret
 	Hub           bool
 	IKE_GCM       bool
@@ -296,7 +296,7 @@ type i_VI struct {
 	_Attribute_List
 }
 type i_VI_Peer struct {
-	ASN               _ASN
+	ASN               _Inet_ASN
 	RI                _Name
 	IF                _Name
 	IPPrefix          netip.Prefix
@@ -315,11 +315,11 @@ type i_VI_GT struct {
 	IPPrefix                 netip.Prefix
 	Type                     _Type
 	Communication            _Communication
-	Route_Metric             _Route_Weight
+	Route_Metric             _INet_Routing
 	PSK                      _Secret
 	IKE_GCM                  bool
 	IKE_No_NAT               bool
-	Local_ASN                _ASN
+	Local_ASN                _Inet_ASN
 	Local_RI                 _Name
 	Local_IF                 _Name
 	Local_IP                 netip.Addr
@@ -330,7 +330,7 @@ type i_VI_GT struct {
 	Local_Inner_IPPrefix     netip.Prefix
 	Local_IKE_Local_Address  bool
 	Local_IKE_Dynamic        bool
-	Remote_ASN               _ASN
+	Remote_ASN               _Inet_ASN
 	Remote_RI                _Name
 	Remote_IF                _Name
 	Remote_IP                netip.Addr
@@ -371,9 +371,9 @@ type i_Pool struct {
 	IPPrefix  netip.Prefix
 	RI        _Name
 	SZ        _Name
-	Port      _Port
-	Port_Low  _Port
-	Port_High _Port
+	Port      _INet_Port
+	Port_Low  _INet_Port
+	Port_High _INet_Port
 	GT_Action string
 	_Attribute_List
 }
@@ -388,13 +388,13 @@ type i_Rule_Set struct {
 	_Attribute_List
 }
 type i_FromTo struct {
-	AB        _Name // NAT_Destination
-	IF        _Name // NAT_Source
-	RG        _Name // NAT_Source
-	RI        _Name // NAT_Source
-	SZ        _Name // NAT_Source
-	Port_Low  _Port // NAT_Destination
-	Port_High _Port // NAT_Destination
+	AB        _Name      // NAT_Destination
+	IF        _Name      // NAT_Source
+	RG        _Name      // NAT_Source
+	RI        _Name      // NAT_Source
+	SZ        _Name      // NAT_Source
+	Port_Low  _INet_Port // NAT_Destination
+	Port_High _INet_Port // NAT_Destination
 	GT_Action string
 	_Attribute_List
 }
@@ -413,8 +413,8 @@ type i_Then struct {
 	Pool        _Name
 	AB          _Name
 	RI          _Name
-	Port_Low    _Port
-	Port_High   _Port
+	Port_Low    _INet_Port
+	Port_High   _INet_Port
 	GT_Action   string
 	_Attribute_List
 }
@@ -443,7 +443,7 @@ type i_JA struct {
 type i_JA_Term struct {
 	Name             _Name
 	Protocol         _Protocol
-	Destination_Port _Port
+	Destination_Port _INet_Port
 	GT_Action        string
 	_Attribute_List
 }
@@ -483,7 +483,7 @@ type i_PO_PS_From struct {
 type i_PO_PS_Then struct {
 	Action      _W
 	Action_Flag _W
-	Metric      _Route_Weight
+	Metric      _INet_Routing
 	GT_Action   string
 	_Attribute_List
 }

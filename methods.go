@@ -2,7 +2,9 @@ package main
 
 import (
 	"crypto/rand"
+	"encoding/binary"
 	"math/big"
+	"net/netip"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -338,5 +340,87 @@ func (receiver *_Communication) parse(_comm _Communication) _Communication {
 		fallthrough
 	default:
 		return _comm
+	}
+}
+func (receiver *__INet_VI_IP_Table) generate(inbound netip.Prefix, conn_bits _INet_Routing) {
+	var (
+		ip_bits = get_IP_Bits(inbound)
+	)
+	switch flag, mask := inbound.IsValid(), inbound.Bits(); {
+	case !flag || mask == -1 || int(conn_bits) > int(ip_bits)-mask || (ip_bits != 32 && ip_bits != 128):
+		log.Warnf("IP Table '%v', subnetting '%v': invalid data; ACTION: use default '%v/%v' with subnetting '%v'.", inbound, conn_bits, _VIx_Addr, _VIx_bits, _VIx_IF_bits)
+		inbound = parse_interface(
+			parse_interface(
+				netip.ParseAddr(_VIx_Addr)).(netip.Addr).Prefix(int(_VIx_bits))).(netip.Prefix)
+		conn_bits = _VIx_IF_bits
+		ip_bits = get_IP_Bits(inbound)
+	}
+
+	var (
+		conn_mask     = ip_bits - conn_bits
+		bits          = ip_bits - _INet_Routing(inbound.Bits())
+		total_VI_Conn = _INet_Routing(1 << conn_bits)
+		total_VI      = 1 << bits / total_VI_Conn
+		min_VI        = _VI_ID(0)
+		// max_VI        = total_VI - 1
+		min_VI_Conn = _VI_Conn_ID(0)
+		// max_VI_Conn   = total_VI_Conn - 1
+		curr       = binary.BigEndian.Uint32(inbound.Addr().AsSlice()) + uint32(total_VI*total_VI_Conn)
+		curr_slice = make([]byte, 4)
+		curr_IP    netip.Addr
+	)
+
+	for a := _VI_ID(total_VI); a > min_VI; a-- {
+		(*receiver)[a] = &_INet_VI_IP_Table{}
+		(*receiver)[a].Conn = make([]netip.Prefix, total_VI_Conn)
+		for c := _VI_Conn_ID(total_VI_Conn); c > min_VI_Conn; c-- {
+			curr--
+			binary.BigEndian.PutUint32(curr_slice, curr)
+			curr_IP = parse_interface(netip.AddrFromSlice(curr_slice)).(netip.Addr)
+			(*receiver)[a].Conn[c-1] = convert_netip_Addr_Prefix(&curr_IP)
+		}
+		(*receiver)[a].IPPrefix = parse_interface(curr_IP.Prefix(int(conn_mask))).(netip.Prefix)
+	}
+}
+func (receiver *__INet_UI_IP_Table) generate(inbound netip.Prefix, conn_bits _INet_Routing) {
+	var (
+		ip_bits = get_IP_Bits(inbound)
+	)
+	switch flag, mask := inbound.IsValid(), inbound.Bits(); {
+	case !flag || mask == -1 || int(conn_bits) > int(ip_bits)-mask || (ip_bits != 32 && ip_bits != 128):
+		log.Warnf("IP Table '%v', subnetting '%v': invalid data; ACTION: use default '%v/%v' with subnetting '%v'.", inbound, conn_bits, _UIx_Addr, _UIx_bits, _UIx_IP_bits)
+		inbound = parse_interface(
+			parse_interface(
+				netip.ParseAddr(_UIx_Addr)).(netip.Addr).Prefix(int(_UIx_bits))).(netip.Prefix)
+		conn_bits = _UIx_IP_bits
+		ip_bits = get_IP_Bits(inbound)
+	}
+
+	var (
+		conn_mask     = ip_bits - conn_bits
+		bits          = ip_bits - _INet_Routing(inbound.Bits())
+		total_UI_Conn = _INet_Routing(1 << conn_bits)
+		total_UI      = 1 << bits / total_UI_Conn
+		min_UI        = _INet_Routing(0)
+		// max_UI        = total_UI - 1
+		min_UI_Conn = _INet_Routing(0)
+		// max_UI_Conn   = total_UI_Conn - 1
+		curr       = binary.BigEndian.Uint32(inbound.Addr().AsSlice()) + uint32(total_UI*total_UI_Conn)
+		curr_slice = make([]byte, 4)
+		curr_IP    netip.Addr
+	)
+
+	for a := total_UI; a > min_UI; a-- {
+		var (
+			v_Output = &_INet_UI_IP_Table{}
+		)
+		v_Output.Conn = make([]netip.Prefix, total_UI_Conn)
+		for c := total_UI_Conn; c > min_UI_Conn; c-- {
+			curr--
+			binary.BigEndian.PutUint32(curr_slice, curr)
+			curr_IP = parse_interface(netip.AddrFromSlice(curr_slice)).(netip.Addr)
+			v_Output.Conn[c-1] = convert_netip_Addr_Prefix(&curr_IP)
+		}
+		(*receiver)[parse_interface(curr_IP.Prefix(int(conn_mask))).(netip.Prefix)] = v_Output
 	}
 }

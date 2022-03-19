@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/binary"
 	"fmt"
 	"net/netip"
 	"os"
@@ -102,7 +101,7 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 	switch value := (inbound).(type) {
 	case *string:
 		return *value
-	case *_ASN:
+	case *_Inet_ASN:
 		return (*value).String()
 	case *_W:
 		return (*value).String()
@@ -128,11 +127,11 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 		return (*value).String()
 	case *_PName:
 		return (*value).String()
-	case *_Port:
+	case *_INet_Port:
 		return (*value).String()
 	case *_Protocol:
 		return (*value).String()
-	case *_Route_Weight:
+	case *_INet_Routing:
 		return (*value).String()
 	case *_Secret:
 		return (*value).String()
@@ -142,7 +141,7 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 		return (*value).String()
 	case *_VI_ID:
 		return (*value).String()
-	case *_VI_Peer_ID:
+	case *_VI_Conn_ID:
 		return (*value).String()
 	case *[]byte:
 		return string(*value)
@@ -162,7 +161,7 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 		return (*value).String()
 	case string:
 		return value
-	case _ASN:
+	case _Inet_ASN:
 		return value.String()
 	case _W:
 		return value.String()
@@ -188,11 +187,11 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 		return value.String()
 	case _PName:
 		return value.String()
-	case _Port:
+	case _INet_Port:
 		return value.String()
 	case _Protocol:
 		return value.String()
-	case _Route_Weight:
+	case _INet_Routing:
 		return value.String()
 	case _Secret:
 		return value.String()
@@ -202,7 +201,7 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 		return value.String()
 	case _VI_ID:
 		return value.String()
-	case _VI_Peer_ID:
+	case _VI_Conn_ID:
 		return value.String()
 	case []byte:
 		return string(value)
@@ -269,13 +268,6 @@ func split_2_string(inbound interface{}, re *regexp.Regexp, target ...*string) {
 	}
 }
 
-func get_VI_IPPrefix(v_Peer *i_Peer, vi_id _VI_ID, peer_id _VI_Peer_ID) netip.Prefix {
-	var (
-		b = make([]byte, 4)
-	)
-	binary.BigEndian.PutUint32(b, v_Peer.Group.VI_IPShift+uint32(vi_id*4)+uint32(peer_id))
-	return netip.PrefixFrom(parse_interface(netip.AddrFromSlice(b)).(netip.Addr), 30)
-}
 func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound _Host_Inbound_Traffic_List) {
 	outbound = _Host_Inbound_Traffic_List{
 		Services:  map[_Service]bool{},
@@ -358,7 +350,7 @@ func write_file() (not_ok bool) {
 	return !not_ok
 }
 
-func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, port, port_low, port_high _Port) (outbound string) {
+func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, port, port_low, port_high _INet_Port) (outbound string) {
 	switch {
 	// case port != 0:
 	// 	outbound = port.String()
@@ -409,4 +401,22 @@ func strings_join(delimiter string, inbound ...interface{}) (outbound string) {
 
 func convert_netip_Addr_Prefix(inbound *netip.Addr) (outbound netip.Prefix) {
 	return parse_interface((*inbound).Prefix((*inbound).BitLen())).(netip.Prefix)
+}
+func get_IP_Bits(inbound interface{}) (outbound _INet_Routing) {
+	var (
+		interim netip.Addr
+	)
+	switch value := inbound.(type) {
+	case netip.Prefix:
+		interim = value.Addr()
+	case netip.Addr:
+		interim = value
+	}
+	switch flag, flag4, flag6 := interim.IsValid(), interim.Is4(), interim.Is6(); {
+	case flag && flag4:
+		return 32
+	case flag && flag6:
+		return 128
+	}
+	return
 }

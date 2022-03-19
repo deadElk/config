@@ -36,6 +36,8 @@ func main() {
 	}
 
 	define_iDB_Vocabulary()
+	i_vi_ip.generate(_S_VI_IPPrefix, _VIx_IF_bits)
+	i_ui_ip.generate(_S_UI_IPPrefix, _UIx_IP_bits)
 
 	switch {
 	case !read_cDB():

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/binary"
 	"net/netip"
 	"net/url"
 	"regexp"
@@ -10,8 +9,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (receiver cDB_N_List) parse() (not_ok bool) {
-	for _, b := range receiver { // parse all Vocabularies
+func (receiver cDB_N_List) parse() (not_ok bool) { // parse everything in order of dependency.
+	for _, b := range receiver {
 		switch {
 		case b.Reserved:
 			continue
@@ -22,24 +21,30 @@ func (receiver cDB_N_List) parse() (not_ok bool) {
 		b.PS.parse()
 		b.Peer.parse_Vocabulary()
 	}
-	for _, b := range receiver { // parse Peer Groups, and their Peers (may depend on Vocabularies)
+	for _, b := range receiver {
 		b.parse()
 	}
-	for _, b := range receiver { // parse Virtual Interfaces and LDAP user databases (may depend on Peers)
+	for _, b := range receiver {
+		switch {
+		case b.Reserved:
+			continue
+		}
+		b.LDAP.parse()
+	}
+	for _, b := range receiver {
 		switch {
 		case b.Reserved:
 			continue
 		}
 		b.VI.parse()
-		b.LDAP.parse()
 	}
 	return !not_ok
 }
 
 func (receiver *cDB) parse() {
 	var (
-		v_PG_ASN = func() (outbound _ASN) {
-			outbound = _ASN(parse_interface(strconv.ParseUint(re_digit.FindString(receiver.XMLName.Local), 10, 32)).(uint64))
+		v_PG_ASN = func() (outbound _Inet_ASN) {
+			outbound = _Inet_ASN(parse_interface(strconv.ParseUint(re_digit.FindString(receiver.XMLName.Local), 10, 32)).(uint64))
 			switch {
 			case outbound == 0:
 				return _S_Group
@@ -60,22 +65,8 @@ func (receiver *cDB) parse() {
 	}
 
 	var (
-		v_PName      = pad(v_PG_ASN, 10)
-		v_ASName     = _Name(strings_join("", "AS", v_PName))
-		v_U_IPPrefix = func() (outbound netip.Prefix) {
-			switch {
-			case receiver.U_IPPrefix.IsValid():
-				return receiver.U_IPPrefix
-			}
-			return _S_U_IPPrefix
-		}()
-		v_VI_IPPrefix, v_VI_IPShift = func() (v_VI_IPPrefix netip.Prefix, v_VI_IPShift uint32) {
-			switch {
-			case receiver.VI_IPPrefix.IsValid():
-				return receiver.VI_IPPrefix, binary.BigEndian.Uint32(receiver.VI_IPPrefix.Addr().AsSlice())
-			}
-			return _S_VI_IPPrefix, _S_VI_IPShift
-		}()
+		v_PName   = pad(v_PG_ASN, 10)
+		v_ASName  = _Name(strings_join("", "AS", v_PName))
 		v_GT_List = func() (outbound []_Name) {
 			var (
 				s = make(map[_Name]bool)
@@ -116,9 +107,8 @@ func (receiver *cDB) parse() {
 		VI_RI:               _S_Master_RI, // _S_VI_RI,
 		PName:               v_PName,
 		SP_Default_Policy:   _S_SP_Default_Policy,
-		U_IPPrefix:          v_U_IPPrefix,
-		VI_IPPrefix:         v_VI_IPPrefix,
-		VI_IPShift:          v_VI_IPShift,
+		VI_IP:               nil,
+		UI_IP:               nil,
 		Peer_List:           __A_Peer{},
 		GT_Action:           "",
 		_Attribute_List:     receiver._Attribute_List,
@@ -277,7 +267,7 @@ func (receiver cDB_Peer_List) parse_Vocabulary() {
 		b.PS.parse()
 	}
 }
-func (receiver cDB_Peer_List) parse(v_PG_ASN _ASN) {
+func (receiver cDB_Peer_List) parse(v_PG_ASN _Inet_ASN) {
 	for _, b := range receiver {
 		switch _, flag := i_peer[b.ASN]; {
 		case flag:
@@ -384,7 +374,7 @@ func (receiver cDB_VI_List) parse() {
 			// IPPrefix:      get_VI_IPPrefix(nil, b.ID, 0).Masked(),
 			Type:          _Type_st,
 			Communication: b.Communication.parse(_S_Comm[_comm_vi]),
-			Route_Metric: func() _Route_Weight {
+			Route_Metric: func() _INet_Routing {
 				switch {
 				case b.Route_Metric > _Route_Weight_max_rm:
 					return 0
@@ -414,7 +404,7 @@ func (receiver cDB_VI_List) parse() {
 			}
 
 			// todo: WTF ....
-			i_vi[b.ID].IPPrefix = get_VI_IPPrefix(i_peer[d.ASN], b.ID, 0).Masked()
+			i_vi[b.ID].IPPrefix = i_vi_ip[b.ID].IPPrefix
 
 			var (
 				v_RI                = d.RI.validate_RI(i_peer[d.ASN], "", i_peer[d.ASN].Group.Mgmt_RI)
@@ -473,7 +463,7 @@ func (receiver cDB_VI_List) parse() {
 				NAT:               v_NAT,
 				Hub:               d.Hub,
 				Inner_RI:          d.Inner_RI.validate_RI(i_peer[d.ASN], i_peer[d.ASN].Group.VI_RI, i_peer[d.ASN].Group.Mgmt_RI),
-				Inner_IPPrefix:    get_VI_IPPrefix(i_peer[d.ASN], b.ID, d.ID+1),
+				Inner_IPPrefix:    i_vi_ip[b.ID].Conn[d.ID+1],
 				IKE_Local_Address: v_IKE_Local_Address,
 				IKE_Dynamic:       v_IKE_Dynamic,
 				GT_Action:         "",
@@ -483,8 +473,8 @@ func (receiver cDB_VI_List) parse() {
 		}
 
 		var (
-			_first, _second _VI_Peer_ID
-			_total          = _VI_Peer_ID(len(v_vi_peer_list))
+			_first, _second _VI_Conn_ID
+			_total          = _VI_Conn_ID(len(v_vi_peer_list))
 			_if             = _Name(strings_join(".", c_VI_Action[i_vi[b.ID].Type], b.ID))
 		)
 		switch {
@@ -634,17 +624,6 @@ func (receiver cDB_LDAP_List) parse() {
 			Domain:       __DN_LDAP_Domain{},
 			M_CN_G:       __DN_LDAP_Domain_Group{},
 			M_CN_U:       __DN_LDAP_Domain_User{},
-			M_IP_U: func() (outbound __P_LDAP_Domain_User) {
-				outbound = make(__P_LDAP_Domain_User, _U_max_uX)
-				for c, d := 0, binary.BigEndian.Uint32(_S_U_IPPrefix.Addr().AsSlice()); c <= _U_max_uX; c, d = c+1, d+_U_ips_per_user {
-					var (
-						e = make([]byte, 4)
-					)
-					binary.BigEndian.PutUint32(e, d)
-					outbound[netip.PrefixFrom(parse_interface(netip.AddrFromSlice(e)).(netip.Addr), _U_mask_per_user)] = nil
-				}
-				return
-			}(),
 		}
 	}
 }

@@ -41,7 +41,7 @@ const (
 const (
 	_S_Verbosity                        = log.InfoLevel
 	_S_Domain_Name         _FQDN        = "example.net"
-	_S_Group               _ASN         = 4200000000
+	_S_Group               _Inet_ASN    = 4200000000
 	_S_Host_RI                          = _Name_junos_host
 	_S_Master_RI                        = _Name_master
 	_S_Mgmt_IF                          = _Name_fxp0_0
@@ -62,18 +62,20 @@ const (
 	_Communication_ptp  = _Communication(_W_ptp)
 )
 const (
-	_Route_Weight_bits_per_rm _Route_Weight = 2
+	_Route_Weight_bits_per_rm _INet_Routing = 2
 	_Route_Weight_max_rm                    = 32/_Route_Weight_bits_per_rm - 1
-	_VI_mask_bits                           = 16
-	_VI_subnet_bits                         = 32 - _VI_mask_bits
-	_VI_bits_per_if                         = 2
-	_VI_max_ifX                             = 1 << (_VI_subnet_bits - _VI_bits_per_if)
-	_U_mask_bits                            = 12
-	_U_subnet_bits                          = 32 - _U_mask_bits
-	_U_bits_per_user                        = 5
-	_U_mask_per_user                        = 32 - _U_bits_per_user
-	_U_ips_per_user                         = 1 << _U_bits_per_user
-	_U_max_uX                               = 1 << (_U_subnet_bits - _U_bits_per_user)
+	_VIx_Addr                               = "192.168.0.0"
+	_VIx_mask                 _INet_Routing = 16
+	_VIx_bits                               = 32 - _VIx_mask
+	_VIx_IF_bits              _INet_Routing = 2
+	_VIx_total                _INet_Routing = 1 << (_VIx_bits - _VIx_IF_bits)
+	_UIx_Addr                               = "172.16.0.0"
+	_UIx_mask                 _INet_Routing = 12
+	_UIx_bits                               = 32 - _UIx_mask
+	_UIx_IP_bits              _INet_Routing = 5
+	_UIx_IP_mask                            = 32 - _UIx_IP_bits
+	_UIx_IPx                  _INet_Routing = 1 << _UIx_IP_bits
+	_UIx_total                _INet_Routing = 1 << (_UIx_bits - _UIx_IP_bits)
 )
 const (
 	_Mask_exact    = _Mask(_W_exact)
