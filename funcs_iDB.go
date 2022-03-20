@@ -455,6 +455,12 @@ func parse_GT() (not_ok bool) {
 func parse_LDAP() (not_ok bool) {
 	for a, b := range i_ldap {
 		for _, d := range b.Domain {
+			func() {
+				var (
+					v_SKV = make(__I_SKV_DB_Key)
+				)
+				d.SKV = v_SKV
+			}()
 			for _, f := range d.Raw_User.Entries {
 				var (
 					v_U = &i_LDAP_Domain_User{
@@ -464,7 +470,7 @@ func parse_LDAP() (not_ok bool) {
 						GID_Number: _GID_Number(string_uint64(f.GetAttributeValue("gidNumber"))),
 						IPPrefix:   netip.Prefix{},
 						GID_List:   __GN_LDAP_Domain_Group{},
-						PKV:        nil,
+						SKV:        nil,
 						Modify:     nil,
 						Entry:      f,
 					}
@@ -494,22 +500,21 @@ func parse_LDAP() (not_ok bool) {
 				default: // ip not found, so need ip assigment
 					log.Debugf("LDAP '%v': UID '%v', ipHostNumber not defined; ACTION: find new.", a.String(), v_U.DN)
 				}
+
 				var (
-					v_SSH_Public_Key = make(map[string]string) // modification candidate -> user's SSH keys
-					v_P12            = make(map[string]string) // modification candidate -> user's P12 (for vpn as example)
-					v_PKV            = make(__N_PKV_DB_Key)    // modification candidate -> user's etc
+					v_SKV = make(__I_SKV_DB_Key) // modification candidate -> user's SSH, P12, etc
 				)
 				for _, z := range f.GetAttributeValues("sshPublicKey") {
-					v_SSH_Public_Key[z] = ""
+					v_SKV[_pkv_ssh].Value[_Name(z)] = nil
 				}
 				for _, z := range f.GetAttributeValues("userPKCS12") {
-					v_P12[z] = ""
+					v_SKV[_pkv_p12].Value[_Name(z)] = nil
 				}
 				for _, z := range f.GetAttributeValues("labeledURI") {
-					v_PKV[_Name(z)] = nil
+					v_SKV[_pkv_etc].Value[_Name(z)] = nil
 				}
 
-				v_U.PKV = v_PKV
+				v_U.SKV = v_SKV
 
 				d.User[v_U.UID_Number] = v_U
 				b.M_CN_U[v_U.DN] = v_U
@@ -751,7 +756,7 @@ func read_ldap() (not_ok bool) {
 					Raw_DC:    _dc_result,
 					Raw_Group: _group_result,
 					Raw_User:  _user_result,
-					PKV:       __N_PKV_DB_Key{},
+					SKV:       nil,
 					Modify:    nil,
 					Entry:     nil,
 				}
@@ -763,7 +768,6 @@ func read_ldap() (not_ok bool) {
 }
 func write_ldap() (not_ok bool) {
 	for a, b := range i_ldap {
-		break
 		func() {
 			var (
 				_ldap   *ldap.Conn

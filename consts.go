@@ -36,6 +36,11 @@ const (
 	_dir_etc
 )
 const (
+	_pkv_etc _ID = iota
+	_pkv_ssh
+	_pkv_p12
+)
+const (
 	_file_host_list _ID = iota
 )
 const (
