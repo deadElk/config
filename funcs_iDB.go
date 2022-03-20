@@ -472,12 +472,12 @@ func parse_LDAP() (not_ok bool) {
 						outbound = parse_interface(netip.ParsePrefix(f.GetAttributeValue("ipHostNumber"))).(netip.Prefix)
 						switch value, flag := i_ui_ip[outbound]; {
 						case flag && value.User == nil: // ip found and free
-							log.Infof("UID '%v', ipHostNumber '%v'.", v_U.DN, outbound)
+							log.Debugf("UID '%v', ipHostNumber '%v'.", v_U.DN, outbound)
 							return
 						case flag && value.User != nil: // ip found but occupied, so need ip assigment
 							log.Warnf("LDAP DB inconsistent! UID '%v', ipHostNumber '%v' occupied by '%v'; ACTION: find new.", v_U.DN, outbound, value.User.UID)
 						case !flag: // ip not found, so need ip assigment
-							log.Debugf("LDAP DB inconsistent! UID '%v', ipHostNumber '%v' not suitable; ACTION: find new.", v_U.DN, outbound)
+							log.Warnf("LDAP DB inconsistent! UID '%v', ipHostNumber '%v' not suitable; ACTION: find new.", v_U.DN, outbound)
 						}
 						for y, z := range i_ui_ip {
 							switch {
@@ -751,10 +751,11 @@ func write_ldap() (not_ok bool) {
 				return
 			}
 			for _, d := range b.Domain {
-				// switch {
-				// case d.DN != "dc=domain,dc=tld":
-				// 	continue
-				// }
+				switch d.DN {
+				case "dc=domain,dc=tld", "dc=f12,dc=tld":
+				default:
+					continue
+				}
 				for _, f := range d.User {
 					switch {
 					case f.Modify != nil:
