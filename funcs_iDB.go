@@ -453,7 +453,7 @@ func parse_GT() (not_ok bool) {
 }
 
 func parse_LDAP() (not_ok bool) {
-	for _, b := range i_ldap {
+	for a, b := range i_ldap {
 		for _, d := range b.Domain {
 			for _, f := range d.Raw_User.Entries {
 				var (
@@ -467,29 +467,35 @@ func parse_LDAP() (not_ok bool) {
 						SSH_Public_Key: nil,
 						P12:            nil,
 						Modify:         nil,
+						Entry:          f,
 					}
-					v_IPPrefix = func() (outbound netip.Prefix) { // modification candidate -> user's ip space
-						outbound = parse_interface(netip.ParsePrefix(f.GetAttributeValue("ipHostNumber"))).(netip.Prefix)
-						switch value, flag := i_ui_ip[outbound]; {
-						case flag && value.User == nil: // ip found and free
-							log.Debugf("UID '%v', ipHostNumber '%v'.", v_U.DN, outbound)
-							return
-						case flag && value.User != nil: // ip found but occupied, so need ip assigment
-							log.Warnf("LDAP DB inconsistent! UID '%v', ipHostNumber '%v' occupied by '%v'; ACTION: find new.", v_U.DN, outbound, value.User.UID)
-						case !flag: // ip not found, so need ip assigment
-							log.Warnf("LDAP DB inconsistent! UID '%v', ipHostNumber '%v' not suitable; ACTION: find new.", v_U.DN, outbound)
-						}
-						for y, z := range i_ui_ip {
-							switch {
-							case z.User == nil:
-								v_U.modify("ipHostNumber", []string{y.String()})
-								return y
-							}
-						}
-						log.Fatalf("not enough user ip space")
-						not_ok = true
-						return
-					}()
+				)
+				switch {
+				case v_U.UID_Number == 0:
+					log.Errorf("LDAP DB '%v' inconsistent! UID '%v': UID_Number is '%v'; ACTION: report.", a.String(), v_U.DN, v_U.GID_Number)
+					not_ok = true
+					fallthrough
+				case v_U.GID_Number == 0:
+					log.Warnf("LDAP DB '%v' inconsistent! primary GID_Number is not defined for UID '%v'; ACTION: skip user.", a.String(), f.DN)
+					continue
+				}
+				switch v_ipHostNumber := f.GetAttributeValue("ipHostNumber"); { // modification candidate -> user's ip space
+				case len(v_ipHostNumber) != 0:
+					var (
+						v_IPPrefix = parse_interface(netip.ParsePrefix(f.GetAttributeValue("ipHostNumber"))).(netip.Prefix)
+					)
+					switch value, flag := i_ui_ip[v_IPPrefix]; {
+					case flag && value.User == nil: // ip found and free
+						log.Debugf("UID '%v', ipHostNumber '%v'.", v_U.DN, v_IPPrefix)
+						v_U.IPPrefix = v_IPPrefix
+						i_ui_ip[v_U.IPPrefix].User = v_U
+					case flag && value.User != nil: // ip found but occupied, so need ip assigment
+						log.Warnf("LDAP DB '%v' inconsistent! UID '%v', ipHostNumber '%v' occupied by '%v'; ACTION: find new.", a.String(), v_U.DN, v_IPPrefix, value.User.DN)
+					}
+				default: // ip not found, so need ip assigment
+					log.Debugf("LDAP '%v': UID '%v', ipHostNumber not defined; ACTION: find new.", a.String(), v_U.DN)
+				}
+				var (
 					v_SSH_Public_Key = func() (outbound map[string]string) { // modification candidate -> user's SSH keys
 						return
 					}()
@@ -497,28 +503,38 @@ func parse_LDAP() (not_ok bool) {
 						return
 					}()
 				)
-				switch {
-				case v_U.UID_Number == 0:
-					log.Errorf("LDAP DB inconsistent! user's UID_Number is '%v'; ACTION: report.", v_U.GID_Number)
-					not_ok = true
-					fallthrough
-				case v_U.GID_Number == 0:
-					log.Warnf("LDAP DB inconsistent! primary GID_Number is not defined for UID '%v'; ACTION: skip user.", f.DN)
-					continue
-				}
-
-				v_U.IPPrefix = v_IPPrefix
 				v_U.SSH_Public_Key = v_SSH_Public_Key
 				v_U.P12 = v_P12
 
 				d.User[v_U.UID_Number] = v_U
 				b.M_CN_U[v_U.DN] = v_U
-				i_ui_ip[v_U.IPPrefix].User = v_U
 			}
 		}
 	}
-	for _, b := range i_ldap {
+	for a, b := range i_ldap {
 		for _, d := range b.Domain {
+			for _, f := range d.User {
+				switch _, flag := i_ui_ip[f.IPPrefix]; {
+				case flag && i_ui_ip[f.IPPrefix].User == f:
+					continue
+				}
+				var (
+					v_IPPrefix = func() (outbound netip.Prefix) { // modification candidate -> user's ip space
+						for y, z := range i_ui_ip {
+							switch {
+							case z.User == nil:
+								f.modify("ipHostNumber", []string{y.String()})
+								log.Infof("LDAP '%v': UID '%v', found new ipHostNumber '%v'; ACTION: report.", a.String(), f.DN, y)
+								return y
+							}
+						}
+						log.Fatalf("not enough user ip space")
+						not_ok = true
+						return
+					}()
+				)
+				f.IPPrefix = v_IPPrefix
+			}
 			for _, f := range d.Raw_Group.Entries {
 				var (
 					v_G = &i_LDAP_Domain_Group{
@@ -530,6 +546,7 @@ func parse_LDAP() (not_ok bool) {
 						Owner_UID_List: nil,
 						Owner_GID_List: nil,
 						Modify:         nil,
+						Entry:          f,
 					}
 					v_UID_List = func() (outbound __UN_LDAP_Domain_User) {
 						outbound = make(__UN_LDAP_Domain_User)
@@ -568,7 +585,7 @@ func parse_LDAP() (not_ok bool) {
 				)
 				switch {
 				case v_G.GID_Number == 0:
-					log.Errorf("LDAP DB inconsistent! user's GID_Number is '%v'; ACTION: report.", v_G.GID_Number)
+					log.Errorf("LDAP DB inconsistent! GID '%v': GID_Number is '%v'; ACTION: report.", v_G.DN, v_G.GID_Number)
 					not_ok = true
 				}
 
@@ -751,11 +768,11 @@ func write_ldap() (not_ok bool) {
 				return
 			}
 			for _, d := range b.Domain {
-				switch d.DN {
-				case "dc=domain,dc=tld", "dc=f12,dc=tld":
-				default:
-					continue
-				}
+				// switch d.DN {
+				// case "dc=domain,dc=tld", "dc=f12,dc=tld":
+				// default:
+				// 	continue
+				// }
 				for _, f := range d.User {
 					switch {
 					case f.Modify != nil:
@@ -766,13 +783,13 @@ func write_ldap() (not_ok bool) {
 						case len(f.Modify.Changes) > 1:
 							_s = "s"
 						}
-						log.Infof("LDAP '%v': found modification%v for UID '%v', details: '%v'; ACTION: upload.", a.String(), _s, f.DN, f.Modify)
+						log.Debugf("LDAP '%v': found modification%v for UID '%v', details: '%v'; ACTION: upload.", a.String(), _s, f.DN, f.Modify)
 						switch _result, err = _ldap.ModifyWithResult(f.Modify); {
 						case err != nil:
 							log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
 							not_ok = true
 						}
-						log.Infof("LDAP '%v': modification result: '%v'; ACTION: report.", a.String(), _result)
+						log.Debugf("LDAP '%v': modification result: '%v'; ACTION: report.", a.String(), _result)
 					}
 				}
 				// for _, f := range d.Group { // GID within GID member/owner recursive parse

@@ -92,6 +92,7 @@ type i_LDAP_Domain struct {
 	Raw_Group *ldap.SearchResult
 	Raw_User  *ldap.SearchResult
 	Modify    *ldap.ModifyRequest
+	Entry     *ldap.Entry
 }
 type i_LDAP_Domain_OLC struct {
 	DN _DN
@@ -105,6 +106,7 @@ type i_LDAP_Domain_Group struct { // gidNumber: index
 	Owner_UID_List __UN_LDAP_Domain_User  // owner: index = owner (uidNumber here), value is a pointer.
 	Owner_GID_List __GN_LDAP_Domain_Group // CAUTION >>>> GID includes GID <<<< owner: index = owner (gidNumber here), value is a pointer.
 	Modify         *ldap.ModifyRequest
+	Entry          *ldap.Entry
 }
 type i_LDAP_Domain_User struct { // uidNumber: index
 	DN             _DN
@@ -116,6 +118,7 @@ type i_LDAP_Domain_User struct { // uidNumber: index
 	SSH_Public_Key map[string]string      // sshPublicKey: index = Comment, value = key
 	P12            map[string]string      // userPKCS12: index = CN, value = p12
 	Modify         *ldap.ModifyRequest
+	Entry          *ldap.Entry
 }
 
 // ShadowSocks

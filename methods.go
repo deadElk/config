@@ -433,7 +433,15 @@ func (receiver *i_LDAP_Domain_User) modify(attrType string, attrVals []string) {
 	}
 	switch {
 	case attrType == "ipHostNumber":
-		receiver.Modify.Add("objectClass", []string{"ipHost"})
+		func() {
+			for _, b := range receiver.Entry.GetAttributeValues("objectClass") {
+				switch {
+				case b == "ipHost":
+					return
+				}
+			}
+			receiver.Modify.Add("objectClass", []string{"ipHost"})
+		}()
 	}
 	receiver.Modify.Replace(attrType, attrVals)
 }
