@@ -455,12 +455,20 @@ func parse_GT() (not_ok bool) {
 func parse_LDAP() (not_ok bool) {
 	for a, b := range i_ldap {
 		for _, d := range b.Domain {
-			func() {
+			for _, f := range d.Raw_DC.Entries {
 				var (
-					v_SKV = make(__I_SKV_DB_Key)
+					v_SKV = __I_SKV_DB_Key{ // modification candidate -> domain's CA, CRL, etc
+						_pkv_ca:  &_SKV_DB_Key{Value: __N_SKV_DB_Value{}},
+						_pkv_crl: &_SKV_DB_Key{Value: __N_SKV_DB_Value{}},
+					}
 				)
-				d.SKV = v_SKV
-			}()
+				for _, z := range f.GetAttributeValues("cACertificate") {
+					v_SKV[_pkv_ca].Value[_Name(z)] = nil
+				}
+				for _, z := range f.GetAttributeValues("certificateRevocationList") {
+					v_SKV[_pkv_crl].Value[_Name(z)] = nil
+				}
+			}
 			for _, f := range d.Raw_User.Entries {
 				var (
 					v_U = &i_LDAP_Domain_User{
@@ -502,7 +510,11 @@ func parse_LDAP() (not_ok bool) {
 				}
 
 				var (
-					v_SKV = make(__I_SKV_DB_Key) // modification candidate -> user's SSH, P12, etc
+					v_SKV = __I_SKV_DB_Key{ // modification candidate -> user's SSH, P12, etc
+						_pkv_ssh: &_SKV_DB_Key{Value: __N_SKV_DB_Value{}},
+						_pkv_p12: &_SKV_DB_Key{Value: __N_SKV_DB_Value{}},
+						_pkv_etc: &_SKV_DB_Key{Value: __N_SKV_DB_Value{}},
+					}
 				)
 				for _, z := range f.GetAttributeValues("sshPublicKey") {
 					v_SKV[_pkv_ssh].Value[_Name(z)] = nil

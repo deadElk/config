@@ -29,6 +29,7 @@ const (
 const (
 	_dir_Config _ID = iota
 	_dir_Data
+	_dir_Data_Modify
 	_dir_GT
 	_dir_LDAP
 	_dir_PKI
@@ -38,6 +39,8 @@ const (
 const (
 	_pkv_etc _ID = iota
 	_pkv_ssh
+	_pkv_ca
+	_pkv_crl
 	_pkv_p12
 )
 const (

@@ -321,7 +321,7 @@ func read_file() (not_ok bool) {
 			})
 		default:
 			log.Warnf("directory '%v' read error '%v'; ACTION: report.", a, err)
-			not_ok = true
+			// not_ok = true
 			continue
 		}
 	}
