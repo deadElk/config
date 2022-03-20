@@ -51,9 +51,11 @@ const (
 	_S_VI_RI                            = _Name_VI
 	_S_cn_config                        = string(_W_cn____config)
 	_S_cn_db                            = string(_W_olcSuffix)
+	_S_cn_dc                            = string(_W_dn)
 	_S_cn_group                         = string(_W_cn)
 	_S_cn_user                          = string(_W_uid)
 	_S_filter_db                        = string(_W_objectClass_olcDatabaseConfig_objectClass_olcMdbConfig)
+	_S_filter_dc                        = string(_W_objectClass_dcObject)
 	_S_filter_group                     = string(_W_objectClass_posixGroup)
 	_S_filter_user                      = string(_W_objectClass_posixAccount)
 )
@@ -198,6 +200,7 @@ const (
 	_W_dhcpv6                                                    = _W_dhcp + _W_v6
 	_W_direct                                                 _W = "direct"
 	_W_discard                                                _W = "discard"
+	_W_dn                                                     _W = "dn"
 	_W_dns                                                    _W = "dns"
 	_W_dns__name                                                 = _W_dns + "-" + _W_name
 	_W_egp                                                    _W = "egp"
@@ -270,9 +273,11 @@ const (
 	_W_next__hop                                                 = _W_next + "-" + _W_hop
 	_W_next__table                                               = _W_next + "-" + _W_table
 	_W_objectClass                                            _W = "objectClass"
+	_W_dcObject                                               _W = "dcObject"
 	_W_objectClass_olcDatabaseConfig_objectClass_olcMdbConfig    = "(&(" + _W_objectClass + "=" + _W_olcDatabaseConfig + ")(" + _W_objectClass + "=" + _W_olcMdbConfig + "))"
 	_W_objectClass_posixAccount                                  = "(" + _W_objectClass + "=" + _W_posixAccount + ")"
 	_W_objectClass_posixGroup                                    = "(" + _W_objectClass + "=" + _W_posixGroup + ")"
+	_W_objectClass_dcObject                                      = "(" + _W_objectClass + "=" + _W_dcObject + ")"
 	_W_olcDatabaseConfig                                      _W = "olcDatabaseConfig"
 	_W_olcMdbConfig                                           _W = "olcMdbConfig"
 	_W_olcSuffix                                              _W = "olcSuffix"

@@ -65,6 +65,8 @@ type cDB_LDAP struct {
 	Secret       _Secret `xml:"bind_pw,attr"`
 	DB_Filter    string  `xml:"db_filter,attr"`
 	DB_CN        string  `xml:"db_cn,attr"`
+	DC_Filter    string  `xml:"dc_filter,attr"`
+	DC_CN        string  `xml:"dc_cn,attr"`
 	Group_Filter string  `xml:"group_filter,attr"`
 	Group_CN     string  `xml:"group_cn,attr"`
 	User_Filter  string  `xml:"user_filter,attr"`

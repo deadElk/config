@@ -21,6 +21,8 @@ type __N_Content map[_Name]_Content
 type __N_File_Data map[_Name]*i_File_Data
 type __N_JA map[_Name]*i_JA
 type __N_Name map[_Name]_Name
+type __N_PKV_DB_Key map[_Name]*_PKV_DB_Key
+type __N_PKV_DB_Value map[_Name]*_PKV_DB_Value
 type __N_PO_PL map[_Name]*i_PO_PL
 type __N_PO_PS map[_Name]*i_PO_PS
 type __N_Peer_IFM map[_Name]*i_Peer_IFM
@@ -73,6 +75,8 @@ type i_LDAP struct {
 	Secret       _Secret
 	DB_Filter    string
 	DB_CN        string
+	DC_Filter    string
+	DC_CN        string
 	Group_Filter string
 	Group_CN     string
 	User_Filter  string
@@ -93,8 +97,10 @@ type i_LDAP_Domain struct {
 	OLC       *i_LDAP_Domain_OLC
 	Group     __GN_LDAP_Domain_Group
 	User      __UN_LDAP_Domain_User
+	Raw_DC    *ldap.SearchResult
 	Raw_Group *ldap.SearchResult
 	Raw_User  *ldap.SearchResult
+	PKV       __N_PKV_DB_Key
 	Modify    *ldap.ModifyRequest
 	Entry     *ldap.Entry
 }
@@ -113,26 +119,24 @@ type i_LDAP_Domain_Group struct { // gidNumber: index
 	Entry          *ldap.Entry
 }
 type i_LDAP_Domain_User struct { // uidNumber: index
-	DN             _DN
-	UID_Number     _UID_Number
-	UID            _UID                   // uid
-	GID_Number     _GID_Number            // gidNumber
-	IPPrefix       netip.Prefix           // ipHostNumber (user's subnet)
-	GID_List       __GN_LDAP_Domain_Group // memberOf: index = memberOf (gidNumber here), value is a pointer.
-	SSH_Public_Key map[string]string      // sshPublicKey: index = Comment, value = key
-	P12            map[string]string      // userPKCS12: index = CN, value = p12
-	PKV_DB         map[_Name]*_PKV_DB_Key // x121Address: private [protocol][key]value DB
-	Modify         *ldap.ModifyRequest
-	Entry          *ldap.Entry
+	DN         _DN
+	UID_Number _UID_Number
+	UID        _UID                   // uid
+	GID_Number _GID_Number            // gidNumber
+	IPPrefix   netip.Prefix           // ipHostNumber (user's subnet)
+	GID_List   __GN_LDAP_Domain_Group // memberOf: index = memberOf (gidNumber here), value is a pointer.
+	PKV        __N_PKV_DB_Key         // sshPublicKey, userPKCS12, etc: private [protocol][key]value DB
+	Modify     *ldap.ModifyRequest
+	Entry      *ldap.Entry
 }
-
 type _PKV_DB_Key struct {
-	Value map[_Name]_PKV_DB_Value
+	Value __N_PKV_DB_Value
 }
 type _PKV_DB_Value struct {
-	URL    *url.URL
-	Cipher _Cipher
-	Secret _Secret
+	Protocol _INet_Protocol
+	Cipher   _Cipher
+	URL      *url.URL
+	Secret   _Secret
 }
 
 // Peer Group

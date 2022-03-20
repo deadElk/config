@@ -458,17 +458,15 @@ func parse_LDAP() (not_ok bool) {
 			for _, f := range d.Raw_User.Entries {
 				var (
 					v_U = &i_LDAP_Domain_User{
-						DN:             _DN(f.GetAttributeValue("entryDN")),
-						UID_Number:     _UID_Number(string_uint64(f.GetAttributeValue("uidNumber"))),
-						UID:            _UID(f.GetAttributeValue(b.User_CN)),
-						GID_Number:     _GID_Number(string_uint64(f.GetAttributeValue("gidNumber"))),
-						IPPrefix:       netip.Prefix{},
-						GID_List:       __GN_LDAP_Domain_Group{},
-						SSH_Public_Key: nil,
-						P12:            nil,
-						PKV_DB:         nil,
-						Modify:         nil,
-						Entry:          f,
+						DN:         _DN(f.GetAttributeValue("entryDN")),
+						UID_Number: _UID_Number(string_uint64(f.GetAttributeValue("uidNumber"))),
+						UID:        _UID(f.GetAttributeValue(b.User_CN)),
+						GID_Number: _GID_Number(string_uint64(f.GetAttributeValue("gidNumber"))),
+						IPPrefix:   netip.Prefix{},
+						GID_List:   __GN_LDAP_Domain_Group{},
+						PKV:        nil,
+						Modify:     nil,
+						Entry:      f,
 					}
 				)
 				switch {
@@ -497,9 +495,9 @@ func parse_LDAP() (not_ok bool) {
 					log.Debugf("LDAP '%v': UID '%v', ipHostNumber not defined; ACTION: find new.", a.String(), v_U.DN)
 				}
 				var (
-					v_SSH_Public_Key = make(map[string]string)      // modification candidate -> user's SSH keys
-					v_P12            = make(map[string]string)      // modification candidate -> user's P12 (for vpn as example)
-					v_X121Address    = make(map[_Name]*_PKV_DB_Key) // modification candidate -> user's labeledURIs
+					v_SSH_Public_Key = make(map[string]string) // modification candidate -> user's SSH keys
+					v_P12            = make(map[string]string) // modification candidate -> user's P12 (for vpn as example)
+					v_PKV            = make(__N_PKV_DB_Key)    // modification candidate -> user's etc
 				)
 				for _, z := range f.GetAttributeValues("sshPublicKey") {
 					v_SSH_Public_Key[z] = ""
@@ -508,12 +506,10 @@ func parse_LDAP() (not_ok bool) {
 					v_P12[z] = ""
 				}
 				for _, z := range f.GetAttributeValues("labeledURI") {
-					v_X121Address[_Name(z)] = nil
+					v_PKV[_Name(z)] = nil
 				}
 
-				v_U.SSH_Public_Key = v_SSH_Public_Key
-				v_U.P12 = v_P12
-				v_U.PKV_DB = v_X121Address
+				v_U.PKV = v_PKV
 
 				d.User[v_U.UID_Number] = v_U
 				b.M_CN_U[v_U.DN] = v_U
@@ -683,6 +679,27 @@ func read_ldap() (not_ok bool) {
 				}
 
 				var (
+					_dc_request = ldap.NewSearchRequest(
+						_dn.String(),
+						ldap.ScopeWholeSubtree,
+						ldap.DerefAlways,
+						0,
+						0,
+						false,
+						b.DC_Filter,
+						[]string{"*", "+"},
+						nil,
+					)
+					_dc_result *ldap.SearchResult
+				)
+				switch _dc_result, err = _ldap.Search(_dc_request); {
+				case err != nil:
+					log.Fatalf("LDAP '%v': search error '%v'; ACTION: fatal.", a.String(), err)
+					not_ok = true
+					continue
+				}
+
+				var (
 					_group_request = ldap.NewSearchRequest(
 						_dn.String(),
 						ldap.ScopeWholeSubtree,
@@ -702,6 +719,7 @@ func read_ldap() (not_ok bool) {
 					not_ok = true
 					continue
 				}
+
 				var (
 					_user_request = ldap.NewSearchRequest(
 						_dn.String(),
@@ -722,6 +740,7 @@ func read_ldap() (not_ok bool) {
 					not_ok = true
 					continue
 				}
+
 				i_ldap_domain[_dn] = &i_LDAP_Domain{
 					DN: _dn,
 					OLC: &i_LDAP_Domain_OLC{
@@ -729,9 +748,12 @@ func read_ldap() (not_ok bool) {
 					},
 					Group:     __GN_LDAP_Domain_Group{},
 					User:      __UN_LDAP_Domain_User{},
+					Raw_DC:    _dc_result,
 					Raw_Group: _group_result,
 					Raw_User:  _user_result,
+					PKV:       __N_PKV_DB_Key{},
 					Modify:    nil,
+					Entry:     nil,
 				}
 				i_ldap[a].Domain[_dn] = i_ldap_domain[_dn]
 			}

@@ -427,6 +427,13 @@ func (receiver *__INet_UI_IP_Table) generate(inbound netip.Prefix, conn_bits _IN
 	}
 }
 
+func (receiver *i_LDAP_Domain) modify(attrType string, attrVals []string) {
+	switch {
+	case receiver.Modify == nil:
+		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
+	}
+	receiver.Modify.Replace(attrType, attrVals)
+}
 func (receiver *i_LDAP_Domain_User) modify(attrType string, attrVals []string) {
 	switch {
 	case receiver.Modify == nil:
@@ -458,13 +465,6 @@ func (receiver *i_LDAP_Domain_User) modify_Add_Attr(attrName string, attrVal str
 }
 
 func (receiver *i_LDAP_Domain_Group) modify(attrType string, attrVals []string) {
-	switch {
-	case receiver.Modify == nil:
-		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
-	}
-	receiver.Modify.Replace(attrType, attrVals)
-}
-func (receiver *i_LDAP_Domain) modify(attrType string, attrVals []string) {
 	switch {
 	case receiver.Modify == nil:
 		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)

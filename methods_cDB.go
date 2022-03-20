@@ -611,6 +611,12 @@ func (receiver cDB_LDAP_List) parse() {
 		case len(b.DB_CN) == 0:
 			b.DB_CN = _S_cn_db
 			fallthrough
+		case len(b.DC_Filter) == 0:
+			b.DC_Filter = _S_filter_dc
+			fallthrough
+		case len(b.DC_CN) == 0:
+			b.DC_CN = _S_cn_dc
+			fallthrough
 		case len(b.Group_Filter) == 0:
 			b.Group_Filter = _S_filter_group
 			fallthrough
@@ -629,6 +635,8 @@ func (receiver cDB_LDAP_List) parse() {
 			Secret:       b.Secret,
 			DB_Filter:    b.DB_Filter,
 			DB_CN:        b.DB_CN,
+			DC_Filter:    b.DC_Filter,
+			DC_CN:        b.DC_CN,
 			Group_Filter: b.Group_Filter,
 			Group_CN:     b.Group_CN,
 			User_Filter:  b.User_Filter,
