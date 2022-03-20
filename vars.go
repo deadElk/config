@@ -36,17 +36,17 @@ var (
 	i_ldap        = make(__U_LDAP)
 	i_ldap_domain = make(__DN_LDAP_Domain)
 	i_read_file   = __N_File_Data{
-		_S_Dir[_dir_GT]:          {ext: "tmpl", data: map[_Name]_Content{}},
-		_S_Dir[_dir_etc]:         {ext: "xml", data: map[_Name]_Content{}},
-		_S_Dir[_dir_Data_Modify]: {ext: "xml", data: map[_Name]_Content{}},
+		_S_Dir[_dir_GT]:     {ext: "tmpl", data: map[_Name]_Content{}},
+		_S_Dir[_dir_etc]:    {ext: "xml", data: map[_Name]_Content{}},
+		_S_Dir[_dir_Modify]: {ext: "xml", data: map[_Name]_Content{}},
 	}
 	i_write_file = __N_File_Data{
-		_S_Dir[_dir_Config]:      {ext: "txt", data: map[_Name]_Content{}},
-		_S_Dir[_dir_Data]:        {ext: "xml", data: map[_Name]_Content{}},
-		_S_Dir[_dir_Data_Modify]: {ext: "xml", data: map[_Name]_Content{}},
-		_S_Dir[_dir_LDAP]:        {ext: "xml", data: map[_Name]_Content{}},
-		_S_Dir[_dir_PKI]:         {ext: "", data: map[_Name]_Content{}},
-		_S_Dir[_dir_Portal]:      {ext: "", data: map[_Name]_Content{}},
+		_S_Dir[_dir_Config]: {ext: "txt", data: map[_Name]_Content{}},
+		_S_Dir[_dir_Data]:   {ext: "xml", data: map[_Name]_Content{}},
+		_S_Dir[_dir_Modify]: {ext: "xml", data: map[_Name]_Content{}},
+		_S_Dir[_dir_LDAP]:   {ext: "xml", data: map[_Name]_Content{}},
+		_S_Dir[_dir_PKI]:    {ext: "", data: map[_Name]_Content{}},
+		_S_Dir[_dir_Portal]: {ext: "", data: map[_Name]_Content{}},
 	}
 	i_peer_list []_Inet_ASN
 	i_vi_ip     = make(__INet_VI_IP_Table)
@@ -67,14 +67,14 @@ var (
 		_W_table:                _W_next__table,
 	}
 	_S_Dir = map[_ID]_Name{
-		_dir_Config:      "tmp/CONFIG",
-		_dir_Data:        "tmp/data",
-		_dir_Data_Modify: "tmp/data/modify",
-		_dir_GT:          "tmp/templates",
-		_dir_LDAP:        "tmp/LDAP",
-		_dir_PKI:         "tmp/PKI",
-		_dir_Portal:      "tmp/portal",
-		_dir_etc:         "etc",
+		_dir_Config: "tmp/CONFIG",
+		_dir_Data:   "tmp/data",
+		_dir_Modify: "tmp/modify",
+		_dir_GT:     "tmp/templates",
+		_dir_LDAP:   "tmp/LDAP",
+		_dir_PKI:    "tmp/PKI",
+		_dir_Portal: "tmp/portal",
+		_dir_etc:    "etc",
 	}
 	_S_File = map[_ID]_Name{
 		_file_host_list: "host_list",

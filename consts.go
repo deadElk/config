@@ -29,7 +29,7 @@ const (
 const (
 	_dir_Config _ID = iota
 	_dir_Data
-	_dir_Data_Modify
+	_dir_Modify
 	_dir_GT
 	_dir_LDAP
 	_dir_PKI

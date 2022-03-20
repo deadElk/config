@@ -87,6 +87,7 @@ type i_LDAP struct {
 	M_CN_G       __DN_LDAP_Domain_Group
 	M_CN_U       __DN_LDAP_Domain_User
 	Modify       *ldap.ModifyRequest
+	Modify_Regen map[_FQDN]bool
 }
 type i_LDAP_OLC struct {
 }

@@ -571,9 +571,9 @@ func parse_LDAP() (not_ok bool) {
 						Entry:          f,
 					}
 					v_UID_List       = make(__UN_LDAP_Domain_User)
-					v_GID_List       = make(__GN_LDAP_Domain_Group)
+					v_GID_List       = make(__GN_LDAP_Domain_Group) // todo
 					v_Owner_UID_List = make(__UN_LDAP_Domain_User)
-					v_Owner_GID_List = make(__GN_LDAP_Domain_Group)
+					v_Owner_GID_List = make(__GN_LDAP_Domain_Group) // todo
 				)
 				for _, h := range f.GetAttributeValues("member") {
 					var (
