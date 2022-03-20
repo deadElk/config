@@ -466,7 +466,7 @@ func parse_LDAP() (not_ok bool) {
 						GID_List:       __GN_LDAP_Domain_Group{},
 						SSH_Public_Key: nil,
 						P12:            nil,
-						Modify:         &ldap.ModifyRequest{},
+						Modify:         nil,
 					}
 					v_IPPrefix = func() (outbound netip.Prefix) { // modification candidate -> user's ip space
 						outbound = parse_interface(netip.ParsePrefix(f.GetAttributeValue("ipHostNumber"))).(netip.Prefix)
@@ -503,7 +503,8 @@ func parse_LDAP() (not_ok bool) {
 					not_ok = true
 					fallthrough
 				case v_U.GID_Number == 0:
-					log.Warnf("LDAP DB inconsistent! primary GID_Number is not defined for UID '%v'; ACTION: ignore.", f.DN)
+					log.Warnf("LDAP DB inconsistent! primary GID_Number is not defined for UID '%v'; ACTION: skip user.", f.DN)
+					continue
 				}
 
 				v_U.IPPrefix = v_IPPrefix
@@ -528,7 +529,7 @@ func parse_LDAP() (not_ok bool) {
 						GID_List:       nil,
 						Owner_UID_List: nil,
 						Owner_GID_List: nil,
-						Modify:         &ldap.ModifyRequest{},
+						Modify:         nil,
 					}
 					v_UID_List = func() (outbound __UN_LDAP_Domain_User) {
 						outbound = make(__UN_LDAP_Domain_User)
@@ -706,6 +707,7 @@ func read_ldap() (not_ok bool) {
 					continue
 				}
 				i_ldap_domain[_dn] = &i_LDAP_Domain{
+					DN: _dn,
 					OLC: &i_LDAP_Domain_OLC{
 						DN: _DN(d.DN),
 					},
@@ -749,6 +751,10 @@ func write_ldap() (not_ok bool) {
 				return
 			}
 			for _, d := range b.Domain {
+				// switch {
+				// case d.DN != "dc=domain,dc=tld":
+				// 	continue
+				// }
 				for _, f := range d.User {
 					switch {
 					case f.Modify != nil:
@@ -759,7 +765,7 @@ func write_ldap() (not_ok bool) {
 						case len(f.Modify.Changes) > 1:
 							_s = "s"
 						}
-						log.Infof("LDAP '%v': found modification%v for UID '%v'; ACTION: upload.", a.String(), _s, f.DN)
+						log.Infof("LDAP '%v': found modification%v for UID '%v', details: '%v'; ACTION: upload.", a.String(), _s, f.DN, f.Modify)
 						switch _result, err = _ldap.ModifyWithResult(f.Modify); {
 						case err != nil:
 							log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
@@ -767,7 +773,6 @@ func write_ldap() (not_ok bool) {
 						}
 						log.Infof("LDAP '%v': modification result: '%v'; ACTION: report.", a.String(), _result)
 					}
-					return
 				}
 				// for _, f := range d.Group { // GID within GID member/owner recursive parse
 				// 	var ()

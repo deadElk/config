@@ -431,19 +431,23 @@ func (receiver *i_LDAP_Domain_User) modify(attrType string, attrVals []string) {
 	case receiver.Modify == nil:
 		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
 	}
-	receiver.Modify.Add(attrType, attrVals)
+	switch {
+	case attrType == "ipHostNumber":
+		receiver.Modify.Add("objectClass", []string{"ipHost"})
+	}
+	receiver.Modify.Replace(attrType, attrVals)
 }
 func (receiver *i_LDAP_Domain_Group) modify(attrType string, attrVals []string) {
 	switch {
 	case receiver.Modify == nil:
 		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
 	}
-	receiver.Modify.Add(attrType, attrVals)
+	receiver.Modify.Replace(attrType, attrVals)
 }
 func (receiver *i_LDAP_Domain) modify(attrType string, attrVals []string) {
 	switch {
 	case receiver.Modify == nil:
 		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
 	}
-	receiver.Modify.Add(attrType, attrVals)
+	receiver.Modify.Replace(attrType, attrVals)
 }
