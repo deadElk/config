@@ -581,17 +581,29 @@ func (receiver cDB_VI_List) parse() {
 func (receiver cDB_LDAP_List) parse() {
 	for _, b := range receiver { // parse server params
 		var (
-			a = parse_interface(url.Parse(b.URL)).(*url.URL)
+			c = parse_interface(url.Parse(b.URL)).(*url.URL)
+			d = &url.URL{
+				Scheme:      c.Scheme,
+				Opaque:      "",
+				User:        nil,
+				Host:        c.Host,
+				Path:        "",
+				RawPath:     "",
+				ForceQuery:  false,
+				RawQuery:    "",
+				Fragment:    "",
+				RawFragment: "",
+			}
 		)
-		switch _, flag := i_ldap[a]; {
+		switch _, flag := i_ldap[d]; {
 		case flag:
-			log.Warnf("LDAP '%v' already defined; ACTION: skip.", a)
+			log.Warnf("LDAP '%v' already defined; ACTION: skip.", d)
 			continue
 		case b.Reserved:
-			log.Debugf("LDAP '%v' is reserved; ACTION: skip.", a)
+			log.Debugf("LDAP '%v' is reserved; ACTION: skip.", d)
 			continue
-		case len(a.RawQuery) == 0:
-			a.RawQuery = _S_cn_config
+		case len(c.Path) == 0:
+			c.Path = _S_cn_config
 			fallthrough
 		case len(b.DB_Filter) == 0:
 			b.DB_Filter = _S_filter_db
@@ -611,7 +623,8 @@ func (receiver cDB_LDAP_List) parse() {
 		case len(b.User_CN) == 0:
 			b.User_CN = _S_cn_user
 		}
-		i_ldap[a] = &i_LDAP{
+		i_ldap[d] = &i_LDAP{
+			URL:          c,
 			Bind_DN:      b.Bind_DN,
 			Secret:       b.Secret,
 			DB_Filter:    b.DB_Filter,
@@ -621,9 +634,11 @@ func (receiver cDB_LDAP_List) parse() {
 			User_Filter:  b.User_Filter,
 			User_CN:      b.User_CN,
 			OLC:          &i_LDAP_OLC{},
+			Schema:       nil,
 			Domain:       __DN_LDAP_Domain{},
 			M_CN_G:       __DN_LDAP_Domain_Group{},
 			M_CN_U:       __DN_LDAP_Domain_User{},
+			Modify:       nil,
 		}
 	}
 }

@@ -51,7 +51,7 @@ func (receiver _PName) String() string {
 func (receiver _INet_Port) String() string {
 	return strconv.FormatUint(uint64(receiver), 10)
 }
-func (receiver _Protocol) String() string {
+func (receiver _INet_Protocol) String() string {
 	return string(receiver)
 }
 func (receiver _INet_Routing) String() string {

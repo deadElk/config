@@ -466,8 +466,7 @@ func parse_LDAP() (not_ok bool) {
 						GID_List:       __GN_LDAP_Domain_Group{},
 						SSH_Public_Key: nil,
 						P12:            nil,
-						Labeled_URI:    nil,
-						Nonlabeled_URI: nil,
+						PKV_DB:         nil,
 						Modify:         nil,
 						Entry:          f,
 					}
@@ -498,10 +497,9 @@ func parse_LDAP() (not_ok bool) {
 					log.Debugf("LDAP '%v': UID '%v', ipHostNumber not defined; ACTION: find new.", a.String(), v_U.DN)
 				}
 				var (
-					v_SSH_Public_Key = make(map[string]string) // modification candidate -> user's SSH keys
-					v_P12            = make(map[string]string) // modification candidate -> user's P12 (for vpn as example)
-					v_Labeled_URI    = make(map[_Name]_URI)    // modification candidate -> user's labeledURIs
-					v_Nonlabeled_URI = make(map[_URI]bool)     // modification candidate -> user's not labeledURIs
+					v_SSH_Public_Key = make(map[string]string)      // modification candidate -> user's SSH keys
+					v_P12            = make(map[string]string)      // modification candidate -> user's P12 (for vpn as example)
+					v_X121Address    = make(map[_Name]*_PKV_DB_Key) // modification candidate -> user's labeledURIs
 				)
 				for _, z := range f.GetAttributeValues("sshPublicKey") {
 					v_SSH_Public_Key[z] = ""
@@ -510,13 +508,12 @@ func parse_LDAP() (not_ok bool) {
 					v_P12[z] = ""
 				}
 				for _, z := range f.GetAttributeValues("labeledURI") {
-					v_Labeled_URI[_Name(z)] = ""
+					v_X121Address[_Name(z)] = nil
 				}
 
 				v_U.SSH_Public_Key = v_SSH_Public_Key
 				v_U.P12 = v_P12
-				v_U.Labeled_URI = v_Labeled_URI
-				v_U.Nonlabeled_URI = v_Nonlabeled_URI
+				v_U.PKV_DB = v_X121Address
 
 				d.User[v_U.UID_Number] = v_U
 				b.M_CN_U[v_U.DN] = v_U
@@ -560,41 +557,36 @@ func parse_LDAP() (not_ok bool) {
 						Modify:         nil,
 						Entry:          f,
 					}
-					v_UID_List = func() (outbound __UN_LDAP_Domain_User) {
-						outbound = make(__UN_LDAP_Domain_User)
-						for _, h := range f.GetAttributeValues("member") {
-							var (
-								u = b.M_CN_U[_DN(h)]
-							)
-							switch {
-							case u == nil:
-								log.Errorf("LDAP DB inconsistent! can't find member UID '%v' of GID '%v'; ACTION: report.", h, v_G.DN)
-								not_ok = true
-								continue
-							}
-							outbound[u.UID_Number] = u
-						}
-						return
-					}()
-					v_GID_List       = __GN_LDAP_Domain_Group{}
-					v_Owner_UID_List = func() (outbound __UN_LDAP_Domain_User) {
-						outbound = make(__UN_LDAP_Domain_User)
-						for _, h := range f.GetAttributeValues("owner") {
-							var (
-								u = b.M_CN_U[_DN(h)]
-							)
-							switch {
-							case u == nil:
-								log.Errorf("LDAP DB inconsistent! can't find owner UID '%v' of GID '%v'; ACTION: report.", h, v_G.DN)
-								not_ok = true
-								continue
-							}
-							outbound[u.UID_Number] = u
-						}
-						return
-					}()
-					v_Owner_GID_List = __GN_LDAP_Domain_Group{}
+					v_UID_List       = make(__UN_LDAP_Domain_User)
+					v_GID_List       = make(__GN_LDAP_Domain_Group)
+					v_Owner_UID_List = make(__UN_LDAP_Domain_User)
+					v_Owner_GID_List = make(__GN_LDAP_Domain_Group)
 				)
+				for _, h := range f.GetAttributeValues("member") {
+					var (
+						u = b.M_CN_U[_DN(h)]
+					)
+					switch {
+					case u == nil:
+						log.Errorf("LDAP DB inconsistent! can't find member UID '%v' of GID '%v'; ACTION: report.", h, v_G.DN)
+						not_ok = true
+						continue
+					}
+					v_UID_List[u.UID_Number] = u
+				}
+				for _, h := range f.GetAttributeValues("owner") {
+					var (
+						u = b.M_CN_U[_DN(h)]
+					)
+					switch {
+					case u == nil:
+						log.Errorf("LDAP DB inconsistent! can't find owner UID '%v' of GID '%v'; ACTION: report.", h, v_G.DN)
+						not_ok = true
+						continue
+					}
+					v_Owner_UID_List[u.UID_Number] = u
+				}
+
 				switch {
 				case v_G.GID_Number == 0:
 					log.Errorf("LDAP DB inconsistent! GID '%v': GID_Number is '%v'; ACTION: report.", v_G.DN, v_G.GID_Number)
@@ -640,19 +632,14 @@ func read_ldap() (not_ok bool) {
 				_ldap *ldap.Conn
 				err   error
 			)
-			switch _ldap, err = ldap.Dial("tcp", a.Host); {
+			// switch _ldap, err = ldap.DialURL(b.URL.String(), ldap.DialWithTLSConfig(&tls.Config{InsecureSkipVerify: true})); {
+			switch _ldap, err = ldap.DialURL(a.String(), ldap.DialWithTLSConfig(&tls.Config{InsecureSkipVerify: true})); {
 			case err != nil:
 				log.Errorf("LDAP '%v': connect error '%v'; ACTION: skip.", a.String(), err)
 				not_ok = true
 				return
 			}
 			defer _ldap.Close()
-			switch err = _ldap.StartTLS(&tls.Config{InsecureSkipVerify: true}); {
-			case err != nil:
-				log.Errorf("LDAP '%v': TLS connect error '%v'; ACTION: skip.", a.String(), err)
-				not_ok = true
-				return
-			}
 			switch err = _ldap.Bind(b.Bind_DN.String(), b.Secret.String()); {
 			case err != nil:
 				log.Errorf("LDAP '%v': bind error '%v'; ACTION: skip.", a.String(), err)
@@ -662,7 +649,7 @@ func read_ldap() (not_ok bool) {
 
 			var (
 				_db_request = ldap.NewSearchRequest(
-					a.RawQuery,
+					b.URL.Path[1:],
 					ldap.ScopeWholeSubtree,
 					ldap.DerefAlways,
 					0,
@@ -754,6 +741,7 @@ func read_ldap() (not_ok bool) {
 }
 func write_ldap() (not_ok bool) {
 	for a, b := range i_ldap {
+		break
 		func() {
 			var (
 				_ldap   *ldap.Conn

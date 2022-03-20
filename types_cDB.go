@@ -294,10 +294,10 @@ type cDB_JA struct {
 	_Attribute_List
 }
 type cDB_JA_Term struct {
-	Name             _Name      `xml:"name,attr"`
-	Protocol         _Protocol  `xml:"protocol,attr"`
-	Source_Port      _INet_Port `xml:"source_port,attr"`
-	Destination_Port _INet_Port `xml:"destination_port,attr"`
+	Name             _Name          `xml:"name,attr"`
+	Protocol         _INet_Protocol `xml:"protocol,attr"`
+	Source_Port      _INet_Port     `xml:"source_port,attr"`
+	Destination_Port _INet_Port     `xml:"destination_port,attr"`
 	_Attribute_List
 }
 
@@ -323,11 +323,11 @@ type cDB_PO_PS_Term struct {
 	_Attribute_List
 }
 type cDB_PO_PS_From struct {
-	RI         _Name     `xml:"RI,attr"`
-	Protocol   _Protocol `xml:"protocol,attr"`
-	Route_Type _Type     `xml:"route_type,attr"`
-	PL         _Name     `xml:"PL,attr"`
-	Mask       _Mask     `xml:"mask,attr"`
+	RI         _Name          `xml:"RI,attr"`
+	Protocol   _INet_Protocol `xml:"protocol,attr"`
+	Route_Type _Type          `xml:"route_type,attr"`
+	PL         _Name          `xml:"PL,attr"`
+	Mask       _Mask          `xml:"mask,attr"`
 	_Attribute_List
 }
 type cDB_PO_PS_Then struct {

@@ -68,6 +68,7 @@ type i_File_Data struct {
 
 // LDAP
 type i_LDAP struct {
+	URL          *url.URL
 	Bind_DN      _DN
 	Secret       _Secret
 	DB_Filter    string
@@ -120,24 +121,18 @@ type i_LDAP_Domain_User struct { // uidNumber: index
 	GID_List       __GN_LDAP_Domain_Group // memberOf: index = memberOf (gidNumber here), value is a pointer.
 	SSH_Public_Key map[string]string      // sshPublicKey: index = Comment, value = key
 	P12            map[string]string      // userPKCS12: index = CN, value = p12
-	Labeled_URI    map[_Name]_URI         // labeledURI: label:uri storage (Key, Conn_Keys)
-	Nonlabeled_URI map[_URI]bool          // labeledURI: put here not parsable
+	PKV_DB         map[_Name]*_PKV_DB_Key // x121Address: private [protocol][key]value DB
 	Modify         *ldap.ModifyRequest
 	Entry          *ldap.Entry
 }
 
-// ShadowSocks
-type i_SS struct {
-	Proto  string
-	IP     string
-	Port   uint16
-	Cipher string
-	Secret _Secret
+type _PKV_DB_Key struct {
+	Value map[_Name]_PKV_DB_Value
 }
-
-// labeledURI
-type _Labeled_URI struct {
-	URI _URI
+type _PKV_DB_Value struct {
+	URL    *url.URL
+	Cipher _Cipher
+	Secret _Secret
 }
 
 // Peer Group
@@ -458,7 +453,7 @@ type i_JA struct {
 }
 type i_JA_Term struct {
 	Name             _Name
-	Protocol         _Protocol
+	Protocol         _INet_Protocol
 	Destination_Port _INet_Port
 	GT_Action        string
 	_Attribute_List
@@ -489,7 +484,7 @@ type i_PO_PS_Term struct {
 }
 type i_PO_PS_From struct {
 	RI         _Name
-	Protocol   _Protocol
+	Protocol   _INet_Protocol
 	Route_Type _Type
 	PL         _Name
 	Mask       _Mask

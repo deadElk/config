@@ -129,7 +129,7 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 		return (*value).String()
 	case *_INet_Port:
 		return (*value).String()
-	case *_Protocol:
+	case *_INet_Protocol:
 		return (*value).String()
 	case *_INet_Routing:
 		return (*value).String()
@@ -189,7 +189,7 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 		return value.String()
 	case _INet_Port:
 		return value.String()
-	case _Protocol:
+	case _INet_Protocol:
 		return value.String()
 	case _INet_Routing:
 		return value.String()
@@ -271,14 +271,14 @@ func split_2_string(inbound interface{}, re *regexp.Regexp, target ...*string) {
 func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound _Host_Inbound_Traffic_List) {
 	outbound = _Host_Inbound_Traffic_List{
 		Services:  map[_Service]bool{},
-		Protocols: map[_Protocol]bool{},
+		Protocols: map[_INet_Protocol]bool{},
 		GT_Action: _W_host__inbound__traffic.String() + " ",
 	}
 	for _, b := range enabled {
 		switch value := b.(type) {
 		case _Service:
 			outbound.Services[value] = true
-		case _Protocol:
+		case _INet_Protocol:
 			outbound.Protocols[value] = true
 		}
 	}

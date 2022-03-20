@@ -60,7 +60,7 @@ func (receiver *_Host_Inbound_Traffic_List) parse(enable ...interface{}) (outbou
 	default:
 		outbound = _Host_Inbound_Traffic_List{
 			Services:  map[_Service]bool{},
-			Protocols: map[_Protocol]bool{},
+			Protocols: map[_INet_Protocol]bool{},
 			GT_Action: _W_host__inbound__traffic.String(),
 		}
 	}
@@ -68,7 +68,7 @@ func (receiver *_Host_Inbound_Traffic_List) parse(enable ...interface{}) (outbou
 		switch value := b.(type) {
 		case _Service:
 			outbound.Services[value] = true
-		case _Protocol:
+		case _INet_Protocol:
 			outbound.Protocols[value] = true
 		}
 	}
@@ -134,7 +134,7 @@ func (receiver *_Name) action_Pool(peer *cDB_Peer, v_Peer *i_Peer, receiver_type
 	}
 	return strings_join(" ", _W_pool, receiver)
 }
-func (receiver *_Protocol) action(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _Type, receiver_direction _Type) (outbound string /* , ok bool */) {
+func (receiver *_INet_Protocol) action(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _Type, receiver_direction _Type) (outbound string /* , ok bool */) {
 	switch {
 	case len(*receiver) == 0:
 		return
