@@ -467,6 +467,7 @@ func parse_LDAP() (not_ok bool) {
 						SSH_Public_Key: nil,
 						P12:            nil,
 						Labeled_URI:    nil,
+						Nonlabeled_URI: nil,
 						Modify:         nil,
 						Entry:          f,
 					}
@@ -497,31 +498,25 @@ func parse_LDAP() (not_ok bool) {
 					log.Debugf("LDAP '%v': UID '%v', ipHostNumber not defined; ACTION: find new.", a.String(), v_U.DN)
 				}
 				var (
-					v_SSH_Public_Key = func() (outbound map[string]string) { // modification candidate -> user's SSH keys
-						outbound = make(map[string]string)
-						for _, z := range f.GetAttributeValues("sshPublicKey") {
-							outbound[z] = ""
-						}
-						return
-					}()
-					v_P12 = func() (outbound map[string]string) { // modification candidate -> user's P12 (for vpn as example)
-						outbound = make(map[string]string)
-						for _, z := range f.GetAttributeValues("userPKCS12") {
-							outbound[z] = ""
-						}
-						return
-					}()
-					v_Labeled_URI = func() (outbound map[string]string) { // modification candidate -> user's labeledURIs
-						outbound = make(map[string]string)
-						for _, z := range f.GetAttributeValues("labeledURI") {
-							outbound[z] = ""
-						}
-						return
-					}()
+					v_SSH_Public_Key = make(map[string]string) // modification candidate -> user's SSH keys
+					v_P12            = make(map[string]string) // modification candidate -> user's P12 (for vpn as example)
+					v_Labeled_URI    = make(map[_Name]_URI)    // modification candidate -> user's labeledURIs
+					v_Nonlabeled_URI = make(map[_URI]bool)     // modification candidate -> user's not labeledURIs
 				)
+				for _, z := range f.GetAttributeValues("sshPublicKey") {
+					v_SSH_Public_Key[z] = ""
+				}
+				for _, z := range f.GetAttributeValues("userPKCS12") {
+					v_P12[z] = ""
+				}
+				for _, z := range f.GetAttributeValues("labeledURI") {
+					v_Labeled_URI[_Name(z)] = ""
+				}
+
 				v_U.SSH_Public_Key = v_SSH_Public_Key
 				v_U.P12 = v_P12
 				v_U.Labeled_URI = v_Labeled_URI
+				v_U.Nonlabeled_URI = v_Nonlabeled_URI
 
 				d.User[v_U.UID_Number] = v_U
 				b.M_CN_U[v_U.DN] = v_U

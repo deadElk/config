@@ -416,6 +416,7 @@ func (receiver *__INet_UI_IP_Table) generate(inbound netip.Prefix, conn_bits _IN
 			v_Output = &_INet_UI_IP_Table{}
 		)
 		v_Output.Conn = make([]netip.Prefix, total_UI_Conn)
+		v_Output.Conn_Key = make([]_Secret, total_UI_Conn)
 		for c := total_UI_Conn; c > min_UI_Conn; c-- {
 			curr--
 			binary.BigEndian.PutUint32(curr_slice, curr)

@@ -120,7 +120,8 @@ type i_LDAP_Domain_User struct { // uidNumber: index
 	GID_List       __GN_LDAP_Domain_Group // memberOf: index = memberOf (gidNumber here), value is a pointer.
 	SSH_Public_Key map[string]string      // sshPublicKey: index = Comment, value = key
 	P12            map[string]string      // userPKCS12: index = CN, value = p12
-	Labeled_URI    map[string]string
+	Labeled_URI    map[_Name]_URI         // labeledURI: label:uri storage (Key, Conn_Keys)
+	Nonlabeled_URI map[_URI]bool          // labeledURI: put here not parsable
 	Modify         *ldap.ModifyRequest
 	Entry          *ldap.Entry
 }
@@ -132,6 +133,11 @@ type i_SS struct {
 	Port   uint16
 	Cipher string
 	Secret _Secret
+}
+
+// labeledURI
+type _Labeled_URI struct {
+	URI _URI
 }
 
 // Peer Group

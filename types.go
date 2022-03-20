@@ -39,6 +39,7 @@ type _hash_ID [_hash_Size]uint8 // _hash_ID here is a result of sha3.Sum512.
 type _INet_URL struct{ *url.URL }
 type _INet_IPAddr struct{ *netip.Addr }     // Why returning String() "invalid IP" ???? What for???? Why not just return an empty String() "" ????
 type _INet_IPPrefix struct{ *netip.Prefix } // Why returning String() "invalid IP" ???? What for???? Why not just return an empty String() "" ????
+type _URI string
 
 type _Attribute_List struct {
 	Description _Description `xml:"description,attr"`
@@ -86,9 +87,12 @@ type _BGP_Group_Neighbor struct {
 }
 type _INet_VI_IP_Table struct {
 	IPPrefix netip.Prefix
+	Key      _Secret
 	Conn     []netip.Prefix
 }
 type _INet_UI_IP_Table struct {
-	User *i_LDAP_Domain_User
-	Conn []netip.Prefix
+	User     *i_LDAP_Domain_User
+	Key      _Secret
+	Conn     []netip.Prefix
+	Conn_Key []_Secret
 }
