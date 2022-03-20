@@ -76,13 +76,16 @@ type i_LDAP struct {
 	Group_CN     string
 	User_Filter  string
 	User_CN      string
-	OLC          *i_LDAP_OLC
+	OLC          *i_LDAP_OLC    // todo: parse OLC from server
+	Schema       *i_LDAP_Schema // todo: parse schema from server
 	Domain       __DN_LDAP_Domain
 	M_CN_G       __DN_LDAP_Domain_Group
 	M_CN_U       __DN_LDAP_Domain_User
 	Modify       *ldap.ModifyRequest
 }
 type i_LDAP_OLC struct {
+}
+type i_LDAP_Schema struct {
 }
 type i_LDAP_Domain struct {
 	DN        _DN
@@ -117,6 +120,7 @@ type i_LDAP_Domain_User struct { // uidNumber: index
 	GID_List       __GN_LDAP_Domain_Group // memberOf: index = memberOf (gidNumber here), value is a pointer.
 	SSH_Public_Key map[string]string      // sshPublicKey: index = Comment, value = key
 	P12            map[string]string      // userPKCS12: index = CN, value = p12
+	Labeled_URI    map[string]string
 	Modify         *ldap.ModifyRequest
 	Entry          *ldap.Entry
 }

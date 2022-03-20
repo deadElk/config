@@ -432,19 +432,30 @@ func (receiver *i_LDAP_Domain_User) modify(attrType string, attrVals []string) {
 		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
 	}
 	switch {
-	case attrType == "ipHostNumber":
-		func() {
-			for _, b := range receiver.Entry.GetAttributeValues("objectClass") {
-				switch {
-				case b == "ipHost":
-					return
-				}
-			}
-			receiver.Modify.Add("objectClass", []string{"ipHost"})
-		}()
+	case attrType == "ipHostNumber": // don't add if not necessary. this values can be obtained from schema .... // todo: parse schema from server
+		receiver.modify_Add_Attr("objectClass", "ipHost")
+		// func() {
+		// 	for _, b := range receiver.Entry.GetAttributeValues("objectClass") {
+		// 		switch {
+		// 		case b == "ipHost":
+		// 			return
+		// 		}
+		// 	}
+		// 	receiver.Modify.Add("objectClass", []string{"ipHost"})
+		// }()
 	}
 	receiver.Modify.Replace(attrType, attrVals)
 }
+func (receiver *i_LDAP_Domain_User) modify_Add_Attr(attrName string, attrVal string) {
+	for _, b := range receiver.Entry.GetAttributeValues(attrName) {
+		switch {
+		case b == attrVal:
+			return
+		}
+	}
+	receiver.Modify.Add(attrName, []string{attrVal})
+}
+
 func (receiver *i_LDAP_Domain_Group) modify(attrType string, attrVals []string) {
 	switch {
 	case receiver.Modify == nil:

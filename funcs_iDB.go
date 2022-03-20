@@ -466,6 +466,7 @@ func parse_LDAP() (not_ok bool) {
 						GID_List:       __GN_LDAP_Domain_Group{},
 						SSH_Public_Key: nil,
 						P12:            nil,
+						Labeled_URI:    nil,
 						Modify:         nil,
 						Entry:          f,
 					}
@@ -497,14 +498,30 @@ func parse_LDAP() (not_ok bool) {
 				}
 				var (
 					v_SSH_Public_Key = func() (outbound map[string]string) { // modification candidate -> user's SSH keys
+						outbound = make(map[string]string)
+						for _, z := range f.GetAttributeValues("sshPublicKey") {
+							outbound[z] = ""
+						}
 						return
 					}()
 					v_P12 = func() (outbound map[string]string) { // modification candidate -> user's P12 (for vpn as example)
+						outbound = make(map[string]string)
+						for _, z := range f.GetAttributeValues("userPKCS12") {
+							outbound[z] = ""
+						}
+						return
+					}()
+					v_Labeled_URI = func() (outbound map[string]string) { // modification candidate -> user's labeledURIs
+						outbound = make(map[string]string)
+						for _, z := range f.GetAttributeValues("labeledURI") {
+							outbound[z] = ""
+						}
 						return
 					}()
 				)
 				v_U.SSH_Public_Key = v_SSH_Public_Key
 				v_U.P12 = v_P12
+				v_U.Labeled_URI = v_Labeled_URI
 
 				d.User[v_U.UID_Number] = v_U
 				b.M_CN_U[v_U.DN] = v_U
@@ -768,11 +785,6 @@ func write_ldap() (not_ok bool) {
 				return
 			}
 			for _, d := range b.Domain {
-				// switch d.DN {
-				// case "dc=domain,dc=tld", "dc=f12,dc=tld":
-				// default:
-				// 	continue
-				// }
 				for _, f := range d.User {
 					switch {
 					case f.Modify != nil:
