@@ -889,6 +889,7 @@ func genCA() {
 func certsetup() (serverTLSConf *tls.Config, clientTLSConf *tls.Config, err error) {
 	// set up our CA certificate
 	ca := &x509.Certificate{
+
 		SerialNumber: big.NewInt(2019),
 		Subject: pkix.Name{
 			Organization:  []string{"Company, INC."},

@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"math/big"
 	"net/netip"
 	"net/url"
 
@@ -77,36 +78,34 @@ type _PKI struct { // PEM?
 	Domain map[_FQDN]*_PKI_Domain
 }
 type _PKI_Domain struct {
-	*_PKI_Node
-	Host  map[_FQDN]*_PKI_Node
+	*_PKI_CA_Node
 	Group map[_FQDN]*_PKI_Node
+	Host  map[_FQDN]*_PKI_Node
 	User  map[_FQDN]*_PKI_Node
 }
 type _PKI_CA_Node struct {
-	DER *_PKI_CA_Node_DER
-	PEM *_PKI_CA_Node_PEM
-	P12 []byte
-}
-type _PKI_CA_Node_DER struct {
-	CA  *x509.Certificate
-	Key *ecdsa.PrivateKey
-	CRL *pkix.CertificateList
-}
-type _PKI_CA_Node_PEM struct {
-	CA  []byte
-	Key []byte
-	CRL []byte
-}
-type _PKI_Node struct {
-	DER *_PKI_Node_DER
-	PEM *_PKI_Node_PEM
-	P12 []byte
-}
-type _PKI_Node_DER struct {
+	SN   *big.Int
+	CA   *_PKI_CA_Node // nil for root CA or pointer to upstream CA for intermediate CA
 	Cert *x509.Certificate
 	Key  *ecdsa.PrivateKey
+	CRL  *pkix.CertificateList
+	P12  []byte
+	DER  *_PKI_CA_Node_DER
 }
-type _PKI_Node_PEM struct {
+type _PKI_CA_Node_DER struct {
+	Cert []byte
+	Key  []byte
+	CRL  []byte
+}
+type _PKI_Node struct {
+	SN   *big.Int
+	CA   *_PKI_CA_Node
+	Cert *x509.Certificate
+	Key  *ecdsa.PrivateKey
+	P12  []byte
+	DER  *_PKI_Node_DER
+}
+type _PKI_Node_DER struct {
 	Cert []byte
 	Key  []byte
 }

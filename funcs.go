@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"math/big"
 	"net/netip"
 	"os"
 	"reflect"
@@ -419,4 +420,7 @@ func get_IP_Bits(inbound interface{}) (outbound _INet_Routing) {
 		return 128
 	}
 	return
+}
+func inc_big_Int(inbound *big.Int) (outbound *big.Int) {
+	return inbound.Add(inbound, big.NewInt(1))
 }

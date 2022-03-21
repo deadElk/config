@@ -6,6 +6,7 @@ require (
 	github.com/go-ldap/ldap/v3 v3.4.2
 	github.com/sirupsen/logrus v1.8.1
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
+	software.sslmate.com/src/go-pkcs12 v0.0.0-20210415151418-c5206de65a78
 )
 
 require (
