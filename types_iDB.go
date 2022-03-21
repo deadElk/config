@@ -1,6 +1,9 @@
 package main
 
 import (
+	"crypto/ecdsa"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"net/netip"
 	"net/url"
 
@@ -66,6 +69,46 @@ type i_File_Data struct {
 	ext    _Name
 	sorted []_Name
 	data   __N_Content
+}
+
+// PKI
+type _PKI struct { // PEM?
+	*_PKI_CA_Node
+	Domain map[_FQDN]*_PKI_Domain
+}
+type _PKI_Domain struct {
+	*_PKI_Node
+	Host  map[_FQDN]*_PKI_Node
+	Group map[_FQDN]*_PKI_Node
+	User  map[_FQDN]*_PKI_Node
+}
+type _PKI_CA_Node struct {
+	DER *_PKI_CA_Node_DER
+	PEM *_PKI_CA_Node_PEM
+	P12 []byte
+}
+type _PKI_CA_Node_DER struct {
+	CA  *x509.Certificate
+	Key *ecdsa.PrivateKey
+	CRL *pkix.CertificateList
+}
+type _PKI_CA_Node_PEM struct {
+	CA  []byte
+	Key []byte
+	CRL []byte
+}
+type _PKI_Node struct {
+	DER *_PKI_Node_DER
+	PEM *_PKI_Node_PEM
+	P12 []byte
+}
+type _PKI_Node_DER struct {
+	Cert *x509.Certificate
+	Key  *ecdsa.PrivateKey
+}
+type _PKI_Node_PEM struct {
+	Cert []byte
+	Key  []byte
 }
 
 // LDAP

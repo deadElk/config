@@ -1,5 +1,10 @@
 package main
 
+import (
+	"crypto/rand"
+	"crypto/x509"
+)
+
 func (receiver *i_Peer) link_AB(name ..._Name) {
 	for _, value := range name {
 		switch {
@@ -73,4 +78,55 @@ func (receiver __N_AB) parse_recurse_AB(inbound _Name) {
 			receiver.parse_recurse_AB(a)
 		}
 	}
+}
+func (receiver *_PKI_CA_Node_PEM) parse_to_Node() (outbound *_PKI_CA_Node) {
+	var (
+		t = &_PKI_CA_Node{
+			DER: receiver.parse_to_DER(),
+			PEM: nil,
+			P12: nil,
+		}
+		// err       error
+	)
+	switch {
+	case t.DER == nil: // bad PEM
+	// gen new DER and then PEM
+	default:
+		t.PEM = receiver
+	}
+	outbound = t
+}
+func (receiver *_PKI_CA_Node_PEM) parse_to_DER() (outbound *_PKI_CA_Node_DER) {
+	var (
+		t   = &_PKI_CA_Node_DER{}
+		err error
+	)
+	switch {
+	case len(receiver.CA) == 0 || len(receiver.Key) == 0:
+		return
+	}
+
+	switch t.CA, err = x509.ParseCertificate(receiver.CA); {
+	case err != nil:
+		return
+	}
+	switch t.Key, err = x509.ParseECPrivateKey(receiver.Key); {
+	case err != nil || t.CA.PublicKey != t.Key.PublicKey:
+		return
+	}
+
+	switch {
+	case len(receiver.CRL) != 0:
+		switch receiver.CRL, err = x509.CreateRevocationList(rand.Reader, nil, t.CA, t.Key); {
+		case err != nil:
+			return
+		}
+	}
+
+	switch t.CRL, err = x509.ParseCRL(receiver.CRL); {
+	case err != nil || t.CA.SignatureAlgorithm.String() != t.CRL.SignatureAlgorithm.Algorithm.String() || string(t.CA.Signature) != string(t.CRL.SignatureValue.Bytes):
+		return
+	}
+	return t
+
 }
