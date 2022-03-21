@@ -168,13 +168,3 @@ func (receiver *_PKI_CA_Node) parse_DER(cert *x509.Certificate) { // parse/creat
 		log.Fatalf("can't parse new CA CRL - %v", err)
 	}
 }
-
-// func (receiver *_PKI_CA_Node) get_CA_Chain() { // construct CA Chain for CA Nodes
-// 	var (
-// 		ca_chain []*_PKI_CA_Node
-// 		last     = receiver
-// 	)
-// 	for last != nil {
-// 		ca_chain = append(ca_chain, last.CA_Chain)
-// 	}
-// }
