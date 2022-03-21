@@ -9,7 +9,6 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"software.sslmate.com/src/go-pkcs12"
 )
 
 func (receiver *i_Peer) link_AB(name ..._Name) {
@@ -92,14 +91,12 @@ func (receiver *_PKI_CA_Node) parse_DER(cert *x509.Certificate) { // parse/creat
 		err, err_cert, err_key, err_crl, err_p12 error
 	)
 	switch {
-	case receiver.DER == nil:
-		receiver.DER = &_PKI_CA_Node_DER{}
-
-	default:
+	case receiver.DER != nil:
 		receiver.Cert, err_cert = x509.ParseCertificate(receiver.DER.Cert)
 		receiver.Key, err_key = x509.ParseECPrivateKey(receiver.DER.Key)
-		receiver.CRL, err_crl = x509.ParseCRL(receiver.DER.CRL)
-		receiver.P12, err_p12 = pkcs12.Encode(rand.Reader, receiver.Key, receiver.Cert, nil, pkcs12.DefaultPassword)
+		receiver.CRL, err_crl = x509.ParseDERCRL(receiver.DER.CRL)
+		// receiver.P12, err_p12 = pkcs12.Encode(rand.Reader, receiver.Key, receiver.Cert, nil, "")
+		// receiver.P12, err_p12 = pkcs12.Encode(rand.Reader, receiver.Key, receiver.Cert, nil, pkcs12.DefaultPassword)
 
 		switch { // double check
 		case len(receiver.DER.Cert) != 0 && len(receiver.DER.Key) != 0 && len(receiver.DER.CRL) != 0 &&
@@ -110,14 +107,15 @@ func (receiver *_PKI_CA_Node) parse_DER(cert *x509.Certificate) { // parse/creat
 			return
 		}
 	}
-	log.Warnf("CA data invalid/absent or don't match - %v, %v, %v, %v; ACTION: create new using %v", err_cert, err_key, err_crl, err_p12, cert)
 
 	// gen new data
 	switch {
 	case cert == nil:
-		log.Fatalf("no new cert data provided - %v", err)
+		log.Warnf("CA data invalid/absent or don't match - '%v' '%v' '%v' '%v' and no new cert data; ACTION: ignore", err_cert, err_key, err_crl, err_p12)
 	}
+	log.Warnf("CA data invalid/absent or don't match - '%v' '%v' '%v' '%v'; ACTION: create new using '%v'", err_cert, err_key, err_crl, err_p12, cert)
 
+	receiver.DER = &_PKI_CA_Node_DER{}
 	var (
 		ca_cert   = receiver.CA.Cert
 		ca_pubkey = receiver.CA.Key.Public()
@@ -139,6 +137,8 @@ func (receiver *_PKI_CA_Node) parse_DER(cert *x509.Certificate) { // parse/creat
 		ca_cert = cert
 		ca_pubkey = receiver.Key.Public()
 		ca_SN = big.NewInt(0)
+	default:
+		receiver.CA_Chain = append(receiver.CA.CA_Chain, receiver.CA.Cert)
 	}
 
 	switch receiver.DER.Cert, err = x509.CreateCertificate(rand.Reader, cert, ca_cert, ca_pubkey, receiver.Key); {
@@ -163,9 +163,18 @@ func (receiver *_PKI_CA_Node) parse_DER(cert *x509.Certificate) { // parse/creat
 		log.Fatalf("can't create new CA CRL - %v", err)
 	}
 
-	switch receiver.CRL, err = x509.ParseCRL(receiver.DER.CRL); {
+	switch receiver.CRL, err = x509.ParseDERCRL(receiver.DER.CRL); {
 	case err == nil:
 		log.Fatalf("can't parse new CA CRL - %v", err)
 	}
-
 }
+
+// func (receiver *_PKI_CA_Node) get_CA_Chain() { // construct CA Chain for CA Nodes
+// 	var (
+// 		ca_chain []*_PKI_CA_Node
+// 		last     = receiver
+// 	)
+// 	for last != nil {
+// 		ca_chain = append(ca_chain, last.CA_Chain)
+// 	}
+// }

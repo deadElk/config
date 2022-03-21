@@ -84,13 +84,14 @@ type _PKI_Domain struct {
 	User  map[_FQDN]*_PKI_Node
 }
 type _PKI_CA_Node struct {
-	SN   *big.Int
-	CA   *_PKI_CA_Node // nil for root CA or pointer to upstream CA for intermediate CA
-	Cert *x509.Certificate
-	Key  *ecdsa.PrivateKey
-	CRL  *pkix.CertificateList
-	P12  []byte
-	DER  *_PKI_CA_Node_DER
+	SN       *big.Int
+	CA       *_PKI_CA_Node // nil for root CA or pointer to upstream CA for intermediate CA
+	CA_Chain []*x509.Certificate
+	Cert     *x509.Certificate
+	Key      *ecdsa.PrivateKey
+	CRL      *pkix.CertificateList
+	DER      *_PKI_CA_Node_DER
+	// P12      []byte
 }
 type _PKI_CA_Node_DER struct {
 	Cert []byte
@@ -102,8 +103,8 @@ type _PKI_Node struct {
 	CA   *_PKI_CA_Node
 	Cert *x509.Certificate
 	Key  *ecdsa.PrivateKey
-	P12  []byte
 	DER  *_PKI_Node_DER
+	P12  []byte
 }
 type _PKI_Node_DER struct {
 	Cert []byte
