@@ -345,7 +345,7 @@ func (receiver *_Communication) parse(_comm _Communication) _Communication {
 }
 func (receiver *__INet_VI_IP_Table) generate(inbound netip.Prefix, conn_bits _INet_Routing) {
 	var (
-		ip_bits = get_IP_Bits(inbound)
+		ip_bits = get_IPPrefix_Bits(inbound)
 	)
 	switch flag, mask := inbound.IsValid(), inbound.Bits(); {
 	case !flag || mask == -1 || int(conn_bits) > int(ip_bits)-mask || (ip_bits != 32 && ip_bits != 128):
@@ -354,7 +354,7 @@ func (receiver *__INet_VI_IP_Table) generate(inbound netip.Prefix, conn_bits _IN
 			parse_interface(
 				netip.ParseAddr(_VIx_Addr)).(netip.Addr).Prefix(int(_VIx_bits))).(netip.Prefix)
 		conn_bits = _VIx_IF_bits
-		ip_bits = get_IP_Bits(inbound)
+		ip_bits = get_IPPrefix_Bits(inbound)
 	}
 
 	var (
@@ -385,7 +385,7 @@ func (receiver *__INet_VI_IP_Table) generate(inbound netip.Prefix, conn_bits _IN
 }
 func (receiver *__INet_UI_IP_Table) generate(inbound netip.Prefix, conn_bits _INet_Routing) {
 	var (
-		ip_bits = get_IP_Bits(inbound)
+		ip_bits = get_IPPrefix_Bits(inbound)
 	)
 	switch flag, mask := inbound.IsValid(), inbound.Bits(); {
 	case !flag || mask == -1 || int(conn_bits) > int(ip_bits)-mask || (ip_bits != 32 && ip_bits != 128):
@@ -394,7 +394,7 @@ func (receiver *__INet_UI_IP_Table) generate(inbound netip.Prefix, conn_bits _IN
 			parse_interface(
 				netip.ParseAddr(_UIx_Addr)).(netip.Addr).Prefix(int(_UIx_bits))).(netip.Prefix)
 		conn_bits = _UIx_IP_bits
-		ip_bits = get_IP_Bits(inbound)
+		ip_bits = get_IPPrefix_Bits(inbound)
 	}
 
 	var (
