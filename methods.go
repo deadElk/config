@@ -336,7 +336,7 @@ func (receiver *_Communication) parse(_comm _Communication) _Communication {
 		return _comm
 	}
 }
-func (receiver *__INet_VI_IP_Table) generate(inbound netip.Prefix, conn_bits _INet_Routing) {
+func (receiver __INet_VI_IP_Table) generate(inbound netip.Prefix, conn_bits _INet_Routing) {
 	var (
 		ip_bits = get_IPPrefix_Bits(inbound)
 	)
@@ -365,18 +365,18 @@ func (receiver *__INet_VI_IP_Table) generate(inbound netip.Prefix, conn_bits _IN
 	)
 
 	for a := _VI_ID(total_VI); a > min_VI; a-- {
-		(*receiver)[a] = &_INet_VI_IP_Table{}
-		(*receiver)[a].Conn = make([]netip.Prefix, total_VI_Conn)
+		receiver[a] = &_INet_VI_IP_Table{}
+		receiver[a].Conn = make([]netip.Prefix, total_VI_Conn)
 		for c := _VI_Conn_ID(total_VI_Conn); c > min_VI_Conn; c-- {
 			curr--
 			binary.BigEndian.PutUint32(curr_slice, curr)
 			curr_IP = parse_interface(netip.AddrFromSlice(curr_slice)).(netip.Addr)
-			(*receiver)[a].Conn[c-1] = convert_netip_Addr_Prefix(&curr_IP)
+			receiver[a].Conn[c-1] = convert_netip_Addr_Prefix(&curr_IP)
 		}
-		(*receiver)[a].IPPrefix = parse_interface(curr_IP.Prefix(int(conn_mask))).(netip.Prefix)
+		receiver[a].IPPrefix = parse_interface(curr_IP.Prefix(int(conn_mask))).(netip.Prefix)
 	}
 }
-func (receiver *__INet_UI_IP_Table) generate(inbound netip.Prefix, conn_bits _INet_Routing) {
+func (receiver __INet_UI_IP_Table) generate(inbound netip.Prefix, conn_bits _INet_Routing) {
 	var (
 		ip_bits = get_IPPrefix_Bits(inbound)
 	)
@@ -416,7 +416,7 @@ func (receiver *__INet_UI_IP_Table) generate(inbound netip.Prefix, conn_bits _IN
 			curr_IP = parse_interface(netip.AddrFromSlice(curr_slice)).(netip.Addr)
 			v_Output.Conn[c-1] = convert_netip_Addr_Prefix(&curr_IP)
 		}
-		(*receiver)[parse_interface(curr_IP.Prefix(int(conn_mask))).(netip.Prefix)] = v_Output
+		receiver[parse_interface(curr_IP.Prefix(int(conn_mask))).(netip.Prefix)] = v_Output
 	}
 }
 
