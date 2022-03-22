@@ -7,10 +7,8 @@ import (
 	"io/ioutil"
 	"math/big"
 	"net/netip"
-	"os"
 	"reflect"
 	"regexp"
-	"sort"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
@@ -298,72 +296,6 @@ func parse_Host_Inbound_Traffic(enabled ...any) (outbound _Host_Inbound_Traffic_
 		}
 	}
 	return
-}
-
-func read_file() (not_ok bool) {
-	for a, b := range i_read_list {
-		switch direntry, err := os.ReadDir(a.String()); {
-		case err == nil:
-			for _, f := range direntry {
-				switch {
-				case !f.Type().IsRegular():
-					continue
-				}
-				var (
-					s = re_dots.Split(f.Name(), -1)
-				)
-				switch {
-				case len(s) < 2 || s[len(s)-1] != string(b.ext):
-					log.Warnf("inconsistent filename '%v'; ACTION: report.", a)
-					not_ok = true
-					continue
-				}
-				var (
-					t = _File_Name(f.Name()[:len(f.Name())-1-len(s[len(s)-1])])
-					g _Content
-				)
-				switch g, err = os.ReadFile(strings_join("/", ".", a.String(), f.Name())); {
-				case err != nil:
-					log.Warnf("file '%v' read error '%v'; ACTION: report.", t, err)
-					not_ok = true
-					continue
-				}
-				g.trim_space()
-				b.data[t] = &g
-				b.sorted = append(b.sorted, t)
-			}
-			sort.Slice(b.sorted, func(i, j int) bool {
-				return b.sorted[i] < b.sorted[j]
-			})
-		default:
-			log.Warnf("directory '%v' read error '%v'; ACTION: report.", a, err)
-			// not_ok = true
-			continue
-		}
-	}
-	return !not_ok
-}
-func write_file() (not_ok bool) {
-	for a, b := range i_write_list {
-		switch err := os.MkdirAll(string(a), os.ModeDir|0700); {
-		case err != nil:
-			log.Errorf("directory '%v' create error '%v'; ACTION: report.", a, err)
-			not_ok = true
-			continue
-		}
-		for e, f := range b.data {
-			var (
-				g = strings_join("/", a, strings_join(".", e, b.ext))
-			)
-			switch err := os.WriteFile(g, *f, 0600); {
-			case err != nil:
-				log.Errorf("file '%v' write error '%v'; ACTION: report.", g, err)
-				not_ok = true
-				continue
-			}
-		}
-	}
-	return !not_ok
 }
 
 func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, port, port_low, port_high _INet_Port) (outbound string) {

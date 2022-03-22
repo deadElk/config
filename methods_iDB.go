@@ -469,43 +469,52 @@ func (receiver *i_LDAP_Domain) get_LDAP_Entries(inbound *ldap.Entry, list ...str
 	// }
 }
 
-func (receiver __N_File_Data) read(dir _Dir_Name, file _File_Name) (not_ok bool) {
-	receiver.check(dir, "")
-	var (
-		direntry []os.DirEntry
-		err      error
-		fln      = strings_join("/", dir, strings_join(".", file, receiver[dir].ext))
-	)
-	switch direntry, err = os.ReadDir(fln); {
-	case err != nil:
-		log.Warnf("file '%v' listing error '%v'; ACTION: report.", fln, err)
-		not_ok = true
-	}
-
-	for _, f := range direntry {
-		switch {
-		case !f.Type().IsRegular():
-			log.Debugf("file '%v' is not a regular file; ACTION: skip", f.Name())
-			continue
-		}
+func (receiver __N_File_Data) read() (not_ok bool) {
+	for dir := range receiver {
+		receiver.check(dir, "")
 		var (
-			content _Content
-			fn      = strings_join("/", dir, f.Name())
+			direntry []os.DirEntry
+			err      error
+			// fln      = strings_join("/", dir, strings_join(".", file, receiver[dir].ext))
+			ext_l = len(receiver[dir].ext)
 		)
-		switch content, err = os.ReadFile(fn); {
-		case err != nil:
-			log.Warnf("file '%v' read error '%v'; ACTION: report.", fn, err)
-			not_ok = true
-			continue
+		switch {
+		case ext_l > 0:
+			ext_l++
 		}
-		content.trim_space()
-		receiver.put(dir, _File_Name(fn), "", content)
-		receiver[dir].sorted = append(receiver[dir].sorted, _File_Name(fn))
-	}
-	sort.Slice(receiver[dir].sorted, func(i, j int) bool {
-		return receiver[dir].sorted[i] < receiver[dir].sorted[j]
-	})
 
+		switch direntry, err = os.ReadDir(dir.String()); {
+		case err != nil:
+			log.Warnf("file '%v' listing error '%v'; ACTION: report.", dir, err)
+			not_ok = true
+		}
+
+		for _, f := range direntry {
+			switch {
+			case !f.Type().IsRegular():
+				log.Debugf("file '%v' is not a regular file; ACTION: skip", f.Name())
+				continue
+			}
+			var (
+				content _Content
+				fn      = strings_join("/", dir, f.Name())
+				fname   = _File_Name(f.Name()[:len(f.Name())-ext_l])
+			)
+			switch content, err = os.ReadFile(fn); {
+			case err != nil:
+				log.Warnf("file '%v' read error '%v'; ACTION: report.", fn, err)
+				not_ok = true
+				continue
+			}
+			content.trim_space()
+			receiver.put(dir, fname, "", content)
+			receiver[dir].sorted = append(receiver[dir].sorted, fname)
+		}
+		sort.Slice(receiver[dir].sorted, func(i, j int) bool {
+			return receiver[dir].sorted[i] < receiver[dir].sorted[j]
+		})
+
+	}
 	return !not_ok
 }
 func (receiver __N_File_Data) get(dir _Dir_Name, file _File_Name) ( /*not_ok bool,*/ outbound *_Content) {
@@ -548,4 +557,27 @@ func (receiver __N_File_Data) check(dir _Dir_Name, file _File_Name) /*not_ok boo
 			receiver[dir].data[file] = &_Content{}
 		}
 	}
+}
+
+func (receiver __N_File_Data) write() (not_ok bool) {
+	for a, b := range receiver {
+		switch err := os.MkdirAll(a.String(), os.ModeDir|0700); {
+		case err != nil:
+			log.Errorf("directory '%v' create error '%v'; ACTION: report.", a, err)
+			not_ok = true
+			continue
+		}
+		for c, d := range b.data {
+			var (
+				g = strings_join("/", a, strings_join(".", c, b.ext))
+			)
+			switch err := os.WriteFile(g, *d, 0600); {
+			case err != nil:
+				log.Errorf("file '%v' write error '%v'; ACTION: report.", g, err)
+				not_ok = true
+				continue
+			}
+		}
+	}
+	return !not_ok
 }

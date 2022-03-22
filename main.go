@@ -31,7 +31,7 @@ func init() {
 
 func main() {
 	switch {
-	case !read_file():
+	case !i_read_list.read():
 		log.Fatalf("read_file() error; ACTION: fatal.")
 	}
 
@@ -60,7 +60,7 @@ func main() {
 		log.Fatalf("write_file() error; ACTION: fatal.")
 	}
 	switch {
-	case !write_file():
+	case !i_read_list.read():
 		log.Fatalf("write_file() error; ACTION: fatal.")
 	}
 	switch {
