@@ -44,7 +44,7 @@ func (receiver cDB_N_List) parse() (not_ok bool) { // parse everything in order 
 func (receiver *cDB) parse() {
 	var (
 		v_PG_ASN = func() (outbound _Inet_ASN) {
-			outbound = _Inet_ASN(parse_interface(strconv.ParseUint(re_digit.FindString(receiver.XMLName.Local), 10, 32)).(uint64))
+			outbound = _Inet_ASN(parse_interface(strconv.ParseUint(re_digits.FindString(receiver.XMLName.Local), 10, 32)).(uint64))
 			switch {
 			case outbound == 0:
 				return _S_Group
@@ -71,7 +71,7 @@ func (receiver *cDB) parse() {
 			var (
 				s = make(map[_Name]bool)
 			)
-			for _, d := range re_period.Split(receiver.GT_List, -1) {
+			for _, d := range re_string_splitters.Split(receiver.GT_List, -1) {
 				switch _, flag := s[_Name(d)]; {
 				case flag:
 					continue
@@ -630,23 +630,26 @@ func (receiver cDB_LDAP_List) parse() {
 			b.User_CN = _S_cn_user
 		}
 		i_ldap[d] = &i_LDAP{
-			URL:          c,
 			Bind_DN:      b.Bind_DN,
-			Secret:       b.Secret,
-			DB_Filter:    b.DB_Filter,
 			DB_CN:        b.DB_CN,
-			DC_Filter:    b.DC_Filter,
+			DB_Filter:    b.DB_Filter,
 			DC_CN:        b.DC_CN,
-			Group_Filter: b.Group_Filter,
-			Group_CN:     b.Group_CN,
-			User_Filter:  b.User_Filter,
-			User_CN:      b.User_CN,
-			OLC:          &i_LDAP_OLC{},
-			Schema:       nil,
+			DC_Filter:    b.DC_Filter,
 			Domain:       __DN_LDAP_Domain{},
+			FQDN:         "",
+			Group_CN:     b.Group_CN,
+			Group_Filter: b.Group_Filter,
 			M_CN_G:       __DN_LDAP_Domain_Group{},
 			M_CN_U:       __DN_LDAP_Domain_User{},
 			Modify:       nil,
+			Modify_Regen: nil,
+			OLC:          &i_LDAP_OLC{},
+			PKI:          nil,
+			Schema:       nil,
+			Secret:       b.Secret,
+			URL:          c,
+			User_CN:      b.User_CN,
+			User_Filter:  b.User_Filter,
 		}
 	}
 }
@@ -720,7 +723,7 @@ func (receiver *cDB_Peer) parse_RI(v_Peer *i_Peer) {
 						v_IF_IFM  string
 						v_IF_IFsM string
 					)
-					split_2_string(&d.Name, re_dot, &v_IF_IFM, &v_IF_IFsM)
+					split_2_string(&d.Name, re_dots, &v_IF_IFM, &v_IF_IFsM)
 					outbound[d.Name] = &i_Peer_RI_IF{
 						IFM:           _Name(v_IF_IFM),
 						IFsM:          _Name(v_IF_IFsM),

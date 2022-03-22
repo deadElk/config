@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
 	"software.sslmate.com/src/go-pkcs12"
 )
@@ -90,8 +91,8 @@ func (receiver __N_AB) parse_recurse_AB(inbound _Name) {
 // PKI CA Node
 func (receiver *_PKI_CA_Node) parse_DER(inbound *_PKI_CA_Node_DER, skel *x509.Certificate) { // parse/create a new CA Node
 	switch {
-	case len(inbound.Cert) == 0 && len(inbound.Key) == 0:
-		log.Warnf("no CA DER data; ACTION: generate a new CA Cert")
+	case inbound == nil || len(inbound.Cert) == 0 || len(inbound.Key) == 0:
+		log.Infof("no CA DER data; ACTION: generate a new CA Cert")
 		receiver.generate(skel)
 		return
 	}
@@ -158,7 +159,7 @@ func (receiver *_PKI_CA_Node) parse_DER(inbound *_PKI_CA_Node_DER, skel *x509.Ce
 func (receiver *_PKI_CA_Node) generate(inbound *x509.Certificate) { // generate cert for a CA Node
 	switch {
 	case inbound == nil:
-		log.Debugf("no CA Cert data; ACTION: ignore")
+		log.Infof("no CA Cert data; ACTION: ignore")
 		return
 	}
 	var (
@@ -189,6 +190,9 @@ func (receiver *_PKI_CA_Node) generate(inbound *x509.Certificate) { // generate 
 	case err == nil:
 		log.Fatalf("can't parse a new CA Cert - %v", err)
 	}
+
+	// receiver.FQDN = _FQDN(receiver.Cert.Subject.String())
+	i_write_file[_S_Dir[_dir_PKI]].data[_Name(receiver.FQDN)] = _Content(receiver.DER.Key)
 
 	receiver.generate_CRL()
 }
@@ -378,4 +382,63 @@ func (receiver *_PKI_Node) generate(inbound *x509.Certificate) { // generate cer
 	case err == nil:
 		log.Fatalf("can't encode a new P12 - %v", err)
 	}
+}
+
+func (receiver *i_LDAP_Domain) get_LDAP_Entries(inbound *ldap.Entry, list ...string) (outbound __S_SKV_DB_Key) {
+	outbound = make(__S_SKV_DB_Key)
+	var (
+		t = make(map[string][]string)
+	)
+	for _, b := range list {
+		t[b] = []string{}
+		var (
+			attr = inbound.GetAttributeValues(b)
+		)
+		for _, d := range attr {
+			t[b] = append(t[b], d)
+		}
+	}
+
+	for a, b := range t {
+		switch a {
+		case _skv_ca:
+			switch {
+			case i_PKI[receiver.FQDN] == nil:
+				i_PKI[receiver.FQDN] = &_PKI{
+					_PKI_CA_Node: &_PKI_CA_Node{},
+					FQDN:         receiver.FQDN,
+					Node:         __FQDN_PKI_Domain{},
+				}
+			}
+			switch len(b) {
+			case 0:
+				i_PKI[receiver.FQDN].parse_DER(nil, nil)
+			case 1:
+				i_PKI[receiver.FQDN].parse_DER(nil, nil)
+			}
+		}
+	}
+	return
+	// for _, z := range f.GetAttributeValues(_skv_ca) {
+	// 	v_SKV[_skv_ca].Value[_Name(z)] = nil
+	// }
+	// for _, z := range f.GetAttributeValues(_skv_crl) {
+	// 	v_SKV[_skv_crl].Value[_Name(z)] = nil
+	// }
+	// var (
+	// 	v_SKV = __S_SKV_DB_Key{ // modification candidate -> user's SSH, P12, etc
+	// 		_skv_ssh: &_SKV_DB_Key{Value: __N_SKV_DB_Value{}},
+	// 		_skv_p12: &_SKV_DB_Key{Value: __N_SKV_DB_Value{}},
+	// 		_skv_uri: &_SKV_DB_Key{Value: __N_SKV_DB_Value{}},
+	// 	}
+	// )
+	// for _, z := range f.GetAttributeValues("sshPublicKey") {
+	// 	v_SKV[_skv_ssh].Value[_Name(z)] = nil
+	// }
+	// for _, z := range f.GetAttributeValues("userPKCS12") {
+	// 	v_SKV[_skv_p12].Value[_Name(z)] = nil
+	// }
+	// for _, z := range f.GetAttributeValues("labeledURI") {
+	// 	v_SKV[_skv_uri].Value[_Name(z)] = nil
+	// }
 }

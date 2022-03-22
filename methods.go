@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/binary"
 	"math/big"
@@ -470,4 +471,44 @@ func (receiver *i_LDAP_Domain_Group) modify(attrType string, attrVals []string) 
 		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
 	}
 	receiver.Modify.Replace(attrType, attrVals)
+}
+func (receiver *i_LDAP) _DN_FQDN(inbound _DN) (outbound _FQDN) {
+	var (
+		interim  = re_commas.Split(inbound.String(), -1)
+		inbounds = len(interim) - 1
+		buffer   bytes.Buffer
+	)
+	for a, b := range interim {
+		switch {
+		case len(b) == 0:
+			log.Warnf("malformed DN '%v'; ACTION: ignore", inbound)
+			continue
+		}
+		var (
+			delimiter string
+			d         = re_equals.Split(b, -1)
+		)
+		switch {
+		case len(d) != 2:
+			log.Warnf("malformed DN '%v'; ACTION: ignore", inbound)
+			continue
+		}
+		switch d[0] {
+		case "dc": // todo: is this dirty?
+			delimiter = _re_point
+		case receiver.Group_CN:
+			delimiter = _re_point
+		case receiver.User_CN:
+			delimiter = _re_dog
+		default:
+			continue
+		}
+
+		buffer.WriteString(d[1])
+		switch {
+		case a < inbounds:
+			buffer.WriteString(delimiter)
+		}
+	}
+	return _FQDN(buffer.String())
 }

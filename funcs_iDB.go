@@ -468,32 +468,25 @@ func parse_GT() (not_ok bool) {
 func parse_LDAP() (not_ok bool) {
 	for a, b := range i_ldap {
 		for _, d := range b.Domain {
+			d.FQDN = b._DN_FQDN(d.DN)
 			for _, f := range d.Raw_DC.Entries {
-				var (
-					v_SKV = __I_SKV_DB_Key{ // modification candidate -> domain's CA, CRL, etc
-						_pkv_ca:  &_SKV_DB_Key{Value: __N_SKV_DB_Value{}},
-						_pkv_crl: &_SKV_DB_Key{Value: __N_SKV_DB_Value{}},
-					}
-				)
-				for _, z := range f.GetAttributeValues("cACertificate") {
-					v_SKV[_pkv_ca].Value[_Name(z)] = nil
-				}
-				for _, z := range f.GetAttributeValues("certificateRevocationList") {
-					v_SKV[_pkv_crl].Value[_Name(z)] = nil
-				}
+				d.SKV = d.get_LDAP_Entries(f, _skv_ca, _skv_crl)
 			}
 			for _, f := range d.Raw_User.Entries {
 				var (
 					v_U = &i_LDAP_Domain_User{
 						DN:         _DN(f.GetAttributeValue("entryDN")),
-						UID_Number: _UID_Number(string_uint64(f.GetAttributeValue("uidNumber"))),
-						UID:        _UID(f.GetAttributeValue(b.User_CN)),
+						Domain:     d,
+						Entry:      f,
+						FQDN:       "",
+						GID_List:   __GN_LDAP_Domain_Group{},
 						GID_Number: _GID_Number(string_uint64(f.GetAttributeValue("gidNumber"))),
 						IPPrefix:   netip.Prefix{},
-						GID_List:   __GN_LDAP_Domain_Group{},
-						SKV:        nil,
 						Modify:     nil,
-						Entry:      f,
+						PKI:        nil,
+						SKV:        nil,
+						UID:        _UID(f.GetAttributeValue(b.User_CN)),
+						UID_Number: _UID_Number(string_uint64(f.GetAttributeValue("uidNumber"))),
 					}
 				)
 				switch {
@@ -522,24 +515,8 @@ func parse_LDAP() (not_ok bool) {
 					log.Debugf("LDAP '%v': UID '%v', ipHostNumber not defined; ACTION: find new.", a.String(), v_U.DN)
 				}
 
-				var (
-					v_SKV = __I_SKV_DB_Key{ // modification candidate -> user's SSH, P12, etc
-						_pkv_ssh: &_SKV_DB_Key{Value: __N_SKV_DB_Value{}},
-						_pkv_p12: &_SKV_DB_Key{Value: __N_SKV_DB_Value{}},
-						_pkv_etc: &_SKV_DB_Key{Value: __N_SKV_DB_Value{}},
-					}
-				)
-				for _, z := range f.GetAttributeValues("sshPublicKey") {
-					v_SKV[_pkv_ssh].Value[_Name(z)] = nil
-				}
-				for _, z := range f.GetAttributeValues("userPKCS12") {
-					v_SKV[_pkv_p12].Value[_Name(z)] = nil
-				}
-				for _, z := range f.GetAttributeValues("labeledURI") {
-					v_SKV[_pkv_etc].Value[_Name(z)] = nil
-				}
-
-				v_U.SKV = v_SKV
+				v_U.FQDN = b._DN_FQDN(v_U.DN)
+				// v_U.SKV = d.get_LDAP_Entries(f, _skv_ssh, _skv_p12, _skv_uri)
 
 				d.User[v_U.UID_Number] = v_U
 				b.M_CN_U[v_U.DN] = v_U
@@ -574,14 +551,17 @@ func parse_LDAP() (not_ok bool) {
 				var (
 					v_G = &i_LDAP_Domain_Group{
 						DN:             _DN(f.GetAttributeValue("entryDN")),
-						GID_Number:     _GID_Number(string_uint64(f.GetAttributeValue("gidNumber"))),
-						GID:            _GID(f.GetAttributeValue(b.Group_CN)),
-						UID_List:       nil,
-						GID_List:       nil,
-						Owner_UID_List: nil,
-						Owner_GID_List: nil,
-						Modify:         nil,
+						Domain:         d,
 						Entry:          f,
+						FQDN:           "",
+						GID:            _GID(f.GetAttributeValue(b.Group_CN)),
+						GID_List:       nil,
+						GID_Number:     _GID_Number(string_uint64(f.GetAttributeValue("gidNumber"))),
+						Modify:         nil,
+						Owner_GID_List: nil,
+						Owner_UID_List: nil,
+						PKI:            nil,
+						UID_List:       nil,
 					}
 					v_UID_List       = make(__UN_LDAP_Domain_User)
 					v_GID_List       = make(__GN_LDAP_Domain_Group) // todo
@@ -618,6 +598,8 @@ func parse_LDAP() (not_ok bool) {
 					log.Errorf("LDAP DB inconsistent! GID '%v': GID_Number is '%v'; ACTION: report.", v_G.DN, v_G.GID_Number)
 					not_ok = true
 				}
+
+				v_G.FQDN = b._DN_FQDN(v_G.DN)
 
 				v_G.UID_List = v_UID_List
 				v_G.GID_List = v_GID_List

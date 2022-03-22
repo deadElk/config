@@ -16,10 +16,14 @@ const (
 	_SERVICED        = _SERVICE /*+ "D"*/
 )
 const (
-	_re_upper_case string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	_re_lower_case string = "abcdefghijklmnopqrstuvwxyz"
+	_re_comma      string = ","
 	_re_digit      string = "0123456789"
+	_re_dog        string = "@"
+	_re_equal      string = "="
+	_re_lower_case string = "abcdefghijklmnopqrstuvwxyz"
+	_re_point      string = "."
 	_re_symbol     string = "_" // carefully with a special symbols
+	_re_upper_case string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	_passwd               = _re_upper_case + _re_lower_case + _re_digit + _re_symbol
 )
 const (
@@ -37,11 +41,12 @@ const (
 	_dir_etc
 )
 const (
-	_pkv_etc _ID = iota
-	_pkv_ssh
-	_pkv_ca
-	_pkv_crl
-	_pkv_p12
+	_skv_etc = ""
+	_skv_ssh = "sshPublicKey"
+	_skv_ca  = "cACertificate"
+	_skv_crl = "certificateRevocationList"
+	_skv_p12 = "userPKCS12"
+	_skv_uri = "labeledURI"
 )
 const (
 	_file_host_list _ID = iota

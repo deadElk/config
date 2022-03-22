@@ -296,7 +296,7 @@ func read_file() (not_ok bool) {
 					continue
 				}
 				var (
-					s = re_dot.Split(f.Name(), -1)
+					s = re_dots.Split(f.Name(), -1)
 				)
 				switch {
 				case len(s) < 2 || s[len(s)-1] != string(b.ext):

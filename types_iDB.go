@@ -15,17 +15,20 @@ type __A_Peer_Group map[_Inet_ASN]*i_Peer_Group
 type __DN_LDAP_Domain map[_DN]*i_LDAP_Domain
 type __DN_LDAP_Domain_Group map[_DN]*i_LDAP_Domain_Group
 type __DN_LDAP_Domain_User map[_DN]*i_LDAP_Domain_User
+type __FQDN_PKI map[_FQDN]*_PKI
+type __FQDN_PKI_CA_Node map[_FQDN]*_PKI_CA_Node
+type __FQDN_PKI_Domain map[_FQDN]*_PKI_Domain
+type __FQDN_PKI_Node map[_FQDN]*_PKI_Node
 type __GN_LDAP_Domain_Group map[_GID_Number]*i_LDAP_Domain_Group
 type __INet_UI_IP_Table map[netip.Prefix]*_INet_UI_IP_Table
 type __INet_VI_IP_Table map[_VI_ID]*_INet_VI_IP_Table
+type __S_SKV_DB_Key map[string]*_SKV_DB_Key
 type __N_AB map[_Name]*i_AB
 type __N_AB_Set map[_Name]*i_AB_Set
 type __N_Content map[_Name]_Content
 type __N_File_Data map[_Name]*i_File_Data
 type __N_JA map[_Name]*i_JA
 type __N_Name map[_Name]_Name
-type __I_SKV_DB_Key map[_ID]*_SKV_DB_Key
-type __N_SKV_DB_Value map[_Name]*_SKV_DB_Value
 type __N_PO_PL map[_Name]*i_PO_PL
 type __N_PO_PS map[_Name]*i_PO_PS
 type __N_Peer_IFM map[_Name]*i_Peer_IFM
@@ -36,6 +39,7 @@ type __N_Peer_SZ map[_Name]*i_Peer_SZ
 type __N_Peer_SZ_IF map[_Name]*i_Peer_SZ_IF
 type __N_Pool map[_Name]*i_Pool
 type __N_Rule_Set map[_Name]*i_Rule_Set
+type __N_SKV_DB_Value map[_Name]*_SKV_DB_Value
 type __P_LDAP_Domain_User map[netip.Prefix]*i_LDAP_Domain_User
 type __P_Peer_RI_IF map[netip.Prefix]*i_Peer_RI_IF
 type __P_Peer_RI_IF_IP map[netip.Prefix]*i_Peer_RI_IF_IP
@@ -74,15 +78,16 @@ type i_File_Data struct {
 // PKI
 type _PKI struct {
 	*_PKI_CA_Node
-	Domain map[_FQDN]*_PKI_Domain
+	FQDN _FQDN
+	Node __FQDN_PKI_Domain
 }
 type _PKI_Domain struct {
 	*_PKI_CA_Node
-	Group map[_FQDN]*_PKI_Node
-	Host  map[_FQDN]*_PKI_Node
-	User  map[_FQDN]*_PKI_Node
+	FQDN _FQDN
+	Node __FQDN_PKI_Node
 }
 type _PKI_CA_Node struct {
+	FQDN _FQDN
 	// Cert_SN *big.Int // use for all SN: Cert and CRL
 	// CRL_SN   *big.Int
 	CA       *_PKI_CA_Node // nil for root CA or pointer to upstream CA for intermediate CA
@@ -99,6 +104,7 @@ type _PKI_CA_Node_DER struct {
 	CRL  _DER
 }
 type _PKI_Node struct {
+	FQDN _FQDN
 	CA   *_PKI_CA_Node
 	Cert *x509.Certificate
 	Key  *ecdsa.PrivateKey
@@ -112,24 +118,26 @@ type _PKI_Node_DER struct {
 
 // LDAP
 type i_LDAP struct {
-	URL          *url.URL
 	Bind_DN      _DN
-	Secret       _Secret
-	DB_Filter    string
 	DB_CN        string
-	DC_Filter    string
+	DB_Filter    string
 	DC_CN        string
-	Group_Filter string
-	Group_CN     string
-	User_Filter  string
-	User_CN      string
-	OLC          *i_LDAP_OLC    // todo: parse OLC from server
-	Schema       *i_LDAP_Schema // todo: parse schema from server
+	DC_Filter    string
 	Domain       __DN_LDAP_Domain
+	FQDN         _FQDN
+	Group_CN     string
+	Group_Filter string
 	M_CN_G       __DN_LDAP_Domain_Group
 	M_CN_U       __DN_LDAP_Domain_User
 	Modify       *ldap.ModifyRequest
 	Modify_Regen map[_FQDN]bool
+	OLC          *i_LDAP_OLC // todo: parse OLC from server
+	PKI          *_PKI_CA_Node
+	Schema       *i_LDAP_Schema // todo: parse schema from server
+	Secret       _Secret
+	URL          *url.URL
+	User_CN      string
+	User_Filter  string
 }
 type i_LDAP_OLC struct {
 }
@@ -137,40 +145,48 @@ type i_LDAP_Schema struct {
 }
 type i_LDAP_Domain struct {
 	DN        _DN
-	OLC       *i_LDAP_Domain_OLC
+	Entry     *ldap.Entry
+	FQDN      _FQDN
 	Group     __GN_LDAP_Domain_Group
-	User      __UN_LDAP_Domain_User
+	Modify    *ldap.ModifyRequest
+	OLC       *i_LDAP_Domain_OLC
+	PKI       *__FQDN_PKI_Domain
 	Raw_DC    *ldap.SearchResult
 	Raw_Group *ldap.SearchResult
 	Raw_User  *ldap.SearchResult
-	SKV       __I_SKV_DB_Key
-	Modify    *ldap.ModifyRequest
-	Entry     *ldap.Entry
+	SKV       __S_SKV_DB_Key
+	User      __UN_LDAP_Domain_User
 }
 type i_LDAP_Domain_OLC struct {
 	DN _DN
 }
 type i_LDAP_Domain_Group struct { // gidNumber: index
 	DN             _DN
-	GID_Number     _GID_Number
-	GID            _GID                   // cn
-	UID_List       __UN_LDAP_Domain_User  // member: index = member (uidNumber here), value is a pointer.
-	GID_List       __GN_LDAP_Domain_Group // CAUTION >>>> GID includes GID <<<< member: index = member (gidNumber here), value is a pointer.
-	Owner_UID_List __UN_LDAP_Domain_User  // owner: index = owner (uidNumber here), value is a pointer.
-	Owner_GID_List __GN_LDAP_Domain_Group // CAUTION >>>> GID includes GID <<<< owner: index = owner (gidNumber here), value is a pointer.
-	Modify         *ldap.ModifyRequest
+	Domain         *i_LDAP_Domain
 	Entry          *ldap.Entry
+	FQDN           _FQDN
+	GID            _GID                   // cn
+	GID_List       __GN_LDAP_Domain_Group // CAUTION >>>> GID includes GID <<<< member: index = member (gidNumber here), value is a pointer.
+	GID_Number     _GID_Number
+	Modify         *ldap.ModifyRequest
+	Owner_GID_List __GN_LDAP_Domain_Group // CAUTION >>>> GID includes GID <<<< owner: index = owner (gidNumber here), value is a pointer.
+	Owner_UID_List __UN_LDAP_Domain_User  // owner: index = owner (uidNumber here), value is a pointer.
+	PKI            __FQDN_PKI_Node
+	UID_List       __UN_LDAP_Domain_User // member: index = member (uidNumber here), value is a pointer.
 }
 type i_LDAP_Domain_User struct { // uidNumber: index
 	DN         _DN
-	UID_Number _UID_Number
-	UID        _UID                   // uid
+	Domain     *i_LDAP_Domain
+	Entry      *ldap.Entry
+	FQDN       _FQDN
+	GID_List   __GN_LDAP_Domain_Group // memberOf: index = memberOf (gidNumber here), value is a pointer.
 	GID_Number _GID_Number            // gidNumber
 	IPPrefix   netip.Prefix           // ipHostNumber (user's subnet)
-	GID_List   __GN_LDAP_Domain_Group // memberOf: index = memberOf (gidNumber here), value is a pointer.
-	SKV        __I_SKV_DB_Key         // sshPublicKey, userPKCS12, etc: private [service][key]value DB
 	Modify     *ldap.ModifyRequest
-	Entry      *ldap.Entry
+	PKI        __FQDN_PKI_Node
+	SKV        __S_SKV_DB_Key // sshPublicKey, userPKCS12, etc: private [service][key]value DB
+	UID        _UID           // uid
+	UID_Number _UID_Number
 }
 type _SKV_DB_Key struct {
 	Value __N_SKV_DB_Value

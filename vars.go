@@ -8,14 +8,16 @@ import (
 )
 
 var (
-	hash_cache    sync.Map
-	re_upper_case = regexp.MustCompile(`[A-Z]+`)
-	re_lower_case = regexp.MustCompile(`[a-z]+`)
-	re_digit      = regexp.MustCompile(`[0-9]+`)
-	re_symbol     = regexp.MustCompile(`_+`)
-	re_dot        = regexp.MustCompile(`\.+`)
-	re_period     = regexp.MustCompile(`,+`)
-	re_slash      = regexp.MustCompile(`/+`)
+	hash_cache          sync.Map
+	re_upper_case       = regexp.MustCompile(`[A-Z]+`)
+	re_lower_case       = regexp.MustCompile(`[a-z]+`)
+	re_digits           = regexp.MustCompile(`[0-9]+`)
+	re_symbols          = regexp.MustCompile(`_+`)
+	re_dots             = regexp.MustCompile(`\.+`)
+	re_equals           = regexp.MustCompile(`=+`)
+	re_commas           = regexp.MustCompile(`,+`)
+	re_slashes          = regexp.MustCompile(`/+`)
+	re_string_splitters = regexp.MustCompile(`[;, \t]+`)
 	// gt_fm      = template.FuncMap{
 	// 	"sum_uint32": sum_uint32_gt_fm,
 	// 	"sum_string": sum_string_gt_fm,
@@ -27,8 +29,8 @@ var (
 	next_ID    = empty_ID
 
 	// daemon's global PKI SerialNumber used for Cert and CRL
-	i_PKI_SN = big.NewInt(0)
-
+	i_PKI_SN      = big.NewInt(0)
+	i_PKI         = make(__FQDN_PKI)
 	i_ab          = make(__N_AB)
 	i_ja          = make(__N_JA)
 	i_pl          = make(__N_PO_PL)
@@ -49,7 +51,7 @@ var (
 		_S_Dir[_dir_Data]:   {ext: "xml", data: map[_Name]_Content{}},
 		_S_Dir[_dir_Modify]: {ext: "xml", data: map[_Name]_Content{}},
 		_S_Dir[_dir_LDAP]:   {ext: "xml", data: map[_Name]_Content{}},
-		_S_Dir[_dir_PKI]:    {ext: "", data: map[_Name]_Content{}},
+		_S_Dir[_dir_PKI]:    {ext: "key", data: map[_Name]_Content{}},
 		_S_Dir[_dir_Portal]: {ext: "", data: map[_Name]_Content{}},
 	}
 	i_peer_list []_Inet_ASN
