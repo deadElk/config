@@ -314,7 +314,7 @@ func (receiver *_W) validate_RO_GW_Action(peer *cDB_Peer, v_Peer *i_Peer) (outbo
 	return
 }
 
-func (receiver *_Content) trim_space() _Content {
+func (receiver *_Content) trim_space() {
 	var (
 		interim string
 	)
@@ -322,16 +322,8 @@ func (receiver *_Content) trim_space() _Content {
 	for _, value := range strings.Split(convert_2_string("", receiver), "\n") {
 		interim += strings.TrimSpace(value) + "\n"
 	}
-	return _Content(interim)
+	*receiver = _Content(interim)
 }
-
-// func (receiver *_FQDN) parse_Domain_Name() (outbound _FQDN) {
-// 	switch {
-// 	case len(*receiver) == 0:
-// 		return
-// 	}
-// 	return *receiver
-// }
 
 func (receiver *_Communication) parse(_comm _Communication) _Communication {
 	switch {

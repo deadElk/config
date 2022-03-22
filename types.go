@@ -47,6 +47,8 @@ type _P12 []byte
 type __N_BGP_Group map[_Name]*_BGP_Group
 type _hash_ID [_hash_Size]uint8 // _hash_ID here a result of sha3.Sum512().
 type _PKI_SN struct{ *big.Int }
+type _Dir_Name _Name
+type _File_Name _Name
 
 type _Attribute_List struct {
 	Description _Description `xml:"description,attr"`

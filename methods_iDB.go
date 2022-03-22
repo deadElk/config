@@ -5,7 +5,9 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
+	"os"
 	"reflect"
+	"sort"
 	"time"
 
 	"github.com/go-ldap/ldap/v3"
@@ -192,7 +194,7 @@ func (receiver *_PKI_CA_Node) generate(inbound *x509.Certificate) { // generate 
 	}
 
 	// receiver.FQDN = _FQDN(receiver.Cert.Subject.String())
-	i_write_file[_S_Dir[_dir_PKI]].data[_Name(receiver.FQDN)] = _Content(receiver.DER.Key)
+	i_file.put(_dir_PKI, _File_Name(receiver.FQDN), "", receiver.DER.Key)
 
 	receiver.generate_CRL()
 }
@@ -387,7 +389,9 @@ func (receiver *_PKI_Node) generate(inbound *x509.Certificate) { // generate cer
 func (receiver *i_LDAP_Domain) get_LDAP_Entries(inbound *ldap.Entry, list ...string) (outbound __S_SKV_DB_Key) {
 	outbound = make(__S_SKV_DB_Key)
 	var (
-		t = make(map[string][]string)
+		t      = make(map[string][]string)
+		tcapki *_PKI_Domain
+		// tpki   *_PKI_Node
 	)
 	for _, b := range list {
 		t[b] = []string{}
@@ -401,21 +405,43 @@ func (receiver *i_LDAP_Domain) get_LDAP_Entries(inbound *ldap.Entry, list ...str
 
 	for a, b := range t {
 		switch a {
+		case _skv_ca, _skv_crl:
+			tcapki = &_PKI_Domain{
+				_PKI_CA_Node: &_PKI_CA_Node{
+					FQDN:     receiver.FQDN,
+					CA:       nil,
+					CA_Chain: nil,
+					Cert:     nil,
+					Key:      nil,
+					CRL:      nil,
+					DER: &_PKI_CA_Node_DER{
+						Cert: nil,
+						Key:  _DER(*i_file.get(_dir_PKI_Key, _File_Name(receiver.FQDN))),
+						CRL:  nil,
+					},
+				},
+				FQDN: receiver.FQDN,
+				Node: nil,
+			}
+		}
+		switch a {
 		case _skv_ca:
 			switch {
-			case i_PKI[receiver.FQDN] == nil:
-				i_PKI[receiver.FQDN] = &_PKI{
-					_PKI_CA_Node: &_PKI_CA_Node{},
-					FQDN:         receiver.FQDN,
-					Node:         __FQDN_PKI_Domain{},
-				}
+			case len(b) == 1:
+				tcapki._PKI_CA_Node.DER.Cert = _DER(b[0])
 			}
-			switch len(b) {
-			case 0:
-				i_PKI[receiver.FQDN].parse_DER(nil, nil)
-			case 1:
-				i_PKI[receiver.FQDN].parse_DER(nil, nil)
+		case _skv_crl:
+			switch {
+			case len(b) == 1:
+				tcapki._PKI_CA_Node.DER.CRL = _DER(b[0])
 			}
+
+			// switch len(b) {
+			// case 0:
+			// 	i_PKI[receiver.FQDN].parse_DER(&_PKI_CA_Node_DER{}, nil)
+			// case 1:
+			// 	i_PKI[receiver.FQDN].parse_DER(nil, nil)
+			// }
 		}
 	}
 	return
@@ -441,4 +467,85 @@ func (receiver *i_LDAP_Domain) get_LDAP_Entries(inbound *ldap.Entry, list ...str
 	// for _, z := range f.GetAttributeValues("labeledURI") {
 	// 	v_SKV[_skv_uri].Value[_Name(z)] = nil
 	// }
+}
+
+func (receiver __N_File_Data) read(dir _Dir_Name, file _File_Name) (not_ok bool) {
+	receiver.check(dir, "")
+	var (
+		direntry []os.DirEntry
+		err      error
+		fln      = strings_join("/", dir, strings_join(".", file, receiver[dir].ext))
+	)
+	switch direntry, err = os.ReadDir(fln); {
+	case err != nil:
+		log.Warnf("file '%v' listing error '%v'; ACTION: report.", fln, err)
+		not_ok = true
+	}
+
+	for _, f := range direntry {
+		switch {
+		case !f.Type().IsRegular():
+			log.Debugf("file '%v' is not a regular file; ACTION: skip", f.Name())
+			continue
+		}
+		var (
+			content _Content
+			fn      = strings_join("/", dir, f.Name())
+		)
+		switch content, err = os.ReadFile(fn); {
+		case err != nil:
+			log.Warnf("file '%v' read error '%v'; ACTION: report.", fn, err)
+			not_ok = true
+			continue
+		}
+		content.trim_space()
+		receiver.put(dir, _File_Name(fn), "", content)
+		receiver[dir].sorted = append(receiver[dir].sorted, _File_Name(fn))
+	}
+	sort.Slice(receiver[dir].sorted, func(i, j int) bool {
+		return receiver[dir].sorted[i] < receiver[dir].sorted[j]
+	})
+
+	return !not_ok
+}
+func (receiver __N_File_Data) get(dir _Dir_Name, file _File_Name) ( /*not_ok bool,*/ outbound *_Content) {
+	receiver.check(dir, file)
+	switch _, flag := receiver[dir].data[file]; {
+	case !flag:
+		return
+	}
+	return /*!not_ok,*/ receiver[dir].data[file]
+}
+func (receiver __N_File_Data) put(dir _Dir_Name, file _File_Name, delimiter string, content any) /*not_ok bool*/ {
+	receiver.check(dir, file)
+	var (
+		v_Content = _Content(convert_2_string(delimiter, content))
+	)
+	receiver[dir].data[file] = &v_Content
+	// return !not_ok
+}
+func (receiver __N_File_Data) append(dir _Dir_Name, file _File_Name, delimiter string, content any) /*not_ok bool*/ {
+	receiver.check(dir, file)
+	var (
+		v_Content = _Content(strings_join(delimiter, receiver[dir].data[file], content))
+	)
+	receiver[dir].data[file] = &v_Content
+	return /*!not_ok*/
+}
+func (receiver __N_File_Data) check(dir _Dir_Name, file _File_Name) /*not_ok bool*/ {
+	switch _, flag := receiver[dir]; {
+	case !flag:
+		log.Warnf("Dir '%v' definition doesn't exist; ACTION: create.", dir)
+		receiver[dir] = &i_File_Data{
+			data: __N_Content{},
+		}
+	}
+	switch {
+	case len(file) != 0:
+		switch _, flag := receiver[dir].data[file]; {
+		case !flag:
+			log.Debugf("File '%v' definition in Dir '%v' doesn't exist; ACTION: create.", dir, file)
+			receiver[dir].data[file] = &_Content{}
+		}
+	}
 }

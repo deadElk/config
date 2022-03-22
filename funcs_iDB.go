@@ -52,17 +52,13 @@ func generate_iDB_host_list() {
 	sort.Slice(i_peer_list, func(i, j int) bool {
 		return i_peer_list[i] < i_peer_list[j]
 	})
-	var (
-		host_list string
-	)
 	for _, b := range i_peer_list {
 		var (
 			s_public  *[]_Name
 			s_private *[]_Name
 			ip_list   = "\t"
-			s_target  = []string{0: i_peer[b].Router_ID.String()}
+			s_target  = []string{0: i_peer[b].Router_ID.String()} // todo: WTF????
 		)
-		// todo: use strings_join
 		s_private = i_peer[b].AB[_Name(strings_join("_", "I", i_peer[b].ASName))].get_address_list(s_private)
 		s_public = i_peer[b].AB[_Name(strings_join("_", "O", i_peer[b].ASName))].get_address_list(s_public)
 		sort.Slice(*s_private, func(i, j int) bool {
@@ -80,31 +76,26 @@ func generate_iDB_host_list() {
 			ip_list += tabber(d.String(), 3) + "\t"
 		}
 
-		host_list += func() (outbound string) {
-			for _, f := range s_target {
-				var (
-					host = func() string {
-						switch addr, err := netip.ParseAddr(f); {
-						case err == nil:
-							return addr.String()
-						default:
-							prefix, _ := netip.ParsePrefix(f)
-							return prefix.Addr().String()
-						}
-					}()
-				)
-				outbound += tabber(host, 2) +
-					"\t####\t" +
-					tabber(i_peer[b].PName.String(), 2) + "\t" +
-					tabber(i_peer[b].Hostname.String(), 3) + "\t" +
-					tabber(i_peer[b].Manufacturer+" "+i_peer[b].Model, 3) + "\t####\t" +
-					ip_list + "\n"
-			}
-			outbound += "\n"
-			return
-		}()
+		for _, f := range s_target {
+			var (
+				host = func() string {
+					switch addr, err := netip.ParseAddr(f); {
+					case err == nil:
+						return addr.String()
+					default:
+						prefix, _ := netip.ParsePrefix(f)
+						return prefix.Addr().String()
+					}
+				}()
+			)
+			i_file.put(_dir_Config, _file_host_list, "\n", tabber(host, 2)+
+				"\t####\t"+
+				tabber(i_peer[b].PName.String(), 2)+"\t"+
+				tabber(i_peer[b].Hostname.String(), 3)+"\t"+
+				tabber(i_peer[b].Manufacturer+" "+i_peer[b].Model, 3)+"\t####\t"+
+				ip_list+"\n")
+		}
 	}
-	i_write_file[_S_Dir[_dir_Config]].data[_S_File[_file_host_list]] = _Content(host_list)
 }
 
 func define_iDB_Vocabulary() {
@@ -446,7 +437,7 @@ func parse_GT() (not_ok bool) {
 			var (
 				vBuf bytes.Buffer
 			)
-			switch vGT, err := template.New(gt_v.String()).Parse(string(i_read_file[_S_Dir[_dir_GT]].data[gt_v])); {
+			switch vGT, err := template.New(gt_v.String()).Parse(i_file.get(_dir_GT, _File_Name(gt_v)).String()); {
 			case err == nil || vGT != nil:
 				switch err = vGT.Execute(&vBuf, value); {
 				case err != nil:
@@ -454,7 +445,7 @@ func parse_GT() (not_ok bool) {
 					not_ok = true
 					continue
 				}
-				i_write_file[_S_Dir[_dir_Config]].data[value.ASName] = append(i_write_file[_S_Dir[_dir_Config]].data[value.ASName], parse_interface(ioutil.ReadAll(&vBuf)).([]byte)...)
+				i_file.append(_dir_Config, _File_Name(value.ASName), "", vBuf)
 			default:
 				log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: report.", index.String(), gt_v, err)
 				not_ok = true

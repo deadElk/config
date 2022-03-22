@@ -31,14 +31,18 @@ const (
 	_comm_vi
 )
 const (
-	_dir_Config _ID = iota
-	_dir_Data
-	_dir_Modify
-	_dir_GT
-	_dir_LDAP
-	_dir_PKI
-	_dir_Portal
-	_dir_etc
+	_dir_Config  _Dir_Name = "tmp/CONFIG"
+	_dir_Data    _Dir_Name = "tmp/data"
+	_dir_GT      _Dir_Name = "tmp/templates"
+	_dir_LDAP    _Dir_Name = "tmp/LDAP"
+	_dir_Modify  _Dir_Name = "tmp/modify"
+	_dir_PKI     _Dir_Name = "tmp/PKI"
+	_dir_PKI_Key _Dir_Name = "tmp/PKI/Key"
+	_dir_Portal  _Dir_Name = "tmp/portal"
+	_dir_etc     _Dir_Name = "etc"
+)
+const (
+	_file_host_list _File_Name = "host_list"
 )
 const (
 	_skv_etc = ""
@@ -47,9 +51,6 @@ const (
 	_skv_crl = "certificateRevocationList"
 	_skv_p12 = "userPKCS12"
 	_skv_uri = "labeledURI"
-)
-const (
-	_file_host_list _ID = iota
 )
 const (
 	_S_Verbosity                        = log.InfoLevel

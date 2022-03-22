@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"math/big"
 	"net/netip"
 	"os"
@@ -98,7 +100,7 @@ func tabber(inbound string, tabs int) string {
 	}
 }
 
-func convert_2_string(delimiter string, inbound interface{}) string {
+func convert_2_string(delimiter string, inbound any) (outbound string) {
 	switch value := (inbound).(type) {
 	case *string:
 		return *value
@@ -160,6 +162,12 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 		return (*value).String()
 	case *netip.Prefix:
 		return (*value).String()
+	case *io.Reader:
+		switch interim, err := ioutil.ReadAll(*value); {
+		case err == nil:
+			return string(interim)
+		}
+		return
 	case string:
 		return value
 	case _Inet_ASN:
@@ -220,6 +228,12 @@ func convert_2_string(delimiter string, inbound interface{}) string {
 		return value.String()
 	case netip.Prefix:
 		return value.String()
+	case io.Reader:
+		switch interim, err := ioutil.ReadAll(value); {
+		case err == nil:
+			return string(interim)
+		}
+		return
 
 		// todo: dirty hack
 	case []_Name:
@@ -260,7 +274,7 @@ func pad_string(inbound string, length int) string {
 	}
 	return padding + inbound
 }
-func split_2_string(inbound interface{}, re *regexp.Regexp, target ...*string) {
+func split_2_string(inbound any, re *regexp.Regexp, target ...*string) {
 	var (
 		interim = re.Split(convert_2_string("", inbound), -1)
 	)
@@ -269,7 +283,7 @@ func split_2_string(inbound interface{}, re *regexp.Regexp, target ...*string) {
 	}
 }
 
-func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound _Host_Inbound_Traffic_List) {
+func parse_Host_Inbound_Traffic(enabled ...any) (outbound _Host_Inbound_Traffic_List) {
 	outbound = _Host_Inbound_Traffic_List{
 		Services:  map[_Service]bool{},
 		Protocols: map[_INet_Protocol]bool{},
@@ -287,8 +301,8 @@ func parse_Host_Inbound_Traffic(enabled ...interface{}) (outbound _Host_Inbound_
 }
 
 func read_file() (not_ok bool) {
-	for a, b := range i_read_file {
-		switch direntry, err := os.ReadDir(string(a)); {
+	for a, b := range i_read_list {
+		switch direntry, err := os.ReadDir(a.String()); {
 		case err == nil:
 			for _, f := range direntry {
 				switch {
@@ -305,16 +319,17 @@ func read_file() (not_ok bool) {
 					continue
 				}
 				var (
-					t = _Name(f.Name()[:len(f.Name())-1-len(s[len(s)-1])])
+					t = _File_Name(f.Name()[:len(f.Name())-1-len(s[len(s)-1])])
 					g _Content
 				)
-				switch g, err = os.ReadFile(strings_join("/", ".", a, f.Name())); {
+				switch g, err = os.ReadFile(strings_join("/", ".", a.String(), f.Name())); {
 				case err != nil:
 					log.Warnf("file '%v' read error '%v'; ACTION: report.", t, err)
 					not_ok = true
 					continue
 				}
-				b.data[t] = g.trim_space()
+				g.trim_space()
+				b.data[t] = &g
 				b.sorted = append(b.sorted, t)
 			}
 			sort.Slice(b.sorted, func(i, j int) bool {
@@ -329,7 +344,7 @@ func read_file() (not_ok bool) {
 	return !not_ok
 }
 func write_file() (not_ok bool) {
-	for a, b := range i_write_file {
+	for a, b := range i_write_list {
 		switch err := os.MkdirAll(string(a), os.ModeDir|0700); {
 		case err != nil:
 			log.Errorf("directory '%v' create error '%v'; ACTION: report.", a, err)
@@ -340,7 +355,7 @@ func write_file() (not_ok bool) {
 			var (
 				g = strings_join("/", a, strings_join(".", e, b.ext))
 			)
-			switch err := os.WriteFile(g, f, 0600); {
+			switch err := os.WriteFile(g, *f, 0600); {
 			case err != nil:
 				log.Errorf("file '%v' write error '%v'; ACTION: report.", g, err)
 				not_ok = true

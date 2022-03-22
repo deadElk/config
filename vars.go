@@ -41,18 +41,30 @@ var (
 	i_peer_group  = make(__A_Peer_Group)
 	i_ldap        = make(__U_LDAP)
 	i_ldap_domain = make(__DN_LDAP_Domain)
-	i_read_file   = __N_File_Data{
-		_S_Dir[_dir_GT]:     {ext: "tmpl", data: map[_Name]_Content{}},
-		_S_Dir[_dir_etc]:    {ext: "xml", data: map[_Name]_Content{}},
-		_S_Dir[_dir_Modify]: {ext: "xml", data: map[_Name]_Content{}},
+	i_file        = __N_File_Data{
+		_dir_Config:  {ext: "txt", data: __N_Content{}},
+		_dir_Data:    {ext: "xml", data: __N_Content{}},
+		_dir_GT:      {ext: "tmpl", data: __N_Content{}},
+		_dir_LDAP:    {ext: "xml", data: __N_Content{}},
+		_dir_Modify:  {ext: "xml", data: __N_Content{}},
+		_dir_PKI:     {ext: "", data: __N_Content{}},
+		_dir_PKI_Key: {ext: "key", data: __N_Content{}},
+		_dir_Portal:  {ext: "", data: __N_Content{}},
+		_dir_etc:     {ext: "xml", data: __N_Content{}},
 	}
-	i_write_file = __N_File_Data{
-		_S_Dir[_dir_Config]: {ext: "txt", data: map[_Name]_Content{}},
-		_S_Dir[_dir_Data]:   {ext: "xml", data: map[_Name]_Content{}},
-		_S_Dir[_dir_Modify]: {ext: "xml", data: map[_Name]_Content{}},
-		_S_Dir[_dir_LDAP]:   {ext: "xml", data: map[_Name]_Content{}},
-		_S_Dir[_dir_PKI]:    {ext: "key", data: map[_Name]_Content{}},
-		_S_Dir[_dir_Portal]: {ext: "", data: map[_Name]_Content{}},
+	i_read_list = __N_File_Data{
+		_dir_GT:      i_file[_dir_GT],
+		_dir_Modify:  i_file[_dir_Modify],
+		_dir_PKI_Key: i_file[_dir_PKI_Key],
+		_dir_etc:     i_file[_dir_etc],
+	}
+	i_write_list = __N_File_Data{
+		_dir_Config:  i_file[_dir_Config],
+		_dir_Data:    i_file[_dir_Data],
+		_dir_LDAP:    i_file[_dir_LDAP],
+		_dir_Modify:  i_file[_dir_Modify],
+		_dir_PKI_Key: i_file[_dir_PKI_Key],
+		_dir_Portal:  i_file[_dir_Portal],
 	}
 	i_peer_list []_Inet_ASN
 	i_vi_ip     = make(__INet_VI_IP_Table)
@@ -72,19 +84,20 @@ var (
 		_W_qualified__next__hop: _W_qualified__next__hop,
 		_W_table:                _W_next__table,
 	}
-	_S_Dir = map[_ID]_Name{
-		_dir_Config: "tmp/CONFIG",
-		_dir_Data:   "tmp/data",
-		_dir_Modify: "tmp/modify",
-		_dir_GT:     "tmp/templates",
-		_dir_LDAP:   "tmp/LDAP",
-		_dir_PKI:    "tmp/PKI",
-		_dir_Portal: "tmp/portal",
-		_dir_etc:    "etc",
-	}
-	_S_File = map[_ID]_Name{
-		_file_host_list: "host_list",
-	}
+	// _S_Dir = map[_ID]_Name{
+	// 	_dir_Config:  "tmp/CONFIG",
+	// 	_dir_Data:    "tmp/data",
+	// 	_dir_GT:      "tmp/templates",
+	// 	_dir_LDAP:    "tmp/LDAP",
+	// 	_dir_Modify:  "tmp/modify",
+	// 	_dir_PKI:     "tmp/PKI",
+	// 	_dir_PKI_Key: "tmp/PKI/Key",
+	// 	_dir_Portal:  "tmp/portal",
+	// 	_dir_etc:     "etc",
+	// }
+	// _S_File = map[_ID]_Name{
+	// 	_file_host_list: "host_list",
+	// }
 	_S_Comm = map[_ID]_Communication{
 		_comm_if: _Communication_ptmp,
 		_comm_vi: _Communication_ptp,

@@ -25,8 +25,8 @@ type __INet_VI_IP_Table map[_VI_ID]*_INet_VI_IP_Table
 type __S_SKV_DB_Key map[string]*_SKV_DB_Key
 type __N_AB map[_Name]*i_AB
 type __N_AB_Set map[_Name]*i_AB_Set
-type __N_Content map[_Name]_Content
-type __N_File_Data map[_Name]*i_File_Data
+type __N_Content map[_File_Name]*_Content
+type __N_File_Data map[_Dir_Name]*i_File_Data
 type __N_JA map[_Name]*i_JA
 type __N_Name map[_Name]_Name
 type __N_PO_PL map[_Name]*i_PO_PL
@@ -71,7 +71,7 @@ type __i_VI_Peer map[_VI_ID]*i_VI_Peer
 // file i/o
 type i_File_Data struct {
 	ext    _Name
-	sorted []_Name
+	sorted []_File_Name
 	data   __N_Content
 }
 
@@ -98,11 +98,6 @@ type _PKI_CA_Node struct {
 	DER      *_PKI_CA_Node_DER
 	// P12      _P12
 }
-type _PKI_CA_Node_DER struct {
-	Cert _DER
-	Key  _DER
-	CRL  _DER
-}
 type _PKI_Node struct {
 	FQDN _FQDN
 	CA   *_PKI_CA_Node
@@ -110,6 +105,11 @@ type _PKI_Node struct {
 	Key  *ecdsa.PrivateKey
 	DER  *_PKI_Node_DER
 	P12  _P12
+}
+type _PKI_CA_Node_DER struct {
+	Cert _DER
+	Key  _DER
+	CRL  _DER
 }
 type _PKI_Node_DER struct {
 	Cert _DER

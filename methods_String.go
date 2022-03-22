@@ -45,6 +45,12 @@ func (receiver _Mask) String() string {
 func (receiver _Name) String() string {
 	return string(receiver)
 }
+func (receiver _File_Name) String() string {
+	return string(receiver)
+}
+func (receiver _Dir_Name) String() string {
+	return string(receiver)
+}
 func (receiver _PName) String() string {
 	return string(receiver)
 }
