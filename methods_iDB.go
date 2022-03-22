@@ -486,7 +486,8 @@ func (receiver __N_File_Data) read() (not_ok bool) {
 		switch direntry, err = os.ReadDir(dir.String()); {
 		case err != nil:
 			log.Warnf("file '%v' listing error '%v'; ACTION: report.", dir, err)
-			not_ok = true
+			// not_ok = true
+			continue
 		}
 
 		for _, f := range direntry {

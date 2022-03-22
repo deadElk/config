@@ -88,13 +88,14 @@ func generate_iDB_host_list() {
 					}
 				}()
 			)
-			i_file.put(_dir_Config, _file_host_list, "\n", tabber(host, 2)+
+			i_file.append(_dir_Config, _file_host_list, "\n", tabber(host, 2)+
 				"\t####\t"+
 				tabber(i_peer[b].PName.String(), 2)+"\t"+
 				tabber(i_peer[b].Hostname.String(), 3)+"\t"+
 				tabber(i_peer[b].Manufacturer+" "+i_peer[b].Model, 3)+"\t####\t"+
-				ip_list+"\n")
+				ip_list)
 		}
+		i_file.append(_dir_Config, _file_host_list, "", "\n")
 	}
 }
 

@@ -60,7 +60,7 @@ func main() {
 		log.Fatalf("write_file() error; ACTION: fatal.")
 	}
 	switch {
-	case !i_read_list.read():
+	case !i_write_list.write():
 		log.Fatalf("write_file() error; ACTION: fatal.")
 	}
 	switch {
