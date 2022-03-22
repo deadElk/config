@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math/big"
 	"net/netip"
 	"regexp"
 	"sync"
@@ -24,6 +25,9 @@ var (
 	empty_Name = _next_IDName
 	empty_ID   = _next_ID
 	next_ID    = empty_ID
+
+	// daemon's global PKI SerialNumber used for Cert and CRL
+	i_PKI_SN = big.NewInt(0)
 
 	i_ab          = make(__N_AB)
 	i_ja          = make(__N_JA)

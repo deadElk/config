@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/x509"
+	"math/big"
 	"net/netip"
 	"net/url"
 
@@ -39,8 +41,12 @@ type _VI_Conn_ID _INet_Routing
 type _VI_ID _INet_Routing
 type _W string
 type __A_BGP_Group_Neighbor map[netip.Addr]*_BGP_Group_Neighbor
+type __Cert_Chain []*x509.Certificate
+type _DER []byte
+type _P12 []byte
 type __N_BGP_Group map[_Name]*_BGP_Group
 type _hash_ID [_hash_Size]uint8 // _hash_ID here a result of sha3.Sum512().
+type _PKI_SN struct{ *big.Int }
 
 type _Attribute_List struct {
 	Description _Description `xml:"description,attr"`

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -31,8 +30,6 @@ func init() {
 }
 
 func main() {
-	genCA()
-	os.Exit(0)
 	switch {
 	case !read_file():
 		log.Fatalf("read_file() error; ACTION: fatal.")

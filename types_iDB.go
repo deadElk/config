@@ -4,7 +4,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"math/big"
 	"net/netip"
 	"net/url"
 
@@ -73,7 +72,7 @@ type i_File_Data struct {
 }
 
 // PKI
-type _PKI struct { // PEM?
+type _PKI struct {
 	*_PKI_CA_Node
 	Domain map[_FQDN]*_PKI_Domain
 }
@@ -84,31 +83,31 @@ type _PKI_Domain struct {
 	User  map[_FQDN]*_PKI_Node
 }
 type _PKI_CA_Node struct {
-	SN       *big.Int
+	// Cert_SN *big.Int // use for all SN: Cert and CRL
+	// CRL_SN   *big.Int
 	CA       *_PKI_CA_Node // nil for root CA or pointer to upstream CA for intermediate CA
-	CA_Chain []*x509.Certificate
+	CA_Chain __Cert_Chain
 	Cert     *x509.Certificate
 	Key      *ecdsa.PrivateKey
 	CRL      *pkix.CertificateList
 	DER      *_PKI_CA_Node_DER
-	// P12      []byte
+	// P12      _P12
 }
 type _PKI_CA_Node_DER struct {
-	Cert []byte
-	Key  []byte
-	CRL  []byte
+	Cert _DER
+	Key  _DER
+	CRL  _DER
 }
 type _PKI_Node struct {
-	SN   *big.Int
 	CA   *_PKI_CA_Node
 	Cert *x509.Certificate
 	Key  *ecdsa.PrivateKey
 	DER  *_PKI_Node_DER
-	P12  []byte
+	P12  _P12
 }
 type _PKI_Node_DER struct {
-	Cert []byte
-	Key  []byte
+	Cert _DER
+	Key  _DER
 }
 
 // LDAP

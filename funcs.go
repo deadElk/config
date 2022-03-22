@@ -416,6 +416,6 @@ func get_IPPrefix_Bits(inbound netip.Prefix) (outbound _INet_Routing) {
 	return get_IP_Bits(inbound.Addr())
 }
 
-func inc_big_Int(inbound *big.Int) (outbound *big.Int) {
-	return inbound.Add(inbound, big.NewInt(1))
+func inc_big_Int(inbound *big.Int) {
+	inbound = inbound.Add(inbound, big.NewInt(1))
 }
