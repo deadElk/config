@@ -15,14 +15,17 @@ type __A_Peer_Group map[_Inet_ASN]*i_Peer_Group
 type __DN_LDAP_Domain map[_DN]*i_LDAP_Domain
 type __DN_LDAP_Domain_Group map[_DN]*i_LDAP_Domain_Group
 type __DN_LDAP_Domain_User map[_DN]*i_LDAP_Domain_User
-type __FQDN_PKI map[_FQDN]*_PKI
+
+// type __FQDN_PKI map[_FQDN]*_PKI
 type __FQDN_PKI_CA_Node map[_FQDN]*_PKI_CA_Node
-type __FQDN_PKI_Domain map[_FQDN]*_PKI_Domain
+
+// type __FQDN_PKI_Domain map[_FQDN]*_PKI_Domain
 type __FQDN_PKI_Node map[_FQDN]*_PKI_Node
 type __GN_LDAP_Domain_Group map[_GID_Number]*i_LDAP_Domain_Group
 type __INet_UI_IP_Table map[netip.Prefix]*_INet_UI_IP_Table
 type __INet_VI_IP_Table map[_VI_ID]*_INet_VI_IP_Table
-type __S_SKV_DB_Key map[string]*_SKV_DB_Key
+type _SKV map[string][]string
+type __SKV map[string]map[string]string
 type __N_AB map[_Name]*i_AB
 type __N_AB_Set map[_Name]*i_AB_Set
 type __N_Content map[_File_Name]*_Content
@@ -39,7 +42,6 @@ type __N_Peer_SZ map[_Name]*i_Peer_SZ
 type __N_Peer_SZ_IF map[_Name]*i_Peer_SZ_IF
 type __N_Pool map[_Name]*i_Pool
 type __N_Rule_Set map[_Name]*i_Rule_Set
-type __N_SKV_DB_Value map[_Name]*_SKV_DB_Value
 type __P_LDAP_Domain_User map[netip.Prefix]*i_LDAP_Domain_User
 type __P_Peer_RI_IF map[netip.Prefix]*i_Peer_RI_IF
 type __P_Peer_RI_IF_IP map[netip.Prefix]*i_Peer_RI_IF_IP
@@ -76,27 +78,31 @@ type i_File_Data struct {
 }
 
 // PKI
-type _PKI struct {
-	*_PKI_CA_Node
-	FQDN _FQDN
-	Node __FQDN_PKI_Domain
-}
-type _PKI_Domain struct {
-	*_PKI_CA_Node
-	FQDN _FQDN
-	Node __FQDN_PKI_Node
-}
+// Cert_SN  *big.Int // use for all SN: Cert and CRL
+// CRL_SN   *big.Int
+// CA       *_PKI_CA_Node // nil for root CA or pointer to upstream CA for intermediate CA
+// P12      _P12
+// type _PKI struct {
+// 	FQDN _FQDN
+// 	CA   *_PKI_CA_Node
+// 	Node __FQDN_PKI_Domain
+// }
+// type _PKI_Domain struct {
+// 	FQDN    _FQDN
+// 	CA      *_PKI_CA_Node
+// 	CA_Node __FQDN_PKI_CA_Node
+// 	Node    __FQDN_PKI_Node
+// }
 type _PKI_CA_Node struct {
-	FQDN _FQDN
-	// Cert_SN *big.Int // use for all SN: Cert and CRL
-	// CRL_SN   *big.Int
-	CA       *_PKI_CA_Node // nil for root CA or pointer to upstream CA for intermediate CA
+	FQDN     _FQDN
+	CA       *_PKI_CA_Node
 	CA_Chain __Cert_Chain
+	CA_Node  __FQDN_PKI_CA_Node
 	Cert     *x509.Certificate
 	Key      *ecdsa.PrivateKey
 	CRL      *pkix.CertificateList
 	DER      *_PKI_CA_Node_DER
-	// P12      _P12
+	Node     __FQDN_PKI_Node
 }
 type _PKI_Node struct {
 	FQDN _FQDN
@@ -150,11 +156,11 @@ type i_LDAP_Domain struct {
 	Group     __GN_LDAP_Domain_Group
 	Modify    *ldap.ModifyRequest
 	OLC       *i_LDAP_Domain_OLC
-	PKI       *__FQDN_PKI_Domain
+	PKI       *_PKI_CA_Node
 	Raw_DC    *ldap.SearchResult
 	Raw_Group *ldap.SearchResult
 	Raw_User  *ldap.SearchResult
-	SKV       __S_SKV_DB_Key
+	SKV       _SKV
 	User      __UN_LDAP_Domain_User
 }
 type i_LDAP_Domain_OLC struct {
@@ -171,7 +177,7 @@ type i_LDAP_Domain_Group struct { // gidNumber: index
 	Modify         *ldap.ModifyRequest
 	Owner_GID_List __GN_LDAP_Domain_Group // CAUTION >>>> GID includes GID <<<< owner: index = owner (gidNumber here), value is a pointer.
 	Owner_UID_List __UN_LDAP_Domain_User  // owner: index = owner (uidNumber here), value is a pointer.
-	PKI            __FQDN_PKI_Node
+	SKV            _SKV
 	UID_List       __UN_LDAP_Domain_User // member: index = member (uidNumber here), value is a pointer.
 }
 type i_LDAP_Domain_User struct { // uidNumber: index
@@ -183,19 +189,9 @@ type i_LDAP_Domain_User struct { // uidNumber: index
 	GID_Number _GID_Number            // gidNumber
 	IPPrefix   netip.Prefix           // ipHostNumber (user's subnet)
 	Modify     *ldap.ModifyRequest
-	PKI        __FQDN_PKI_Node
-	SKV        __S_SKV_DB_Key // sshPublicKey, userPKCS12, etc: private [service][key]value DB
-	UID        _UID           // uid
+	SKV        _SKV // sshPublicKey, userPKCS12, etc: private [service][key]value DB
+	UID        _UID // uid
 	UID_Number _UID_Number
-}
-type _SKV_DB_Key struct {
-	Value __N_SKV_DB_Value
-}
-type _SKV_DB_Value struct {
-	Protocol _INet_Protocol
-	Cipher   _Cipher
-	URL      *url.URL
-	Secret   _Secret
 }
 
 // Peer Group

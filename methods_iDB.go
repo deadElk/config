@@ -10,7 +10,6 @@ import (
 	"sort"
 	"time"
 
-	"github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
 	"software.sslmate.com/src/go-pkcs12"
 )
@@ -221,64 +220,64 @@ func (receiver *_PKI_CA_Node) generate_CRL() {
 }
 
 // PKI Node
-func (receiver *_PKI_Node) parse_DER(inbound *_PKI_Node_DER, skel *x509.Certificate) { // parse/create a new Node
-	switch {
-	case len(inbound.Cert) == 0 && len(inbound.Key) == 0:
-		log.Warnf("no DER data; ACTION: generate a new Cert")
-		receiver.generate(skel)
-		return
-	}
-
-	var (
-		err error
-		t   = &_PKI_Node{}
-	)
-
-	switch t.Cert, err = x509.ParseCertificate(inbound.Cert); {
-	case err != nil:
-		log.Warnf("can't parse Cert - '%v'; ACTION: generate a new Cert", err)
-		receiver.generate(skel)
-		return
-	}
-
-	switch err = t.Cert.CheckSignatureFrom(receiver.CA.Cert); {
-	case err != nil:
-		log.Warnf("Cert's signature doesn't match with CA - '%v'; ACTION: generate a new Cert", err)
-		receiver.generate(skel)
-		return
-	}
-
-	switch t.Key, err = x509.ParseECPrivateKey(inbound.Key); {
-	case err != nil:
-		log.Warnf("can't parse Key - '%v'; ACTION: generate a new Cert", err)
-		receiver.generate(skel)
-		return
-	}
-
-	switch {
-	case t.Cert.PublicKey == t.Key.Public():
-		log.Warnf("Cert's signature doesn't match with Key's signature - '%v'; ACTION: generate a new CA Cert", err)
-		receiver.generate(skel)
-		return
-	}
-
-	switch t.P12, err = pkcs12.Encode(rand.Reader, t.Key, t.Cert, receiver.CA.CA_Chain, ""); {
-	case err != nil:
-		log.Warnf("can't encode P12 - '%v'; ACTION: generate a new Cert", err)
-		receiver.generate(skel)
-		return
-	}
-
-	receiver.Cert = t.Cert
-	receiver.Key = t.Key
-	receiver.DER = inbound
-	receiver.P12 = t.P12
-	switch {
-	case i_PKI_SN.Cmp(receiver.Cert.SerialNumber) == -1:
-		i_PKI_SN = receiver.Cert.SerialNumber
-	}
-
-}
+// func (receiver *_PKI_Node) parse_DER(inbound *_PKI_Node_DER, skel *x509.Certificate) { // parse/create a new Node
+// 	switch {
+// 	case len(inbound.Cert) == 0 && len(inbound.Key) == 0:
+// 		log.Warnf("no DER data; ACTION: generate a new Cert")
+// 		receiver.generate(skel)
+// 		return
+// 	}
+//
+// 	var (
+// 		err error
+// 		t   = &_PKI_Node{}
+// 	)
+//
+// 	switch t.Cert, err = x509.ParseCertificate(inbound.Cert); {
+// 	case err != nil:
+// 		log.Warnf("can't parse Cert - '%v'; ACTION: generate a new Cert", err)
+// 		receiver.generate(skel)
+// 		return
+// 	}
+//
+// 	switch err = t.Cert.CheckSignatureFrom(receiver.CA.Cert); {
+// 	case err != nil:
+// 		log.Warnf("Cert's signature doesn't match with CA - '%v'; ACTION: generate a new Cert", err)
+// 		receiver.generate(skel)
+// 		return
+// 	}
+//
+// 	switch t.Key, err = x509.ParseECPrivateKey(inbound.Key); {
+// 	case err != nil:
+// 		log.Warnf("can't parse Key - '%v'; ACTION: generate a new Cert", err)
+// 		receiver.generate(skel)
+// 		return
+// 	}
+//
+// 	switch {
+// 	case t.Cert.PublicKey == t.Key.Public():
+// 		log.Warnf("Cert's signature doesn't match with Key's signature - '%v'; ACTION: generate a new CA Cert", err)
+// 		receiver.generate(skel)
+// 		return
+// 	}
+//
+// 	switch t.P12, err = pkcs12.Encode(rand.Reader, t.Key, t.Cert, receiver.CA.CA_Chain, ""); {
+// 	case err != nil:
+// 		log.Warnf("can't encode P12 - '%v'; ACTION: generate a new Cert", err)
+// 		receiver.generate(skel)
+// 		return
+// 	}
+//
+// 	receiver.Cert = t.Cert
+// 	receiver.Key = t.Key
+// 	receiver.DER = inbound
+// 	receiver.P12 = t.P12
+// 	switch {
+// 	case i_PKI_SN.Cmp(receiver.Cert.SerialNumber) == -1:
+// 		i_PKI_SN = receiver.Cert.SerialNumber
+// 	}
+//
+// }
 func (receiver *_PKI_Node) parse_P12(inbound _P12, skel *x509.Certificate) { // parse P12 of a Node
 	switch {
 	case inbound == nil || len(inbound) == 0:
@@ -386,89 +385,6 @@ func (receiver *_PKI_Node) generate(inbound *x509.Certificate) { // generate cer
 	}
 }
 
-func (receiver *i_LDAP_Domain) get_LDAP_Entries(inbound *ldap.Entry, list ...string) (outbound __S_SKV_DB_Key) {
-	outbound = make(__S_SKV_DB_Key)
-	var (
-		t      = make(map[string][]string)
-		tcapki *_PKI_Domain
-		// tpki   *_PKI_Node
-	)
-	for _, b := range list {
-		t[b] = []string{}
-		var (
-			attr = inbound.GetAttributeValues(b)
-		)
-		for _, d := range attr {
-			t[b] = append(t[b], d)
-		}
-	}
-
-	for a, b := range t {
-		switch a {
-		case _skv_ca, _skv_crl:
-			tcapki = &_PKI_Domain{
-				_PKI_CA_Node: &_PKI_CA_Node{
-					FQDN:     receiver.FQDN,
-					CA:       nil,
-					CA_Chain: nil,
-					Cert:     nil,
-					Key:      nil,
-					CRL:      nil,
-					DER: &_PKI_CA_Node_DER{
-						Cert: nil,
-						Key:  _DER(*i_file.get(_dir_PKI_Key, _File_Name(receiver.FQDN))),
-						CRL:  nil,
-					},
-				},
-				FQDN: receiver.FQDN,
-				Node: nil,
-			}
-		}
-		switch a {
-		case _skv_ca:
-			switch {
-			case len(b) == 1:
-				tcapki._PKI_CA_Node.DER.Cert = _DER(b[0])
-			}
-		case _skv_crl:
-			switch {
-			case len(b) == 1:
-				tcapki._PKI_CA_Node.DER.CRL = _DER(b[0])
-			}
-
-			// switch len(b) {
-			// case 0:
-			// 	i_PKI[receiver.FQDN].parse_DER(&_PKI_CA_Node_DER{}, nil)
-			// case 1:
-			// 	i_PKI[receiver.FQDN].parse_DER(nil, nil)
-			// }
-		}
-	}
-	return
-	// for _, z := range f.GetAttributeValues(_skv_ca) {
-	// 	v_SKV[_skv_ca].Value[_Name(z)] = nil
-	// }
-	// for _, z := range f.GetAttributeValues(_skv_crl) {
-	// 	v_SKV[_skv_crl].Value[_Name(z)] = nil
-	// }
-	// var (
-	// 	v_SKV = __S_SKV_DB_Key{ // modification candidate -> user's SSH, P12, etc
-	// 		_skv_ssh: &_SKV_DB_Key{Value: __N_SKV_DB_Value{}},
-	// 		_skv_p12: &_SKV_DB_Key{Value: __N_SKV_DB_Value{}},
-	// 		_skv_uri: &_SKV_DB_Key{Value: __N_SKV_DB_Value{}},
-	// 	}
-	// )
-	// for _, z := range f.GetAttributeValues("sshPublicKey") {
-	// 	v_SKV[_skv_ssh].Value[_Name(z)] = nil
-	// }
-	// for _, z := range f.GetAttributeValues("userPKCS12") {
-	// 	v_SKV[_skv_p12].Value[_Name(z)] = nil
-	// }
-	// for _, z := range f.GetAttributeValues("labeledURI") {
-	// 	v_SKV[_skv_uri].Value[_Name(z)] = nil
-	// }
-}
-
 func (receiver __N_File_Data) read() (not_ok bool) {
 	for dir := range receiver {
 		receiver.check(dir, "")
@@ -559,7 +475,6 @@ func (receiver __N_File_Data) check(dir _Dir_Name, file _File_Name) /*not_ok boo
 		}
 	}
 }
-
 func (receiver __N_File_Data) write() (not_ok bool) {
 	for a, b := range receiver {
 		switch err := os.MkdirAll(a.String(), os.ModeDir|0700); {

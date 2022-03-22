@@ -457,12 +457,74 @@ func parse_GT() (not_ok bool) {
 	return !not_ok
 }
 
+func get_LDAP_Entries(inbound *ldap.Entry, list ...string) (not_ok bool, outbound _SKV) {
+	outbound = make(_SKV)
+	var (
+		t = make(_SKV)
+	)
+	for _, b := range list {
+		t[b] = []string{}
+		var (
+			attr = inbound.GetAttributeValues(b)
+		)
+		for _, d := range attr {
+			switch {
+			case len(d) == 0:
+				continue
+			}
+			t[b] = append(t[b], d)
+		}
+		switch {
+
+		case b == _skv_ca && len(t[_skv_ca]) < 1:
+			log.Warnf("DN '%v': not enough CAs defined in LDAP; ACTION: generate the rest.", inbound.DN)
+			outbound[_skv_ca] = make([]string, 1)
+		case b == _skv_ca && len(t[_skv_ca]) == 1:
+			outbound[_skv_ca] = make([]string, 1)
+			outbound[_skv_ca] = t[_skv_ca]
+		case b == _skv_ca && len(t[_skv_ca]) > 1:
+			log.Errorf("DN '%v': too many CAs defined in LDAP; ACTION: report.", inbound.DN)
+			not_ok = true
+
+		case b == _skv_crl && len(t[_skv_crl]) < 1:
+			log.Warnf("DN '%v': not enough CRLs defined in LDAP; ACTION: generate the rest.", inbound.DN)
+			outbound[_skv_crl] = make([]string, 1)
+		case b == _skv_crl && len(t[_skv_crl]) == 1:
+			outbound[_skv_crl] = make([]string, 1)
+			outbound[_skv_crl] = t[_skv_crl]
+		case b == _skv_crl && len(t[_skv_crl]) > 1:
+			log.Errorf("DN '%v': not enough CRLs defined in LDAP; ACTION: report.", inbound.DN)
+			not_ok = true
+
+		case b == _skv_p12 && len(t[_skv_p12]) < 27:
+			log.Debugf("DN '%v': not enough user P12s defined in LDAP; ACTION: check actual data, generate the rest.", inbound.DN)
+			outbound[_skv_p12] = make([]string, 27)
+			outbound[_skv_p12] = t[_skv_p12]
+		case b == _skv_p12 && len(t[_skv_p12]) == 27:
+			outbound[_skv_p12] = make([]string, 27)
+			outbound[_skv_p12] = t[_skv_p12]
+		case b == _skv_p12 && len(t[_skv_p12]) > 27:
+			log.Warnf("DN '%v': too many user P12s defined in LDAP; ACTION: check actual data.", inbound.DN)
+			// log.Warnf("DN '%v': too many user P12s defined in LDAP; ACTION: report.", inbound.DN)
+			// not_ok = true
+
+		case b == _skv_uri:
+			outbound[_skv_uri] = t[_skv_uri]
+
+		case b == _skv_ssh:
+			outbound[_skv_ssh] = t[_skv_ssh]
+		}
+
+	}
+	return
+}
+
 func parse_LDAP() (not_ok bool) {
 	for a, b := range i_ldap {
 		for _, d := range b.Domain {
 			d.FQDN = b._DN_FQDN(d.DN)
 			for _, f := range d.Raw_DC.Entries {
-				d.SKV = d.get_LDAP_Entries(f, _skv_ca, _skv_crl)
+				not_ok, d.SKV = get_LDAP_Entries(f, _skv_ca, _skv_crl)
 			}
 			for _, f := range d.Raw_User.Entries {
 				var (
@@ -475,7 +537,6 @@ func parse_LDAP() (not_ok bool) {
 						GID_Number: _GID_Number(string_uint64(f.GetAttributeValue("gidNumber"))),
 						IPPrefix:   netip.Prefix{},
 						Modify:     nil,
-						PKI:        nil,
 						SKV:        nil,
 						UID:        _UID(f.GetAttributeValue(b.User_CN)),
 						UID_Number: _UID_Number(string_uint64(f.GetAttributeValue("uidNumber"))),
@@ -507,8 +568,8 @@ func parse_LDAP() (not_ok bool) {
 					log.Debugf("LDAP '%v': UID '%v', ipHostNumber not defined; ACTION: find new.", a.String(), v_U.DN)
 				}
 
+				not_ok, v_U.SKV = get_LDAP_Entries(f, _skv_ssh, _skv_p12, _skv_uri)
 				v_U.FQDN = b._DN_FQDN(v_U.DN)
-				// v_U.SKV = d.get_LDAP_Entries(f, _skv_ssh, _skv_p12, _skv_uri)
 
 				d.User[v_U.UID_Number] = v_U
 				b.M_CN_U[v_U.DN] = v_U
@@ -517,28 +578,6 @@ func parse_LDAP() (not_ok bool) {
 	}
 	for a, b := range i_ldap {
 		for _, d := range b.Domain {
-			for _, f := range d.User {
-				switch _, flag := i_ui_ip[f.IPPrefix]; {
-				case flag && i_ui_ip[f.IPPrefix].User == f:
-					continue
-				}
-				var (
-					v_IPPrefix = func() (outbound netip.Prefix) { // modification candidate -> user's ip space
-						for y, z := range i_ui_ip {
-							switch {
-							case z.User == nil:
-								f.modify("ipHostNumber", []string{y.String()})
-								log.Infof("LDAP '%v': UID '%v', found new ipHostNumber '%v'; ACTION: report.", a.String(), f.DN, y)
-								return y
-							}
-						}
-						log.Fatalf("not enough user ip space")
-						not_ok = true
-						return
-					}()
-				)
-				f.IPPrefix = v_IPPrefix
-			}
 			for _, f := range d.Raw_Group.Entries {
 				var (
 					v_G = &i_LDAP_Domain_Group{
@@ -552,7 +591,6 @@ func parse_LDAP() (not_ok bool) {
 						Modify:         nil,
 						Owner_GID_List: nil,
 						Owner_UID_List: nil,
-						PKI:            nil,
 						UID_List:       nil,
 					}
 					v_UID_List       = make(__UN_LDAP_Domain_User)
@@ -598,29 +636,52 @@ func parse_LDAP() (not_ok bool) {
 				v_G.Owner_UID_List = v_Owner_UID_List
 				v_G.Owner_GID_List = v_Owner_GID_List
 
+				not_ok, v_G.SKV = get_LDAP_Entries(f, _skv_p12, _skv_uri)
+
 				d.Group[v_G.GID_Number] = v_G
 				b.M_CN_G[v_G.DN] = v_G
 				for _, j := range d.Group[v_G.GID_Number].UID_List {
 					j.GID_List[v_G.GID_Number] = v_G
 				}
 			}
-		}
-	}
-
-	for _, b := range i_ldap { // second pass
-		for _, d := range b.Domain {
-			for _, f := range d.User { // user's primary GID check
+			for _, f := range d.User {
 				switch {
 				case f.GID_Number != 0 && d.Group[f.GID_Number] == nil:
 					log.Errorf("LDAP DB inconsistent! can't find primary GID_Number '%v' for UID '%v'; ACTION: report.", f.GID_Number, f.DN)
 					not_ok = true
 				}
+				switch _, flag := i_ui_ip[f.IPPrefix]; {
+				case flag && i_ui_ip[f.IPPrefix].User == f:
+					continue
+				}
+				var (
+					v_IPPrefix = func() (outbound netip.Prefix) { // modification candidate -> user's ip space
+						for y, z := range i_ui_ip {
+							switch {
+							case z.User == nil:
+								f.modify("ipHostNumber", []string{y.String()})
+								log.Infof("LDAP '%v': UID '%v', found new ipHostNumber '%v'; ACTION: report.", a.String(), f.DN, y)
+								return y
+							}
+						}
+						log.Fatalf("not enough user ip space")
+						not_ok = true
+						return
+					}()
+				)
+				f.IPPrefix = v_IPPrefix
 			}
-			// for _, f := range d.Group { // GID within GID member/owner recursive parse
-			// 	var ()
-			// }
 		}
 	}
+
+	// for _, b := range i_ldap { // third pass
+	// 	for _, d := range b.Domain {
+	// 		// for _, f := range d.User {
+	// 		// }
+	// 		// for _, f := range d.Group {
+	// 		// }
+	// 	}
+	// }
 
 	return !not_ok
 }

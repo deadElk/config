@@ -29,8 +29,8 @@ var (
 	next_ID    = empty_ID
 
 	// daemon's global PKI SerialNumber used for Cert and CRL
+	// i_PKI         = make(__FQDN_PKI_Domain)
 	i_PKI_SN      = big.NewInt(0)
-	i_PKI         = make(__FQDN_PKI)
 	i_ab          = make(__N_AB)
 	i_ja          = make(__N_JA)
 	i_pl          = make(__N_PO_PL)
