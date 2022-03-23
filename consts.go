@@ -291,7 +291,8 @@ const (
 	_W_next__hop                                                 = _W_next + "-" + _W_hop
 	_W_next__table                                               = _W_next + "-" + _W_table
 	_W_objectClass                                            _W = "objectClass"
-	_W_dcObject                                               _W = "dcObject"
+	_W_dc                                                     _W = "dc"
+	_W_dcObject                                                  = _W_dc + "Object"
 	_W_objectClass_olcDatabaseConfig_objectClass_olcMdbConfig    = "(&(" + _W_objectClass + "=" + _W_olcDatabaseConfig + ")(" + _W_objectClass + "=" + _W_olcMdbConfig + "))"
 	_W_objectClass_posixAccount                                  = "(" + _W_objectClass + "=" + _W_posixAccount + ")"
 	_W_objectClass_posixGroup                                    = "(" + _W_objectClass + "=" + _W_posixGroup + ")"

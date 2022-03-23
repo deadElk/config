@@ -315,14 +315,34 @@ func (receiver *_W) validate_RO_GW_Action(peer *cDB_Peer, v_Peer *i_Peer) (outbo
 }
 
 func (receiver *_Content) trim_space() {
-	var (
-		interim string
-	)
+	// var (
+	// 	interim string
+	// )
 	// for _, value := range strings.Split(string(*receiver), "\n") {
-	for _, value := range strings.Split(convert_2_string("", receiver), "\n") {
-		interim += strings.TrimSpace(value) + "\n"
+	// for _, value := range strings.Split(convert_2_string("", receiver), "\n") {
+	// 	interim += strings.TrimSpace(value) + "\n"
+	// }
+
+	// value     = strings.Split(convert_2_string("", receiver), delimiter)
+	var (
+		delimiter = "\n"
+		value     = strings.Split(receiver.String(), delimiter)
+		inbounds  = len(value) - 1
+		buffer    bytes.Buffer
+	)
+	for a, b := range value {
+		// switch {
+		// case len(b) == 0:
+		// 	continue
+		// }
+		buffer.WriteString(b)
+		switch {
+		case a < inbounds:
+			buffer.WriteString(delimiter)
+		}
 	}
-	*receiver = _Content(interim)
+
+	*receiver = buffer.Bytes()
 }
 
 func (receiver *_Communication) parse(_comm _Communication) _Communication {
@@ -451,7 +471,7 @@ func (receiver *i_LDAP_Domain_User) modify(attrName string, attrVals []string) {
 	}
 	switch { // don't add if not necessary. this values can be obtained from schema .... // todo: parse schema from server
 	case attrName == _skv_ip:
-		receiver.modify_Add_Attr("objectClass", "ipHost")
+		receiver.modify_Add_Attr(_W_objectClass.String(), "ipHost")
 	// func() {
 	// 	for _, b := range receiver.Entry.GetAttributeValues("objectClass") {
 	// 		switch {
@@ -506,7 +526,7 @@ func (receiver *i_LDAP) _DN_FQDN(inbound _DN) (outbound _FQDN) {
 			continue
 		}
 		switch d[0] {
-		case "dc": // todo: is this dirty?
+		case _W_dc.String(): // todo: is this dirty?
 			delimiter = _re_point
 		case receiver.Group_CN:
 			delimiter = _re_point
