@@ -18,7 +18,7 @@ func (receiver *_Secret) validate(length uint, message string) _Secret {
 		return *receiver
 	}
 	var (
-		interim = make([]byte, length)
+		interim = make([]byte, length, length)
 	)
 	for i := 0; i < int(length); i++ {
 		switch next, err := rand.Int(rand.Reader, big.NewInt(int64(len(_passwd)))); {
@@ -360,13 +360,13 @@ func (receiver __INet_VI_IP_Table) generate(inbound netip.Prefix, conn_bits _INe
 		min_VI_Conn = _VI_Conn_ID(0)
 		// max_VI_Conn   = total_VI_Conn - 1
 		curr       = binary.BigEndian.Uint32(inbound.Addr().AsSlice()) + uint32(total_VI*total_VI_Conn)
-		curr_slice = make([]byte, 4)
+		curr_slice = make([]byte, 4, 4)
 		curr_IP    netip.Addr
 	)
 
 	for a := _VI_ID(total_VI); a > min_VI; a-- {
 		receiver[a] = &_INet_VI_IP_Table{}
-		receiver[a].Conn = make([]netip.Prefix, total_VI_Conn)
+		receiver[a].Conn = make([]netip.Prefix, total_VI_Conn, total_VI_Conn)
 		for c := _VI_Conn_ID(total_VI_Conn); c > min_VI_Conn; c-- {
 			curr--
 			binary.BigEndian.PutUint32(curr_slice, curr)
@@ -400,7 +400,7 @@ func (receiver __INet_UI_IP_Table) generate(inbound netip.Prefix, conn_bits _INe
 		min_UI_Conn = _INet_Routing(0)
 		// max_UI_Conn   = total_UI_Conn - 1
 		curr       = binary.BigEndian.Uint32(inbound.Addr().AsSlice()) + uint32(total_UI*total_UI_Conn)
-		curr_slice = make([]byte, 4)
+		curr_slice = make([]byte, 4, 4)
 		curr_IP    netip.Addr
 	)
 
@@ -408,8 +408,8 @@ func (receiver __INet_UI_IP_Table) generate(inbound netip.Prefix, conn_bits _INe
 		var (
 			v_Output = &_INet_UI_IP_Table{}
 		)
-		v_Output.Conn = make([]netip.Prefix, total_UI_Conn)
-		v_Output.Conn_Key = make([]_Secret, total_UI_Conn)
+		v_Output.Conn = make([]netip.Prefix, total_UI_Conn, total_UI_Conn)
+		v_Output.Conn_Key = make([]_Secret, total_UI_Conn, total_UI_Conn)
 		for c := total_UI_Conn; c > min_UI_Conn; c-- {
 			curr--
 			binary.BigEndian.PutUint32(curr_slice, curr)

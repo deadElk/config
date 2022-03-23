@@ -648,6 +648,7 @@ func (receiver cDB_LDAP_List) parse() {
 			URL:          c,
 			User_CN:      b.User_CN,
 			User_Filter:  b.User_Filter,
+			PKI:          nil,
 		}
 	}
 }

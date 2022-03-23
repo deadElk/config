@@ -69,6 +69,8 @@ type __i_VI map[_VI_ID]*i_VI
 type __i_VI_GT map[_VI_ID]*i_VI_GT
 type __i_VI_ID_Peer map[_VI_ID]__i_ID_Peer
 type __i_VI_Peer map[_VI_ID]*i_VI_Peer
+type __PKI_Node []*_PKI_Node
+type __PKI_CA_Node []*_PKI_CA_Node
 
 // file i/o
 type i_File_Data struct {
@@ -148,6 +150,7 @@ type i_LDAP struct {
 	URL          *url.URL
 	User_CN      string
 	User_Filter  string
+	PKI          *_PKI_CA_Node
 }
 type i_LDAP_OLC struct {
 }
@@ -166,6 +169,7 @@ type i_LDAP_Domain struct {
 	Raw_User  *ldap.SearchResult
 	SKV       _SKV
 	User      __UN_LDAP_Domain_User
+	PKI       *_PKI_CA_Node
 }
 type i_LDAP_Domain_OLC struct {
 	DN _DN
@@ -184,6 +188,7 @@ type i_LDAP_Domain_Group struct { // gidNumber: index
 	Owner_UID_List __UN_LDAP_Domain_User  // owner: index = owner (uidNumber here), value is a pointer.
 	SKV            _SKV
 	UID_List       __UN_LDAP_Domain_User // member: index = member (uidNumber here), value is a pointer.
+	PKI            *_PKI_Node
 }
 type i_LDAP_Domain_User struct { // uidNumber: index
 	LDAP       *i_LDAP
@@ -198,6 +203,7 @@ type i_LDAP_Domain_User struct { // uidNumber: index
 	SKV        _SKV // sshPublicKey, userPKCS12, etc: private [service][key]value DB
 	UID        _UID // uid
 	UID_Number _UID_Number
+	PKI        __PKI_Node
 }
 
 // Peer Group

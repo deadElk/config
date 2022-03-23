@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"net/netip"
 	"sort"
+	"strconv"
 	"text/template"
 	"time"
 
@@ -469,9 +470,9 @@ func get_LDAP_Entries(inbound *ldap.Entry, list ...string) (not_ok bool, outboun
 
 		case b == _skv_ca && len(t[_skv_ca]) < 1:
 			log.Debugf("DN '%v': not enough CAs defined in LDAP; ACTION: generate the rest.", inbound.DN)
-			outbound[_skv_ca] = make([]string, 1)
+			outbound[_skv_ca] = make([]string, 1, 1)
 		case b == _skv_ca && len(t[_skv_ca]) == 1:
-			outbound[_skv_ca] = make([]string, 1)
+			outbound[_skv_ca] = make([]string, 1, 1)
 			outbound[_skv_ca] = t[_skv_ca]
 		case b == _skv_ca && len(t[_skv_ca]) > 1:
 			log.Errorf("DN '%v': too many CAs defined in LDAP; ACTION: report.", inbound.DN)
@@ -479,31 +480,31 @@ func get_LDAP_Entries(inbound *ldap.Entry, list ...string) (not_ok bool, outboun
 
 		case b == _skv_crl && len(t[_skv_crl]) < 1:
 			log.Debugf("DN '%v': not enough CRLs defined in LDAP; ACTION: generate the rest.", inbound.DN)
-			outbound[_skv_crl] = make([]string, 1)
+			outbound[_skv_crl] = make([]string, 1, 1)
 		case b == _skv_crl && len(t[_skv_crl]) == 1:
-			outbound[_skv_crl] = make([]string, 1)
+			outbound[_skv_crl] = make([]string, 1, 1)
 			outbound[_skv_crl] = t[_skv_crl]
 		case b == _skv_crl && len(t[_skv_crl]) > 1:
 			log.Errorf("DN '%v': too many CRLs defined in LDAP; ACTION: report.", inbound.DN)
 			not_ok = true
 
-		case b == _skv_p12 && len(t[_skv_p12]) < 27:
+		case b == _skv_p12 && len(t[_skv_p12]) < int(_UIx_IPx):
 			log.Debugf("DN '%v': not enough user P12s defined in LDAP; ACTION: check actual data, generate the rest.", inbound.DN)
-			outbound[_skv_p12] = make([]string, 27)
+			outbound[_skv_p12] = make([]string, _UIx_IPx, _UIx_IPx)
 			outbound[_skv_p12] = t[_skv_p12]
-		case b == _skv_p12 && len(t[_skv_p12]) == 27:
-			outbound[_skv_p12] = make([]string, 27)
+		case b == _skv_p12 && len(t[_skv_p12]) == int(_UIx_IPx):
+			outbound[_skv_p12] = make([]string, _UIx_IPx, _UIx_IPx)
 			outbound[_skv_p12] = t[_skv_p12]
-		case b == _skv_p12 && len(t[_skv_p12]) > 27:
+		case b == _skv_p12 && len(t[_skv_p12]) > int(_UIx_IPx):
 			log.Warnf("DN '%v': too many user P12s defined in LDAP; ACTION: check actual data.", inbound.DN)
 			// log.Warnf("DN '%v': too many user P12s defined in LDAP; ACTION: report.", inbound.DN)
 			// not_ok = true
 
 		case b == _skv_ip && len(t[_skv_ip]) < 1:
 			log.Warnf("DN '%v': not enough IPPrefixes defined in LDAP; ACTION: generate the rest.", inbound.DN)
-			outbound[_skv_ip] = make([]string, 1)
+			outbound[_skv_ip] = make([]string, 1, 1)
 		case b == _skv_ip && len(t[_skv_ip]) == 1:
-			outbound[_skv_ip] = make([]string, 1)
+			outbound[_skv_ip] = make([]string, 1, 1)
 			outbound[_skv_ip] = t[_skv_ip]
 		case b == _skv_ip && len(t[_skv_ip]) > 1:
 			log.Errorf("DN '%v': too many IPPrefixes defined in LDAP; ACTION: report.", inbound.DN)
@@ -529,6 +530,59 @@ func parse_LDAP() (not_ok bool) {
 				not_ok, d.SKV = get_LDAP_Entries(f, _skv_ca, _skv_crl)
 				d.Entry = f
 			}
+
+			switch _, flag := i_PKI.CA_Node[d.FQDN]; {
+			case flag:
+				log.Errorf("PKI DB '%v' already defined; ACTION: report.", d.FQDN)
+				not_ok = true
+			}
+			i_PKI.CA_Node[d.FQDN] = &_PKI_CA_Node{
+				FQDN:     d.FQDN,
+				CA:       nil,
+				CA_Chain: nil,
+				CA_Node:  __FQDN_PKI_CA_Node{},
+				Cert:     nil,
+				Key:      nil,
+				CRL:      nil,
+				DER: &_PKI_CA_Node_DER{
+					Cert: _DER(*i_file.get(_dir_PKI_Cert, _File_Name(d.FQDN))),
+					Key:  _DER(*i_file.get(_dir_PKI_Key, _File_Name(d.FQDN))),
+					CRL:  _DER(*i_file.get(_dir_PKI_CRL, _File_Name(d.FQDN))),
+				},
+				Node: __FQDN_PKI_Node{},
+			}
+			//					Cert: _DER(d.SKV[_skv_ca][0]),
+			//					Key:  _DER(*i_file[_dir_PKI_Key].data[_File_Name(d.FQDN)]),
+			//					CRL:  _DER(d.SKV[_skv_crl][0]),
+			switch {
+			case i_PKI.CA_Node[d.FQDN].parse_DER(&x509.Certificate{
+				SerialNumber: big.NewInt(time.Now().UnixNano()),
+				Subject: pkix.Name{
+					Organization: []string{d.FQDN.String()},
+					CommonName:   d.FQDN.String(),
+					Names:        nil,
+					ExtraNames:   nil,
+				},
+				NotBefore:             time.Now(),
+				NotAfter:              time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC),
+				IsCA:                  true,
+				ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+				KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
+				BasicConstraintsValid: true,
+				CRLDistributionPoints: []string{strings_join("", "http://", strings_join(".", "ns", d.FQDN), "/crl.pem")},
+				DNSNames:              []string{d.FQDN.String()},
+				EmailAddresses:        []string{strings_join("@", "ns", d.FQDN)},
+				IPAddresses:           nil,
+			}):
+				// d.modify(_skv_acrl, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.CRL)})
+				// d.modify(_skv_ca, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.Cert)})
+				// d.modify(_skv_crl, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.CRL)})
+				i_file.put(_dir_PKI_Cert, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.Cert)
+				i_file.put(_dir_PKI_Key, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.Key)
+				i_file.put(_dir_PKI_CRL, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.CRL)
+			}
+			d.PKI = i_PKI.CA_Node[d.FQDN]
+
 			for _, f := range d.Raw_User.Entries {
 				var (
 					v_U = &i_LDAP_Domain_User{
@@ -544,6 +598,7 @@ func parse_LDAP() (not_ok bool) {
 						SKV:        nil,
 						UID:        _UID(f.GetAttributeValue(b.User_CN)),
 						UID_Number: _UID_Number(string_uint64(f.GetAttributeValue("uidNumber"))),
+						PKI:        nil,
 					}
 				)
 				switch {
@@ -572,6 +627,7 @@ func parse_LDAP() (not_ok bool) {
 					log.Debugf("LDAP '%v': UID '%v', ipHostNumber not defined; ACTION: find new.", a.String(), v_U.DN)
 				}
 
+				v_U.PKI = make(__PKI_Node, _UIx_IPx, _UIx_IPx)
 				not_ok, v_U.SKV = get_LDAP_Entries(f, _skv_ssh, _skv_p12, _skv_luri)
 				v_U.FQDN = b._DN_FQDN(v_U.DN)
 
@@ -580,6 +636,7 @@ func parse_LDAP() (not_ok bool) {
 			}
 		}
 	}
+
 	for a, b := range i_ldap {
 		for _, d := range b.Domain {
 			for _, f := range d.Raw_Group.Entries {
@@ -596,7 +653,9 @@ func parse_LDAP() (not_ok bool) {
 						Modify:         nil,
 						Owner_GID_List: nil,
 						Owner_UID_List: nil,
+						SKV:            nil,
 						UID_List:       nil,
+						PKI:            nil,
 					}
 					v_UID_List       = make(__UN_LDAP_Domain_User)
 					v_GID_List       = make(__GN_LDAP_Domain_Group) // todo
@@ -679,182 +738,92 @@ func parse_LDAP() (not_ok bool) {
 		}
 	}
 
-	for _, b := range i_ldap { // third pass, fill PKI with known data or generate new
+	for a, b := range i_ldap { // third pass, fill PKI with known data or generate new
 		for _, d := range b.Domain {
-			switch _, flag := i_PKI.CA_Node[d.FQDN]; {
-			case flag:
-				log.Errorf("PKI DB '%v' already defined; ACTION: report.", d.FQDN)
-				not_ok = true
-			}
-			i_PKI.CA_Node[d.FQDN] = &_PKI_CA_Node{
-				FQDN:     d.FQDN,
-				CA:       nil,
-				CA_Chain: nil,
-				CA_Node:  __FQDN_PKI_CA_Node{},
-				Cert:     nil,
-				Key:      nil,
-				CRL:      nil,
-				DER: &_PKI_CA_Node_DER{
-					Cert: _DER(*i_file.get(_dir_PKI_Cert, _File_Name(d.FQDN))),
-					Key:  _DER(*i_file.get(_dir_PKI_Key, _File_Name(d.FQDN))),
-					CRL:  _DER(*i_file.get(_dir_PKI_CRL, _File_Name(d.FQDN))),
-				},
-				Node: __FQDN_PKI_Node{},
-			}
-			//					Cert: _DER(d.SKV[_skv_ca][0]),
-			//					Key:  _DER(*i_file[_dir_PKI_Key].data[_File_Name(d.FQDN)]),
-			//					CRL:  _DER(d.SKV[_skv_crl][0]),
-			i_PKI.CA_Node[d.FQDN].parse_DER(nil)
-			switch {
-			case i_PKI.CA_Node[d.FQDN].Cert == nil || i_PKI.CA_Node[d.FQDN].Key == nil:
-				log.Warnf("PKI DB '%v' no CA Cert/Key; ACTION: skip whole domain, generate from scratch.", d.FQDN)
-				i_PKI.CA_Node[d.FQDN].parse_DER(&x509.Certificate{
-					SerialNumber: big.NewInt(time.Now().UnixNano()),
-					Subject: pkix.Name{
-						Organization: []string{d.FQDN.String()},
-						CommonName:   d.FQDN.String(),
-						Names:        nil,
-						ExtraNames:   nil,
-					},
-					NotBefore:             time.Now(),
-					NotAfter:              time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC),
-					IsCA:                  true,
-					ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-					KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
-					BasicConstraintsValid: true,
-					CRLDistributionPoints: []string{strings_join("", "http://", strings_join(".", "ns", d.FQDN), "/crl.pem")},
-					DNSNames:              []string{d.FQDN.String()},
-					EmailAddresses:        []string{strings_join("@", "ns", d.FQDN)},
-					IPAddresses:           nil,
-				})
-				// switch {
-				// case i_PKI.CA_Node[d.FQDN].Cert != nil:
-				// d.modify(_skv_acrl, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.CRL)})
-				// d.modify(_skv_ca, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.Cert)})
-				// d.modify(_skv_crl, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.CRL)})
-				i_file.put(_dir_PKI_Cert, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.Cert)
-				i_file.put(_dir_PKI_Key, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.Key)
-				i_file.put(_dir_PKI_CRL, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.CRL)
-				// }
-			}
 
 			// for _, f := range d.Group {
 			// }
-			for _, f := range d.User {
-				for g, h := range _FQDN(" " + _re_lower_case)[:] {
-					var (
-						i = f.FQDN
-					)
-					switch {
-					case g > 0:
-						i = _FQDN(strings_join(".", string(h), i))
-					}
-					switch _, flag := i_PKI.CA_Node[d.FQDN].Node[i]; {
-					case flag:
-						log.Errorf("PKI DB '%v' already defined; ACTION: report.", i)
-						not_ok = true
-					}
-
-					i_PKI.CA_Node[d.FQDN].Node[i] = &_PKI_Node{
-						FQDN: f.FQDN,
-						CA:   i_PKI.CA_Node[d.FQDN],
-						Cert: nil,
-						Key:  nil,
-						DER:  nil,
-						P12:  nil,
-					}
-				}
-				for _, h := range f.SKV[_skv_p12] {
-					var (
-						t = &_PKI_Node{
-							FQDN: "",
-							CA:   i_PKI.CA_Node[d.FQDN],
-							Cert: nil,
-							Key:  nil,
-							DER:  nil,
-							P12:  _P12(h),
-						}
-					)
-					t.parse_P12(nil)
-					switch {
-					case t.Cert == nil: // P12 invalid
-						log.Warnf("PKI DB '%v': invalid P12; ACTION: ignore.", t.FQDN)
-						continue
-					}
-					t.FQDN = _FQDN(t.Cert.Subject.CommonName)
-					switch _, flag := i_PKI.CA_Node[d.FQDN].Node[t.FQDN]; {
-					case !flag: // P12 wrong
-						log.Warnf("PKI DB '%v': wrong P12; ACTION: ignore.", t.FQDN)
-						continue
-					}
-					i_PKI.CA_Node[d.FQDN].Node[t.FQDN] = t
-				}
-			}
-		}
-	}
-	switch {
-	case not_ok:
-		return !not_ok
-	}
-
-	for _, b := range i_ldap { // fourth pass, generate missing PKI data
-		for _, d := range b.Domain {
-
 			for _, f := range d.User {
 				switch {
 				case f.UID != "lom":
 					continue
 				}
 
+				for _, h := range f.SKV[_skv_p12] {
+					var (
+						v_P12 = _P12(h)
+					)
+					switch v_FQDN, status := v_P12.get_FQDN(); {
+					case status:
+						switch _, flag := i_PKI.CA_Node[d.FQDN].Node[v_FQDN]; {
+						case flag:
+							log.Errorf("LDAP DB '%v': P12 for '%v' already defined; ACTION: report.", a.String(), v_FQDN)
+							not_ok = true
+							continue
+						}
+						i_PKI.CA_Node[d.FQDN].Node[v_FQDN] = &_PKI_Node{
+							FQDN: v_FQDN,
+							CA:   i_PKI.CA_Node[d.FQDN],
+							Cert: nil,
+							Key:  nil,
+							DER:  nil,
+							P12:  v_P12,
+						}
+					}
+				}
+
 				var (
 					changed bool
-					changes []string
 				)
-				for g, h := range _FQDN(" " + _re_lower_case)[:] {
-					switch {
-					case g > 2:
-						continue
-					}
-
+				for g := 0; g < int(_UIx_IPx); g++ {
 					var (
-						i = f.FQDN
-						j = _FQDN(strings_join("@", f.UID, d.FQDN))
+						h = f.FQDN
 					)
 					switch {
-					case g > 0:
-						i = _FQDN(strings_join(".", string(h), i))
-						j = _FQDN(strings_join("@", string(h), j))
+					case g >= 1 && g <= len(_re_lower_case):
+						h = _FQDN(strings_join(".", string(rune(g+96)), h))
+					case g > len(_re_lower_case):
+						h = _FQDN(strings_join(".", "x"+pad(strconv.FormatInt(int64(g), 16), 2), h))
 					}
-					switch {
-					case i_PKI.CA_Node[d.FQDN].Node[i].Cert == nil:
-						i_PKI.CA_Node[d.FQDN].Node[i].parse_P12(&x509.Certificate{
-							SerialNumber: big.NewInt(time.Now().UnixNano()),
-							Subject: pkix.Name{
-								Organization: []string{d.FQDN.String()},
-								CommonName:   i.String(),
-								Names:        nil,
-								ExtraNames:   nil,
-							},
-							NotBefore:   time.Now(),
-							NotAfter:    time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC),
-							IsCA:        false,
-							ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-							KeyUsage:    x509.KeyUsageDigitalSignature,
-							// DNSNames:       []string{i.String()},
-							EmailAddresses: []string{j.String()},
-							// IPAddresses:    nil,
-						})
-						changed = true
+					switch _, flag := i_PKI.CA_Node[d.FQDN].Node[h]; {
+					case !flag:
+						i_PKI.CA_Node[d.FQDN].Node[h] = &_PKI_Node{FQDN: h, CA: i_PKI.CA_Node[d.FQDN]}
 					}
-					// changes = append(changes, base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].Node[i].P12))
-					changes = append(changes, i_PKI.CA_Node[d.FQDN].Node[i].P12.String())
+					changed = i_PKI.CA_Node[d.FQDN].Node[h].parse_P12(&x509.Certificate{
+						SerialNumber: big.NewInt(time.Now().UnixNano()),
+						Subject: pkix.Name{
+							Organization: []string{d.FQDN.String()},
+							CommonName:   h.String(),
+							Names:        nil,
+							ExtraNames:   nil,
+						},
+						NotBefore:   time.Now(),
+						NotAfter:    time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC),
+						IsCA:        false,
+						ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+						KeyUsage:    x509.KeyUsageDigitalSignature,
+						// DNSNames:       []string{i.String()},
+						EmailAddresses: []string{h.String()},
+						// IPAddresses:    nil,
+					})
+					f.PKI[g] = i_PKI.CA_Node[d.FQDN].Node[h]
 				}
 				switch {
 				case changed:
+					var (
+						changes = make([]string, _UIx_IPx, _UIx_IPx)
+					)
+					for k := 0; k < int(_UIx_IPx); k++ {
+						changes[k] = f.PKI[k].P12.String()
+					}
 					f.modify(_skv_p12, changes)
 				}
 			}
 		}
+	}
+	switch {
+	case not_ok:
+		return not_ok
 	}
 
 	return !not_ok
@@ -987,15 +956,11 @@ func read_ldap() (not_ok bool) {
 				i_ldap_domain[_dn] = &i_LDAP_Domain{
 					LDAP:      b,
 					DN:        _dn,
-					Entry:     nil,
-					FQDN:      "",
 					Group:     __GN_LDAP_Domain_Group{},
-					Modify:    nil,
 					OLC:       &i_LDAP_Domain_OLC{DN: _DN(d.DN)},
 					Raw_DC:    _dc_result,
 					Raw_Group: _group_result,
 					Raw_User:  _user_result,
-					SKV:       nil,
 					User:      __UN_LDAP_Domain_User{},
 				}
 				i_ldap[a].Domain[_dn] = i_ldap_domain[_dn]
@@ -1046,7 +1011,7 @@ func write_ldap() (not_ok bool) {
 						log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
 						not_ok = true
 					}
-					log.Infof("LDAP '%v': modification for '%v' done; ACTION: report.", a.String(), d.FQDN)
+					log.Infof("LDAP '%v': done modification for '%v'; ACTION: report.", a.String(), d.FQDN)
 				}
 
 				for _, f := range d.Group {
@@ -1064,7 +1029,7 @@ func write_ldap() (not_ok bool) {
 							log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
 							not_ok = true
 						}
-						log.Infof("LDAP '%v': modification for '%v' done; ACTION: report.", a.String(), f.FQDN)
+						log.Infof("LDAP '%v': done modification for '%v'; ACTION: report.", a.String(), f.FQDN)
 					}
 				}
 				for _, f := range d.User {
@@ -1082,7 +1047,7 @@ func write_ldap() (not_ok bool) {
 							log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
 							not_ok = true
 						}
-						log.Infof("LDAP '%v': modification for '%v' done; ACTION: report.", a.String(), f.FQDN)
+						log.Infof("LDAP '%v': done modification for '%v'; ACTION: report.", a.String(), f.FQDN)
 					}
 				}
 			}

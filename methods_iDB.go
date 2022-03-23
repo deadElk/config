@@ -91,12 +91,11 @@ func (receiver __N_AB) parse_recurse_AB(inbound _Name) {
 }
 
 // PKI CA Node
-func (receiver *_PKI_CA_Node) parse_DER( /*inbound *_PKI_CA_Node_DER,*/ skel *x509.Certificate) { // parse/create a new CA Node
+func (receiver *_PKI_CA_Node) parse_DER(inbound *x509.Certificate) (status bool) { // parse/create a new CA Node
 	switch {
 	case receiver.DER == nil || len(receiver.DER.Cert) == 0 || len(receiver.DER.Key) == 0:
 		log.Infof("no CA DER data; ACTION: generate a new CA Cert")
-		receiver.generate(skel)
-		return
+		return receiver.generate(inbound)
 	}
 
 	var (
@@ -113,22 +112,19 @@ func (receiver *_PKI_CA_Node) parse_DER( /*inbound *_PKI_CA_Node_DER,*/ skel *x5
 	switch t.Cert, err = x509.ParseCertificate(receiver.DER.Cert); {
 	case err != nil:
 		log.Warnf("can't parse CA Cert - '%v'; ACTION: generate a new CA Cert", err)
-		receiver.generate(skel)
-		return
+		return receiver.generate(inbound)
 	}
 
 	switch t.Key, err = x509.ParseECPrivateKey(receiver.DER.Key); {
 	case err != nil:
 		log.Warnf("can't parse CA Key - '%v'; ACTION: generate a new CA Cert", err)
-		receiver.generate(skel)
-		return
+		return receiver.generate(inbound)
 	}
 
 	switch {
 	case t.Cert.PublicKey == t.Key.Public():
 		log.Warnf("CA Cert's signature doesn't match with CA Key's signature - '%v'; ACTION: generate a new CA Cert", err)
-		receiver.generate(skel)
-		return
+		return receiver.generate(inbound)
 	}
 
 	switch {
@@ -136,19 +132,19 @@ func (receiver *_PKI_CA_Node) parse_DER( /*inbound *_PKI_CA_Node_DER,*/ skel *x5
 		switch err = t.Cert.CheckSignatureFrom(receiver.CA.Cert); {
 		case err != nil:
 			log.Warnf("CA's signature doesn't match with parent CA signature - '%v'; ACTION: generate a new CA Cert", err)
-			receiver.generate(skel)
-			return
+			return receiver.generate(inbound)
 		}
 	}
 
 	switch t.CRL, err = x509.ParseDERCRL(receiver.DER.CRL); {
 	case err != nil:
 		log.Warnf("can't parse CA CRL - '%v'; ACTION: generate a new CA Cert", err)
-		t.generate_CRL()
 		fallthrough
 	case t.Cert.CheckCRLSignature(t.CRL) != nil:
 		log.Warnf("CRL's signature doesn't match with CA's signature - '%v'; ACTION: generate a new CRL", err)
-		t.generate_CRL()
+		fallthrough
+	case false:
+		status = t.generate_CRL()
 		// default:
 		// 	t.DER.CRL = receiver.DER.CRL
 	}
@@ -159,32 +155,31 @@ func (receiver *_PKI_CA_Node) parse_DER( /*inbound *_PKI_CA_Node_DER,*/ skel *x5
 	// receiver.DER.Cert = inbound.Cert
 	// receiver.DER.Key = inbound.Key
 	receiver.DER.CRL = t.DER.CRL
+
+	return status
 }
-func (receiver *_PKI_CA_Node) generate(inbound *x509.Certificate) { // generate cert for a CA Node
+func (receiver *_PKI_CA_Node) generate(inbound *x509.Certificate) (status bool) { // generate cert for a CA Node
 	switch {
 	case inbound == nil:
-		log.Infof("no CA Cert data; ACTION: ignore")
-		return
+		log.Fatalf("no CA Cert data; ACTION: report.")
+		// return
+
 	}
 	var (
 		err error
 	)
-	log.Infof("generating a new CA Cert")
+	log.Infof("generating a new CA Cert for '%v'; ACTION: report.", inbound.Subject.CommonName)
 
-	receiver.DER = &_PKI_CA_Node_DER{
-		Cert: _DER{},
-		Key:  _DER{},
-		CRL:  _DER{},
-	}
+	receiver.DER = &_PKI_CA_Node_DER{Cert: _DER{}, Key: _DER{}, CRL: _DER{}}
 
 	switch receiver.Key, err = ecdsa.GenerateKey(elliptic.P521(), rand.Reader); {
 	case err != nil:
-		log.Fatalf("can't generate a new CA Key - %v", err)
+		log.Fatalf("can't generate a new CA Key - '%v'; ACTION: report.", err)
 	}
 
 	switch receiver.DER.Key, err = x509.MarshalECPrivateKey(receiver.Key); {
 	case err != nil:
-		log.Fatalf("can't marshal a new CA Key - %v", err)
+		log.Fatalf("can't marshal a new CA Key - '%v'; ACTION: report.", err)
 	}
 
 	var (
@@ -199,20 +194,17 @@ func (receiver *_PKI_CA_Node) generate(inbound *x509.Certificate) { // generate 
 
 	switch receiver.DER.Cert, err = x509.CreateCertificate(rand.Reader, inbound, ca_cert, receiver.Key.Public(), ca_key); {
 	case err != nil:
-		log.Fatalf("can't create a new CA Cert - %v", err)
+		log.Fatalf("can't create a new CA Cert - '%v'; ACTION: report.", err)
 	}
 
 	switch receiver.Cert, err = x509.ParseCertificate(receiver.DER.Cert); {
 	case err != nil:
-		log.Fatalf("can't parse a new CA Cert - %v", err)
+		log.Fatalf("can't parse a new CA Cert - '%v'; ACTION: report.", err)
 	}
 
-	// receiver.FQDN = _FQDN(receiver.Cert.Subject.String())
-	i_file.put(_dir_PKI, _File_Name(receiver.FQDN), "", receiver.DER.Key)
-
-	receiver.generate_CRL()
+	return receiver.generate_CRL()
 }
-func (receiver *_PKI_CA_Node) generate_CRL() {
+func (receiver *_PKI_CA_Node) generate_CRL() (status bool) {
 	var (
 		err error
 	)
@@ -225,80 +217,29 @@ func (receiver *_PKI_CA_Node) generate_CRL() {
 		ExtraExtensions:     nil,
 	}, receiver.Cert, receiver.Key); {
 	case err != nil:
-		log.Fatalf("can't create a new CA CRL - %v", err)
+		log.Fatalf("can't create a new CA CRL - '%v'; ACTION: report.", err)
 	}
 	switch receiver.CRL, err = x509.ParseDERCRL(receiver.DER.CRL); {
 	case err != nil:
-		log.Fatalf("can't parse a new CA CRL - %v", err)
+		log.Fatalf("can't parse a new CA CRL - '%v'; ACTION: report.", err)
 	}
+
+	return true
 }
 
-// PKI Node
-// func (receiver *_PKI_Node) parse_DER(inbound *_PKI_Node_DER, skel *x509.Certificate) { // parse/create a new Node
-// 	switch {
-// 	case len(inbound.Cert) == 0 && len(inbound.Key) == 0:
-// 		log.Warnf("no DER data; ACTION: generate a new Cert")
-// 		receiver.generate(skel)
-// 		return
-// 	}
-//
-// 	var (
-// 		err error
-// 		t   = &_PKI_Node{}
-// 	)
-//
-// 	switch t.Cert, err = x509.ParseCertificate(inbound.Cert); {
-// 	case err != nil:
-// 		log.Warnf("can't parse Cert - '%v'; ACTION: generate a new Cert", err)
-// 		receiver.generate(skel)
-// 		return
-// 	}
-//
-// 	switch err = t.Cert.CheckSignatureFrom(receiver.CA.Cert); {
-// 	case err != nil:
-// 		log.Warnf("Cert's signature doesn't match with CA - '%v'; ACTION: generate a new Cert", err)
-// 		receiver.generate(skel)
-// 		return
-// 	}
-//
-// 	switch t.Key, err = x509.ParseECPrivateKey(inbound.Key); {
-// 	case err != nil:
-// 		log.Warnf("can't parse Key - '%v'; ACTION: generate a new Cert", err)
-// 		receiver.generate(skel)
-// 		return
-// 	}
-//
-// 	switch {
-// 	case t.Cert.PublicKey == t.Key.Public():
-// 		log.Warnf("Cert's signature doesn't match with Key's signature - '%v'; ACTION: generate a new CA Cert", err)
-// 		receiver.generate(skel)
-// 		return
-// 	}
-//
-// 	switch t.P12, err = pkcs12.Encode(rand.Reader, t.Key, t.Cert, receiver.CA.CA_Chain, ""); {
-// 	case err != nil:
-// 		log.Warnf("can't encode P12 - '%v'; ACTION: generate a new Cert", err)
-// 		receiver.generate(skel)
-// 		return
-// 	}
-//
-// 	receiver.Cert = t.Cert
-// 	receiver.Key = t.Key
-// 	receiver.DER = inbound
-// 	receiver.P12 = t.P12
-// 	switch {
-// 	case i_PKI_SN.Cmp(receiver.Cert.SerialNumber) == -1:
-// 		i_PKI_SN = receiver.Cert.SerialNumber
-// 	}
-//
-// }
+func (receiver *_P12) get_FQDN() (fqdn _FQDN, status bool) {
+	switch _, cert, _, err := pkcs12.DecodeChain(*receiver, ""); {
+	case err == nil:
+		return _FQDN(cert.Subject.CommonName), true
+	}
+	return
+}
 
-func (receiver *_PKI_Node) parse_P12( /*inbound _P12,*/ skel *x509.Certificate) { // parse P12 of a Node
+func (receiver *_PKI_Node) parse_P12(inbound *x509.Certificate) (status bool) { // parse P12 of a Node
 	switch {
 	case receiver.P12 == nil || len(receiver.P12) == 0:
 		log.Warnf("no P12 data; ACTION: generate a new Cert")
-		receiver.generate(skel)
-		return
+		return receiver.generate(inbound)
 	}
 
 	var (
@@ -319,16 +260,14 @@ func (receiver *_PKI_Node) parse_P12( /*inbound _P12,*/ skel *x509.Certificate) 
 		log.Warnf("unsupported key type; ACTION: generate a new Cert")
 		fallthrough
 	case false:
-		receiver.generate(skel)
-		return
+		return receiver.generate(inbound)
 	}
 
 	for a, b := range ca_chain {
 		switch {
 		case receiver.CA.CA_Chain[a] != b:
 			log.Warnf("invalid CA Chain; ACTION: generate a new Cert")
-			receiver.generate(skel)
-			return
+			return receiver.generate(inbound)
 		}
 	}
 
@@ -336,15 +275,13 @@ func (receiver *_PKI_Node) parse_P12( /*inbound _P12,*/ skel *x509.Certificate) 
 	case convert_2_string("", t.Cert.PublicKey) != convert_2_string("", t.Key.Public()): // todo: dirty hack
 		// case t.Cert.PublicKey != t.Key.Public(): // todo: WTF???? not equal even if equal????
 		log.Warnf("Cert/Key doesn't match; ACTION: generate a new Cert '%s' '%s'", t.Cert.PublicKey, t.Key.Public())
-		receiver.generate(skel)
-		return
+		return receiver.generate(inbound)
 	}
 
 	switch err = t.Cert.CheckSignatureFrom(receiver.CA.Cert); {
 	case err != nil:
 		log.Warnf("Cert's signature doesn't match with CA - '%v'; ACTION: generate a new Cert", err)
-		receiver.generate(skel)
-		return
+		return receiver.generate(inbound)
 	}
 
 	// P12 valid
@@ -362,22 +299,20 @@ func (receiver *_PKI_Node) parse_P12( /*inbound _P12,*/ skel *x509.Certificate) 
 	case err != nil:
 		log.Fatalf("can't marshal a new Key - %v", err)
 	}
+	return
 }
-func (receiver *_PKI_Node) generate(inbound *x509.Certificate) { // generate cert for a Node
+func (receiver *_PKI_Node) generate(inbound *x509.Certificate) (status bool) { // generate cert for a Node
 	switch {
 	case inbound == nil:
-		log.Debugf("no Cert data; ACTION: ignore")
-		return
+		log.Fatalf("no Cert data; ACTION: ignore")
+		// return
 	}
 	var (
 		err error
 	)
 	log.Infof("generating a new cert")
 
-	receiver.DER = &_PKI_Node_DER{
-		Cert: _DER{},
-		Key:  _DER{},
-	}
+	receiver.DER = &_PKI_Node_DER{}
 
 	switch receiver.Key, err = ecdsa.GenerateKey(elliptic.P521(), rand.Reader); {
 	case err != nil:
@@ -403,6 +338,8 @@ func (receiver *_PKI_Node) generate(inbound *x509.Certificate) { // generate cer
 	case err != nil:
 		log.Fatalf("can't encode a new P12 - %v", err)
 	}
+
+	return true
 }
 
 func (receiver __N_File_Data) read() (not_ok bool) {
