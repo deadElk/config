@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
 )
@@ -374,4 +375,14 @@ func get_IPPrefix_Bits(inbound netip.Prefix) (outbound _INet_Routing) {
 
 func inc_big_Int(inbound *big.Int) {
 	inbound = inbound.Add(inbound, big.NewInt(1))
+}
+
+func ldap_modify_Add_Attr(inbound *ldap.Entry, outbound *ldap.ModifyRequest, attrType string, attrVal string) {
+	for _, b := range inbound.GetAttributeValues(attrType) { // todo: attr caching?
+		switch {
+		case b == attrVal:
+			return
+		}
+	}
+	outbound.Add(attrType, []string{attrVal})
 }
