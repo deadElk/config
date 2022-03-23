@@ -2,22 +2,11 @@ package main
 
 import (
 	"bytes"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"encoding/pem"
-	"fmt"
-	"io/ioutil"
-	"math/big"
-	"net"
-	"net/http"
-	"net/http/httptest"
 	"net/netip"
 	"sort"
-	"strings"
 	"text/template"
 	"time"
 
@@ -537,6 +526,7 @@ func parse_LDAP() (not_ok bool) {
 			d.FQDN = b._DN_FQDN(d.DN)
 			for _, f := range d.Raw_DC.Entries {
 				not_ok, d.SKV = get_LDAP_Entries(f, _skv_ca, _skv_crl)
+				d.Entry = f
 			}
 			for _, f := range d.Raw_User.Entries {
 				var (
@@ -744,8 +734,8 @@ func parse_LDAP() (not_ok bool) {
 				})
 				switch {
 				case i_PKI.CA_Node[d.FQDN].Cert != nil && i_PKI.CA_Node[d.FQDN].Key != nil && i_PKI.CA_Node[d.FQDN].CRL != nil:
-					// d.modify(_skv_ca, []string{i_PKI.CA_Node[d.FQDN].DER.Cert.String()})
-					// d.modify(_skv_crl, []string{i_PKI.CA_Node[d.FQDN].DER.CRL.String()})
+					d.modify(_skv_ca, []string{i_PKI.CA_Node[d.FQDN].DER.Cert.String()})
+					d.modify(_skv_crl, []string{i_PKI.CA_Node[d.FQDN].DER.CRL.String()})
 					i_file.put(_dir_PKI_Key, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.Key)
 				}
 			}
@@ -923,172 +913,43 @@ func write_ldap() (not_ok bool) {
 				return
 			}
 			for _, d := range b.Domain {
-				for _, f := range d.User {
+				switch {
+				case d.Modify != nil:
+					log.Infof("LDAP '%v': found modifications for Domain '%v', details: '%v'; ACTION: upload.", a.String(), d.DN, d.Modify)
+					switch _result, err = _ldap.ModifyWithResult(d.Modify); {
+					case err != nil:
+						log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
+						not_ok = true
+					}
+					log.Infof("LDAP '%v': modification result: '%v'; ACTION: report.", a.String(), _result)
+				}
+
+				for _, f := range d.Group {
 					switch {
 					case f.Modify != nil:
-						var (
-							_s string
-						)
-						switch {
-						case len(f.Modify.Changes) > 1:
-							_s = "s"
-						}
-						log.Debugf("LDAP '%v': found modification%v for UID '%v', details: '%v'; ACTION: upload.", a.String(), _s, f.DN, f.Modify)
+						log.Infof("LDAP '%v': found modification for Group '%v', details: '%v'; ACTION: upload.", a.String(), f.DN, f.Modify)
 						switch _result, err = _ldap.ModifyWithResult(f.Modify); {
 						case err != nil:
 							log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
 							not_ok = true
 						}
-						log.Debugf("LDAP '%v': modification result: '%v'; ACTION: report.", a.String(), _result)
+						log.Infof("LDAP '%v': modification result: '%v'; ACTION: report.", a.String(), _result)
 					}
 				}
-				// for _, f := range d.Group { // GID within GID member/owner recursive parse
-				// 	var ()
-				// }
+				for _, f := range d.User {
+					switch {
+					case f.Modify != nil:
+						log.Infof("LDAP '%v': found modification for UID '%v', details: '%v'; ACTION: upload.", a.String(), f.DN, f.Modify)
+						switch _result, err = _ldap.ModifyWithResult(f.Modify); {
+						case err != nil:
+							log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
+							not_ok = true
+						}
+						log.Infof("LDAP '%v': modification result: '%v'; ACTION: report.", a.String(), _result)
+					}
+				}
 			}
 		}()
 	}
 	return !not_ok
-}
-
-func genCA() {
-	// get our ca and server certificate
-	serverTLSConf, clientTLSConf, err := certsetup()
-	if err != nil {
-		panic(err)
-	}
-
-	// set up the httptest.Server using our certificate signed by our CA
-	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "success!")
-	}))
-	server.TLS = serverTLSConf
-	server.StartTLS()
-	defer server.Close()
-
-	// communicate with the server using an http.Client configured to trust our CA
-	transport := &http.Transport{
-		TLSClientConfig: clientTLSConf,
-	}
-	http := http.Client{
-		Transport: transport,
-	}
-	resp, err := http.Get(server.URL)
-	if err != nil {
-		panic(err)
-	}
-
-	// verify the response
-	respBodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
-	body := strings.TrimSpace(string(respBodyBytes[:]))
-	if body == "success!" {
-		fmt.Println(body)
-	} else {
-		panic("not successful!")
-	}
-}
-func certsetup() (serverTLSConf *tls.Config, clientTLSConf *tls.Config, err error) {
-	// set up our CA certificate
-	ca := &x509.Certificate{
-		SerialNumber: big.NewInt(2019),
-		Subject: pkix.Name{
-			Organization:  []string{"Company, INC."},
-			Country:       []string{"US"},
-			Province:      []string{""},
-			Locality:      []string{"San Francisco"},
-			StreetAddress: []string{"Golden Gate Bridge"},
-			PostalCode:    []string{"94016"},
-		},
-		NotBefore:             time.Now(),
-		NotAfter:              time.Now().AddDate(10, 0, 0),
-		IsCA:                  true,
-		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
-		BasicConstraintsValid: true,
-		CRLDistributionPoints: []string{},
-	}
-
-	// create our private and public key
-	caPrivKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// create the CA
-	caBytes, err := x509.CreateCertificate(rand.Reader, ca, ca, &caPrivKey.PublicKey, caPrivKey)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// pem encode
-	caPEM := new(bytes.Buffer)
-	pem.Encode(caPEM, &pem.Block{
-		Type:  "CERTIFICATE",
-		Bytes: caBytes,
-	})
-
-	caPrivKeyPEM := new(bytes.Buffer)
-	pem.Encode(caPrivKeyPEM, &pem.Block{
-		Type:  "EC PRIVATE KEY",
-		Bytes: parse_interface(x509.MarshalECPrivateKey(caPrivKey)).([]byte),
-	})
-	log.Infof("%v", caPrivKeyPEM)
-	// set up our server certificate
-	cert := &x509.Certificate{
-		SerialNumber: big.NewInt(2019),
-		Subject: pkix.Name{
-			Organization:  []string{"Company, INC."},
-			Country:       []string{"US"},
-			Province:      []string{""},
-			Locality:      []string{"San Francisco"},
-			StreetAddress: []string{"Golden Gate Bridge"},
-			PostalCode:    []string{"94016"},
-		},
-		IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback},
-		NotBefore:    time.Now(),
-		NotAfter:     time.Now().AddDate(10, 0, 0),
-		SubjectKeyId: []byte{1, 2, 3, 4, 6},
-		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-		KeyUsage:     x509.KeyUsageDigitalSignature,
-	}
-
-	certPrivKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	certBytes, err := x509.CreateCertificate(rand.Reader, cert, ca, &certPrivKey.PublicKey, caPrivKey)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	certPEM := new(bytes.Buffer)
-	pem.Encode(certPEM, &pem.Block{Type: "CERTIFICATE", Bytes: certBytes})
-	log.Infof("%v", certPEM)
-
-	certPrivKeyPEM := new(bytes.Buffer)
-	pem.Encode(certPrivKeyPEM, &pem.Block{
-		Type:  "EC PRIVATE KEY",
-		Bytes: parse_interface(x509.MarshalECPrivateKey(certPrivKey)).([]byte),
-	})
-
-	serverCert, err := tls.X509KeyPair(certPEM.Bytes(), certPrivKeyPEM.Bytes())
-	if err != nil {
-		return nil, nil, err
-	}
-
-	serverTLSConf = &tls.Config{
-		Certificates: []tls.Certificate{serverCert},
-	}
-
-	certpool := x509.NewCertPool()
-	certpool.AppendCertsFromPEM(caPEM.Bytes())
-	clientTLSConf = &tls.Config{
-		RootCAs: certpool,
-	}
-
-	return
 }
