@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"math/big"
 	"net/netip"
 	"sort"
 	"text/template"
@@ -678,7 +679,7 @@ func parse_LDAP() (not_ok bool) {
 		}
 	}
 
-	for _, b := range i_ldap { // third pass, fill PKI with known data
+	for _, b := range i_ldap { // third pass, fill PKI with known data or generate new
 		for _, d := range b.Domain {
 			switch _, flag := i_PKI.CA_Node[d.FQDN]; {
 			case flag:
@@ -707,8 +708,36 @@ func parse_LDAP() (not_ok bool) {
 			switch {
 			case i_PKI.CA_Node[d.FQDN].Cert == nil || i_PKI.CA_Node[d.FQDN].Key == nil:
 				log.Warnf("PKI DB '%v' no CA Cert/Key; ACTION: skip whole domain, generate from scratch.", d.FQDN)
-				continue
+				i_PKI.CA_Node[d.FQDN].parse_DER(&x509.Certificate{
+					SerialNumber: big.NewInt(time.Now().UnixNano()),
+					Subject: pkix.Name{
+						Organization: []string{d.FQDN.String()},
+						CommonName:   d.FQDN.String(),
+						Names:        nil,
+						ExtraNames:   nil,
+					},
+					NotBefore:             time.Now(),
+					NotAfter:              time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC),
+					IsCA:                  true,
+					ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+					KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
+					BasicConstraintsValid: true,
+					CRLDistributionPoints: []string{strings_join("", "http://", strings_join(".", "ns", d.FQDN), "/crl.pem")},
+					DNSNames:              []string{d.FQDN.String()},
+					EmailAddresses:        []string{strings_join("@", "ns", d.FQDN)},
+					IPAddresses:           nil,
+				})
+				// switch {
+				// case i_PKI.CA_Node[d.FQDN].Cert != nil:
+				// d.modify(_skv_acrl, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.CRL)})
+				// d.modify(_skv_ca, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.Cert)})
+				// d.modify(_skv_crl, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.CRL)})
+				i_file.put(_dir_PKI_Cert, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.Cert)
+				i_file.put(_dir_PKI_Key, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.Key)
+				i_file.put(_dir_PKI_CRL, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.CRL)
+				// }
 			}
+
 			// for _, f := range d.Group {
 			// }
 			for _, f := range d.User {
@@ -770,36 +799,6 @@ func parse_LDAP() (not_ok bool) {
 
 	for _, b := range i_ldap { // fourth pass, generate missing PKI data
 		for _, d := range b.Domain {
-			switch {
-			case i_PKI.CA_Node[d.FQDN].Cert == nil:
-				i_PKI.CA_Node[d.FQDN].parse_DER(&x509.Certificate{
-					Subject: pkix.Name{
-						Organization: []string{d.FQDN.String()},
-						CommonName:   d.FQDN.String(),
-						Names:        nil,
-						ExtraNames:   nil,
-					},
-					NotBefore:             time.Now(),
-					NotAfter:              time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC),
-					IsCA:                  true,
-					ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-					KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
-					BasicConstraintsValid: true,
-					CRLDistributionPoints: []string{strings_join("", "http://", strings_join(".", "ns", d.FQDN), "/crl.pem")},
-					DNSNames:              []string{d.FQDN.String()},
-					EmailAddresses:        []string{strings_join("@", "ns", d.FQDN)},
-					IPAddresses:           nil,
-				})
-				// switch {
-				// case i_PKI.CA_Node[d.FQDN].Cert != nil:
-				// d.modify(_skv_acrl, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.CRL)})
-				// d.modify(_skv_ca, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.Cert)})
-				// d.modify(_skv_crl, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.CRL)})
-				i_file.put(_dir_PKI_Cert, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.Cert)
-				i_file.put(_dir_PKI_Key, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.Key)
-				i_file.put(_dir_PKI_CRL, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.CRL)
-				// }
-			}
 
 			for _, f := range d.User {
 				switch {
@@ -829,6 +828,7 @@ func parse_LDAP() (not_ok bool) {
 					switch {
 					case i_PKI.CA_Node[d.FQDN].Node[i].Cert == nil:
 						i_PKI.CA_Node[d.FQDN].Node[i].parse_P12(&x509.Certificate{
+							SerialNumber: big.NewInt(time.Now().UnixNano()),
 							Subject: pkix.Name{
 								Organization: []string{d.FQDN.String()},
 								CommonName:   i.String(),

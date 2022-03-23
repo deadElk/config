@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
+	"math/big"
 	"os"
 	"reflect"
 	"sort"
@@ -158,10 +159,6 @@ func (receiver *_PKI_CA_Node) parse_DER( /*inbound *_PKI_CA_Node_DER,*/ skel *x5
 	// receiver.DER.Cert = inbound.Cert
 	// receiver.DER.Key = inbound.Key
 	receiver.DER.CRL = t.DER.CRL
-	switch {
-	case i_PKI_SN.Cmp(receiver.Cert.SerialNumber) == -1:
-		i_PKI_SN = receiver.Cert.SerialNumber
-	}
 }
 func (receiver *_PKI_CA_Node) generate(inbound *x509.Certificate) { // generate cert for a CA Node
 	switch {
@@ -200,8 +197,6 @@ func (receiver *_PKI_CA_Node) generate(inbound *x509.Certificate) { // generate 
 		ca_key = receiver.CA.Key
 	}
 
-	inc_big_Int(i_PKI_SN)
-	inbound.SerialNumber = i_PKI_SN
 	switch receiver.DER.Cert, err = x509.CreateCertificate(rand.Reader, inbound, ca_cert, receiver.Key.Public(), ca_key); {
 	case err != nil:
 		log.Fatalf("can't create a new CA Cert - %v", err)
@@ -221,11 +216,10 @@ func (receiver *_PKI_CA_Node) generate_CRL() {
 	var (
 		err error
 	)
-	inc_big_Int(i_PKI_SN)
 	switch receiver.DER.CRL, err = x509.CreateRevocationList(rand.Reader, &x509.RevocationList{
 		SignatureAlgorithm:  x509.ECDSAWithSHA512,
 		RevokedCertificates: nil,
-		Number:              i_PKI_SN,
+		Number:              big.NewInt(time.Now().UnixNano()),
 		ThisUpdate:          time.Now(),
 		NextUpdate:          time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC),
 		ExtraExtensions:     nil,
@@ -368,11 +362,6 @@ func (receiver *_PKI_Node) parse_P12( /*inbound _P12,*/ skel *x509.Certificate) 
 	case err != nil:
 		log.Fatalf("can't marshal a new Key - %v", err)
 	}
-
-	switch {
-	case i_PKI_SN.Cmp(receiver.Cert.SerialNumber) == -1:
-		i_PKI_SN = receiver.Cert.SerialNumber
-	}
 }
 func (receiver *_PKI_Node) generate(inbound *x509.Certificate) { // generate cert for a Node
 	switch {
@@ -400,8 +389,6 @@ func (receiver *_PKI_Node) generate(inbound *x509.Certificate) { // generate cer
 		log.Fatalf("can't marshal a new Key - %v", err)
 	}
 
-	inc_big_Int(i_PKI_SN)
-	inbound.SerialNumber = i_PKI_SN
 	switch receiver.DER.Cert, err = x509.CreateCertificate(rand.Reader, inbound, receiver.CA.Cert, receiver.Key.Public(), receiver.CA.Key); {
 	case err != nil:
 		log.Fatalf("can't create a new Cert - %v", err)
