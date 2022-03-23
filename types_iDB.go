@@ -28,7 +28,7 @@ type _SKV map[string][]string
 type __SKV map[string]map[string]string
 type __N_AB map[_Name]*i_AB
 type __N_AB_Set map[_Name]*i_AB_Set
-type __N_Content map[_File_Name]*_Content
+type __N_File_Data_Content map[_File_Name]*i_File_Data_Content
 type __N_File_Data map[_Dir_Name]*i_File_Data
 type __N_JA map[_Name]*i_JA
 type __N_Name map[_Name]_Name
@@ -72,9 +72,15 @@ type __i_VI_Peer map[_VI_ID]*i_VI_Peer
 
 // file i/o
 type i_File_Data struct {
-	ext    _Name
-	sorted []_File_Name
-	data   __N_Content
+	Flag   bool
+	Ext    _Name
+	Sorted []_File_Name
+	File   __N_File_Data_Content
+}
+type i_File_Data_Content struct {
+	Flag    bool
+	Ext     _Name
+	Content *_Content
 }
 
 // PKI
@@ -148,6 +154,7 @@ type i_LDAP_OLC struct {
 type i_LDAP_Schema struct {
 }
 type i_LDAP_Domain struct {
+	LDAP      *i_LDAP
 	DN        _DN
 	Entry     *ldap.Entry
 	FQDN      _FQDN
@@ -164,6 +171,7 @@ type i_LDAP_Domain_OLC struct {
 	DN _DN
 }
 type i_LDAP_Domain_Group struct { // gidNumber: index
+	LDAP           *i_LDAP
 	DN             _DN
 	Domain         *i_LDAP_Domain
 	Entry          *ldap.Entry
@@ -178,6 +186,7 @@ type i_LDAP_Domain_Group struct { // gidNumber: index
 	UID_List       __UN_LDAP_Domain_User // member: index = member (uidNumber here), value is a pointer.
 }
 type i_LDAP_Domain_User struct { // uidNumber: index
+	LDAP       *i_LDAP
 	DN         _DN
 	Domain     *i_LDAP_Domain
 	Entry      *ldap.Entry

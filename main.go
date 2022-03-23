@@ -45,6 +45,12 @@ func init() {
 }
 
 func main() {
+	var c = big.NewInt(time.Now().UnixNano())
+	for {
+		c = big.NewInt(time.Now().UnixNano())
+		log.Infof("'%v'", c)
+	}
+
 	switch {
 	case !i_read_list.read():
 		log.Fatalf("read_file() error; ACTION: fatal.")

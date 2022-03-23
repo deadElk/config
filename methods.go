@@ -432,15 +432,15 @@ func (receiver *i_LDAP_Domain) modify_Add_Attr(attrName string, attrVal string) 
 func (receiver *i_LDAP_Domain) modify(attrName string, attrVals []string) {
 	switch {
 	case receiver.Modify == nil:
-		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
+		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), []ldap.Control{})
 	}
-	switch { // don't add if not necessary. this values can be obtained from schema .... // todo: parse schema from server
-	case attrName == _skv_ca:
-		receiver.modify_Add_Attr("objectClass", "pkiCA")
-		// attrName += ";binary"
-	case attrName == _skv_crl:
-		receiver.modify_Add_Attr("objectClass", "deltaCRL")
-		// attrName += ";binary"
+	switch attrName {
+	case _skv_ca, _skv_acrl, _skv_crl:
+		receiver.modify_Add_Attr("objectClass", "certificationAuthority")
+		// attrName += ":"
+		// case _skv_crl:
+		// 	receiver.modify_Add_Attr("objectClass", "deltaCRL")
+		// attrName += ":"
 	}
 	receiver.Modify.Replace(attrName, attrVals)
 }
@@ -452,16 +452,16 @@ func (receiver *i_LDAP_Domain_User) modify(attrName string, attrVals []string) {
 	switch { // don't add if not necessary. this values can be obtained from schema .... // todo: parse schema from server
 	case attrName == _skv_ip:
 		receiver.modify_Add_Attr("objectClass", "ipHost")
-		// func() {
-		// 	for _, b := range receiver.Entry.GetAttributeValues("objectClass") {
-		// 		switch {
-		// 		case b == "ipHost":
-		// 			return
-		// 		}
-		// 	}
-		// 	receiver.Modify.Add("objectClass", []string{"ipHost"})
-		// }()
-		// case attrName == _skv_p12:
+	// func() {
+	// 	for _, b := range receiver.Entry.GetAttributeValues("objectClass") {
+	// 		switch {
+	// 		case b == "ipHost":
+	// 			return
+	// 		}
+	// 	}
+	// 	receiver.Modify.Add("objectClass", []string{"ipHost"})
+	// }()
+	case attrName == _skv_p12:
 		// 	receiver.modify_Add_Attr("objectClass", "userPKCS12")
 	}
 	receiver.Modify.Replace(attrName, attrVals)

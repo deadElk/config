@@ -100,7 +100,13 @@ func (receiver *_PKI_CA_Node) parse_DER( /*inbound *_PKI_CA_Node_DER,*/ skel *x5
 
 	var (
 		err error
-		t   = &_PKI_CA_Node{}
+		t   = &_PKI_CA_Node{
+			DER: &_PKI_CA_Node_DER{
+				Cert: receiver.DER.Cert,
+				Key:  receiver.DER.Key,
+				CRL:  receiver.DER.CRL,
+			},
+		}
 	)
 
 	switch t.Cert, err = x509.ParseCertificate(receiver.DER.Cert); {
@@ -142,8 +148,8 @@ func (receiver *_PKI_CA_Node) parse_DER( /*inbound *_PKI_CA_Node_DER,*/ skel *x5
 	case t.Cert.CheckCRLSignature(t.CRL) != nil:
 		log.Warnf("CRL's signature doesn't match with CA's signature - '%v'; ACTION: generate a new CRL", err)
 		t.generate_CRL()
-	default:
-		// t.DER.CRL = inbound.CRL
+		// default:
+		// 	t.DER.CRL = receiver.DER.CRL
 	}
 
 	receiver.Cert = t.Cert
@@ -151,7 +157,7 @@ func (receiver *_PKI_CA_Node) parse_DER( /*inbound *_PKI_CA_Node_DER,*/ skel *x5
 	receiver.CRL = t.CRL
 	// receiver.DER.Cert = inbound.Cert
 	// receiver.DER.Key = inbound.Key
-	// receiver.DER.CRL = t.DER.CRL
+	receiver.DER.CRL = t.DER.CRL
 	switch {
 	case i_PKI_SN.Cmp(receiver.Cert.SerialNumber) == -1:
 		i_PKI_SN = receiver.Cert.SerialNumber
@@ -196,7 +202,7 @@ func (receiver *_PKI_CA_Node) generate(inbound *x509.Certificate) { // generate 
 
 	inc_big_Int(i_PKI_SN)
 	inbound.SerialNumber = i_PKI_SN
-	switch receiver.DER.Cert, err = x509.CreateCertificate(rand.Reader, inbound, ca_cert, ca_key.Public(), receiver.Key); {
+	switch receiver.DER.Cert, err = x509.CreateCertificate(rand.Reader, inbound, ca_cert, receiver.Key.Public(), ca_key); {
 	case err != nil:
 		log.Fatalf("can't create a new CA Cert - %v", err)
 	}
@@ -292,10 +298,11 @@ func (receiver *_PKI_CA_Node) generate_CRL() {
 // 	}
 //
 // }
-func (receiver *_PKI_Node) parse_P12(inbound _P12, skel *x509.Certificate) { // parse P12 of a Node
+
+func (receiver *_PKI_Node) parse_P12( /*inbound _P12,*/ skel *x509.Certificate) { // parse P12 of a Node
 	switch {
-	case inbound == nil || len(inbound) == 0:
-		log.Warnf("no P12 data; ACTION: ACTION: generate a new Cert")
+	case receiver.P12 == nil || len(receiver.P12) == 0:
+		log.Warnf("no P12 data; ACTION: generate a new Cert")
 		receiver.generate(skel)
 		return
 	}
@@ -307,12 +314,17 @@ func (receiver *_PKI_Node) parse_P12(inbound _P12, skel *x509.Certificate) { // 
 		t        = &_PKI_Node{DER: &_PKI_Node_DER{}}
 	)
 
-	switch key, t.Cert, ca_chain, err = pkcs12.DecodeChain(inbound, ""); {
-	case err != nil ||
-		len(ca_chain) != len(receiver.CA.CA_Chain) ||
-		reflect.TypeOf(key) != reflect.TypeOf(receiver.Key):
-
-		log.Warnf("invalid Cert/CA Chain/Key '%v'; ACTION: generate a new Cert", err)
+	switch key, t.Cert, ca_chain, err = pkcs12.DecodeChain(receiver.P12, ""); {
+	case err != nil:
+		log.Warnf("P12 decode error '%v'; ACTION: generate a new Cert", err)
+		fallthrough
+	case len(ca_chain) != len(receiver.CA.CA_Chain):
+		log.Warnf("length of Cert/CA Chain/Key doesn't match; ACTION: generate a new Cert")
+		fallthrough
+	case reflect.TypeOf(key) != reflect.TypeOf(receiver.Key):
+		log.Warnf("unsupported key type; ACTION: generate a new Cert")
+		fallthrough
+	case false:
 		receiver.generate(skel)
 		return
 	}
@@ -327,8 +339,9 @@ func (receiver *_PKI_Node) parse_P12(inbound _P12, skel *x509.Certificate) { // 
 	}
 
 	switch t.Key = key.(*ecdsa.PrivateKey); {
-	case t.Cert.PublicKey != t.Key.Public():
-		log.Warnf("Cert/Key doesn't match; ACTION: generate a new Cert")
+	case convert_2_string("", t.Cert.PublicKey) != convert_2_string("", t.Key.Public()): // todo: dirty hack
+		// case t.Cert.PublicKey != t.Key.Public(): // todo: WTF???? not equal even if equal????
+		log.Warnf("Cert/Key doesn't match; ACTION: generate a new Cert '%s' '%s'", t.Cert.PublicKey, t.Key.Public())
 		receiver.generate(skel)
 		return
 	}
@@ -341,12 +354,15 @@ func (receiver *_PKI_Node) parse_P12(inbound _P12, skel *x509.Certificate) { // 
 	}
 
 	// P12 valid
-	receiver.P12 = inbound
+	// receiver.P12 = inbound
 
 	receiver.Cert = t.Cert
 	receiver.Key = t.Key
 
-	receiver.DER.Cert = receiver.Cert.Raw
+	receiver.DER = &_PKI_Node_DER{
+		Cert: receiver.Cert.Raw,
+		Key:  nil,
+	}
 
 	switch receiver.DER.Key, err = x509.MarshalECPrivateKey(receiver.Key); {
 	case err != nil:
@@ -386,7 +402,7 @@ func (receiver *_PKI_Node) generate(inbound *x509.Certificate) { // generate cer
 
 	inc_big_Int(i_PKI_SN)
 	inbound.SerialNumber = i_PKI_SN
-	switch receiver.DER.Cert, err = x509.CreateCertificate(rand.Reader, inbound, receiver.CA.Cert, receiver.CA.Key.Public(), receiver.Key); {
+	switch receiver.DER.Cert, err = x509.CreateCertificate(rand.Reader, inbound, receiver.CA.Cert, receiver.Key.Public(), receiver.CA.Key); {
 	case err != nil:
 		log.Fatalf("can't create a new Cert - %v", err)
 	}
@@ -409,7 +425,7 @@ func (receiver __N_File_Data) read() (not_ok bool) {
 			direntry []os.DirEntry
 			err      error
 			// fln      = strings_join("/", dir, strings_join(".", file, receiver[dir].ext))
-			ext_l = len(receiver[dir].ext)
+			ext_l = len(receiver[dir].Ext)
 		)
 		switch {
 		case ext_l > 0:
@@ -440,12 +456,12 @@ func (receiver __N_File_Data) read() (not_ok bool) {
 				not_ok = true
 				continue
 			}
-			content.trim_space()
+			// content.trim_space()
 			receiver.put(dir, fname, "", content)
-			receiver[dir].sorted = append(receiver[dir].sorted, fname)
+			receiver[dir].Sorted = append(receiver[dir].Sorted, fname)
 		}
-		sort.Slice(receiver[dir].sorted, func(i, j int) bool {
-			return receiver[dir].sorted[i] < receiver[dir].sorted[j]
+		sort.Slice(receiver[dir].Sorted, func(i, j int) bool {
+			return receiver[dir].Sorted[i] < receiver[dir].Sorted[j]
 		})
 
 	}
@@ -453,26 +469,26 @@ func (receiver __N_File_Data) read() (not_ok bool) {
 }
 func (receiver __N_File_Data) get(dir _Dir_Name, file _File_Name) ( /*not_ok bool,*/ outbound *_Content) {
 	receiver.check(dir, file)
-	switch _, flag := receiver[dir].data[file]; {
+	switch _, flag := receiver[dir].File[file]; {
 	case !flag:
 		return
 	}
-	return /*!not_ok,*/ receiver[dir].data[file]
+	return /*!not_ok,*/ receiver[dir].File[file].Content
 }
 func (receiver __N_File_Data) put(dir _Dir_Name, file _File_Name, delimiter string, content any) /*not_ok bool*/ {
 	receiver.check(dir, file)
 	var (
 		v_Content = _Content(convert_2_string(delimiter, content))
 	)
-	receiver[dir].data[file] = &v_Content
+	receiver[dir].File[file].Content = &v_Content
 	// return !not_ok
 }
 func (receiver __N_File_Data) append(dir _Dir_Name, file _File_Name, delimiter string, content any) /*not_ok bool*/ {
 	receiver.check(dir, file)
 	var (
-		v_Content = _Content(strings_join(delimiter, receiver[dir].data[file], content))
+		v_Content = _Content(strings_join(delimiter, receiver[dir].File[file], content))
 	)
-	receiver[dir].data[file] = &v_Content
+	receiver[dir].File[file].Content = &v_Content
 	return /*!not_ok*/
 }
 func (receiver __N_File_Data) check(dir _Dir_Name, file _File_Name) /*not_ok bool*/ {
@@ -480,15 +496,16 @@ func (receiver __N_File_Data) check(dir _Dir_Name, file _File_Name) /*not_ok boo
 	case !flag:
 		log.Warnf("Dir '%v' definition doesn't exist; ACTION: create.", dir)
 		receiver[dir] = &i_File_Data{
-			data: __N_Content{},
+			File: __N_File_Data_Content{},
 		}
 	}
 	switch {
 	case len(file) != 0:
-		switch _, flag := receiver[dir].data[file]; {
+		switch _, flag := receiver[dir].File[file]; {
 		case !flag:
+			receiver[dir].File[file] = &i_File_Data_Content{}
 			log.Debugf("File '%v' definition in Dir '%v' doesn't exist; ACTION: create.", dir, file)
-			receiver[dir].data[file] = &_Content{}
+			receiver[dir].File[file].Content = &_Content{}
 		}
 	}
 }
@@ -500,11 +517,11 @@ func (receiver __N_File_Data) write() (not_ok bool) {
 			not_ok = true
 			continue
 		}
-		for c, d := range b.data {
+		for c, d := range b.File {
 			var (
-				g = strings_join("/", a, strings_join(".", c, b.ext))
+				g = strings_join("/", a, strings_join(".", c, b.Ext))
 			)
-			switch err := os.WriteFile(g, *d, 0600); {
+			switch err := os.WriteFile(g, *d.Content, 0600); {
 			case err != nil:
 				log.Errorf("file '%v' write error '%v'; ACTION: report.", g, err)
 				not_ok = true

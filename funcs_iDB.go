@@ -467,7 +467,7 @@ func get_LDAP_Entries(inbound *ldap.Entry, list ...string) (not_ok bool, outboun
 		switch {
 
 		case b == _skv_ca && len(t[_skv_ca]) < 1:
-			log.Warnf("DN '%v': not enough CAs defined in LDAP; ACTION: generate the rest.", inbound.DN)
+			log.Debugf("DN '%v': not enough CAs defined in LDAP; ACTION: generate the rest.", inbound.DN)
 			outbound[_skv_ca] = make([]string, 1)
 		case b == _skv_ca && len(t[_skv_ca]) == 1:
 			outbound[_skv_ca] = make([]string, 1)
@@ -477,13 +477,13 @@ func get_LDAP_Entries(inbound *ldap.Entry, list ...string) (not_ok bool, outboun
 			not_ok = true
 
 		case b == _skv_crl && len(t[_skv_crl]) < 1:
-			log.Warnf("DN '%v': not enough CRLs defined in LDAP; ACTION: generate the rest.", inbound.DN)
+			log.Debugf("DN '%v': not enough CRLs defined in LDAP; ACTION: generate the rest.", inbound.DN)
 			outbound[_skv_crl] = make([]string, 1)
 		case b == _skv_crl && len(t[_skv_crl]) == 1:
 			outbound[_skv_crl] = make([]string, 1)
 			outbound[_skv_crl] = t[_skv_crl]
 		case b == _skv_crl && len(t[_skv_crl]) > 1:
-			log.Errorf("DN '%v': not enough CRLs defined in LDAP; ACTION: report.", inbound.DN)
+			log.Errorf("DN '%v': too many CRLs defined in LDAP; ACTION: report.", inbound.DN)
 			not_ok = true
 
 		case b == _skv_p12 && len(t[_skv_p12]) < 27:
@@ -508,8 +508,8 @@ func get_LDAP_Entries(inbound *ldap.Entry, list ...string) (not_ok bool, outboun
 			log.Errorf("DN '%v': too many IPPrefixes defined in LDAP; ACTION: report.", inbound.DN)
 			not_ok = true
 
-		case b == _skv_uri:
-			outbound[_skv_uri] = t[_skv_uri]
+		case b == _skv_luri:
+			outbound[_skv_luri] = t[_skv_luri]
 
 		case b == _skv_ssh:
 			outbound[_skv_ssh] = t[_skv_ssh]
@@ -531,6 +531,7 @@ func parse_LDAP() (not_ok bool) {
 			for _, f := range d.Raw_User.Entries {
 				var (
 					v_U = &i_LDAP_Domain_User{
+						LDAP:       b,
 						DN:         _DN(f.GetAttributeValue("entryDN")),
 						Domain:     d,
 						Entry:      f,
@@ -570,7 +571,7 @@ func parse_LDAP() (not_ok bool) {
 					log.Debugf("LDAP '%v': UID '%v', ipHostNumber not defined; ACTION: find new.", a.String(), v_U.DN)
 				}
 
-				not_ok, v_U.SKV = get_LDAP_Entries(f, _skv_ssh, _skv_p12, _skv_uri)
+				not_ok, v_U.SKV = get_LDAP_Entries(f, _skv_ssh, _skv_p12, _skv_luri)
 				v_U.FQDN = b._DN_FQDN(v_U.DN)
 
 				d.User[v_U.UID_Number] = v_U
@@ -583,6 +584,7 @@ func parse_LDAP() (not_ok bool) {
 			for _, f := range d.Raw_Group.Entries {
 				var (
 					v_G = &i_LDAP_Domain_Group{
+						LDAP:           b,
 						DN:             _DN(f.GetAttributeValue("entryDN")),
 						Domain:         d,
 						Entry:          f,
@@ -638,7 +640,7 @@ func parse_LDAP() (not_ok bool) {
 				v_G.Owner_UID_List = v_Owner_UID_List
 				v_G.Owner_GID_List = v_Owner_GID_List
 
-				not_ok, v_G.SKV = get_LDAP_Entries(f, _skv_p12, _skv_uri)
+				not_ok, v_G.SKV = get_LDAP_Entries(f, _skv_p12, _skv_luri)
 
 				d.Group[v_G.GID_Number] = v_G
 				b.M_CN_G[v_G.DN] = v_G
@@ -692,16 +694,72 @@ func parse_LDAP() (not_ok bool) {
 				Key:      nil,
 				CRL:      nil,
 				DER: &_PKI_CA_Node_DER{
-					Cert: _DER(d.SKV[_skv_ca][0]),
-					Key:  _DER(*i_file[_dir_PKI_Key].data[_File_Name(d.FQDN)]),
-					CRL:  _DER(d.SKV[_skv_crl][0]),
+					Cert: _DER(*i_file.get(_dir_PKI_Cert, _File_Name(d.FQDN))),
+					Key:  _DER(*i_file.get(_dir_PKI_Key, _File_Name(d.FQDN))),
+					CRL:  _DER(*i_file.get(_dir_PKI_CRL, _File_Name(d.FQDN))),
 				},
 				Node: __FQDN_PKI_Node{},
 			}
+			//					Cert: _DER(d.SKV[_skv_ca][0]),
+			//					Key:  _DER(*i_file[_dir_PKI_Key].data[_File_Name(d.FQDN)]),
+			//					CRL:  _DER(d.SKV[_skv_crl][0]),
 			i_PKI.CA_Node[d.FQDN].parse_DER(nil)
 			switch {
 			case i_PKI.CA_Node[d.FQDN].Cert == nil || i_PKI.CA_Node[d.FQDN].Key == nil:
 				log.Warnf("PKI DB '%v' no CA Cert/Key; ACTION: skip whole domain, generate from scratch.", d.FQDN)
+				continue
+			}
+			// for _, f := range d.Group {
+			// }
+			for _, f := range d.User {
+				for g, h := range _FQDN(" " + _re_lower_case)[:] {
+					var (
+						i = f.FQDN
+					)
+					switch {
+					case g > 0:
+						i = _FQDN(strings_join(".", string(h), i))
+					}
+					switch _, flag := i_PKI.CA_Node[d.FQDN].Node[i]; {
+					case flag:
+						log.Errorf("PKI DB '%v' already defined; ACTION: report.", i)
+						not_ok = true
+					}
+
+					i_PKI.CA_Node[d.FQDN].Node[i] = &_PKI_Node{
+						FQDN: f.FQDN,
+						CA:   i_PKI.CA_Node[d.FQDN],
+						Cert: nil,
+						Key:  nil,
+						DER:  nil,
+						P12:  nil,
+					}
+				}
+				for _, h := range f.SKV[_skv_p12] {
+					var (
+						t = &_PKI_Node{
+							FQDN: "",
+							CA:   i_PKI.CA_Node[d.FQDN],
+							Cert: nil,
+							Key:  nil,
+							DER:  nil,
+							P12:  _P12(h),
+						}
+					)
+					t.parse_P12(nil)
+					switch {
+					case t.Cert == nil: // P12 invalid
+						log.Warnf("PKI DB '%v': invalid P12; ACTION: ignore.", t.FQDN)
+						continue
+					}
+					t.FQDN = _FQDN(t.Cert.Subject.CommonName)
+					switch _, flag := i_PKI.CA_Node[d.FQDN].Node[t.FQDN]; {
+					case !flag: // P12 wrong
+						log.Warnf("PKI DB '%v': wrong P12; ACTION: ignore.", t.FQDN)
+						continue
+					}
+					i_PKI.CA_Node[d.FQDN].Node[t.FQDN] = t
+				}
 			}
 		}
 	}
@@ -713,7 +771,7 @@ func parse_LDAP() (not_ok bool) {
 	for _, b := range i_ldap { // fourth pass, generate missing PKI data
 		for _, d := range b.Domain {
 			switch {
-			case i_PKI.CA_Node[d.FQDN].Cert == nil || i_PKI.CA_Node[d.FQDN].Key == nil:
+			case i_PKI.CA_Node[d.FQDN].Cert == nil:
 				i_PKI.CA_Node[d.FQDN].parse_DER(&x509.Certificate{
 					Subject: pkix.Name{
 						Organization: []string{d.FQDN.String()},
@@ -732,11 +790,68 @@ func parse_LDAP() (not_ok bool) {
 					EmailAddresses:        []string{strings_join("@", "ns", d.FQDN)},
 					IPAddresses:           nil,
 				})
+				// switch {
+				// case i_PKI.CA_Node[d.FQDN].Cert != nil:
+				// d.modify(_skv_acrl, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.CRL)})
+				// d.modify(_skv_ca, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.Cert)})
+				// d.modify(_skv_crl, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.CRL)})
+				i_file.put(_dir_PKI_Cert, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.Cert)
+				i_file.put(_dir_PKI_Key, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.Key)
+				i_file.put(_dir_PKI_CRL, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.CRL)
+				// }
+			}
+
+			for _, f := range d.User {
 				switch {
-				case i_PKI.CA_Node[d.FQDN].Cert != nil && i_PKI.CA_Node[d.FQDN].Key != nil && i_PKI.CA_Node[d.FQDN].CRL != nil:
-					d.modify(_skv_ca, []string{i_PKI.CA_Node[d.FQDN].DER.Cert.String()})
-					d.modify(_skv_crl, []string{i_PKI.CA_Node[d.FQDN].DER.CRL.String()})
-					i_file.put(_dir_PKI_Key, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.Key)
+				case f.UID != "lom":
+					continue
+				}
+
+				var (
+					changed bool
+					changes []string
+				)
+				for g, h := range _FQDN(" " + _re_lower_case)[:] {
+					switch {
+					case g > 2:
+						continue
+					}
+
+					var (
+						i = f.FQDN
+						j = _FQDN(strings_join("@", f.UID, d.FQDN))
+					)
+					switch {
+					case g > 0:
+						i = _FQDN(strings_join(".", string(h), i))
+						j = _FQDN(strings_join("@", string(h), j))
+					}
+					switch {
+					case i_PKI.CA_Node[d.FQDN].Node[i].Cert == nil:
+						i_PKI.CA_Node[d.FQDN].Node[i].parse_P12(&x509.Certificate{
+							Subject: pkix.Name{
+								Organization: []string{d.FQDN.String()},
+								CommonName:   i.String(),
+								Names:        nil,
+								ExtraNames:   nil,
+							},
+							NotBefore:   time.Now(),
+							NotAfter:    time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC),
+							IsCA:        false,
+							ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+							KeyUsage:    x509.KeyUsageDigitalSignature,
+							// DNSNames:       []string{i.String()},
+							EmailAddresses: []string{j.String()},
+							// IPAddresses:    nil,
+						})
+						changed = true
+					}
+					// changes = append(changes, base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].Node[i].P12))
+					changes = append(changes, i_PKI.CA_Node[d.FQDN].Node[i].P12.String())
+				}
+				switch {
+				case changed:
+					f.modify(_skv_p12, changes)
 				}
 			}
 		}
@@ -793,6 +908,10 @@ func read_ldap() (not_ok bool) {
 				)
 				switch {
 				case len(_dn) == 0:
+					continue
+				}
+				switch {
+				case _dn != "dc=domain,dc=tld":
 					continue
 				}
 				log.Infof("LDAP '%v' search result: '%v'.", a.String(), _dn)
@@ -866,18 +985,18 @@ func read_ldap() (not_ok bool) {
 				}
 
 				i_ldap_domain[_dn] = &i_LDAP_Domain{
-					DN: _dn,
-					OLC: &i_LDAP_Domain_OLC{
-						DN: _DN(d.DN),
-					},
+					LDAP:      b,
+					DN:        _dn,
+					Entry:     nil,
+					FQDN:      "",
 					Group:     __GN_LDAP_Domain_Group{},
-					User:      __UN_LDAP_Domain_User{},
+					Modify:    nil,
+					OLC:       &i_LDAP_Domain_OLC{DN: _DN(d.DN)},
 					Raw_DC:    _dc_result,
 					Raw_Group: _group_result,
 					Raw_User:  _user_result,
 					SKV:       nil,
-					Modify:    nil,
-					Entry:     nil,
+					User:      __UN_LDAP_Domain_User{},
 				}
 				i_ldap[a].Domain[_dn] = i_ldap_domain[_dn]
 			}
@@ -889,9 +1008,9 @@ func write_ldap() (not_ok bool) {
 	for a, b := range i_ldap {
 		func() {
 			var (
-				_ldap   *ldap.Conn
-				err     error
-				_result *ldap.ModifyResult
+				_ldap *ldap.Conn
+				err   error
+				// _result *ldap.ModifyResult
 			)
 			switch _ldap, err = ldap.Dial("tcp", a.Host); {
 			case err != nil:
@@ -915,37 +1034,55 @@ func write_ldap() (not_ok bool) {
 			for _, d := range b.Domain {
 				switch {
 				case d.Modify != nil:
-					log.Infof("LDAP '%v': found modifications for Domain '%v', details: '%v'; ACTION: upload.", a.String(), d.DN, d.Modify)
-					switch _result, err = _ldap.ModifyWithResult(d.Modify); {
+					log.Debugf("LDAP '%v': found modifications for Domain '%v', details: '%v'; ACTION: upload.", a.String(), d.DN, d.Modify.Changes)
+					// 					switch _result, err = _ldap.ModifyWithResult(d.Modify); {
+					//					case err != nil:
+					//						log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
+					//						not_ok = true
+					//					}
+					//					log.Infof("LDAP '%v': modification result: '%v'; ACTION: report.", a.String(), _result)
+					switch err = _ldap.Modify(d.Modify); {
 					case err != nil:
 						log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
 						not_ok = true
 					}
-					log.Infof("LDAP '%v': modification result: '%v'; ACTION: report.", a.String(), _result)
+					log.Infof("LDAP '%v': modification for '%v' done; ACTION: report.", a.String(), d.FQDN)
 				}
 
 				for _, f := range d.Group {
 					switch {
 					case f.Modify != nil:
-						log.Infof("LDAP '%v': found modification for Group '%v', details: '%v'; ACTION: upload.", a.String(), f.DN, f.Modify)
-						switch _result, err = _ldap.ModifyWithResult(f.Modify); {
+						log.Debugf("LDAP '%v': found modification for Group '%v', details: '%v'; ACTION: upload.", a.String(), f.DN, f.Modify.Changes)
+						// switch _result, err = _ldap.ModifyWithResult(f.Modify); {
+						// case err != nil:
+						// 	log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
+						// 	not_ok = true
+						// }
+						// log.Infof("LDAP '%v': modification result: '%v'; ACTION: report.", a.String(), _result)
+						switch err = _ldap.Modify(f.Modify); {
 						case err != nil:
 							log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
 							not_ok = true
 						}
-						log.Infof("LDAP '%v': modification result: '%v'; ACTION: report.", a.String(), _result)
+						log.Infof("LDAP '%v': modification for '%v' done; ACTION: report.", a.String(), f.FQDN)
 					}
 				}
 				for _, f := range d.User {
 					switch {
 					case f.Modify != nil:
-						log.Infof("LDAP '%v': found modification for UID '%v', details: '%v'; ACTION: upload.", a.String(), f.DN, f.Modify)
-						switch _result, err = _ldap.ModifyWithResult(f.Modify); {
+						log.Debugf("LDAP '%v': found modification for UID '%v', details: '%v'; ACTION: upload.", a.String(), f.DN, f.Modify.Changes)
+						// 					switch _result, err = _ldap.ModifyWithResult(f.Modify); {
+						//						case err != nil:
+						//							log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
+						//							not_ok = true
+						//						}
+						//						log.Infof("LDAP '%v': modification result: '%v'; ACTION: report.", a.String(), _result)
+						switch err = _ldap.Modify(f.Modify); {
 						case err != nil:
 							log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
 							not_ok = true
 						}
-						log.Infof("LDAP '%v': modification result: '%v'; ACTION: report.", a.String(), _result)
+						log.Infof("LDAP '%v': modification for '%v' done; ACTION: report.", a.String(), f.FQDN)
 					}
 				}
 			}

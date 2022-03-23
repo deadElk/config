@@ -31,27 +31,30 @@ const (
 	_comm_vi
 )
 const (
-	_dir_Config  _Dir_Name = "tmp/CONFIG"
-	_dir_Data    _Dir_Name = "tmp/data"
-	_dir_GT      _Dir_Name = "tmp/templates"
-	_dir_LDAP    _Dir_Name = "tmp/LDAP"
-	_dir_Modify  _Dir_Name = "tmp/modify"
-	_dir_PKI     _Dir_Name = "tmp/PKI"
-	_dir_PKI_Key _Dir_Name = "tmp/PKI/Key"
-	_dir_Portal  _Dir_Name = "tmp/portal"
-	_dir_etc     _Dir_Name = "etc"
+	_dir_Config   _Dir_Name = "tmp/CONFIG"
+	_dir_Data     _Dir_Name = "tmp/data"
+	_dir_GT       _Dir_Name = "tmp/templates"
+	_dir_LDAP     _Dir_Name = "tmp/LDAP"
+	_dir_Modify   _Dir_Name = "tmp/modify"
+	_dir_PKI      _Dir_Name = "tmp/PKI"
+	_dir_PKI_Cert _Dir_Name = "tmp/PKI/Cert"
+	_dir_PKI_Key  _Dir_Name = "tmp/PKI/Key"
+	_dir_PKI_CRL  _Dir_Name = "tmp/PKI/CRL"
+	_dir_Portal   _Dir_Name = "tmp/portal"
+	_dir_etc      _Dir_Name = "etc"
 )
 const (
 	_file_host_list _File_Name = "host_list"
 )
 const (
-	_skv_etc = ""
-	_skv_ssh = "sshPublicKey"
-	_skv_ca  = "cACertificate"
-	_skv_crl = "certificateRevocationList"
-	_skv_p12 = "userPKCS12"
-	_skv_uri = "labeledURI"
-	_skv_ip  = "ipHostNumber"
+	_skv_etc  = ""
+	_skv_ssh  = "sshPublicKey"
+	_skv_ca   = "cACertificate"
+	_skv_acrl = "authorityRevocationList"
+	_skv_crl  = "certificateRevocationList"
+	_skv_p12  = "userPKCS12"
+	_skv_luri = "labeledURI"
+	_skv_ip   = "ipHostNumber"
 )
 const (
 	_S_Verbosity                        = log.InfoLevel

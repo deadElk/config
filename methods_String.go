@@ -54,6 +54,9 @@ func (receiver _Dir_Name) String() string {
 func (receiver _DER) String() string {
 	return string(receiver)
 }
+func (receiver _P12) String() string {
+	return string(receiver)
+}
 func (receiver _PName) String() string {
 	return string(receiver)
 }

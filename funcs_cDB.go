@@ -10,7 +10,7 @@ func read_cDB() (not_ok bool) {
 	var (
 		xml_db = make(cDB_N_List)
 	)
-	for _, b := range i_file[_dir_etc].sorted {
+	for _, b := range i_file[_dir_etc].Sorted {
 		var (
 			c cDB
 		)

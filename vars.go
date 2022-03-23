@@ -1,7 +1,6 @@
 package main
 
 import (
-	"math/big"
 	"net/netip"
 	"regexp"
 	"sync"
@@ -30,8 +29,8 @@ var (
 
 	// daemon's global PKI SerialNumber used for Cert and CRL
 	// i_PKI         = make(__FQDN_PKI_Domain)
+	// i_PKI_SN      = big.NewInt(0) // use big.NewInt(time.Now().Unixnano())
 	i_PKI         = &_PKI_CA_Node{CA_Node: __FQDN_PKI_CA_Node{}}
-	i_PKI_SN      = big.NewInt(0)
 	i_ab          = make(__N_AB)
 	i_ja          = make(__N_JA)
 	i_pl          = make(__N_PO_PL)
@@ -43,29 +42,35 @@ var (
 	i_ldap        = make(__U_LDAP)
 	i_ldap_domain = make(__DN_LDAP_Domain)
 	i_file        = __N_File_Data{
-		_dir_Config:  {ext: "txt", data: __N_Content{}},
-		_dir_Data:    {ext: "xml", data: __N_Content{}},
-		_dir_GT:      {ext: "tmpl", data: __N_Content{}},
-		_dir_LDAP:    {ext: "xml", data: __N_Content{}},
-		_dir_Modify:  {ext: "xml", data: __N_Content{}},
-		_dir_PKI:     {ext: "", data: __N_Content{}},
-		_dir_PKI_Key: {ext: "key", data: __N_Content{}},
-		_dir_Portal:  {ext: "", data: __N_Content{}},
-		_dir_etc:     {ext: "xml", data: __N_Content{}},
+		_dir_Config:   {Ext: "txt", File: __N_File_Data_Content{}},
+		_dir_Data:     {Ext: "xml", File: __N_File_Data_Content{}},
+		_dir_GT:       {Ext: "tmpl", File: __N_File_Data_Content{}},
+		_dir_LDAP:     {Ext: "xml", File: __N_File_Data_Content{}},
+		_dir_Modify:   {Ext: "xml", File: __N_File_Data_Content{}},
+		_dir_PKI:      {Ext: "", File: __N_File_Data_Content{}},
+		_dir_PKI_Cert: {Ext: "der", File: __N_File_Data_Content{}},
+		_dir_PKI_Key:  {Ext: "der", File: __N_File_Data_Content{}},
+		_dir_PKI_CRL:  {Ext: "der", File: __N_File_Data_Content{}},
+		_dir_Portal:   {Ext: "", File: __N_File_Data_Content{}},
+		_dir_etc:      {Ext: "xml", File: __N_File_Data_Content{}},
 	}
 	i_read_list = __N_File_Data{
-		_dir_GT:      i_file[_dir_GT],
-		_dir_Modify:  i_file[_dir_Modify],
-		_dir_PKI_Key: i_file[_dir_PKI_Key],
-		_dir_etc:     i_file[_dir_etc],
+		_dir_GT:       i_file[_dir_GT],
+		_dir_Modify:   i_file[_dir_Modify],
+		_dir_PKI_Cert: i_file[_dir_PKI_Cert],
+		_dir_PKI_Key:  i_file[_dir_PKI_Key],
+		_dir_PKI_CRL:  i_file[_dir_PKI_CRL],
+		_dir_etc:      i_file[_dir_etc],
 	}
 	i_write_list = __N_File_Data{
-		_dir_Config:  i_file[_dir_Config],
-		_dir_Data:    i_file[_dir_Data],
-		_dir_LDAP:    i_file[_dir_LDAP],
-		_dir_Modify:  i_file[_dir_Modify],
-		_dir_PKI_Key: i_file[_dir_PKI_Key],
-		_dir_Portal:  i_file[_dir_Portal],
+		_dir_Config:   i_file[_dir_Config],
+		_dir_Data:     i_file[_dir_Data],
+		_dir_LDAP:     i_file[_dir_LDAP],
+		_dir_Modify:   i_file[_dir_Modify],
+		_dir_PKI_Cert: i_file[_dir_PKI_Cert],
+		_dir_PKI_Key:  i_file[_dir_PKI_Key],
+		_dir_PKI_CRL:  i_file[_dir_PKI_CRL],
+		_dir_Portal:   i_file[_dir_Portal],
 	}
 	i_peer_list []_Inet_ASN
 	i_vi_ip     = make(__INet_VI_IP_Table)
