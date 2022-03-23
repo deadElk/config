@@ -130,15 +130,13 @@ type i_LDAP struct {
 	DC_CN        string
 	DC_Filter    string
 	Domain       __DN_LDAP_Domain
-	FQDN         _FQDN
 	Group_CN     string
 	Group_Filter string
 	M_CN_G       __DN_LDAP_Domain_Group
 	M_CN_U       __DN_LDAP_Domain_User
 	Modify       *ldap.ModifyRequest
 	Modify_Regen map[_FQDN]bool
-	OLC          *i_LDAP_OLC // todo: parse OLC from server
-	PKI          *_PKI_CA_Node
+	OLC          *i_LDAP_OLC    // todo: parse OLC from server
 	Schema       *i_LDAP_Schema // todo: parse schema from server
 	Secret       _Secret
 	URL          *url.URL
@@ -156,7 +154,6 @@ type i_LDAP_Domain struct {
 	Group     __GN_LDAP_Domain_Group
 	Modify    *ldap.ModifyRequest
 	OLC       *i_LDAP_Domain_OLC
-	PKI       *_PKI_CA_Node
 	Raw_DC    *ldap.SearchResult
 	Raw_Group *ldap.SearchResult
 	Raw_User  *ldap.SearchResult

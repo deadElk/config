@@ -474,6 +474,7 @@ func get_LDAP_Entries(inbound *ldap.Entry, list ...string) (not_ok bool, outboun
 			}
 			t[b] = append(t[b], d)
 		}
+
 		switch {
 
 		case b == _skv_ca && len(t[_skv_ca]) < 1:
@@ -508,11 +509,22 @@ func get_LDAP_Entries(inbound *ldap.Entry, list ...string) (not_ok bool, outboun
 			// log.Warnf("DN '%v': too many user P12s defined in LDAP; ACTION: report.", inbound.DN)
 			// not_ok = true
 
+		case b == _skv_ip && len(t[_skv_ip]) < 1:
+			log.Warnf("DN '%v': not enough IPPrefixes defined in LDAP; ACTION: generate the rest.", inbound.DN)
+			outbound[_skv_ip] = make([]string, 1)
+		case b == _skv_ip && len(t[_skv_ip]) == 1:
+			outbound[_skv_ip] = make([]string, 1)
+			outbound[_skv_ip] = t[_skv_ip]
+		case b == _skv_ip && len(t[_skv_ip]) > 1:
+			log.Errorf("DN '%v': too many IPPrefixes defined in LDAP; ACTION: report.", inbound.DN)
+			not_ok = true
+
 		case b == _skv_uri:
 			outbound[_skv_uri] = t[_skv_uri]
 
 		case b == _skv_ssh:
 			outbound[_skv_ssh] = t[_skv_ssh]
+
 		}
 
 	}
@@ -659,7 +671,7 @@ func parse_LDAP() (not_ok bool) {
 						for y, z := range i_ui_ip {
 							switch {
 							case z.User == nil:
-								f.modify("ipHostNumber", []string{y.String()})
+								f.modify(_skv_ip, []string{y.String()})
 								log.Infof("LDAP '%v': UID '%v', found new ipHostNumber '%v'; ACTION: report.", a.String(), f.DN, y)
 								return y
 							}
@@ -674,14 +686,71 @@ func parse_LDAP() (not_ok bool) {
 		}
 	}
 
-	// for _, b := range i_ldap { // third pass
-	// 	for _, d := range b.Domain {
-	// 		// for _, f := range d.User {
-	// 		// }
-	// 		// for _, f := range d.Group {
-	// 		// }
-	// 	}
-	// }
+	for _, b := range i_ldap { // third pass, fill PKI with known data
+		for _, d := range b.Domain {
+			switch _, flag := i_PKI.CA_Node[d.FQDN]; {
+			case flag:
+				log.Errorf("PKI DB '%v' already defined; ACTION: report.", d.FQDN)
+				not_ok = true
+			}
+			i_PKI.CA_Node[d.FQDN] = &_PKI_CA_Node{
+				FQDN:     d.FQDN,
+				CA:       nil,
+				CA_Chain: nil,
+				CA_Node:  __FQDN_PKI_CA_Node{},
+				Cert:     nil,
+				Key:      nil,
+				CRL:      nil,
+				DER: &_PKI_CA_Node_DER{
+					Cert: _DER(d.SKV[_skv_ca][0]),
+					Key:  _DER(*i_file[_dir_PKI_Key].data[_File_Name(d.FQDN)]),
+					CRL:  _DER(d.SKV[_skv_crl][0]),
+				},
+				Node: __FQDN_PKI_Node{},
+			}
+			i_PKI.CA_Node[d.FQDN].parse_DER(nil)
+			switch {
+			case i_PKI.CA_Node[d.FQDN].Cert == nil || i_PKI.CA_Node[d.FQDN].Key == nil:
+				log.Warnf("PKI DB '%v' no CA Cert/Key; ACTION: skip whole domain, generate from scratch.", d.FQDN)
+			}
+		}
+	}
+	switch {
+	case not_ok:
+		return !not_ok
+	}
+
+	for _, b := range i_ldap { // fourth pass, generate missing PKI data
+		for _, d := range b.Domain {
+			switch {
+			case i_PKI.CA_Node[d.FQDN].Cert == nil || i_PKI.CA_Node[d.FQDN].Key == nil:
+				i_PKI.CA_Node[d.FQDN].parse_DER(&x509.Certificate{
+					Subject: pkix.Name{
+						Organization: []string{d.FQDN.String()},
+						CommonName:   d.FQDN.String(),
+						Names:        nil,
+						ExtraNames:   nil,
+					},
+					NotBefore:             time.Now(),
+					NotAfter:              time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC),
+					IsCA:                  true,
+					ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+					KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
+					BasicConstraintsValid: true,
+					CRLDistributionPoints: []string{strings_join("", "http://", strings_join(".", "ns", d.FQDN), "/crl.pem")},
+					DNSNames:              []string{d.FQDN.String()},
+					EmailAddresses:        []string{strings_join("@", "ns", d.FQDN)},
+					IPAddresses:           nil,
+				})
+				switch {
+				case i_PKI.CA_Node[d.FQDN].Cert != nil && i_PKI.CA_Node[d.FQDN].Key != nil && i_PKI.CA_Node[d.FQDN].CRL != nil:
+					// d.modify(_skv_ca, []string{i_PKI.CA_Node[d.FQDN].DER.Cert.String()})
+					// d.modify(_skv_crl, []string{i_PKI.CA_Node[d.FQDN].DER.CRL.String()})
+					i_file.put(_dir_PKI_Key, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.Key)
+				}
+			}
+		}
+	}
 
 	return !not_ok
 }
@@ -924,7 +993,6 @@ func genCA() {
 func certsetup() (serverTLSConf *tls.Config, clientTLSConf *tls.Config, err error) {
 	// set up our CA certificate
 	ca := &x509.Certificate{
-
 		SerialNumber: big.NewInt(2019),
 		Subject: pkix.Name{
 			Organization:  []string{"Company, INC."},

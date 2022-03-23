@@ -30,6 +30,7 @@ var (
 
 	// daemon's global PKI SerialNumber used for Cert and CRL
 	// i_PKI         = make(__FQDN_PKI_Domain)
+	i_PKI         = &_PKI_CA_Node{CA_Node: __FQDN_PKI_CA_Node{}}
 	i_PKI_SN      = big.NewInt(0)
 	i_ab          = make(__N_AB)
 	i_ja          = make(__N_JA)

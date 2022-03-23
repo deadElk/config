@@ -51,6 +51,7 @@ const (
 	_skv_crl = "certificateRevocationList"
 	_skv_p12 = "userPKCS12"
 	_skv_uri = "labeledURI"
+	_skv_ip  = "ipHostNumber"
 )
 const (
 	_S_Verbosity                        = log.InfoLevel
