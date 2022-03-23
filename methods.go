@@ -436,7 +436,7 @@ func (receiver *i_LDAP_Domain) modify(attrName string, attrVals []string) {
 	}
 	switch attrName {
 	case _skv_ca, _skv_acrl, _skv_crl:
-		receiver.modify_Add_Attr("objectClass", "certificationAuthority")
+		receiver.modify_Add_Attr(_W_objectClass.String(), "certificationAuthority")
 		// attrName += ":"
 		// case _skv_crl:
 		// 	receiver.modify_Add_Attr("objectClass", "deltaCRL")

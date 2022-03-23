@@ -114,6 +114,10 @@ func convert_2_string(delimiter string, inbound any) (outbound string) {
 		return (*value).String()
 	case *_Description:
 		return (*value).String()
+	case *_Dir_Name:
+		return (*value).String()
+	case *_File_Name:
+		return (*value).String()
 	case *_FQDN:
 		return (*value).String()
 	case *_hash_ID:
@@ -166,6 +170,7 @@ func convert_2_string(delimiter string, inbound any) (outbound string) {
 			return string(interim)
 		}
 		return
+
 	case string:
 		return value
 	case _Inet_ASN:
@@ -179,6 +184,10 @@ func convert_2_string(delimiter string, inbound any) (outbound string) {
 	case _S:
 		return value.String()
 	case _Description:
+		return value.String()
+	case _Dir_Name:
+		return value.String()
+	case _File_Name:
 		return value.String()
 	case _FQDN:
 		return value.String()

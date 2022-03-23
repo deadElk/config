@@ -257,7 +257,7 @@ func (receiver *_PKI_Node) parse_P12(inbound *x509.Certificate) (status bool) { 
 		log.Warnf("length of Cert/CA Chain/Key doesn't match; ACTION: generate a new Cert")
 		fallthrough
 	case reflect.TypeOf(key) != reflect.TypeOf(receiver.Key):
-		log.Warnf("unsupported key type; ACTION: generate a new Cert")
+		log.Warnf("unsupported Key type; ACTION: generate a new Cert")
 		fallthrough
 	case false:
 		return receiver.generate(inbound)
@@ -272,9 +272,17 @@ func (receiver *_PKI_Node) parse_P12(inbound *x509.Certificate) (status bool) { 
 	}
 
 	switch t.Key = key.(*ecdsa.PrivateKey); {
+	// case reflect.TypeOf(t.Cert.PublicKey) != reflect.TypeOf(t.Key.PublicKey):
+	// 	log.Warnf("unsupported Cert's public Key type; ACTION: generate a new Cert")
+	// 	fallthrough
+	// case !t.Key.Equal(t.Cert.PublicKey):
+	// 	log.Warnf("Cert/Key doesn't matchCert/Key doesn't matchCert/Key doesn't matchCert/Key doesn't matchCert/Key doesn't match; ACTION: generate a new Cert '%s' '%s'", t.Cert.PublicKey, t.Key.Public())
+	// 	fallthrough
 	case convert_2_string("", t.Cert.PublicKey) != convert_2_string("", t.Key.Public()): // todo: dirty hack
-		// case t.Cert.PublicKey != t.Key.Public(): // todo: WTF???? not equal even if equal????
+		// case t.Cert.PublicKey != t.Key.PublicKey: //
 		log.Warnf("Cert/Key doesn't match; ACTION: generate a new Cert '%s' '%s'", t.Cert.PublicKey, t.Key.Public())
+		fallthrough
+	case false:
 		return receiver.generate(inbound)
 	}
 
@@ -410,7 +418,7 @@ func (receiver __N_File_Data) put(dir _Dir_Name, file _File_Name, delimiter stri
 func (receiver __N_File_Data) append(dir _Dir_Name, file _File_Name, delimiter string, content any) /*not_ok bool*/ {
 	receiver.check(dir, file)
 	var (
-		v_Content = _Content(strings_join(delimiter, receiver[dir].File[file], content))
+		v_Content = _Content(strings_join(delimiter, receiver[dir].File[file].Content, content))
 	)
 	receiver[dir].File[file].Content = &v_Content
 	return /*!not_ok*/

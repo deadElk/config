@@ -437,7 +437,7 @@ func parse_GT() (not_ok bool) {
 					not_ok = true
 					continue
 				}
-				i_file.append(_dir_Config, _File_Name(value.ASName), "", vBuf)
+				i_file.append(_dir_Config, _File_Name(value.ASName), "\n", vBuf.String())
 			default:
 				log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: report.", index.String(), gt_v, err)
 				not_ok = true
@@ -574,9 +574,9 @@ func parse_LDAP() (not_ok bool) {
 				EmailAddresses:        []string{strings_join("@", "ns", d.FQDN)},
 				IPAddresses:           nil,
 			}):
-				// d.modify(_skv_acrl, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.CRL)})
-				// d.modify(_skv_ca, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.Cert)})
-				// d.modify(_skv_crl, []string{base64.StdEncoding.EncodeToString(i_PKI.CA_Node[d.FQDN].DER.CRL)})
+				d.modify(_skv_acrl, []string{i_PKI.CA_Node[d.FQDN].DER.CRL.String()})
+				d.modify(_skv_ca, []string{i_PKI.CA_Node[d.FQDN].DER.Cert.String()})
+				d.modify(_skv_crl, []string{i_PKI.CA_Node[d.FQDN].DER.CRL.String()})
 				i_file.put(_dir_PKI_Cert, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.Cert)
 				i_file.put(_dir_PKI_Key, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.Key)
 				i_file.put(_dir_PKI_CRL, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.CRL)
@@ -976,79 +976,42 @@ func write_ldap() (not_ok bool) {
 				_ldap *ldap.Conn
 				err   error
 				// _result *ldap.ModifyResult
+				do_modify = func(inbound *ldap.ModifyRequest) {
+					switch {
+					case inbound != nil:
+						log.Warnf("LDAP '%v': found modification for '%v'; ACTION: upload.", a.String(), inbound.DN)
+						switch err := _ldap.Modify(inbound); {
+						case err != nil:
+							log.Errorf("LDAP '%v': '%v' modification error: '%v'; ACTION: report.", a.String(), inbound.DN, err)
+							// not_ok = true
+						default:
+							log.Infof("LDAP '%v': done modification for '%v'; ACTION: report.", a.String(), inbound.DN)
+						}
+					}
+				}
 			)
-			switch _ldap, err = ldap.Dial("tcp", a.Host); {
+			// switch _ldap, err = ldap.DialURL(b.URL.String(), ldap.DialWithTLSConfig(&tls.Config{InsecureSkipVerify: true})); {
+			switch _ldap, err = ldap.DialURL(a.String(), ldap.DialWithTLSConfig(&tls.Config{InsecureSkipVerify: true})); {
 			case err != nil:
-				log.Errorf("LDAP '%v': connect error: '%v'; ACTION: report.", a.String(), err)
+				log.Errorf("LDAP '%v': connect error '%v'; ACTION: skip.", a.String(), err)
 				not_ok = true
 				return
 			}
 			defer _ldap.Close()
-			switch err = _ldap.StartTLS(&tls.Config{InsecureSkipVerify: true}); {
-			case err != nil:
-				log.Errorf("LDAP '%v': TLS connect error: '%v'; ACTION: report.", a.String(), err)
-				not_ok = true
-				return
-			}
 			switch err = _ldap.Bind(b.Bind_DN.String(), b.Secret.String()); {
 			case err != nil:
-				log.Errorf("LDAP '%v': bind error: '%v'; ACTION: report.", a.String(), err)
+				log.Errorf("LDAP '%v': bind error '%v'; ACTION: skip.", a.String(), err)
 				not_ok = true
 				return
 			}
-			for _, d := range b.Domain {
-				switch {
-				case d.Modify != nil:
-					log.Debugf("LDAP '%v': found modifications for Domain '%v', details: '%v'; ACTION: upload.", a.String(), d.DN, d.Modify.Changes)
-					// 					switch _result, err = _ldap.ModifyWithResult(d.Modify); {
-					//					case err != nil:
-					//						log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
-					//						not_ok = true
-					//					}
-					//					log.Infof("LDAP '%v': modification result: '%v'; ACTION: report.", a.String(), _result)
-					switch err = _ldap.Modify(d.Modify); {
-					case err != nil:
-						log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
-						not_ok = true
-					}
-					log.Infof("LDAP '%v': done modification for '%v'; ACTION: report.", a.String(), d.FQDN)
-				}
 
+			for _, d := range b.Domain {
+				do_modify(d.Modify)
 				for _, f := range d.Group {
-					switch {
-					case f.Modify != nil:
-						log.Debugf("LDAP '%v': found modification for Group '%v', details: '%v'; ACTION: upload.", a.String(), f.DN, f.Modify.Changes)
-						// switch _result, err = _ldap.ModifyWithResult(f.Modify); {
-						// case err != nil:
-						// 	log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
-						// 	not_ok = true
-						// }
-						// log.Infof("LDAP '%v': modification result: '%v'; ACTION: report.", a.String(), _result)
-						switch err = _ldap.Modify(f.Modify); {
-						case err != nil:
-							log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
-							not_ok = true
-						}
-						log.Infof("LDAP '%v': done modification for '%v'; ACTION: report.", a.String(), f.FQDN)
-					}
+					do_modify(f.Modify)
 				}
 				for _, f := range d.User {
-					switch {
-					case f.Modify != nil:
-						log.Debugf("LDAP '%v': found modification for UID '%v', details: '%v'; ACTION: upload.", a.String(), f.DN, f.Modify.Changes)
-						// 					switch _result, err = _ldap.ModifyWithResult(f.Modify); {
-						//						case err != nil:
-						//							log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
-						//							not_ok = true
-						//						}
-						//						log.Infof("LDAP '%v': modification result: '%v'; ACTION: report.", a.String(), _result)
-						switch err = _ldap.Modify(f.Modify); {
-						case err != nil:
-							log.Errorf("LDAP '%v': modification error: '%v'; ACTION: report.", a.String(), err)
-							not_ok = true
-						}
-						log.Infof("LDAP '%v': done modification for '%v'; ACTION: report.", a.String(), f.FQDN)
-					}
+					do_modify(f.Modify)
 				}
 			}
 		}()
