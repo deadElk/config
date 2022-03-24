@@ -33,7 +33,7 @@ const (
 const (
 	_dir_Config   _Dir_Name = "tmp/CONFIG"
 	_dir_Data     _Dir_Name = "tmp/data"
-	_dir_GT       _Dir_Name = "tmp/templates"
+	_dir_GT       _Dir_Name = "etc/templates"
 	_dir_LDAP     _Dir_Name = "tmp/LDAP"
 	_dir_Modify   _Dir_Name = "tmp/modify"
 	_dir_PKI      _Dir_Name = "tmp/PKI"
