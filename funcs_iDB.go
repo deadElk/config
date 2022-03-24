@@ -310,7 +310,7 @@ func add_iDB_AB_Address_List(public, private bool, ab_name _Name, inbound ...any
 	for _, address := range inbound {
 		switch value := (address).(type) {
 		case netip.Addr:
-			parse_iDB_AB_Prefix(public, private, ab_name, convert_netip_Addr_Prefix(&value), interim_Prefix)
+			parse_iDB_AB_Prefix(public, private, ab_name, netip_Addr_Prefix(&value), interim_Prefix)
 		case netip.Prefix:
 			parse_iDB_AB_Prefix(public, private, ab_name, value, interim_Prefix)
 		case _FQDN:
@@ -319,7 +319,7 @@ func add_iDB_AB_Address_List(public, private bool, ab_name _Name, inbound ...any
 			parse_iDB_AB_Name(public, private, ab_name, value, interim_AB)
 		case []netip.Addr:
 			for _, f := range value {
-				parse_iDB_AB_Prefix(public, private, ab_name, convert_netip_Addr_Prefix(&f), interim_Prefix)
+				parse_iDB_AB_Prefix(public, private, ab_name, netip_Addr_Prefix(&f), interim_Prefix)
 			}
 		case []netip.Prefix:
 			for _, f := range value {
@@ -814,8 +814,9 @@ func parse_LDAP() (not_ok bool) {
 					var (
 						changes = make([]string, _UIx_IPx, _UIx_IPx)
 					)
-					for k := 0; k < int(_UIx_IPx); k++ {
-						changes[k] = f.PKI[k].P12.String()
+					for _, l := range f.PKI {
+						changes = append(changes, l.P12.String())
+						i_file.put(_dir_PKI_P12, _File_Name(l.Cert.SerialNumber.String()), "", l.P12)
 					}
 					f.modify(_skv_p12, changes)
 				}

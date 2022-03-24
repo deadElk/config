@@ -229,7 +229,7 @@ func (receiver *_PKI_CA_Node) generate_CRL() (status bool) {
 }
 
 func (receiver *_P12) get_FQDN() (fqdn _FQDN, status bool) {
-	switch _, cert, _, err := pkcs12.DecodeChain(*receiver, ""); {
+	switch _, cert, _, err := pkcs12.DecodeChain(*receiver, pkcs12.DefaultPassword); {
 	case err == nil:
 		return _FQDN(cert.Subject.CommonName), true
 	}
@@ -250,7 +250,7 @@ func (receiver *_PKI_Node) parse_P12(inbound *x509.Certificate) (status bool) { 
 		t        = &_PKI_Node{DER: &_PKI_Node_DER{}}
 	)
 
-	switch key, t.Cert, ca_chain, err = pkcs12.DecodeChain(receiver.P12, ""); {
+	switch key, t.Cert, ca_chain, err = pkcs12.DecodeChain(receiver.P12, pkcs12.DefaultPassword); {
 	case err != nil:
 		log.Warnf("P12 decode error '%v'; ACTION: generate a new Cert", err)
 		fallthrough
@@ -335,7 +335,7 @@ func (receiver *_PKI_Node) generate(inbound *x509.Certificate) (status bool) { /
 		log.Fatalf("can't parse a new Cert - %v", err)
 	}
 
-	switch receiver.P12, err = pkcs12.Encode(rand.Reader, receiver.Key, receiver.Cert, receiver.CA.CA_Chain, ""); {
+	switch receiver.P12, err = pkcs12.Encode(rand.Reader, receiver.Key, receiver.Cert, receiver.CA.CA_Chain, pkcs12.DefaultPassword); {
 	case err != nil:
 		log.Fatalf("can't encode a new P12 - %v", err)
 	}
@@ -372,21 +372,21 @@ func (receiver __N_File_Data) read() (not_ok bool) {
 			}
 			var (
 				content _Content
-				fn      = join_string("/", dir, f.Name())
-				fname   = _File_Name(f.Name()[:len(f.Name())-ext_l])
+				ffn     = join_string("/", dir, f.Name())
+				fn      = _File_Name(f.Name()[:len(f.Name())-ext_l])
 			)
-			switch content, err = os.ReadFile(fn); {
+			switch content, err = os.ReadFile(ffn); {
 			case err != nil:
-				log.Warnf("file '%v' read error '%v'; ACTION: report.", fn, err)
+				log.Warnf("file '%v' read error '%v'; ACTION: report.", ffn, err)
 				not_ok = true
 				continue
 			}
 			switch receiver[dir].Ext {
-			case "tmpl":
+			case receiver[_dir_GT].Ext:
 				content.trim_space()
 			}
-			receiver.put(dir, fname, "", content)
-			receiver[dir].Sorted = append(receiver[dir].Sorted, fname)
+			receiver.put(dir, fn, "", content)
+			receiver[dir].Sorted = append(receiver[dir].Sorted, fn)
 		}
 		sort.Slice(receiver[dir].Sorted, func(i, j int) bool {
 			return receiver[dir].Sorted[i] < receiver[dir].Sorted[j]

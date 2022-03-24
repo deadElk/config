@@ -41,6 +41,7 @@ const (
 	_dir_PKI_Cert _Dir_Name = "tmp/PKI/Cert"
 	_dir_PKI_Key  _Dir_Name = "tmp/PKI/Key"
 	_dir_PKI_CRL  _Dir_Name = "tmp/PKI/CRL"
+	_dir_PKI_P12  _Dir_Name = "tmp/PKI/P12"
 	_dir_Portal   _Dir_Name = "tmp/portal"
 	_dir_etc      _Dir_Name = "etc"
 )

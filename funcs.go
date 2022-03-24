@@ -367,7 +367,7 @@ func join_string(delimiter string, inbound ...any) (outbound string) {
 	return buffer.String()
 }
 
-func convert_netip_Addr_Prefix(inbound *netip.Addr) (outbound netip.Prefix) {
+func netip_Addr_Prefix(inbound *netip.Addr) (outbound netip.Prefix) {
 	return parse_interface((*inbound).Prefix((*inbound).BitLen())).(netip.Prefix)
 }
 func get_IP_Bits(inbound netip.Addr) (outbound _INet_Routing) {

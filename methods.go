@@ -377,7 +377,7 @@ func (receiver __INet_VI_IP_Table) generate(inbound netip.Prefix, conn_bits _INe
 			curr--
 			binary.BigEndian.PutUint32(curr_slice, curr)
 			curr_IP = parse_interface(netip.AddrFromSlice(curr_slice)).(netip.Addr)
-			receiver[a].Conn[c-1] = convert_netip_Addr_Prefix(&curr_IP)
+			receiver[a].Conn[c-1] = netip_Addr_Prefix(&curr_IP)
 		}
 		receiver[a].IPPrefix = parse_interface(curr_IP.Prefix(int(conn_mask))).(netip.Prefix)
 	}
@@ -420,7 +420,7 @@ func (receiver __INet_UI_IP_Table) generate(inbound netip.Prefix, conn_bits _INe
 			curr--
 			binary.BigEndian.PutUint32(curr_slice, curr)
 			curr_IP = parse_interface(netip.AddrFromSlice(curr_slice)).(netip.Addr)
-			v_Output.Conn[c-1] = convert_netip_Addr_Prefix(&curr_IP)
+			v_Output.Conn[c-1] = netip_Addr_Prefix(&curr_IP)
 		}
 		receiver[parse_interface(curr_IP.Prefix(int(conn_mask))).(netip.Prefix)] = v_Output
 	}

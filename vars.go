@@ -53,6 +53,7 @@ var (
 		_dir_PKI_Cert: {Ext: "der", File: __N_File_Data_Content{}},
 		_dir_PKI_Key:  {Ext: "der", File: __N_File_Data_Content{}},
 		_dir_PKI_CRL:  {Ext: "der", File: __N_File_Data_Content{}},
+		_dir_PKI_P12:  {Ext: "p12", File: __N_File_Data_Content{}},
 		_dir_Portal:   {Ext: "", File: __N_File_Data_Content{}},
 		_dir_etc:      {Ext: "xml", File: __N_File_Data_Content{}},
 	}
@@ -72,6 +73,7 @@ var (
 		_dir_PKI_Cert: i_file[_dir_PKI_Cert],
 		_dir_PKI_Key:  i_file[_dir_PKI_Key],
 		_dir_PKI_CRL:  i_file[_dir_PKI_CRL],
+		_dir_PKI_P12:  i_file[_dir_PKI_P12],
 		_dir_Portal:   i_file[_dir_Portal],
 	}
 	i_peer_list []_Inet_ASN
