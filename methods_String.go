@@ -9,6 +9,9 @@ import (
 func (receiver _hash_ID) String() string {
 	return strings.ToUpper(hex.EncodeToString(receiver[:]))
 }
+func (receiver _hash224_ID) String() string {
+	return hex.EncodeToString(receiver[:])
+}
 func (receiver _DN) String() string {
 	return string(receiver)
 }

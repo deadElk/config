@@ -5,9 +5,10 @@ import (
 )
 
 const (
-	_next_ID     _ID   = iota
-	_next_IDName _Name = "next_ID"
-	_hash_Size   int   = 512 / 8
+	_next_ID      _ID   = iota
+	_next_IDName  _Name = "next_ID"
+	_hash_Size    int   = 512 / 8
+	_hash224_Size int   = 224 / 8
 )
 const (
 	_service  string = "config"

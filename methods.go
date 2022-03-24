@@ -54,7 +54,7 @@ func (receiver *_Name) validate_RI(v_Peer *i_Peer, default_RI _Name, decline ...
 	return *receiver
 }
 
-func (receiver *_Host_Inbound_Traffic_List) parse(enable ...interface{}) (outbound _Host_Inbound_Traffic_List) {
+func (receiver *_Host_Inbound_Traffic_List) parse(enable ...any) (outbound _Host_Inbound_Traffic_List) {
 	switch {
 	case receiver != nil:
 		outbound = *receiver
@@ -319,7 +319,7 @@ func (receiver *_Content) trim_space() {
 		delimiter = "\n"
 		value     = strings.Split(receiver.String(), delimiter)
 		inbounds  = len(value) - 1
-		buffer    bytes.Buffer
+		buffer    = new(bytes.Buffer)
 	)
 	for a, b := range value {
 		buffer.WriteString(strings.TrimSpace(b))
@@ -476,7 +476,7 @@ func (receiver *i_LDAP) _DN_FQDN(inbound _DN) (outbound _FQDN) {
 	var (
 		interim  = re_commas.Split(inbound.String(), -1)
 		inbounds = len(interim) - 1
-		buffer   bytes.Buffer
+		buffer   = new(bytes.Buffer)
 	)
 	for a, b := range interim {
 		switch {

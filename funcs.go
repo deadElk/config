@@ -16,7 +16,7 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-func hash(inbound interface{}) (outbound _hash_ID) {
+func hash(inbound any) (outbound _hash_ID) {
 	var (
 		interim     = interface_string("", inbound)
 		value, flag = hash_cache.Load(interim)
@@ -36,7 +36,28 @@ func hash(inbound interface{}) (outbound _hash_ID) {
 	}
 	return
 }
-func parse_interface(inbound interface{}, skip interface{}) interface{} {
+func hash224(inbound any) (outbound _hash224_ID) {
+	var (
+		interim     = interface_string("", inbound)
+		value, flag = hash_cache.Load(interim)
+	)
+	switch {
+	case flag && value.([_hash224_Size]uint8) != outbound:
+		return value.([_hash224_Size]uint8)
+	case flag:
+		log.Warnf("Daemon: hash error - zero result from hash_cache.Load(%+v); ACTION: try to recover.", interim)
+	}
+	switch value = sha3.Sum224([]uint8(interim)); {
+	case value.([_hash224_Size]uint8) != outbound:
+		hash_cache.Store(interim, value.([_hash224_Size]uint8))
+		return value.([_hash224_Size]uint8)
+	default:
+		log.Panicf("Daemon: hash error - zero result from hash(%+v); ACTION: panic.", []uint8(interim))
+	}
+	return
+}
+
+func parse_interface(inbound any, skip any) any {
 	switch value := skip.(type) {
 	case error:
 		switch {
@@ -53,7 +74,7 @@ func parse_interface(inbound interface{}, skip interface{}) interface{} {
 	}
 	return inbound
 }
-func parse_interface_error(inbound interface{}, skip interface{}) interface{} {
+func parse_interface_error(inbound any, skip any) any {
 	switch value := skip.(type) {
 	case error:
 		switch {
@@ -122,6 +143,8 @@ func interface_string(delimiter string, inbound any) (outbound string) {
 	case *_FQDN:
 		return (*value).String()
 	case *_hash_ID:
+		return (*value).String()
+	case *_hash224_ID:
 		return (*value).String()
 	case *_ID:
 		return (*value).String()
@@ -196,6 +219,8 @@ func interface_string(delimiter string, inbound any) (outbound string) {
 		return value.String()
 	case _hash_ID:
 		return value.String()
+	case _hash224_ID:
+		return value.String()
 	case _ID:
 		return value.String()
 	case _IDName:
@@ -251,7 +276,7 @@ func interface_string(delimiter string, inbound any) (outbound string) {
 	case []_Name:
 		var (
 			inbounds = len(value) - 1
-			buffer   bytes.Buffer
+			buffer   = new(bytes.Buffer)
 		)
 		for a, b := range value {
 			switch {
@@ -271,7 +296,7 @@ func interface_string(delimiter string, inbound any) (outbound string) {
 		return fmt.Sprintf("%s", value)
 	}
 }
-func pad(inbound interface{}, length int) _PName {
+func pad(inbound any, length int) _PName {
 	return _PName(pad_string(interface_string("", inbound), length))
 }
 func pad_string(inbound string, length int) string {
@@ -338,21 +363,18 @@ func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_dir
 
 func join_string(delimiter string, inbound ...any) (outbound string) {
 	var (
-		interim []string
+		inbounds = len(inbound) - 1
+		buffer   = new(bytes.Buffer)
 	)
-	for _, b := range inbound {
-		interim = append(interim, interface_string(delimiter, b))
-	}
-	var (
-		inbounds = len(interim) - 1
-		buffer   bytes.Buffer
-	)
-	for a, b := range interim {
+	for a, b := range inbound {
+		var (
+			c = interface_string(delimiter, b)
+		)
 		switch {
-		case len(b) == 0:
+		case len(c) == 0:
 			continue
 		}
-		buffer.WriteString(b)
+		buffer.WriteString(c)
 		switch {
 		case a < inbounds:
 			buffer.WriteString(delimiter)

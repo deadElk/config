@@ -301,7 +301,7 @@ func create_iDB_AB_Prefix(ab_name _Name, inbound netip.Prefix) (ok bool) {
 	}
 	return true
 }
-func add_iDB_AB_Address_List(public, private bool, ab_name _Name, inbound ...interface{}) (ok bool) {
+func add_iDB_AB_Address_List(public, private bool, ab_name _Name, inbound ...any) (ok bool) {
 	var (
 		interim_AB     = make(map[_Name]bool)
 		interim_FQDN   = make(map[_FQDN]bool)
@@ -427,17 +427,17 @@ func parse_GT() (not_ok bool) {
 		}
 		for _, gt_v := range value.GT_List {
 			var (
-				vBuf = new(bytes.Buffer)
+				buffer = new(bytes.Buffer)
 			)
-			switch vGT, err := template.New(gt_v.String()).Parse(i_file.get(_dir_GT, _File_Name(gt_v)).String()); {
-			case err == nil || vGT != nil:
-				switch err = vGT.Execute(vBuf, value); {
+			switch v_GT, err := template.New(gt_v.String()).Parse(i_file.get(_dir_GT, _File_Name(gt_v)).String()); {
+			case err == nil || v_GT != nil:
+				switch err = v_GT.Execute(buffer, value); {
 				case err != nil:
 					log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: report.", index.String(), gt_v, err)
 					not_ok = true
 					continue
 				}
-				i_file.append(_dir_Config, _File_Name(value.ASName), "\n", vBuf)
+				i_file.append(_dir_Config, _File_Name(value.ASName), "\n", buffer)
 			default:
 				log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: report.", index.String(), gt_v, err)
 				not_ok = true

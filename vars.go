@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	hash_cache          sync.Map
+	hash_cache sync.Map
+
 	re_upper_case       = regexp.MustCompile(`[A-Z]+`)
 	re_lower_case       = regexp.MustCompile(`[a-z]+`)
 	re_digits           = regexp.MustCompile(`[0-9]+`)

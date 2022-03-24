@@ -45,7 +45,9 @@ type __Cert_Chain []*x509.Certificate
 type _DER []byte
 type _P12 []byte
 type __N_BGP_Group map[_Name]*_BGP_Group
-type _hash_ID [_hash_Size]uint8 // _hash_ID here a result of sha3.Sum512().
+type _hash_ID [_hash_Size]uint8       // _hash_ID here a result of sha3.Sum512().
+type _hash224_ID [_hash224_Size]uint8 // _hash224_ID here a result of sha3.Sum224().
+// type _hash160_ID [sha1.Size]uint8
 type _PKI_SN struct{ *big.Int }
 type _Dir_Name _Name
 type _File_Name _Name

@@ -245,7 +245,7 @@ func (receiver *_PKI_Node) parse_P12(inbound *x509.Certificate) (status bool) { 
 
 	var (
 		err      error
-		key      interface{}
+		key      any
 		ca_chain __Cert_Chain
 		t        = &_PKI_Node{DER: &_PKI_Node_DER{}}
 	)

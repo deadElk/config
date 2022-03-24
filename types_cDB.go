@@ -61,7 +61,6 @@ type cDB struct {
 
 // LDAP
 type cDB_LDAP struct {
-	FQDN          _FQDN                 `xml:"fqdn,attr"`
 	URL           string                `xml:"url,attr"`
 	Bind_DN       _DN                   `xml:"bind_dn,attr"`
 	Secret        _Secret               `xml:"bind_pw,attr"`
