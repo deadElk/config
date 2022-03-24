@@ -18,42 +18,26 @@ import (
 
 func hash(inbound any) (outbound _hash_ID) {
 	var (
-		interim     = interface_string("", inbound)
-		value, flag = hash_cache.Load(interim)
+		value, flag = hash_cache.Load(inbound)
 	)
 	switch {
-	case flag && value.([_hash_Size]uint8) != outbound:
-		return value.([_hash_Size]uint8)
 	case flag:
-		log.Warnf("Daemon: hash error - zero result from hash_cache.Load(%+v); ACTION: try to recover.", interim)
-	}
-	switch value = sha3.Sum512([]uint8(interim)); {
-	case value.([_hash_Size]uint8) != outbound:
-		hash_cache.Store(interim, value.([_hash_Size]uint8))
 		return value.([_hash_Size]uint8)
-	default:
-		log.Panicf("Daemon: hash error - zero result from hash(%+v); ACTION: panic.", []uint8(interim))
 	}
+	outbound = sha3.Sum512([]uint8(interface_string("", inbound)))
+	hash_cache.Store(inbound, outbound)
 	return
 }
 func hash224(inbound any) (outbound _hash224_ID) {
 	var (
-		interim     = interface_string("", inbound)
-		value, flag = hash_cache.Load(interim)
+		value, flag = hash224_cache.Load(inbound)
 	)
 	switch {
-	case flag && value.([_hash224_Size]uint8) != outbound:
-		return value.([_hash224_Size]uint8)
 	case flag:
-		log.Warnf("Daemon: hash error - zero result from hash_cache.Load(%+v); ACTION: try to recover.", interim)
-	}
-	switch value = sha3.Sum224([]uint8(interim)); {
-	case value.([_hash224_Size]uint8) != outbound:
-		hash_cache.Store(interim, value.([_hash224_Size]uint8))
 		return value.([_hash224_Size]uint8)
-	default:
-		log.Panicf("Daemon: hash error - zero result from hash(%+v); ACTION: panic.", []uint8(interim))
 	}
+	outbound = sha3.Sum224([]uint8(interface_string("", inbound)))
+	hash224_cache.Store(inbound, outbound)
 	return
 }
 
