@@ -61,18 +61,18 @@ type cDB struct {
 
 // LDAP
 type cDB_LDAP struct {
-	URL          string                `xml:"url,attr"`
-	Bind_DN      _DN                   `xml:"bind_dn,attr"`
-	Secret       _Secret               `xml:"bind_pw,attr"`
-	DB_Filter    string                `xml:"db_filter,attr"`
-	DB_CN        string                `xml:"db_cn,attr"`
-	DC_Filter    string                `xml:"dc_filter,attr"`
-	DC_CN        string                `xml:"dc_cn,attr"`
-	Group_Filter string                `xml:"group_filter,attr"`
-	Group_CN     string                `xml:"group_cn,attr"`
-	User_Filter  string                `xml:"user_filter,attr"`
-	User_CN      string                `xml:"user_cn,attr"`
-	Modify_Regen cDB_Modify_Regen_List `xml:"Modify>Regen"`
+	URL           string                `xml:"url,attr"`
+	Bind_DN       _DN                   `xml:"bind_dn,attr"`
+	Secret        _Secret               `xml:"bind_pw,attr"`
+	DB_Filter     string                `xml:"db_filter,attr"`
+	DB_CN         string                `xml:"db_cn,attr"`
+	DC_Filter     string                `xml:"dc_filter,attr"`
+	DC_CN         string                `xml:"dc_cn,attr"`
+	Group_Filter  string                `xml:"group_filter,attr"`
+	Group_CN      string                `xml:"group_cn,attr"`
+	User_Filter   string                `xml:"user_filter,attr"`
+	User_CN       string                `xml:"user_cn,attr"`
+	Modify_Revoke cDB_Modify_Regen_List `xml:"Modify>Revoke"`
 	_Attribute_List
 }
 type cDB_Modify_Regen struct {
