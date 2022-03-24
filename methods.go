@@ -90,37 +90,37 @@ func (receiver *_Name) action_AB(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _
 	switch {
 
 	case receiver_type == _Type_exact && receiver_direction == _Type_from:
-		outbound = strings_join(" ", _W_source__address, receiver)
+		outbound = join_string(" ", _W_source__address, receiver)
 	case receiver_type == _Type_global && receiver_direction == _Type_from:
-		outbound = strings_join(" ", _W_source__address, receiver)
+		outbound = join_string(" ", _W_source__address, receiver)
 	case receiver_type == _Type_source && receiver_direction == _Type_from:
-		outbound = strings_join(" ", _W_source__address__name, receiver)
+		outbound = join_string(" ", _W_source__address__name, receiver)
 	case receiver_type == _Type_destination && receiver_direction == _Type_from:
-		outbound = strings_join(" ", _W_source__address__name, receiver)
+		outbound = join_string(" ", _W_source__address__name, receiver)
 	case receiver_type == _Type_static && receiver_direction == _Type_from:
-		outbound = strings_join(" ", _W_source__address__name, receiver)
+		outbound = join_string(" ", _W_source__address__name, receiver)
 
 	case receiver_type == _Type_exact && receiver_direction == _Type_to:
-		outbound = strings_join(" ", _W_destination__address, receiver)
+		outbound = join_string(" ", _W_destination__address, receiver)
 	case receiver_type == _Type_global && receiver_direction == _Type_to:
-		outbound = strings_join(" ", _W_destination__address, receiver)
+		outbound = join_string(" ", _W_destination__address, receiver)
 	case receiver_type == _Type_source && receiver_direction == _Type_to:
-		outbound = strings_join(" ", _W_destination__address__name, receiver)
+		outbound = join_string(" ", _W_destination__address__name, receiver)
 	case receiver_type == _Type_destination && receiver_direction == _Type_to:
-		outbound = strings_join(" ", _W_destination__address__name, receiver)
+		outbound = join_string(" ", _W_destination__address__name, receiver)
 	case receiver_type == _Type_static && receiver_direction == _Type_to:
-		outbound = strings_join(" ", _W_destination__address__name, receiver)
+		outbound = join_string(" ", _W_destination__address__name, receiver)
 
 	case receiver_type == _Type_exact && receiver_direction == _Type_then:
-		outbound = strings_join(" ", _W_source__address, receiver)
+		outbound = join_string(" ", _W_source__address, receiver)
 	case receiver_type == _Type_global && receiver_direction == _Type_then:
-		outbound = strings_join(" ", _W_source__address, receiver)
+		outbound = join_string(" ", _W_source__address, receiver)
 	case receiver_type == _Type_source && receiver_direction == _Type_then:
-		outbound = strings_join(" ", _W_source__address__name, receiver)
+		outbound = join_string(" ", _W_source__address__name, receiver)
 	case receiver_type == _Type_destination && receiver_direction == _Type_then:
-		outbound = strings_join(" ", _W_destination__address__name, receiver)
+		outbound = join_string(" ", _W_destination__address__name, receiver)
 	case receiver_type == _Type_static && receiver_direction == _Type_then:
-		outbound = strings_join(" ", _W_prefix__name, receiver)
+		outbound = join_string(" ", _W_prefix__name, receiver)
 
 	case v_Peer != nil:
 		log.Warnf("Peer '%v', AB '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *receiver, receiver_type, receiver_direction)
@@ -133,21 +133,21 @@ func (receiver *_Name) action_Pool(peer *cDB_Peer, v_Peer *i_Peer, receiver_type
 	case len(*receiver) == 0:
 		return
 	}
-	return strings_join(" ", _W_pool, receiver)
+	return join_string(" ", _W_pool, receiver)
 }
 func (receiver *_INet_Protocol) action(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _Type, receiver_direction _Type) (outbound string /* , ok bool */) {
 	switch {
 	case len(*receiver) == 0:
 		return
 	}
-	return strings_join(" ", _W_protocol, receiver)
+	return join_string(" ", _W_protocol, receiver)
 }
 func (receiver *_Type) action_Route_Type(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _Type, receiver_direction _Type) (outbound string /* , ok bool */) {
 	switch {
 	case len(*receiver) == 0:
 		return
 	}
-	return strings_join(" ", _W_route__type, receiver)
+	return join_string(" ", _W_route__type, receiver)
 }
 func (receiver *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _Type, receiver_direction _Type) (outbound string /* , ok bool */) {
 	switch {
@@ -164,41 +164,41 @@ func (receiver *_Name) action_RI(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _
 	switch {
 
 	case receiver_type == _Type_source && receiver_direction == _Type_from:
-		outbound = strings_join(" ", _W_from___routing__instance, receiver)
+		outbound = join_string(" ", _W_from___routing__instance, receiver)
 	case receiver_type == _Type_source && receiver_direction == _Type_to:
-		outbound = strings_join(" ", _W_to___routing__instance, receiver)
+		outbound = join_string(" ", _W_to___routing__instance, receiver)
 	case receiver_type == _Type_source && receiver_direction == _Type_pool:
-		outbound = strings_join(" ", _W_routing__instance, receiver)
+		outbound = join_string(" ", _W_routing__instance, receiver)
 	case receiver_type == _Type_source && receiver_direction == _Type_then:
-		outbound = strings_join(" ", _W_routing__instance, receiver)
+		outbound = join_string(" ", _W_routing__instance, receiver)
 
 	case receiver_type == _Type_destination && receiver_direction == _Type_from:
-		outbound = strings_join(" ", _W_from___routing__instance, receiver)
+		outbound = join_string(" ", _W_from___routing__instance, receiver)
 	case receiver_type == _Type_destination && receiver_direction == _Type_to:
-		outbound = strings_join(" ", _W_to___routing__instance, receiver)
+		outbound = join_string(" ", _W_to___routing__instance, receiver)
 	case receiver_type == _Type_destination && receiver_direction == _Type_pool:
-		outbound = strings_join(" ", _W_routing__instance, receiver)
+		outbound = join_string(" ", _W_routing__instance, receiver)
 	case receiver_type == _Type_destination && receiver_direction == _Type_then:
-		outbound = strings_join(" ", _W_routing__instance, receiver)
+		outbound = join_string(" ", _W_routing__instance, receiver)
 
 	case receiver_type == _Type_static && receiver_direction == _Type_from:
-		outbound = strings_join(" ", _W_from___routing__instance, receiver)
+		outbound = join_string(" ", _W_from___routing__instance, receiver)
 	case receiver_type == _Type_static && receiver_direction == _Type_to:
-		outbound = strings_join(" ", _W_to___routing__instance, receiver)
+		outbound = join_string(" ", _W_to___routing__instance, receiver)
 	case receiver_type == _Type_static && receiver_direction == _Type_pool:
-		outbound = strings_join(" ", _W_routing__instance, receiver)
+		outbound = join_string(" ", _W_routing__instance, receiver)
 	case receiver_type == _Type_static && receiver_direction == _Type_then:
-		outbound = strings_join(" ", _W_routing__instance, receiver)
+		outbound = join_string(" ", _W_routing__instance, receiver)
 
 	case receiver_type == _Type_firewall && receiver_direction == _Type_from:
-		outbound = strings_join(" ", _W_from___routing__instance, receiver)
+		outbound = join_string(" ", _W_from___routing__instance, receiver)
 	case receiver_type == _Type_firewall && receiver_direction == _Type_to:
-		outbound = strings_join(" ", _W_to___routing__instance, receiver)
+		outbound = join_string(" ", _W_to___routing__instance, receiver)
 	case receiver_type == _Type_firewall && receiver_direction == _Type_then:
-		outbound = strings_join(" ", _W_routing__instance, receiver)
+		outbound = join_string(" ", _W_routing__instance, receiver)
 
 	case receiver_type == _Type_policy_statement:
-		outbound = strings_join(" ", _W_routing__instance, receiver)
+		outbound = join_string(" ", _W_routing__instance, receiver)
 
 	case v_Peer != nil:
 		log.Warnf("Peer '%v', RI '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *receiver, receiver_type, receiver_direction)
@@ -217,29 +217,29 @@ func (receiver *_Name) action_SZ(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _
 	switch {
 
 	case receiver_type == _Type_source && receiver_direction == _Type_from:
-		outbound = strings_join(" ", _W_from___zone, receiver)
+		outbound = join_string(" ", _W_from___zone, receiver)
 	case receiver_type == _Type_source && receiver_direction == _Type_to:
-		outbound = strings_join(" ", _W_to___zone, receiver)
+		outbound = join_string(" ", _W_to___zone, receiver)
 
 	case receiver_type == _Type_destination && receiver_direction == _Type_from:
-		outbound = strings_join(" ", _W_from___zone, receiver)
+		outbound = join_string(" ", _W_from___zone, receiver)
 	case receiver_type == _Type_destination && receiver_direction == _Type_to:
-		outbound = strings_join(" ", _W_to___zone, receiver)
+		outbound = join_string(" ", _W_to___zone, receiver)
 
 	case receiver_type == _Type_static && receiver_direction == _Type_from:
-		outbound = strings_join(" ", _W_from__zone, receiver)
+		outbound = join_string(" ", _W_from__zone, receiver)
 	case receiver_type == _Type_static && receiver_direction == _Type_to:
-		outbound = strings_join(" ", _W_to__zone, receiver)
+		outbound = join_string(" ", _W_to__zone, receiver)
 
 	case receiver_type == _Type_exact && receiver_direction == _Type_from:
-		outbound = strings_join(" ", _W_from__zone, receiver)
+		outbound = join_string(" ", _W_from__zone, receiver)
 	case receiver_type == _Type_exact && receiver_direction == _Type_to:
-		outbound = strings_join(" ", _W_to__zone, receiver)
+		outbound = join_string(" ", _W_to__zone, receiver)
 
 	case receiver_type == _Type_global && receiver_direction == _Type_from:
-		outbound = strings_join(" ", _W_from__zone, receiver)
+		outbound = join_string(" ", _W_from__zone, receiver)
 	case receiver_type == _Type_global && receiver_direction == _Type_to:
-		outbound = strings_join(" ", _W_to__zone, receiver)
+		outbound = join_string(" ", _W_to__zone, receiver)
 
 	case v_Peer != nil:
 		log.Warnf("Peer '%v', SZ '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *receiver, receiver_type, receiver_direction)
@@ -255,7 +255,7 @@ func (receiver *_Name) action_IF(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _
 		log.Warnf("Peer '%v', unknown IF '%v', type '%v', subtype '%v'; ACTION: return ''.", v_Peer.ASN, *receiver, receiver_type, receiver_direction)
 		return
 	}
-	return strings_join(" ", _W_interface, receiver)
+	return join_string(" ", _W_interface, receiver)
 }
 func (receiver *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _Type, receiver_direction _Type) (outbound string /* , ok bool */) {
 	switch _, flag := i_pl[*receiver]; {
@@ -269,12 +269,12 @@ func (receiver *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _
 	switch {
 
 	case receiver_type == _Type_firewall && receiver_direction == _Type_from:
-		outbound = strings_join(" ", _W_from___source__prefix__list, receiver)
+		outbound = join_string(" ", _W_from___source__prefix__list, receiver)
 	case receiver_type == _Type_firewall && receiver_direction == _Type_to:
-		outbound = strings_join(" ", _W_from___destination__prefix__list, receiver)
+		outbound = join_string(" ", _W_from___destination__prefix__list, receiver)
 
 	case receiver_type == _Type_policy_statement:
-		outbound = strings_join(" ", _W_prefix__list__filter, receiver)
+		outbound = join_string(" ", _W_prefix__list__filter, receiver)
 
 	case v_Peer != nil:
 		log.Warnf("Peer '%v', PL '%v', type '%v', subtype '%v', unknown operation; ACTION: return ''.", v_Peer.ASN, *receiver, receiver_type, receiver_direction)
@@ -286,7 +286,7 @@ func (receiver *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _
 func (receiver *_Name) next_ID() (outbound _Name) {
 	switch {
 	case *receiver == _next_IDName || len(*receiver) == 0:
-		outbound = _Name(strings_join("", _Name_ID, pad(next_ID, 10)))
+		outbound = _Name(join_string("", _Name_ID, pad(next_ID, 10)))
 		next_ID++
 		return
 	}

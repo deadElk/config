@@ -278,7 +278,7 @@ func (receiver *_PKI_Node) parse_P12(inbound *x509.Certificate) (status bool) { 
 	// case !t.Key.Equal(t.Cert.PublicKey):
 	// 	log.Warnf("Cert/Key doesn't matchCert/Key doesn't matchCert/Key doesn't matchCert/Key doesn't matchCert/Key doesn't match; ACTION: generate a new Cert '%s' '%s'", t.Cert.PublicKey, t.Key.Public())
 	// 	fallthrough
-	case convert_2_string("", t.Cert.PublicKey) != convert_2_string("", t.Key.Public()): // todo: dirty hack
+	case interface_string("", t.Cert.PublicKey) != interface_string("", t.Key.Public()): // todo: dirty hack
 		// case t.Cert.PublicKey != t.Key.PublicKey: //
 		log.Warnf("Cert/Key doesn't match; ACTION: generate a new Cert '%s' '%s'", t.Cert.PublicKey, t.Key.Public())
 		fallthrough
@@ -356,7 +356,7 @@ func (receiver __N_File_Data) read() (not_ok bool) {
 		var (
 			direntry []os.DirEntry
 			err      error
-			// fln      = strings_join("/", dir, strings_join(".", file, receiver[dir].ext))
+			// fln      = join_string("/", dir, join_string(".", file, receiver[dir].ext))
 			ext_l = len(receiver[dir].Ext)
 		)
 		switch {
@@ -379,7 +379,7 @@ func (receiver __N_File_Data) read() (not_ok bool) {
 			}
 			var (
 				content _Content
-				fn      = strings_join("/", dir, f.Name())
+				fn      = join_string("/", dir, f.Name())
 				fname   = _File_Name(f.Name()[:len(f.Name())-ext_l])
 			)
 			switch content, err = os.ReadFile(fn); {
@@ -388,7 +388,10 @@ func (receiver __N_File_Data) read() (not_ok bool) {
 				not_ok = true
 				continue
 			}
-			// content.trim_space()
+			// switch receiver[dir].Ext { // wtf ....
+			// case "tmpl":
+			// 	content.trim_space()
+			// }
 			receiver.put(dir, fname, "", content)
 			receiver[dir].Sorted = append(receiver[dir].Sorted, fname)
 		}
@@ -410,15 +413,19 @@ func (receiver __N_File_Data) get(dir _Dir_Name, file _File_Name) ( /*not_ok boo
 func (receiver __N_File_Data) put(dir _Dir_Name, file _File_Name, delimiter string, content any) /*not_ok bool*/ {
 	receiver.check(dir, file)
 	var (
-		v_Content = _Content(convert_2_string(delimiter, content))
+		v_Content = _Content(interface_string(delimiter, content))
 	)
+	// switch dir {
+	// case _dir_GT:
+	// 	v_Content.trim_space()
+	// }
 	receiver[dir].File[file].Content = &v_Content
 	// return !not_ok
 }
 func (receiver __N_File_Data) append(dir _Dir_Name, file _File_Name, delimiter string, content any) /*not_ok bool*/ {
 	receiver.check(dir, file)
 	var (
-		v_Content = _Content(strings_join(delimiter, receiver[dir].File[file].Content, content))
+		v_Content = _Content(join_string(delimiter, receiver[dir].File[file].Content, content))
 	)
 	receiver[dir].File[file].Content = &v_Content
 	return /*!not_ok*/
@@ -451,7 +458,7 @@ func (receiver __N_File_Data) write() (not_ok bool) {
 		}
 		for c, d := range b.File {
 			var (
-				g = strings_join("/", a, strings_join(".", c, b.Ext))
+				g = join_string("/", a, join_string(".", c, b.Ext))
 			)
 			switch err := os.WriteFile(g, *d.Content, 0600); {
 			case err != nil:

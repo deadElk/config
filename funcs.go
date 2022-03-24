@@ -18,7 +18,7 @@ import (
 
 func hash(inbound interface{}) (outbound _hash_ID) {
 	var (
-		interim     = convert_2_string("", inbound)
+		interim     = interface_string("", inbound)
 		value, flag = hash_cache.Load(interim)
 	)
 	switch {
@@ -77,7 +77,7 @@ func string_uint64(inbound string) uint64 {
 	return parse_interface(strconv.ParseUint(inbound, 10, 64)).(uint64)
 }
 
-func tabber(inbound string, tabs int) string {
+func tabber(inbound string, tabs int) string { // no words....
 	var (
 		in_length  = len(inbound)
 		tab_length = 8
@@ -99,7 +99,7 @@ func tabber(inbound string, tabs int) string {
 	}
 }
 
-func convert_2_string(delimiter string, inbound any) (outbound string) {
+func interface_string(delimiter string, inbound any) (outbound string) {
 	switch value := (inbound).(type) {
 	case *string:
 		return *value
@@ -161,10 +161,12 @@ func convert_2_string(delimiter string, inbound any) (outbound string) {
 		return strconv.FormatUint(uint64(*value), 10)
 	case *uint64:
 		return strconv.FormatUint(*value, 10)
+	case *bytes.Buffer:
+		return value.String()
 	case *netip.Addr:
-		return (*value).String()
+		return value.String()
 	case *netip.Prefix:
-		return (*value).String()
+		return value.String()
 	case *io.Reader:
 		switch interim, err := ioutil.ReadAll(*value); {
 		case err == nil:
@@ -236,6 +238,8 @@ func convert_2_string(delimiter string, inbound any) (outbound string) {
 		return value.String()
 	case netip.Prefix:
 		return value.String()
+	case bytes.Buffer:
+		return value.String()
 	case io.Reader:
 		switch interim, err := ioutil.ReadAll(value); {
 		case err == nil:
@@ -268,7 +272,7 @@ func convert_2_string(delimiter string, inbound any) (outbound string) {
 	}
 }
 func pad(inbound interface{}, length int) _PName {
-	return _PName(pad_string(convert_2_string("", inbound), length))
+	return _PName(pad_string(interface_string("", inbound), length))
 }
 func pad_string(inbound string, length int) string {
 	var (
@@ -284,7 +288,7 @@ func pad_string(inbound string, length int) string {
 }
 func split_2_string(inbound any, re *regexp.Regexp, target ...*string) {
 	var (
-		interim = re.Split(convert_2_string("", inbound), -1)
+		interim = re.Split(interface_string("", inbound), -1)
 	)
 	for a := 0; a < len(interim) && a < len(target); a++ {
 		*target[a] = interim[a]
@@ -316,28 +320,28 @@ func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_dir
 		outbound = port_low.String()
 		fallthrough
 	case port_low != 0 && port_high != 0:
-		outbound = strings_join(" ", outbound, _W_to, port_high)
+		outbound = join_string(" ", outbound, _W_to, port_high)
 	default:
 		return
 	}
 	switch {
 	case inbound_type == _Type_static && inbound_direction == _Type_from:
-		outbound = strings_join(" ", _W_source__port, outbound)
+		outbound = join_string(" ", _W_source__port, outbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_to:
-		outbound = strings_join(" ", _W_destination__port, outbound)
+		outbound = join_string(" ", _W_destination__port, outbound)
 	case inbound_type == _Type_static && inbound_direction == _Type_then:
-		outbound = strings_join(" ", _W_mapped__port, outbound)
+		outbound = join_string(" ", _W_mapped__port, outbound)
 	}
 
 	return
 }
 
-func strings_join(delimiter string, inbound ...interface{}) (outbound string) {
+func join_string(delimiter string, inbound ...any) (outbound string) {
 	var (
 		interim []string
 	)
 	for _, b := range inbound {
-		interim = append(interim, convert_2_string(delimiter, b))
+		interim = append(interim, interface_string(delimiter, b))
 	}
 	var (
 		inbounds = len(interim) - 1
