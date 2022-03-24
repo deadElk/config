@@ -286,7 +286,7 @@ func (receiver *_Name) action_PL(peer *cDB_Peer, v_Peer *i_Peer, receiver_type _
 func (receiver *_Name) next_ID() (outbound _Name) {
 	switch {
 	case *receiver == _next_IDName || len(*receiver) == 0:
-		outbound = _Name(join_string("", _Name_ID, pad(next_ID, 10)))
+		outbound = _Name(join_string("", _Name_ID, pad_string(next_ID, 10)))
 		next_ID++
 		return
 	}
@@ -431,14 +431,7 @@ func (receiver *i_LDAP_Domain) modify(attrName string, attrVals []string) {
 	case receiver.Modify == nil:
 		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), []ldap.Control{})
 	}
-	switch attrName {
-	case _skv_ca, _skv_acrl, _skv_crl:
-		ldap_modify_Add_Attr(receiver.Entry, receiver.Modify, _W_objectClass.String(), "certificationAuthority")
-		// attrName += ":"
-		// case _skv_crl:
-		// 	receiver.modify_Add_Attr("objectClass", "deltaCRL")
-		// attrName += ":"
-	}
+	ldap_modify_Add_Attr(receiver.Entry, receiver.Modify, attrName)
 	receiver.Modify.Replace(attrName, attrVals)
 }
 func (receiver *i_LDAP_Domain_User) modify(attrName string, attrVals []string) {
@@ -446,24 +439,7 @@ func (receiver *i_LDAP_Domain_User) modify(attrName string, attrVals []string) {
 	case receiver.Modify == nil:
 		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
 	}
-	switch attrName { // don't add if not necessary. this values can be obtained from schema .... // todo: parse schema from server
-	case _skv_ip:
-		ldap_modify_Add_Attr(receiver.Entry, receiver.Modify, _W_objectClass.String(), "ipHost")
-		// func() {
-		// 	for _, b := range receiver.Entry.GetAttributeValues("objectClass") {
-		// 		switch {
-		// 		case b == "ipHost":
-		// 			return
-		// 		}
-		// 	}
-		// 	ldap_modify_Add_Attr(receiver.Entry, receiver.Modify, _W_objectClass.String(), "ipHost")
-		// }()
-		// case _skv_p12:
-		// ldap_modify_Add_Attr(receiver.Entry, receiver.Modify, _W_objectClass.String(), "userPKCS12")
-		// case _skv_p12:
-		// 	for _, b := range attrVals {
-		// 	}
-	}
+	ldap_modify_Add_Attr(receiver.Entry, receiver.Modify, attrName)
 	receiver.Modify.Replace(attrName, attrVals)
 }
 func (receiver *i_LDAP_Domain_Group) modify(attrName string, attrVals []string) {
@@ -471,7 +447,7 @@ func (receiver *i_LDAP_Domain_Group) modify(attrName string, attrVals []string) 
 	case receiver.Modify == nil:
 		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
 	}
-	// ldap_modify_Add_Attr(receiver.Entry, receiver.Modify, attrName, attrVal)
+	ldap_modify_Add_Attr(receiver.Entry, receiver.Modify, attrName)
 	receiver.Modify.Replace(attrName, attrVals)
 }
 

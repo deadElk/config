@@ -133,8 +133,8 @@ func define_iDB_Vocabulary() {
 
 	for a, b := uint32(0), _INet_Routing(1); a <= uint32(_Route_Weight_max_rm); a, b = a+1, b<<int(_Route_Weight_bits_per_rm) {
 		var (
-			c = _Name(join_string("_", _W_import_metric, pad(a, 2)))
-			d = _Name(join_string("_", _W_export_metric, pad(a, 2)))
+			c = _Name(join_string("_", _W_import_metric, pad_string(a, 2)))
+			d = _Name(join_string("_", _W_export_metric, pad_string(a, 2)))
 		)
 		i_ps[c] = &i_PO_PS{
 			Term: __i_PO_PS_Term{
@@ -470,9 +470,9 @@ func get_LDAP_Entries(inbound *ldap.Entry, list ...string) (not_ok bool, outboun
 
 		case b == _skv_ca && len(t[_skv_ca]) < 1:
 			log.Debugf("DN '%v': not enough CAs defined in LDAP; ACTION: generate the rest.", inbound.DN)
-			outbound[_skv_ca] = make([]string, 1, 1)
+			// outbound[_skv_ca] = make([]string, 1, 1)
 		case b == _skv_ca && len(t[_skv_ca]) == 1:
-			outbound[_skv_ca] = make([]string, 1, 1)
+			// outbound[_skv_ca] = make([]string, 1, 1)
 			outbound[_skv_ca] = t[_skv_ca]
 		case b == _skv_ca && len(t[_skv_ca]) > 1:
 			log.Errorf("DN '%v': too many CAs defined in LDAP; ACTION: report.", inbound.DN)
@@ -480,9 +480,9 @@ func get_LDAP_Entries(inbound *ldap.Entry, list ...string) (not_ok bool, outboun
 
 		case b == _skv_crl && len(t[_skv_crl]) < 1:
 			log.Debugf("DN '%v': not enough CRLs defined in LDAP; ACTION: generate the rest.", inbound.DN)
-			outbound[_skv_crl] = make([]string, 1, 1)
+			// outbound[_skv_crl] = make([]string, 1, 1)
 		case b == _skv_crl && len(t[_skv_crl]) == 1:
-			outbound[_skv_crl] = make([]string, 1, 1)
+			// outbound[_skv_crl] = make([]string, 1, 1)
 			outbound[_skv_crl] = t[_skv_crl]
 		case b == _skv_crl && len(t[_skv_crl]) > 1:
 			log.Errorf("DN '%v': too many CRLs defined in LDAP; ACTION: report.", inbound.DN)
@@ -490,10 +490,10 @@ func get_LDAP_Entries(inbound *ldap.Entry, list ...string) (not_ok bool, outboun
 
 		case b == _skv_p12 && len(t[_skv_p12]) < int(_UIx_IPx):
 			log.Debugf("DN '%v': not enough user P12s defined in LDAP; ACTION: check actual data, generate the rest.", inbound.DN)
-			outbound[_skv_p12] = make([]string, _UIx_IPx, _UIx_IPx)
+			// outbound[_skv_p12] = make([]string, _UIx_IPx, _UIx_IPx)
 			outbound[_skv_p12] = t[_skv_p12]
 		case b == _skv_p12 && len(t[_skv_p12]) == int(_UIx_IPx):
-			outbound[_skv_p12] = make([]string, _UIx_IPx, _UIx_IPx)
+			// outbound[_skv_p12] = make([]string, _UIx_IPx, _UIx_IPx)
 			outbound[_skv_p12] = t[_skv_p12]
 		case b == _skv_p12 && len(t[_skv_p12]) > int(_UIx_IPx):
 			log.Warnf("DN '%v': too many user P12s defined in LDAP; ACTION: check actual data.", inbound.DN)
@@ -502,18 +502,18 @@ func get_LDAP_Entries(inbound *ldap.Entry, list ...string) (not_ok bool, outboun
 
 		case b == _skv_ip && len(t[_skv_ip]) < 1:
 			log.Warnf("DN '%v': not enough IPPrefixes defined in LDAP; ACTION: generate the rest.", inbound.DN)
-			outbound[_skv_ip] = make([]string, 1, 1)
+			// outbound[_skv_ip] = make([]string, 1, 1)
 		case b == _skv_ip && len(t[_skv_ip]) == 1:
-			outbound[_skv_ip] = make([]string, 1, 1)
+			// outbound[_skv_ip] = make([]string, 1, 1)
 			outbound[_skv_ip] = t[_skv_ip]
 		case b == _skv_ip && len(t[_skv_ip]) > 1:
 			log.Errorf("DN '%v': too many IPPrefixes defined in LDAP; ACTION: report.", inbound.DN)
 			not_ok = true
 
-		case b == _skv_luri:
+		case b == _skv_luri && len(t[_skv_luri]) > 0:
 			outbound[_skv_luri] = t[_skv_luri]
 
-		case b == _skv_ssh:
+		case b == _skv_ssh && len(t[_skv_ssh]) > 0:
 			outbound[_skv_ssh] = t[_skv_ssh]
 
 		}
@@ -791,13 +791,13 @@ func parse_LDAP() (not_ok bool) {
 					case g >= 1 && g <= len(_re_lower_case):
 						h = _FQDN(join_string(".", string(rune(g+96)), h))
 					case g > len(_re_lower_case):
-						h = _FQDN(join_string(".", "x"+pad(strconv.FormatInt(int64(g), 16), 2), h))
+						h = _FQDN(join_string(".", "x"+pad_string(strconv.FormatInt(int64(g), 16), 2), h))
 					}
 					switch _, flag := i_PKI_DB.CA_Node[d.FQDN].Node[h]; {
 					case !flag:
 						i_PKI_DB.CA_Node[d.FQDN].Node[h] = &_PKI_Node{FQDN: h, CA: i_PKI_DB.CA_Node[d.FQDN]}
 					}
-					changed = i_PKI_DB.CA_Node[d.FQDN].Node[h].parse_P12(&x509.Certificate{
+					changed = changed || i_PKI_DB.CA_Node[d.FQDN].Node[h].parse_P12(&x509.Certificate{
 						SerialNumber: big.NewInt(time.Now().UnixMicro()),
 						Subject: pkix.Name{
 							Organization: []string{d.FQDN.String()},

@@ -285,8 +285,8 @@ func (receiver cDB_Peer_List) parse(v_PG_ASN _Inet_ASN) {
 				// VI_Remote:    __i_VI_Peer{},
 				Group:           i_peer_group[v_PG_ASN],
 				ASN:             b.ASN,
-				ASName:          _Name(join_string("", _Name_AS, pad(b.ASN, 10))),
-				PName:           pad(&b.ASN, 10),
+				ASName:          _Name(join_string("", _Name_AS, pad_string(b.ASN, 10))),
+				PName:           pad(b.ASN, 10),
 				Router_ID:       netip.Addr{},
 				IF_2_RI:         map[_Name]_Name{},
 				VI_GT:           __i_VI_GT{},
@@ -569,8 +569,8 @@ func (receiver cDB_VI_List) parse() {
 				Passive:    i_vi_peer[b.ID][_first].Hub,
 				Local_IP:   i_vi_peer[b.ID][_first].Inner_IPPrefix.Addr(),
 				Route_Leak: parse_iDB_Route_Leak(nil, i_peer[v_vi_peer_list[_first].ASN], "", "", __W_Route_Leak_FromTo{
-					_W_import: {PS: []_Name{0: _Name(join_string("_", _W_import_metric, pad(i_vi[b.ID].Route_Metric, 2)))}},
-					_W_export: {PS: []_Name{0: _Name(_W_aggregate), 1: _Name(join_string("_", _W_export_metric, pad(i_vi[b.ID].Route_Metric, 2)))}},
+					_W_import: {PS: []_Name{0: _Name(join_string("_", _W_import_metric, pad_string(i_vi[b.ID].Route_Metric, 2)))}},
+					_W_export: {PS: []_Name{0: _Name(_W_aggregate), 1: _Name(join_string("_", _W_export_metric, pad_string(i_vi[b.ID].Route_Metric, 2)))}},
 				}),
 				GT_Action:       join_string(" ", _W_neighbor, i_vi_peer[b.ID][_second].Inner_IPPrefix.Addr()),
 				_Attribute_List: _Attribute_List{Description: _Description(join_string("", "TI", i_vi[b.ID].PName))},
@@ -895,7 +895,7 @@ func (receiver *cDB_Peer) parse_RI(v_Peer *i_Peer) {
 func (receiver *cDB_Peer) parse_Hostname(v_Peer *i_Peer) {
 	switch {
 	case len(receiver.Hostname) == 0:
-		v_Peer.Hostname = _FQDN(join_string("", "gw_as", pad(&receiver.ASN, 10)))
+		v_Peer.Hostname = _FQDN(join_string("", "gw_as", pad_string(receiver.ASN, 10)))
 		log.Warnf("Peer '%v', Hostname '%v' is invalid; ACTION: use '%v'.", receiver.ASN, receiver.Router_ID, v_Peer.Hostname)
 	default:
 		v_Peer.Hostname = receiver.Hostname

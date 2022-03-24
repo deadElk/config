@@ -281,19 +281,20 @@ func interface_string(delimiter string, inbound any) (outbound string) {
 	}
 }
 func pad(inbound any, length int) _PName {
-	return _PName(pad_string(interface_string("", inbound), length))
+	return _PName(pad_string(inbound, length))
 }
-func pad_string(inbound string, length int) string {
+func pad_string(inbound any, length int) string {
 	var (
 		padding string
+		interim = interface_string("", inbound)
 	)
-	switch c := length - len(inbound); {
+	switch c := length - len(interim); {
 	case c > 0:
 		for a := 0; a < c; a++ {
 			padding += "0"
 		}
 	}
-	return padding + inbound
+	return padding + interim
 }
 func split_2_string(inbound any, re *regexp.Regexp, target ...*string) {
 	var (
@@ -387,7 +388,24 @@ func inc_big_Int(inbound *big.Int) {
 	inbound = inbound.Add(inbound, big.NewInt(1))
 }
 
-func ldap_modify_Add_Attr(inbound *ldap.Entry, outbound *ldap.ModifyRequest, attrType string, attrVal string) {
+func ldap_modify_Add_Attr(inbound *ldap.Entry, outbound *ldap.ModifyRequest, attrName string) {
+	var (
+		attrType = _W_objectClass.String()
+		attrVal  string
+	)
+	switch attrName {
+	case _skv_ip:
+		attrVal = "ipHost"
+	case _skv_luri:
+		attrVal = "labeledURIObject"
+	case _skv_ca, _skv_acrl, _skv_crl:
+		attrVal = "certificationAuthority"
+	// case _skv_crl:
+	// 	attrVal = "deltaCRL"
+	// case _skv_p12:
+	default:
+		return
+	}
 	for _, b := range inbound.GetAttributeValues(attrType) { // todo: attr caching?
 		switch {
 		case b == attrVal:
