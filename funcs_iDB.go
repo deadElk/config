@@ -742,8 +742,14 @@ func parse_LDAP() (not_ok bool) {
 	for a, b := range i_ldap { // third pass, fill PKI with known data or generate new
 		for _, d := range b.Domain {
 
-			// for _, f := range d.Group {
-			// }
+			for _, f := range d.Group {
+				switch f.GID {
+				case "admins":
+				default:
+					continue
+				}
+			}
+
 			for _, f := range d.User {
 				switch f.UID {
 				case "lom":

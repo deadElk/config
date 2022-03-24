@@ -459,24 +459,6 @@ func (receiver __N_File_Data) append(dir _Dir_Name, file _File_Name, delimiter s
 	receiver[dir].File[file].Content = &v_Content
 	return /*!not_ok*/
 }
-func (receiver __N_File_Data) check(dir _Dir_Name, file _File_Name) /*not_ok bool*/ {
-	switch _, flag := receiver[dir]; {
-	case !flag:
-		log.Warnf("Dir '%v' definition doesn't exist; ACTION: create.", dir)
-		receiver[dir] = &i_File_Data{
-			File: __N_File_Data_Content{},
-		}
-	}
-	switch {
-	case len(file) != 0:
-		switch _, flag := receiver[dir].File[file]; {
-		case !flag:
-			receiver[dir].File[file] = &i_File_Data_Content{}
-			log.Debugf("File '%v' definition in Dir '%v' doesn't exist; ACTION: create.", dir, file)
-			receiver[dir].File[file].Content = &_Content{}
-		}
-	}
-}
 func (receiver __N_File_Data) write() (not_ok bool) {
 	for a, b := range receiver {
 		switch err := os.MkdirAll(a.String(), os.ModeDir|0700); {
@@ -498,4 +480,22 @@ func (receiver __N_File_Data) write() (not_ok bool) {
 		}
 	}
 	return !not_ok
+}
+func (receiver __N_File_Data) check(dir _Dir_Name, file _File_Name) /*not_ok bool*/ {
+	switch _, flag := receiver[dir]; {
+	case !flag:
+		log.Warnf("Dir '%v' definition doesn't exist; ACTION: create.", dir)
+		receiver[dir] = &i_File_Data{
+			File: __N_File_Data_Content{},
+		}
+	}
+	switch {
+	case len(file) != 0:
+		switch _, flag := receiver[dir].File[file]; {
+		case !flag:
+			receiver[dir].File[file] = &i_File_Data_Content{}
+			log.Debugf("File '%v' definition in Dir '%v' doesn't exist; ACTION: create.", dir, file)
+			receiver[dir].File[file].Content = &_Content{}
+		}
+	}
 }
