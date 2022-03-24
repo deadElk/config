@@ -122,7 +122,8 @@ func (receiver *_PKI_CA_Node) parse_DER(inbound *x509.Certificate) (status bool)
 	}
 
 	switch {
-	case t.Cert.PublicKey == t.Key.Public():
+	case interface_string("", t.Cert.PublicKey) != interface_string("", t.Key.Public()): // todo: dirty hack
+		// case t.Cert.PublicKey != t.Key.PublicKey:
 		log.Warnf("CA Cert's signature doesn't match with CA Key's signature - '%v'; ACTION: generate a new CA Cert", err)
 		return receiver.generate(inbound)
 	}
@@ -187,7 +188,7 @@ func (receiver *_PKI_CA_Node) generate(inbound *x509.Certificate) (status bool) 
 		ca_key  = receiver.Key
 	)
 	switch {
-	case receiver.CA != nil:
+	case receiver.CA != nil: // not self-signed
 		ca_cert = receiver.CA.Cert
 		ca_key = receiver.CA.Key
 	}
@@ -272,17 +273,9 @@ func (receiver *_PKI_Node) parse_P12(inbound *x509.Certificate) (status bool) { 
 	}
 
 	switch t.Key = key.(*ecdsa.PrivateKey); {
-	// case reflect.TypeOf(t.Cert.PublicKey) != reflect.TypeOf(t.Key.PublicKey):
-	// 	log.Warnf("unsupported Cert's public Key type; ACTION: generate a new Cert")
-	// 	fallthrough
-	// case !t.Key.Equal(t.Cert.PublicKey):
-	// 	log.Warnf("Cert/Key doesn't matchCert/Key doesn't matchCert/Key doesn't matchCert/Key doesn't matchCert/Key doesn't match; ACTION: generate a new Cert '%s' '%s'", t.Cert.PublicKey, t.Key.Public())
-	// 	fallthrough
 	case interface_string("", t.Cert.PublicKey) != interface_string("", t.Key.Public()): // todo: dirty hack
-		// case t.Cert.PublicKey != t.Key.PublicKey: //
+		// case t.Cert.PublicKey != t.Key.PublicKey:
 		log.Warnf("Cert/Key doesn't match; ACTION: generate a new Cert '%s' '%s'", t.Cert.PublicKey, t.Key.Public())
-		fallthrough
-	case false:
 		return receiver.generate(inbound)
 	}
 
@@ -388,10 +381,10 @@ func (receiver __N_File_Data) read() (not_ok bool) {
 				not_ok = true
 				continue
 			}
-			// switch receiver[dir].Ext { // wtf ....
-			// case "tmpl":
-			// 	content.trim_space()
-			// }
+			switch receiver[dir].Ext {
+			case "tmpl":
+				content.trim_space()
+			}
 			receiver.put(dir, fname, "", content)
 			receiver[dir].Sorted = append(receiver[dir].Sorted, fname)
 		}

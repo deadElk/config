@@ -427,17 +427,17 @@ func parse_GT() (not_ok bool) {
 		}
 		for _, gt_v := range value.GT_List {
 			var (
-				vBuf bytes.Buffer
+				vBuf = new(bytes.Buffer)
 			)
 			switch vGT, err := template.New(gt_v.String()).Parse(i_file.get(_dir_GT, _File_Name(gt_v)).String()); {
 			case err == nil || vGT != nil:
-				switch err = vGT.Execute(&vBuf, value); {
+				switch err = vGT.Execute(vBuf, value); {
 				case err != nil:
 					log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: report.", index.String(), gt_v, err)
 					not_ok = true
 					continue
 				}
-				i_file.append(_dir_Config, _File_Name(value.ASName), "\n", &vBuf)
+				i_file.append(_dir_Config, _File_Name(value.ASName), "\n", vBuf)
 			default:
 				log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: report.", index.String(), gt_v, err)
 				not_ok = true

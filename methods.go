@@ -322,7 +322,7 @@ func (receiver *_Content) trim_space() {
 		buffer    bytes.Buffer
 	)
 	for a, b := range value {
-		buffer.WriteString(b)
+		buffer.WriteString(strings.TrimSpace(b))
 		switch {
 		case a < inbounds:
 			buffer.WriteString(delimiter)
