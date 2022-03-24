@@ -797,7 +797,8 @@ func parse_LDAP() (not_ok bool) {
 					case !flag:
 						i_PKI_DB.CA_Node[d.FQDN].Node[h] = &_PKI_Node{FQDN: h, CA: i_PKI_DB.CA_Node[d.FQDN]}
 					}
-					changed = changed || i_PKI_DB.CA_Node[d.FQDN].Node[h].parse_P12(&x509.Certificate{
+					switch {
+					case i_PKI_DB.CA_Node[d.FQDN].Node[h].parse_P12(&x509.Certificate{
 						SerialNumber: big.NewInt(time.Now().UnixMicro()),
 						Subject: pkix.Name{
 							Organization: []string{d.FQDN.String()},
@@ -813,7 +814,9 @@ func parse_LDAP() (not_ok bool) {
 						// DNSNames:       []string{i.String()},
 						EmailAddresses: []string{h.String()},
 						// IPAddresses:    nil,
-					})
+					}):
+						changed = true
+					}
 					i_PKI.put(i_PKI_DB.CA_Node[d.FQDN].Node[h])
 					f.PKI[g] = i_PKI_DB.CA_Node[d.FQDN].Node[h]
 				}
