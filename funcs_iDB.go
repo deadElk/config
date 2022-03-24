@@ -531,12 +531,12 @@ func parse_LDAP() (not_ok bool) {
 				d.Entry = f
 			}
 
-			switch _, flag := i_PKI.CA_Node[d.FQDN]; {
+			switch _, flag := i_PKI_DB.CA_Node[d.FQDN]; {
 			case flag:
 				log.Errorf("PKI DB '%v' already defined; ACTION: report.", d.FQDN)
 				not_ok = true
 			}
-			i_PKI.CA_Node[d.FQDN] = &_PKI_CA_Node{
+			i_PKI_DB.CA_Node[d.FQDN] = &_PKI_CA_Node{
 				FQDN:     d.FQDN,
 				CA:       nil,
 				CA_Chain: nil,
@@ -555,7 +555,7 @@ func parse_LDAP() (not_ok bool) {
 			//					Key:  _DER(*i_file[_dir_PKI_Key].data[_File_Name(d.FQDN)]),
 			//					CRL:  _DER(d.SKV[_skv_crl][0]),
 			switch {
-			case i_PKI.CA_Node[d.FQDN].parse_DER(&x509.Certificate{
+			case i_PKI_DB.CA_Node[d.FQDN].parse_DER(&x509.Certificate{
 				SerialNumber: big.NewInt(time.Now().UnixNano()),
 				Subject: pkix.Name{
 					Organization: []string{d.FQDN.String()},
@@ -574,14 +574,15 @@ func parse_LDAP() (not_ok bool) {
 				EmailAddresses:        []string{join_string("@", "ns", d.FQDN)},
 				IPAddresses:           nil,
 			}):
-				d.modify(_skv_acrl, []string{i_PKI.CA_Node[d.FQDN].DER.CRL.String()})
-				d.modify(_skv_ca, []string{i_PKI.CA_Node[d.FQDN].DER.Cert.String()})
-				d.modify(_skv_crl, []string{i_PKI.CA_Node[d.FQDN].DER.CRL.String()})
-				i_file.put(_dir_PKI_Cert, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.Cert)
-				i_file.put(_dir_PKI_Key, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.Key)
-				i_file.put(_dir_PKI_CRL, _File_Name(d.FQDN), "", i_PKI.CA_Node[d.FQDN].DER.CRL)
+				i_PKI.put(i_PKI_DB.CA_Node[d.FQDN])
+				d.modify(_skv_acrl, []string{i_PKI_DB.CA_Node[d.FQDN].DER.CRL.String()})
+				d.modify(_skv_ca, []string{i_PKI_DB.CA_Node[d.FQDN].DER.Cert.String()})
+				d.modify(_skv_crl, []string{i_PKI_DB.CA_Node[d.FQDN].DER.CRL.String()})
+				i_file.put(_dir_PKI_Cert, _File_Name(d.FQDN), "", i_PKI_DB.CA_Node[d.FQDN].DER.Cert)
+				i_file.put(_dir_PKI_Key, _File_Name(d.FQDN), "", i_PKI_DB.CA_Node[d.FQDN].DER.Key)
+				i_file.put(_dir_PKI_CRL, _File_Name(d.FQDN), "", i_PKI_DB.CA_Node[d.FQDN].DER.CRL)
 			}
-			d.PKI = i_PKI.CA_Node[d.FQDN]
+			d.PKI = i_PKI_DB.CA_Node[d.FQDN]
 
 			for _, f := range d.Raw_User.Entries {
 				var (
@@ -756,15 +757,15 @@ func parse_LDAP() (not_ok bool) {
 					)
 					switch v_FQDN, status := v_P12.get_FQDN(); {
 					case status:
-						switch _, flag := i_PKI.CA_Node[d.FQDN].Node[v_FQDN]; {
+						switch _, flag := i_PKI_DB.CA_Node[d.FQDN].Node[v_FQDN]; {
 						case flag:
 							log.Errorf("LDAP DB '%v': P12 for '%v' already defined; ACTION: report.", a.String(), v_FQDN)
 							not_ok = true
 							continue
 						}
-						i_PKI.CA_Node[d.FQDN].Node[v_FQDN] = &_PKI_Node{
+						i_PKI_DB.CA_Node[d.FQDN].Node[v_FQDN] = &_PKI_Node{
 							FQDN: v_FQDN,
-							CA:   i_PKI.CA_Node[d.FQDN],
+							CA:   i_PKI_DB.CA_Node[d.FQDN],
 							Cert: nil,
 							Key:  nil,
 							DER:  nil,
@@ -786,12 +787,12 @@ func parse_LDAP() (not_ok bool) {
 					case g > len(_re_lower_case):
 						h = _FQDN(join_string(".", "x"+pad(strconv.FormatInt(int64(g), 16), 2), h))
 					}
-					switch _, flag := i_PKI.CA_Node[d.FQDN].Node[h]; {
+					switch _, flag := i_PKI_DB.CA_Node[d.FQDN].Node[h]; {
 					case !flag:
-						i_PKI.CA_Node[d.FQDN].Node[h] = &_PKI_Node{FQDN: h, CA: i_PKI.CA_Node[d.FQDN]}
+						i_PKI_DB.CA_Node[d.FQDN].Node[h] = &_PKI_Node{FQDN: h, CA: i_PKI_DB.CA_Node[d.FQDN]}
 					}
-					changed = i_PKI.CA_Node[d.FQDN].Node[h].parse_P12(&x509.Certificate{
-						SerialNumber: big.NewInt(time.Now().UnixNano()),
+					changed = i_PKI_DB.CA_Node[d.FQDN].Node[h].parse_P12(&x509.Certificate{
+						SerialNumber: big.NewInt(time.Now().UnixMicro()),
 						Subject: pkix.Name{
 							Organization: []string{d.FQDN.String()},
 							CommonName:   h.String(),
@@ -807,16 +808,18 @@ func parse_LDAP() (not_ok bool) {
 						EmailAddresses: []string{h.String()},
 						// IPAddresses:    nil,
 					})
-					f.PKI[g] = i_PKI.CA_Node[d.FQDN].Node[h]
+					i_PKI.put(i_PKI_DB.CA_Node[d.FQDN].Node[h])
+					f.PKI[g] = i_PKI_DB.CA_Node[d.FQDN].Node[h]
 				}
 				switch {
 				case changed:
 					var (
 						changes = make([]string, _UIx_IPx, _UIx_IPx)
 					)
-					for _, l := range f.PKI {
-						changes = append(changes, l.P12.String())
-						i_file.put(_dir_PKI_P12, _File_Name(l.Cert.SerialNumber.String()), "", l.P12)
+					for k := 0; k < int(_UIx_IPx); k++ {
+						// changes[k] = base64.StdEncoding.EncodeToString(f.PKI[k].P12)
+						changes[k] = f.PKI[k].P12.String()
+						i_file.put(_dir_PKI_P12, _File_Name(f.PKI[k].Cert.SerialNumber.String()), "", f.PKI[k].P12)
 					}
 					f.modify(_skv_p12, changes)
 				}

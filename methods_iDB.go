@@ -343,6 +343,42 @@ func (receiver *_PKI_Node) generate(inbound *x509.Certificate) (status bool) { /
 	return true
 }
 
+func (receiver __I_PKI_I) put(inbound any) (status bool) {
+	switch value := (inbound).(type) {
+	case *_PKI_CA_Node:
+		switch {
+		case value != nil && receiver[value.Cert.SerialNumber] != nil:
+			log.Warnf("PKI DB: CA Cert SN '%v', CN '%v', Issuer '%v' already exist; ACTION: none.", value.Cert.SerialNumber.String(), value.Cert.Subject.CommonName, value.Cert.Issuer.String())
+			return true
+		case value != nil:
+			receiver[value.Cert.SerialNumber] = value
+			return true
+		}
+	case *_PKI_Node:
+		switch {
+		case value != nil && receiver[value.Cert.SerialNumber] != nil:
+			log.Warnf("PKI DB: Cert SN '%v', CN '%v', Issuer '%v' already exist; ACTION: none.", value.Cert.SerialNumber.String(), value.Cert.Subject.CommonName, value.Cert.Issuer.String())
+			return true
+		case value != nil:
+			receiver[value.Cert.SerialNumber] = value
+			return true
+		}
+	}
+	return
+}
+
+// func (receiver *_PKI_Node) store() (status bool) {
+// 	switch {
+// 	case receiver != nil && i_PKI[receiver.Cert.SerialNumber] != nil:
+// 		log.Warnf("PKI DB: Cert SN '%v', CN '%v', Issuer '%v' already exist; ACTION: none.", receiver.Cert.SerialNumber.String(), receiver.Cert.Subject.CommonName, receiver.Cert.Issuer.String())
+// 		return true
+// 	case receiver != nil:
+// 		i_PKI[receiver.Cert.SerialNumber] = receiver
+// 		return true
+// 	}
+// 	return
+// }
+
 func (receiver __N_File_Data) read() (not_ok bool) {
 	for dir := range receiver {
 		receiver.check(dir, "")

@@ -14,6 +14,7 @@ type _Cipher string
 type _Communication string
 type _Content []byte
 type _DER []byte
+type _PEM []byte
 type _DN _Name
 type _Description string
 type _Dir_Name _Name

@@ -460,6 +460,9 @@ func (receiver *i_LDAP_Domain_User) modify(attrName string, attrVals []string) {
 		// }()
 		// case _skv_p12:
 		// ldap_modify_Add_Attr(receiver.Entry, receiver.Modify, _W_objectClass.String(), "userPKCS12")
+		// case _skv_p12:
+		// 	for _, b := range attrVals {
+		// 	}
 	}
 	receiver.Modify.Replace(attrName, attrVals)
 }

@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"math/big"
 	"net/netip"
 	"net/url"
 
@@ -71,6 +72,7 @@ type __i_VI_ID_Peer map[_VI_ID]__i_ID_Peer
 type __i_VI_Peer map[_VI_ID]*i_VI_Peer
 type __PKI_Node []*_PKI_Node
 type __PKI_CA_Node []*_PKI_CA_Node
+type __I_PKI_I map[*big.Int]any
 
 // file i/o
 type i_File_Data struct {
@@ -111,6 +113,7 @@ type _PKI_CA_Node struct {
 	CRL      *pkix.CertificateList
 	DER      *_PKI_CA_Node_DER
 	Node     __FQDN_PKI_Node
+	PEM      *_PKI_CA_Node_PEM
 }
 type _PKI_Node struct {
 	FQDN _FQDN
@@ -119,6 +122,7 @@ type _PKI_Node struct {
 	Key  *ecdsa.PrivateKey
 	DER  *_PKI_Node_DER
 	P12  _P12
+	PEM  *_PKI_Node_PEM
 }
 type _PKI_CA_Node_DER struct {
 	Cert _DER
@@ -128,6 +132,15 @@ type _PKI_CA_Node_DER struct {
 type _PKI_Node_DER struct {
 	Cert _DER
 	Key  _DER
+}
+type _PKI_CA_Node_PEM struct {
+	Cert _PEM
+	Key  _PEM
+	CRL  _PEM
+}
+type _PKI_Node_PEM struct {
+	Cert _PEM
+	Key  _PEM
 }
 
 // LDAP
