@@ -701,7 +701,7 @@ func parse_LDAP() (not_ok bool) {
 				v_G.Owner_UID_List = v_Owner_UID_List
 				v_G.Owner_GID_List = v_Owner_GID_List
 
-				not_ok, v_G.SKV = get_LDAP_Entries(f, _skv_p12, _skv_luri)
+				not_ok, v_G.SKV = get_LDAP_Entries(f /*, _skv_p12*/, _skv_luri)
 
 				d.Group[v_G.GID_Number] = v_G
 				b.M_CN_G[v_G.DN] = v_G
@@ -743,8 +743,8 @@ func parse_LDAP() (not_ok bool) {
 		for _, d := range b.Domain {
 
 			for _, f := range d.Group {
-				switch f.GID {
-				case "admins":
+				switch {
+				case f.GID[3:] == "vpn":
 				default:
 					continue
 				}
