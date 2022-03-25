@@ -391,6 +391,11 @@ func (receiver cDB_VI_List) parse() {
 		i_vi_peer[b.ID] = __i_ID_Peer{}
 
 		for _, d := range b.Peer {
+			switch _, flag := i_peer[d.ASN]; {
+			case !flag:
+				log.Warnf("VI '%v', Peer '%v' not found; ACTION: skip.", b.ID, d.ID)
+				continue
+			}
 			switch _, flag := i_vi_peer[b.ID][d.ID]; {
 			case d.ID > 1:
 				log.Warnf("VI '%v', Peer '%v', index out of range; ACTION: skip.", b.ID, d.ID)

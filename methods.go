@@ -422,6 +422,10 @@ func (receiver __INet_UI_IP_Table) generate(inbound netip.Prefix, conn_bits _INe
 			curr_IP = parse_interface(netip.AddrFromSlice(curr_slice)).(netip.Addr)
 			v_Output.Conn[c-1] = netip_Addr_Prefix(&curr_IP)
 		}
+		switch {
+		case a <= 7:
+			v_Output.User = &i_LDAP_Domain_User{}
+		}
 		receiver[parse_interface(curr_IP.Prefix(int(conn_mask))).(netip.Prefix)] = v_Output
 	}
 }

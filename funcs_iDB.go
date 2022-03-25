@@ -744,7 +744,7 @@ func parse_LDAP() (not_ok bool) {
 
 			for _, f := range d.Group {
 				switch {
-				case f.GID[3:] == "vpn":
+				case len(f.GID) >= 3 && f.GID[3:] == "vpn":
 				default:
 					continue
 				}
