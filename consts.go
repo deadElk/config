@@ -53,7 +53,6 @@ const (
 	_skv_etc  = ""
 	_skv_ssh  = "sshPublicKey"
 	_skv_ca   = "cACertificate"
-	_skv_acrl = "authorityRevocationList"
 	_skv_crl  = "certificateRevocationList"
 	_skv_p12  = "userPKCS12"
 	_skv_luri = "labeledURI"

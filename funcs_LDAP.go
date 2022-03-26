@@ -23,11 +23,11 @@ func ldap_modify_Add_Attr(inbound *ldap.Entry, outbound *ldap.ModifyRequest, att
 		attrVal = "ipHost"
 	case _skv_luri:
 		attrVal = "labeledURIObject"
-	case _skv_ca, _skv_acrl, _skv_crl:
-		attrVal = "certificationAuthority"
-	// case _skv_crl:
-	// 	attrVal = "deltaCRL"
-	// case _skv_p12:
+	case _skv_ca, _skv_crl:
+		attrVal = "pkiCA"
+		// 	attrVal = "certificationAuthority"
+	case _skv_p12:
+		return
 	default:
 		return
 	}
@@ -35,6 +35,17 @@ func ldap_modify_Add_Attr(inbound *ldap.Entry, outbound *ldap.ModifyRequest, att
 		switch {
 		case b == attrVal:
 			return
+		}
+	}
+	for _, b := range outbound.Changes {
+		switch {
+		case b.Modification.Type == attrType:
+			for _, d := range b.Modification.Vals {
+				switch {
+				case d == attrVal:
+					return
+				}
+			}
 		}
 	}
 	outbound.Add(attrType, []string{attrVal})
@@ -353,15 +364,17 @@ func parse_LDAP() (status bool) {
 				EmailAddresses:        []string{join_string("@", "ns", d.FQDN)},
 				IPAddresses:           nil,
 			}):
-				d.modify(_skv_acrl, []string{i_PKI_DB.CA_Node[d.FQDN].DER.CRL.String()})
-				d.modify(_skv_ca, []string{i_PKI_DB.CA_Node[d.FQDN].DER.Cert.String()})
-				d.modify(_skv_crl, []string{i_PKI_DB.CA_Node[d.FQDN].DER.CRL.String()})
+				// todo: LDAP Result Code 17 "Undefined Attribute Type": cACertificate: requires ;binary transfer .... what????
+				d.replace(_skv_ca, []string{i_PKI_DB.CA_Node[d.FQDN].DER.Cert.String()})
+				d.replace(_skv_crl, []string{i_PKI_DB.CA_Node[d.FQDN].DER.CRL.String()})
 				i_file.put(_dir_PKI_CA, _File_Name(d.FQDN+".crt"), "", i_PKI_DB.CA_Node[d.FQDN].DER.Cert)
 				i_file.put(_dir_PKI_CA, _File_Name(d.FQDN+".key"), "", i_PKI_DB.CA_Node[d.FQDN].DER.Key)
 				i_file.put(_dir_PKI_CA, _File_Name(d.FQDN+".crl"), "", i_PKI_DB.CA_Node[d.FQDN].DER.CRL)
 			}
 			d.PKI = i_PKI_DB.CA_Node[d.FQDN]
 			i_PKI.put(i_PKI_DB.CA_Node[d.FQDN])
+			d.replace(_skv_ca, []string{i_PKI_DB.CA_Node[d.FQDN].DER.Cert.String()})
+			d.replace(_skv_crl, []string{i_PKI_DB.CA_Node[d.FQDN].DER.CRL.String()})
 
 			for _, f := range d.Raw_User.Entries {
 				var (
@@ -503,7 +516,7 @@ func parse_LDAP() (status bool) {
 						for y, z := range i_ui_ip {
 							switch {
 							case z.User == nil:
-								f.modify(_skv_ip, []string{y.String()})
+								f.replace(_skv_ip, []string{y.String()})
 								log.Infof("LDAP '%v': UID '%v', found new ipHostNumber '%v'; ACTION: report.", a.String(), f.DN, y)
 								return y
 							}
@@ -609,7 +622,7 @@ func parse_LDAP() (status bool) {
 						changes[k] = f.PKI[k].P12.String()
 						i_file.put(_dir_PKI_Cert, _File_Name(f.PKI[k].Cert.SerialNumber.String()), "", f.PKI[k].P12)
 					}
-					f.modify(_skv_p12, changes)
+					f.replace(_skv_p12, changes)
 				}
 			}
 		}

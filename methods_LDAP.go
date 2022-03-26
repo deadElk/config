@@ -7,15 +7,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (receiver *i_LDAP_Domain) modify(attrName string, attrVals []string) {
+func (receiver *i_LDAP_Domain) replace(attrName string, attrVals []string) {
 	switch {
 	case receiver.Modify == nil:
-		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), []ldap.Control{})
+		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
 	}
 	ldap_modify_Add_Attr(receiver.Entry, receiver.Modify, attrName)
+	// switch attrName {
+	// case _skv_ca, _skv_acrl, _skv_crl:
+	// 	// attrName += ";binary" // todo: VERY BAD IDEA!
+	// }
+
 	receiver.Modify.Replace(attrName, attrVals)
 }
-func (receiver *i_LDAP_Domain_User) modify(attrName string, attrVals []string) {
+func (receiver *i_LDAP_Domain_User) replace(attrName string, attrVals []string) {
 	switch {
 	case receiver.Modify == nil:
 		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
@@ -23,7 +28,7 @@ func (receiver *i_LDAP_Domain_User) modify(attrName string, attrVals []string) {
 	ldap_modify_Add_Attr(receiver.Entry, receiver.Modify, attrName)
 	receiver.Modify.Replace(attrName, attrVals)
 }
-func (receiver *i_LDAP_Domain_Group) modify(attrName string, attrVals []string) {
+func (receiver *i_LDAP_Domain_Group) replace(attrName string, attrVals []string) {
 	switch {
 	case receiver.Modify == nil:
 		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
