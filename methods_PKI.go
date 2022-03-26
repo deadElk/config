@@ -86,11 +86,11 @@ func (receiver *_PKI_CA_Node) generate(inbound *x509.Certificate) (status bool) 
 	case inbound == nil:
 		log.Fatalf("no CA Cert data; ACTION: report.")
 		// return
-
 	}
 	var (
 		err error
 	)
+
 	log.Infof("generating a new CA Cert for '%v'; ACTION: report.", inbound.Subject.CommonName)
 
 	receiver.DER = &_PKI_CA_Node_DER{Cert: _DER{}, Key: _DER{}, CRL: _DER{}}

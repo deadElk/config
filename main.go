@@ -99,14 +99,14 @@ func genCA() {
 	server.StartTLS()
 	defer server.Close()
 
-	// communicate with the server using an http.Client configured to trust our CA
+	// communicate with the server using an http_client.Client configured to trust our CA
 	transport := &http.Transport{
 		TLSClientConfig: clientTLSConf,
 	}
-	http := http.Client{
+	http_client := http.Client{
 		Transport: transport,
 	}
-	resp, err := http.Get(server.URL)
+	resp, err := http_client.Get(server.URL)
 	if err != nil {
 		panic(err)
 	}
