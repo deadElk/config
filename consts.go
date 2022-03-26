@@ -183,8 +183,10 @@ const (
 )
 const (
 	_W_AS                                                     _W = "AS"
+	_W_Class                                                  _W = "Class"
 	_W_ID                                                     _W = "ID"
 	_W_PUBLIC                                                 _W = "OUTER_LIST"
+	_W_VI                                                     _W = "VI"
 	_W_accept                                                 _W = "accept"
 	_W_access                                                 _W = "access"
 	_W_access__internal                                          = _W_access + "-" + _W_internal
@@ -208,6 +210,8 @@ const (
 	_W_cn                                                     _W = "cn"
 	_W_cn____config                                              = _W_cn + "=" + _W_config
 	_W_config                                                 _W = "config"
+	_W_dc                                                     _W = "dc"
+	_W_dcObject                                                  = _W_dc + "Object"
 	_W_deny                                                   _W = "deny"
 	_W_deny__all                                                 = _W_deny + "-" + _W_all
 	_W_destination                                            _W = "destination"
@@ -282,9 +286,9 @@ const (
 	_W_mapped                                                 _W = "mapped"
 	_W_mapped__port                                              = _W_mapped + "-" + _W_port
 	_W_master                                                 _W = "master"
+	_W_member                                                 _W = "member"
 	_W_metric                                                 _W = "metric"
 	_W_mgmt                                                   _W = "mgmt"
-	_W_VI                                                     _W = "VI"
 	_W_mgmt_junos                                                = _W_mgmt + "_" + _W_junos
 	_W_name                                                   _W = "name"
 	_W_nat                                                    _W = "nat"
@@ -292,13 +296,12 @@ const (
 	_W_next                                                   _W = "next"
 	_W_next__hop                                                 = _W_next + "-" + _W_hop
 	_W_next__table                                               = _W_next + "-" + _W_table
-	_W_objectClass                                            _W = "objectClass"
-	_W_dc                                                     _W = "dc"
-	_W_dcObject                                                  = _W_dc + "Object"
+	_W_object                                                 _W = "object"
+	_W_objectClass                                               = _W_object + _W_Class
+	_W_objectClass_dcObject                                      = "(" + _W_objectClass + "=" + _W_dcObject + ")"
 	_W_objectClass_olcDatabaseConfig_objectClass_olcMdbConfig    = "(&(" + _W_objectClass + "=" + _W_olcDatabaseConfig + ")(" + _W_objectClass + "=" + _W_olcMdbConfig + "))"
 	_W_objectClass_posixAccount                                  = "(" + _W_objectClass + "=" + _W_posixAccount + ")"
 	_W_objectClass_posixGroup                                    = "(" + _W_objectClass + "=" + _W_posixGroup + ")"
-	_W_objectClass_dcObject                                      = "(" + _W_objectClass + "=" + _W_dcObject + ")"
 	_W_olcDatabaseConfig                                      _W = "olcDatabaseConfig"
 	_W_olcMdbConfig                                           _W = "olcMdbConfig"
 	_W_olcSuffix                                              _W = "olcSuffix"
@@ -306,6 +309,7 @@ const (
 	_W_or                                                     _W = "or"
 	_W_orlonger                                                  = _W_or + _W_longer
 	_W_ospf                                                   _W = "ospf"
+	_W_owner                                                  _W = "owner"
 	_W_packet                                                 _W = "packet"
 	_W_per                                                    _W = "per"
 	_W_per__packet                                               = _W_per + "-" + _W_packet

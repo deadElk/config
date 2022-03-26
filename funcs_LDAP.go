@@ -365,11 +365,11 @@ func parse_LDAP() (status bool) {
 				IPAddresses:           nil,
 			}):
 				// todo: LDAP Result Code 17 "Undefined Attribute Type": cACertificate: requires ;binary transfer .... what????
-				d.replace(_skv_ca, []string{i_PKI_DB.CA_Node[d.FQDN].DER.Cert.String()})
-				d.replace(_skv_crl, []string{i_PKI_DB.CA_Node[d.FQDN].DER.CRL.String()})
 				i_file.put(_dir_PKI_CA, _File_Name(d.FQDN+".crt"), "", i_PKI_DB.CA_Node[d.FQDN].DER.Cert)
 				i_file.put(_dir_PKI_CA, _File_Name(d.FQDN+".key"), "", i_PKI_DB.CA_Node[d.FQDN].DER.Key)
 				i_file.put(_dir_PKI_CA, _File_Name(d.FQDN+".crl"), "", i_PKI_DB.CA_Node[d.FQDN].DER.CRL)
+				d.replace(_skv_ca, []string{i_PKI_DB.CA_Node[d.FQDN].DER.Cert.String()})
+				d.replace(_skv_crl, []string{i_PKI_DB.CA_Node[d.FQDN].DER.CRL.String()})
 			}
 			d.PKI = i_PKI_DB.CA_Node[d.FQDN]
 			i_PKI.put(i_PKI_DB.CA_Node[d.FQDN])
@@ -403,11 +403,8 @@ func parse_LDAP() (status bool) {
 					log.Warnf("LDAP DB '%v' inconsistent! primary GID_Number is not defined for UID '%v'; ACTION: skip user.", a.String(), f.DN)
 					continue
 				}
-				switch v_ipHostNumber := f.GetAttributeValue("ipHostNumber"); { // modification candidate -> user's ip space
-				case len(v_ipHostNumber) != 0:
-					var (
-						v_IPPrefix = parse_interface(netip.ParsePrefix(f.GetAttributeValue("ipHostNumber"))).(netip.Prefix)
-					)
+				switch v_IPPrefix := parse_interface(netip.ParsePrefix(f.GetAttributeValue("ipHostNumber"))).(netip.Prefix); { // modification candidate -> user's ip space
+				case v_IPPrefix.IsValid():
 					switch value, flag := i_ui_ip[v_IPPrefix]; {
 					case flag && value.User == nil: // ip found and free
 						log.Debugf("UID '%v', ipHostNumber '%v'.", v_U.DN, v_IPPrefix)
@@ -455,7 +452,7 @@ func parse_LDAP() (status bool) {
 					v_Owner_UID_List = make(__UN_LDAP_Domain_User)
 					v_Owner_GID_List = make(__GN_LDAP_Domain_Group) // todo
 				)
-				for _, h := range f.GetAttributeValues("member") {
+				for _, h := range f.GetAttributeValues(_W_member.String()) {
 					var (
 						u = b.M_CN_U[_DN(h)]
 					)
@@ -467,7 +464,7 @@ func parse_LDAP() (status bool) {
 					}
 					v_UID_List[u.UID_Number] = u
 				}
-				for _, h := range f.GetAttributeValues("owner") {
+				for _, h := range f.GetAttributeValues(_W_owner.String()) {
 					var (
 						u = b.M_CN_U[_DN(h)]
 					)
