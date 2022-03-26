@@ -383,14 +383,14 @@ func parse_LDAP() (status bool) {
 				case v_IPPrefix.IsValid():
 					switch value, flag := i_ui_ip[v_IPPrefix]; {
 					case flag && value.User == nil: // ip found and free
-						log.Debugf("UID '%v', ipHostNumber '%v'.", v_U.DN, v_IPPrefix)
+						log.Debugf("UID '%v', '%v' '%v'.", v_U.DN, _skv_ipHostNumber, v_IPPrefix)
 						v_U.IPPrefix = v_IPPrefix
 						i_ui_ip[v_U.IPPrefix].User = v_U
 					case flag && value.User != nil: // ip found but occupied, so need ip assigment
-						log.Warnf("LDAP DB '%v' inconsistent! UID '%v', ipHostNumber '%v' occupied by '%v'; ACTION: find new.", a.String(), v_U.DN, v_IPPrefix, value.User.DN)
+						log.Warnf("LDAP DB '%v' inconsistent! UID '%v', '%v' '%v' occupied by '%v'; ACTION: find new.", a.String(), v_U.DN, _skv_ipHostNumber, v_IPPrefix, value.User.DN)
 					}
 				default: // ip not found, so need ip assigment
-					log.Debugf("LDAP '%v': UID '%v', ipHostNumber not defined; ACTION: find new.", a.String(), v_U.DN)
+					log.Debugf("LDAP '%v': UID '%v', '%v' not defined; ACTION: find new.", a.String(), v_U.DN, _skv_ipHostNumber)
 				}
 
 				v_U.PKI = make(__PKI_Node, _UIx_IPx, _UIx_IPx)
