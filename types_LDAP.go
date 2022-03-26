@@ -74,7 +74,12 @@ type i_LDAP_Domain_Group struct { // gidNumber: index
 	SKV            _SKV
 	UID_List       __UN_LDAP_Domain_User // member: index = member (uidNumber here), value is a pointer.
 	PKI            *_PKI_Node
+	VPN            *i_LDAP_VPN
 }
+type i_LDAP_VPN struct {
+	outside_IPPrefix map[netip.Prefix]bool
+}
+
 type i_LDAP_Domain_User struct { // uidNumber: index
 	LDAP       *i_LDAP
 	DN         _DN

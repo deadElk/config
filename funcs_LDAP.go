@@ -6,6 +6,7 @@ import (
 	"crypto/x509/pkix"
 	"math/big"
 	"net/netip"
+	"sort"
 	"strconv"
 	"time"
 
@@ -19,14 +20,14 @@ func ldap_modify_Add_Attr(inbound *ldap.Entry, outbound *ldap.ModifyRequest, att
 		attrVal  string
 	)
 	switch attrName {
-	case _skv_ip:
+	case _skv_ipHostNumber:
 		attrVal = "ipHost"
-	case _skv_luri:
+	case _skv_labeledURI:
 		attrVal = "labeledURIObject"
-	case _skv_ca, _skv_crl:
+	case _skv_CA, _skv_CRL:
 		attrVal = "pkiCA"
 		// 	attrVal = "certificationAuthority"
-	case _skv_p12:
+	case _skv_P12:
 		return
 	default:
 		return
@@ -239,85 +240,59 @@ func write_ldap() (status bool) {
 	}
 	return !status
 }
-func get_LDAP_Entries(inbound *ldap.Entry, list ...string) (status bool, outbound _SKV) {
+func get_LDAP_SKV(inbound *ldap.Entry, list map[string]int) (status bool, outbound _SKV) {
 	outbound = make(_SKV)
 	var (
 		t = make(_SKV)
 	)
-	for _, b := range list {
-		t[b] = []string{}
+	for a, b := range list {
 		var (
-			attr = inbound.GetAttributeValues(b)
+			attr   = inbound.GetAttributeValues(a)
+			flag   = b != 0
+			filter = make(map[string]bool)
 		)
 		for _, d := range attr {
 			switch {
-			case len(d) == 0:
+			case len(d) == 0 || filter[d]:
 				continue
 			}
-			t[b] = append(t[b], d)
+			filter[d] = true
+		}
+		for d := range filter {
+			t[a] = append(t[a], d)
 		}
 
+		sort.Strings(t[a])
 		switch {
-
-		case b == _skv_ca && len(t[_skv_ca]) < 1:
-			log.Debugf("DN '%v': not enough CAs defined in LDAP; ACTION: generate the rest.", inbound.DN)
-			// outbound[_skv_ca] = make([]string, 1, 1)
-		case b == _skv_ca && len(t[_skv_ca]) == 1:
-			// outbound[_skv_ca] = make([]string, 1, 1)
-			outbound[_skv_ca] = t[_skv_ca]
-		case b == _skv_ca && len(t[_skv_ca]) > 1:
-			log.Errorf("DN '%v': too many CAs defined in LDAP; ACTION: report.", inbound.DN)
-			status = true
-
-		case b == _skv_crl && len(t[_skv_crl]) < 1:
-			log.Debugf("DN '%v': not enough CRLs defined in LDAP; ACTION: generate the rest.", inbound.DN)
-			// outbound[_skv_crl] = make([]string, 1, 1)
-		case b == _skv_crl && len(t[_skv_crl]) == 1:
-			// outbound[_skv_crl] = make([]string, 1, 1)
-			outbound[_skv_crl] = t[_skv_crl]
-		case b == _skv_crl && len(t[_skv_crl]) > 1:
-			log.Errorf("DN '%v': too many CRLs defined in LDAP; ACTION: report.", inbound.DN)
-			status = true
-
-		case b == _skv_p12 && len(t[_skv_p12]) < int(_UIx_IPx):
-			log.Debugf("DN '%v': not enough user P12s defined in LDAP; ACTION: check actual data, generate the rest.", inbound.DN)
-			// outbound[_skv_p12] = make([]string, _UIx_IPx, _UIx_IPx)
-			outbound[_skv_p12] = t[_skv_p12]
-		case b == _skv_p12 && len(t[_skv_p12]) == int(_UIx_IPx):
-			// outbound[_skv_p12] = make([]string, _UIx_IPx, _UIx_IPx)
-			outbound[_skv_p12] = t[_skv_p12]
-		case b == _skv_p12 && len(t[_skv_p12]) > int(_UIx_IPx):
-			log.Warnf("DN '%v': too many user P12s defined in LDAP; ACTION: check actual data.", inbound.DN)
-			// log.Warnf("DN '%v': too many user P12s defined in LDAP; ACTION: report.", inbound.DN)
-			// status = true
-
-		case b == _skv_ip && len(t[_skv_ip]) < 1:
-			log.Warnf("DN '%v': not enough IPPrefixes defined in LDAP; ACTION: generate the rest.", inbound.DN)
-			// outbound[_skv_ip] = make([]string, 1, 1)
-		case b == _skv_ip && len(t[_skv_ip]) == 1:
-			// outbound[_skv_ip] = make([]string, 1, 1)
-			outbound[_skv_ip] = t[_skv_ip]
-		case b == _skv_ip && len(t[_skv_ip]) > 1:
-			log.Errorf("DN '%v': too many IPPrefixes defined in LDAP; ACTION: report.", inbound.DN)
-			status = true
-
-		case b == _skv_luri && len(t[_skv_luri]) > 0:
-			outbound[_skv_luri] = t[_skv_luri]
-
-		case b == _skv_ssh && len(t[_skv_ssh]) > 0:
-			outbound[_skv_ssh] = t[_skv_ssh]
-
+		case flag:
+			switch {
+			case flag && len(t[a]) < b:
+				log.Debugf("DN '%v': not enough '%v' defined in LDAP; ACTION: generate the rest.", inbound.DN, a)
+				// outbound[a] = make([]string, b, b)
+			case flag && len(t[a]) == b:
+				// outbound[a] = make([]string, b, b)
+				outbound[a] = t[a]
+			case flag && len(t[a]) > b:
+				log.Errorf("DN '%v': too many '%v' defined in LDAP; ACTION: report.", inbound.DN, a)
+				status = true
+			}
+		default:
+			outbound[a] = t[a]
 		}
-
 	}
 	return
 }
+
 func parse_LDAP() (status bool) {
 	for a, b := range i_ldap {
 		for _, d := range b.Domain {
 			d.FQDN = b._DN_FQDN(d.DN)
 			for _, f := range d.Raw_DC.Entries {
-				status, d.SKV = get_LDAP_Entries(f, _skv_ca, _skv_crl)
+				var (
+					f_SKV, v_SKV = get_LDAP_SKV(f, map[string]int{_skv_CA: 1, _skv_CRL: 1})
+				)
+				status = status || f_SKV
+				d.SKV = v_SKV
 				d.Entry = f
 			}
 
@@ -335,15 +310,12 @@ func parse_LDAP() (status bool) {
 				Key:      nil,
 				CRL:      nil,
 				DER: &_PKI_CA_Node_DER{
-					Cert: _DER(*i_file.get(_dir_PKI_CA, _File_Name(d.FQDN+".crt"))),
+					Cert: _DER(*i_file.get(_dir_PKI_CA, _File_Name(d.FQDN+".crt"))), // _DER(d.SKV[_skv_CA][0]),
 					Key:  _DER(*i_file.get(_dir_PKI_CA, _File_Name(d.FQDN+".key"))),
-					CRL:  _DER(*i_file.get(_dir_PKI_CA, _File_Name(d.FQDN+".crl"))),
+					CRL:  _DER(*i_file.get(_dir_PKI_CA, _File_Name(d.FQDN+".crl"))), // _DER(d.SKV[_skv_CRL][0]),
 				},
 				Node: __FQDN_PKI_Node{},
 			}
-			//					Cert: _DER(d.SKV[_skv_ca][0]),
-			//					Key:  _DER(*i_file[_dir_PKI_Key].data[_File_Name(d.FQDN)]),
-			//					CRL:  _DER(d.SKV[_skv_crl][0]),
 			switch {
 			case i_PKI_DB.CA_Node[d.FQDN].parse_DER(&x509.Certificate{
 				SerialNumber: big.NewInt(time.Now().UnixNano()),
@@ -368,29 +340,32 @@ func parse_LDAP() (status bool) {
 				i_file.put(_dir_PKI_CA, _File_Name(d.FQDN+".crt"), "", i_PKI_DB.CA_Node[d.FQDN].DER.Cert)
 				i_file.put(_dir_PKI_CA, _File_Name(d.FQDN+".key"), "", i_PKI_DB.CA_Node[d.FQDN].DER.Key)
 				i_file.put(_dir_PKI_CA, _File_Name(d.FQDN+".crl"), "", i_PKI_DB.CA_Node[d.FQDN].DER.CRL)
-				d.replace(_skv_ca, []string{i_PKI_DB.CA_Node[d.FQDN].DER.Cert.String()})
-				d.replace(_skv_crl, []string{i_PKI_DB.CA_Node[d.FQDN].DER.CRL.String()})
+				d.replace(_skv_CA, []string{i_PKI_DB.CA_Node[d.FQDN].DER.Cert.String()})
+				d.replace(_skv_CRL, []string{i_PKI_DB.CA_Node[d.FQDN].DER.CRL.String()})
 			}
 			d.PKI = i_PKI_DB.CA_Node[d.FQDN]
 			i_PKI.put(i_PKI_DB.CA_Node[d.FQDN])
-			d.replace(_skv_ca, []string{i_PKI_DB.CA_Node[d.FQDN].DER.Cert.String()})
-			d.replace(_skv_crl, []string{i_PKI_DB.CA_Node[d.FQDN].DER.CRL.String()})
+			d.replace(_skv_CA, []string{i_PKI_DB.CA_Node[d.FQDN].DER.Cert.String()})
+			d.replace(_skv_CRL, []string{i_PKI_DB.CA_Node[d.FQDN].DER.CRL.String()})
 
 			for _, f := range d.Raw_User.Entries {
 				var (
+					f_SKV, v_SKV = get_LDAP_SKV(f, map[string]int{b.User_CN: 1, _skv_entryDN: 1, _skv_gidNumber: 1, _skv_uidNumber: 1, _skv_SSH_PK: 0, _skv_P12: int(_UIx_IPx), _skv_labeledURI: 0, _skv_ipHostNumber: 1})
+				)
+				var (
 					v_U = &i_LDAP_Domain_User{
 						LDAP:       b,
-						DN:         _DN(f.GetAttributeValue("entryDN")),
+						DN:         _DN(v_SKV[_skv_entryDN].get_first()),
 						Domain:     d,
 						Entry:      f,
 						FQDN:       "",
 						GID_List:   __GN_LDAP_Domain_Group{},
-						GID_Number: _GID_Number(string_uint64(f.GetAttributeValue("gidNumber"))),
+						GID_Number: _GID_Number(string_uint64(v_SKV[_skv_gidNumber].get_first())),
 						IPPrefix:   netip.Prefix{},
 						Modify:     nil,
-						SKV:        nil,
-						UID:        _UID(f.GetAttributeValue(b.User_CN)),
-						UID_Number: _UID_Number(string_uint64(f.GetAttributeValue("uidNumber"))),
+						SKV:        v_SKV,
+						UID:        _UID(v_SKV[b.User_CN].get_first()),
+						UID_Number: _UID_Number(string_uint64(v_SKV[_skv_uidNumber].get_first())),
 						PKI:        nil,
 					}
 				)
@@ -403,7 +378,8 @@ func parse_LDAP() (status bool) {
 					log.Warnf("LDAP DB '%v' inconsistent! primary GID_Number is not defined for UID '%v'; ACTION: skip user.", a.String(), f.DN)
 					continue
 				}
-				switch v_IPPrefix := parse_interface(netip.ParsePrefix(f.GetAttributeValue("ipHostNumber"))).(netip.Prefix); { // modification candidate -> user's ip space
+
+				switch v_IPPrefix := parse_interface(netip.ParsePrefix(v_SKV[_skv_ipHostNumber].get_first())).(netip.Prefix); { // modification candidate -> user's ip space
 				case v_IPPrefix.IsValid():
 					switch value, flag := i_ui_ip[v_IPPrefix]; {
 					case flag && value.User == nil: // ip found and free
@@ -418,11 +394,12 @@ func parse_LDAP() (status bool) {
 				}
 
 				v_U.PKI = make(__PKI_Node, _UIx_IPx, _UIx_IPx)
-				status, v_U.SKV = get_LDAP_Entries(f, _skv_ssh, _skv_p12, _skv_luri)
 				v_U.FQDN = b._DN_FQDN(v_U.DN)
 
 				d.User[v_U.UID_Number] = v_U
 				b.M_CN_U[v_U.DN] = v_U
+
+				status = status || f_SKV
 			}
 		}
 	}
@@ -431,19 +408,22 @@ func parse_LDAP() (status bool) {
 		for _, d := range b.Domain {
 			for _, f := range d.Raw_Group.Entries {
 				var (
+					f_SKV, v_SKV = get_LDAP_SKV(f, map[string]int{_skv_entryDN: 1, _skv_gidNumber: 1, _skv_labeledURI: 0, _skv_member: 0, _skv_owner: 0, b.Group_CN: 1})
+				)
+				var (
 					v_G = &i_LDAP_Domain_Group{
 						LDAP:           b,
-						DN:             _DN(f.GetAttributeValue("entryDN")),
+						DN:             _DN(v_SKV[_skv_entryDN].get_first()),
 						Domain:         d,
 						Entry:          f,
 						FQDN:           "",
-						GID:            _GID(f.GetAttributeValue(b.Group_CN)),
+						GID:            _GID(v_SKV[b.Group_CN].get_first()),
 						GID_List:       nil,
-						GID_Number:     _GID_Number(string_uint64(f.GetAttributeValue("gidNumber"))),
+						GID_Number:     _GID_Number(string_uint64(v_SKV[_skv_gidNumber].get_first())),
 						Modify:         nil,
 						Owner_GID_List: nil,
 						Owner_UID_List: nil,
-						SKV:            nil,
+						SKV:            v_SKV,
 						UID_List:       nil,
 						PKI:            nil,
 					}
@@ -452,7 +432,7 @@ func parse_LDAP() (status bool) {
 					v_Owner_UID_List = make(__UN_LDAP_Domain_User)
 					v_Owner_GID_List = make(__GN_LDAP_Domain_Group) // todo
 				)
-				for _, h := range f.GetAttributeValues(_W_member.String()) {
+				for _, h := range v_SKV[_skv_member] {
 					var (
 						u = b.M_CN_U[_DN(h)]
 					)
@@ -464,7 +444,7 @@ func parse_LDAP() (status bool) {
 					}
 					v_UID_List[u.UID_Number] = u
 				}
-				for _, h := range f.GetAttributeValues(_W_owner.String()) {
+				for _, h := range v_SKV[_skv_owner] {
 					var (
 						u = b.M_CN_U[_DN(h)]
 					)
@@ -490,13 +470,12 @@ func parse_LDAP() (status bool) {
 				v_G.Owner_UID_List = v_Owner_UID_List
 				v_G.Owner_GID_List = v_Owner_GID_List
 
-				status, v_G.SKV = get_LDAP_Entries(f /*, _skv_p12*/, _skv_luri)
-
 				d.Group[v_G.GID_Number] = v_G
 				b.M_CN_G[v_G.DN] = v_G
 				for _, j := range d.Group[v_G.GID_Number].UID_List {
 					j.GID_List[v_G.GID_Number] = v_G
 				}
+				status = status || f_SKV
 			}
 			for _, f := range d.User {
 				switch {
@@ -513,7 +492,7 @@ func parse_LDAP() (status bool) {
 						for y, z := range i_ui_ip {
 							switch {
 							case z.User == nil:
-								f.replace(_skv_ip, []string{y.String()})
+								f.replace(_skv_ipHostNumber, []string{y.String()})
 								log.Infof("LDAP '%v': UID '%v', found new ipHostNumber '%v'; ACTION: report.", a.String(), f.DN, y)
 								return y
 							}
@@ -546,7 +525,7 @@ func parse_LDAP() (status bool) {
 					continue
 				}
 
-				for _, h := range f.SKV[_skv_p12] {
+				for _, h := range f.SKV[_skv_P12] {
 					var (
 						v_P12 = _P12(h)
 					)
@@ -619,7 +598,7 @@ func parse_LDAP() (status bool) {
 						changes[k] = f.PKI[k].P12.String()
 						i_file.put(_dir_PKI_Cert, _File_Name(f.PKI[k].Cert.SerialNumber.String()), "", f.PKI[k].P12)
 					}
-					f.replace(_skv_p12, changes)
+					f.replace(_skv_P12, changes)
 				}
 			}
 		}

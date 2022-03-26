@@ -52,6 +52,8 @@ type __N_BGP_Group map[_Name]*_BGP_Group
 type _any struct{ any }
 type _hash224_ID [_hash224_Size]uint8 // _hash224_ID here a result of sha3.Sum224().
 type _hash_ID [_hash_Size]uint8       // _hash_ID here a result of sha3.Sum512().
+type _SKV map[string]slstrings
+type slstrings []string
 
 type _Attribute_List struct {
 	Description _Description `xml:"description,attr"`

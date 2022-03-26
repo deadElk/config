@@ -8,8 +8,6 @@ type __A_Peer map[_Inet_ASN]*i_Peer
 type __A_Peer_Group map[_Inet_ASN]*i_Peer_Group
 type __INet_UI_IP_Table map[netip.Prefix]*_INet_UI_IP_Table
 type __INet_VI_IP_Table map[_VI_ID]*_INet_VI_IP_Table
-type _SKV map[string][]string
-type __SKV map[string]map[string]string
 type __N_AB map[_Name]*i_AB
 type __N_AB_Set map[_Name]*i_AB_Set
 type __N_JA map[_Name]*i_JA

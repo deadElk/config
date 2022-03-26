@@ -14,7 +14,7 @@ func (receiver *i_LDAP_Domain) replace(attrName string, attrVals []string) {
 	}
 	ldap_modify_Add_Attr(receiver.Entry, receiver.Modify, attrName)
 	// switch attrName {
-	// case _skv_ca, _skv_acrl, _skv_crl:
+	// case _skv_CA, _skv_acrl, _skv_CRL:
 	// 	// attrName += ";binary" // todo: VERY BAD IDEA!
 	// }
 
@@ -76,4 +76,14 @@ func (receiver *i_LDAP) _DN_FQDN(inbound _DN) (outbound _FQDN) {
 		}
 	}
 	return _FQDN(buffer.String())
+}
+
+func /*(receiver bool) */ parse_SKV() (status bool) {
+	return
+}
+func (receiver slstrings) get_first() (outbound string) {
+	for _, b := range receiver {
+		return b
+	}
+	return
 }

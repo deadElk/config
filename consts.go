@@ -32,31 +32,36 @@ const (
 	_comm_vi
 )
 const (
-	_dir_Config _Dir_Name = "tmp/CONFIG"
-	_dir_Data   _Dir_Name = "tmp/data"
-	_dir_GT     _Dir_Name = "etc/templates"
-	_dir_LDAP   _Dir_Name = "tmp/LDAP"
-	_dir_Modify _Dir_Name = "tmp/modify"
 	// _dir_PKI      _Dir_Name = "tmp/PKI"
+	// _dir_PKI_CRL  _Dir_Name = "tmp/PKI/CRL"
+	// _dir_PKI_Key  _Dir_Name = "tmp/PKI/Key"
+	// _dir_PKI_P12  _Dir_Name = "tmp/PKI/P12"
+	_dir_Config   _Dir_Name = "tmp/CONFIG"
+	_dir_Data     _Dir_Name = "tmp/data"
+	_dir_GT       _Dir_Name = "etc/templates"
+	_dir_LDAP     _Dir_Name = "tmp/LDAP"
+	_dir_Modify   _Dir_Name = "tmp/modify"
 	_dir_PKI_CA   _Dir_Name = "tmp/PKI/CA"
 	_dir_PKI_Cert _Dir_Name = "tmp/PKI/Cert"
-	// _dir_PKI_Key  _Dir_Name = "tmp/PKI/Key"
-	// _dir_PKI_CRL  _Dir_Name = "tmp/PKI/CRL"
-	// _dir_PKI_P12  _Dir_Name = "tmp/PKI/P12"
-	_dir_Portal _Dir_Name = "tmp/portal"
-	_dir_etc    _Dir_Name = "etc"
+	_dir_Portal   _Dir_Name = "tmp/portal"
+	_dir_etc      _Dir_Name = "etc"
 )
 const (
 	_file_host_list _File_Name = "host_list"
 )
 const (
-	_skv_etc  = ""
-	_skv_ssh  = "sshPublicKey"
-	_skv_ca   = "cACertificate"
-	_skv_crl  = "certificateRevocationList"
-	_skv_p12  = "userPKCS12"
-	_skv_luri = "labeledURI"
-	_skv_ip   = "ipHostNumber"
+	_skv_etc          = ""
+	_skv_CA           = "cACertificate"
+	_skv_CRL          = "certificateRevocationList"
+	_skv_P12          = "userPKCS12"
+	_skv_SSH_PK       = "sshPublicKey"
+	_skv_entryDN      = "entryDN"
+	_skv_gidNumber    = "gidNumber"
+	_skv_ipHostNumber = "ipHostNumber"
+	_skv_labeledURI   = "labeledURI"
+	_skv_member       = "member"
+	_skv_owner        = "owner"
+	_skv_uidNumber    = "uidNumber"
 )
 const (
 	_S_Verbosity                        = log.InfoLevel
@@ -184,6 +189,8 @@ const (
 const (
 	_W_AS                                                     _W = "AS"
 	_W_Class                                                  _W = "Class"
+	_W_Config                                                 _W = "Config"
+	_W_Database                                               _W = "Database"
 	_W_ID                                                     _W = "ID"
 	_W_PUBLIC                                                 _W = "OUTER_LIST"
 	_W_VI                                                     _W = "VI"
@@ -302,9 +309,10 @@ const (
 	_W_objectClass_olcDatabaseConfig_objectClass_olcMdbConfig    = "(&(" + _W_objectClass + "=" + _W_olcDatabaseConfig + ")(" + _W_objectClass + "=" + _W_olcMdbConfig + "))"
 	_W_objectClass_posixAccount                                  = "(" + _W_objectClass + "=" + _W_posixAccount + ")"
 	_W_objectClass_posixGroup                                    = "(" + _W_objectClass + "=" + _W_posixGroup + ")"
-	_W_olcDatabaseConfig                                      _W = "olcDatabaseConfig"
-	_W_olcMdbConfig                                           _W = "olcMdbConfig"
-	_W_olcSuffix                                              _W = "olcSuffix"
+	_W_olc                                                    _W = "olc"
+	_W_olcDatabaseConfig                                         = _W_olc + _W_Database + _W_Config
+	_W_olcMdbConfig                                              = _W_olc + "Mdb" + _W_Config
+	_W_olcSuffix                                                 = _W_olc + "Suffix"
 	_W_options                                                _W = "options"
 	_W_or                                                     _W = "or"
 	_W_orlonger                                                  = _W_or + _W_longer
