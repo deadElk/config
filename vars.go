@@ -50,20 +50,16 @@ var (
 		_dir_GT:       {Ext: "tmpl", File: __N_File_Data_Content{}},
 		_dir_LDAP:     {Ext: "xml", File: __N_File_Data_Content{}},
 		_dir_Modify:   {Ext: "xml", File: __N_File_Data_Content{}},
-		_dir_PKI:      {Ext: "", File: __N_File_Data_Content{}},
-		_dir_PKI_Cert: {Ext: "der", File: __N_File_Data_Content{}},
-		_dir_PKI_Key:  {Ext: "der", File: __N_File_Data_Content{}},
-		_dir_PKI_CRL:  {Ext: "der", File: __N_File_Data_Content{}},
-		_dir_PKI_P12:  {Ext: "p12", File: __N_File_Data_Content{}},
+		_dir_PKI_CA:   {Ext: "der", File: __N_File_Data_Content{}},
+		_dir_PKI_Cert: {Ext: "p12", File: __N_File_Data_Content{}},
 		_dir_Portal:   {Ext: "", File: __N_File_Data_Content{}},
 		_dir_etc:      {Ext: "xml", File: __N_File_Data_Content{}},
 	}
 	i_read_list = __N_File_Data{
 		_dir_GT:       i_file[_dir_GT],
 		_dir_Modify:   i_file[_dir_Modify],
+		_dir_PKI_CA:   i_file[_dir_PKI_CA],
 		_dir_PKI_Cert: i_file[_dir_PKI_Cert],
-		_dir_PKI_Key:  i_file[_dir_PKI_Key],
-		_dir_PKI_CRL:  i_file[_dir_PKI_CRL],
 		_dir_etc:      i_file[_dir_etc],
 	}
 	i_write_list = __N_File_Data{
@@ -71,10 +67,8 @@ var (
 		_dir_Data:     i_file[_dir_Data],
 		_dir_LDAP:     i_file[_dir_LDAP],
 		_dir_Modify:   i_file[_dir_Modify],
+		_dir_PKI_CA:   i_file[_dir_PKI_CA],
 		_dir_PKI_Cert: i_file[_dir_PKI_Cert],
-		_dir_PKI_Key:  i_file[_dir_PKI_Key],
-		_dir_PKI_CRL:  i_file[_dir_PKI_CRL],
-		_dir_PKI_P12:  i_file[_dir_PKI_P12],
 		_dir_Portal:   i_file[_dir_Portal],
 	}
 	i_peer_list []_Inet_ASN

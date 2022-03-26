@@ -324,9 +324,9 @@ func parse_LDAP() (status bool) {
 				Key:      nil,
 				CRL:      nil,
 				DER: &_PKI_CA_Node_DER{
-					Cert: _DER(*i_file.get(_dir_PKI_Cert, _File_Name(d.FQDN))),
-					Key:  _DER(*i_file.get(_dir_PKI_Key, _File_Name(d.FQDN))),
-					CRL:  _DER(*i_file.get(_dir_PKI_CRL, _File_Name(d.FQDN))),
+					Cert: _DER(*i_file.get(_dir_PKI_CA, _File_Name(d.FQDN+".crt"))),
+					Key:  _DER(*i_file.get(_dir_PKI_CA, _File_Name(d.FQDN+".key"))),
+					CRL:  _DER(*i_file.get(_dir_PKI_CA, _File_Name(d.FQDN+".crl"))),
 				},
 				Node: __FQDN_PKI_Node{},
 			}
@@ -353,15 +353,15 @@ func parse_LDAP() (status bool) {
 				EmailAddresses:        []string{join_string("@", "ns", d.FQDN)},
 				IPAddresses:           nil,
 			}):
-				i_PKI.put(i_PKI_DB.CA_Node[d.FQDN])
 				d.modify(_skv_acrl, []string{i_PKI_DB.CA_Node[d.FQDN].DER.CRL.String()})
 				d.modify(_skv_ca, []string{i_PKI_DB.CA_Node[d.FQDN].DER.Cert.String()})
 				d.modify(_skv_crl, []string{i_PKI_DB.CA_Node[d.FQDN].DER.CRL.String()})
-				i_file.put(_dir_PKI_Cert, _File_Name(d.FQDN), "", i_PKI_DB.CA_Node[d.FQDN].DER.Cert)
-				i_file.put(_dir_PKI_Key, _File_Name(d.FQDN), "", i_PKI_DB.CA_Node[d.FQDN].DER.Key)
-				i_file.put(_dir_PKI_CRL, _File_Name(d.FQDN), "", i_PKI_DB.CA_Node[d.FQDN].DER.CRL)
+				i_file.put(_dir_PKI_CA, _File_Name(d.FQDN+".crt"), "", i_PKI_DB.CA_Node[d.FQDN].DER.Cert)
+				i_file.put(_dir_PKI_CA, _File_Name(d.FQDN+".key"), "", i_PKI_DB.CA_Node[d.FQDN].DER.Key)
+				i_file.put(_dir_PKI_CA, _File_Name(d.FQDN+".crl"), "", i_PKI_DB.CA_Node[d.FQDN].DER.CRL)
 			}
 			d.PKI = i_PKI_DB.CA_Node[d.FQDN]
+			i_PKI.put(i_PKI_DB.CA_Node[d.FQDN])
 
 			for _, f := range d.Raw_User.Entries {
 				var (
@@ -540,9 +540,9 @@ func parse_LDAP() (status bool) {
 					var (
 						v_P12 = _P12(h)
 					)
-					switch v_FQDN, status := v_P12.get_FQDN(); {
-					case status:
-						switch _, flag := i_PKI_DB.CA_Node[d.FQDN].Node[v_FQDN]; {
+					switch v_FQDN, flag := v_P12.get_FQDN(); {
+					case flag:
+						switch _, flag = i_PKI_DB.CA_Node[d.FQDN].Node[v_FQDN]; {
 						case flag:
 							log.Errorf("LDAP DB '%v': P12 for '%v' already defined; ACTION: report.", a.String(), v_FQDN)
 							status = true
@@ -607,7 +607,7 @@ func parse_LDAP() (status bool) {
 					for k := 0; k < int(_UIx_IPx); k++ {
 						// changes[k] = base64.StdEncoding.EncodeToString(f.PKI[k].P12)
 						changes[k] = f.PKI[k].P12.String()
-						i_file.put(_dir_PKI_P12, _File_Name(f.PKI[k].Cert.SerialNumber.String()), "", f.PKI[k].P12)
+						i_file.put(_dir_PKI_Cert, _File_Name(f.PKI[k].Cert.SerialNumber.String()), "", f.PKI[k].P12)
 					}
 					f.modify(_skv_p12, changes)
 				}

@@ -32,18 +32,19 @@ const (
 	_comm_vi
 )
 const (
-	_dir_Config   _Dir_Name = "tmp/CONFIG"
-	_dir_Data     _Dir_Name = "tmp/data"
-	_dir_GT       _Dir_Name = "etc/templates"
-	_dir_LDAP     _Dir_Name = "tmp/LDAP"
-	_dir_Modify   _Dir_Name = "tmp/modify"
-	_dir_PKI      _Dir_Name = "tmp/PKI"
+	_dir_Config _Dir_Name = "tmp/CONFIG"
+	_dir_Data   _Dir_Name = "tmp/data"
+	_dir_GT     _Dir_Name = "etc/templates"
+	_dir_LDAP   _Dir_Name = "tmp/LDAP"
+	_dir_Modify _Dir_Name = "tmp/modify"
+	// _dir_PKI      _Dir_Name = "tmp/PKI"
+	_dir_PKI_CA   _Dir_Name = "tmp/PKI/CA"
 	_dir_PKI_Cert _Dir_Name = "tmp/PKI/Cert"
-	_dir_PKI_Key  _Dir_Name = "tmp/PKI/Key"
-	_dir_PKI_CRL  _Dir_Name = "tmp/PKI/CRL"
-	_dir_PKI_P12  _Dir_Name = "tmp/PKI/P12"
-	_dir_Portal   _Dir_Name = "tmp/portal"
-	_dir_etc      _Dir_Name = "etc"
+	// _dir_PKI_Key  _Dir_Name = "tmp/PKI/Key"
+	// _dir_PKI_CRL  _Dir_Name = "tmp/PKI/CRL"
+	// _dir_PKI_P12  _Dir_Name = "tmp/PKI/P12"
+	_dir_Portal _Dir_Name = "tmp/portal"
+	_dir_etc    _Dir_Name = "etc"
 )
 const (
 	_file_host_list _File_Name = "host_list"

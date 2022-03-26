@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
+	"encoding/pem"
 	"math/big"
 	"reflect"
 	"time"
@@ -79,8 +80,36 @@ func (receiver *_PKI_CA_Node) parse_DER(inbound *x509.Certificate) (status bool)
 	// receiver.DER.Key = inbound.Key
 	receiver.DER.CRL = t.DER.CRL
 
+	receiver._DER_PEM()
+
 	return status
 }
+func (receiver *_PKI_CA_Node) _DER_PEM() (status bool) {
+	receiver.PEM = &_PKI_CA_Node_PEM{
+		Cert: pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: receiver.DER.Cert}),
+		Key:  pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: receiver.DER.Key}),
+		CRL:  pem.EncodeToMemory(&pem.Block{Type: "X509 CRL", Bytes: receiver.DER.CRL}),
+	}
+	switch {
+	case receiver.PEM.Cert == nil || receiver.PEM.Key == nil || receiver.PEM.CRL == nil:
+		log.Fatalf("can't create PEM for a CA; ACTION: report.")
+	}
+
+	return true
+}
+func (receiver *_PKI_Node) _DER_PEM() (status bool) {
+	receiver.PEM = &_PKI_Node_PEM{
+		Cert: pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: receiver.DER.Cert}),
+		Key:  pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: receiver.DER.Key}),
+	}
+	switch {
+	case receiver.PEM.Cert == nil || receiver.PEM.Key == nil:
+		log.Fatalf("can't create PEM for a CA; ACTION: report.")
+	}
+
+	return true
+}
+
 func (receiver *_PKI_CA_Node) generate(inbound *x509.Certificate) (status bool) { // generate cert for a CA Node
 	switch {
 	case inbound == nil:
@@ -125,7 +154,10 @@ func (receiver *_PKI_CA_Node) generate(inbound *x509.Certificate) (status bool) 
 		log.Fatalf("can't parse a new CA Cert - '%v'; ACTION: report.", err)
 	}
 
-	return receiver.generate_CRL()
+	receiver.generate_CRL()
+	receiver._DER_PEM()
+
+	return true
 }
 func (receiver *_PKI_CA_Node) generate_CRL() (status bool) {
 	var (
@@ -222,6 +254,9 @@ func (receiver *_PKI_Node) parse_P12(inbound *x509.Certificate) (status bool) { 
 	case err != nil:
 		log.Fatalf("can't marshal a new Key - %v", err)
 	}
+
+	receiver._DER_PEM()
+
 	return
 }
 func (receiver *_PKI_Node) generate(inbound *x509.Certificate) (status bool) { // generate cert for a Node
@@ -261,6 +296,8 @@ func (receiver *_PKI_Node) generate(inbound *x509.Certificate) (status bool) { /
 	case err != nil:
 		log.Fatalf("can't encode a new P12 - %v", err)
 	}
+
+	receiver._DER_PEM()
 
 	return true
 }
