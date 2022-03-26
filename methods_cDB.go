@@ -9,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (receiver cDB_N_List) parse() (not_ok bool) { // parse everything in order of dependency.
+func (receiver cDB_N_List) parse() (status bool) { // parse everything in order of dependency.
 	for _, b := range receiver {
 		switch {
 		case b.Reserved:
@@ -38,7 +38,7 @@ func (receiver cDB_N_List) parse() (not_ok bool) { // parse everything in order 
 		}
 		b.VI.parse()
 	}
-	return !not_ok
+	return !status
 }
 
 func (receiver *cDB) parse() {

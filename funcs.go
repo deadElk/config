@@ -11,7 +11,6 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
 )
@@ -386,31 +385,4 @@ func get_IPPrefix_Bits(inbound netip.Prefix) (outbound _INet_Routing) {
 
 func inc_big_Int(inbound *big.Int) {
 	inbound = inbound.Add(inbound, big.NewInt(1))
-}
-
-func ldap_modify_Add_Attr(inbound *ldap.Entry, outbound *ldap.ModifyRequest, attrName string) {
-	var (
-		attrType = _W_objectClass.String()
-		attrVal  string
-	)
-	switch attrName {
-	case _skv_ip:
-		attrVal = "ipHost"
-	case _skv_luri:
-		attrVal = "labeledURIObject"
-	case _skv_ca, _skv_acrl, _skv_crl:
-		attrVal = "certificationAuthority"
-	// case _skv_crl:
-	// 	attrVal = "deltaCRL"
-	// case _skv_p12:
-	default:
-		return
-	}
-	for _, b := range inbound.GetAttributeValues(attrType) { // todo: attr caching?
-		switch {
-		case b == attrVal:
-			return
-		}
-	}
-	outbound.Add(attrType, []string{attrVal})
 }

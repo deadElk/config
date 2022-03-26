@@ -6,7 +6,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func read_cDB() (not_ok bool) {
+func read_cDB() (status bool) {
 	var (
 		xml_db = make(cDB_N_List)
 	)
@@ -17,12 +17,12 @@ func read_cDB() (not_ok bool) {
 		switch err := xml.Unmarshal(*i_file.get(_dir_etc, b), &c); {
 		case err != nil:
 			log.Warnf("configuration file '%v' parse error: '%v'; ACTION: skip.", b, err)
-			not_ok = true
+			status = true
 			continue
 		}
 		xml_db[_Name(b)] = &c
 		log.Debugf("configuration file '%v' loaded.", b)
 	}
 	xml_db.parse()
-	return !not_ok
+	return !status
 }

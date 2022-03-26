@@ -1,36 +1,17 @@
 package main
 
 import (
-	"crypto/ecdsa"
-	"crypto/x509"
-	"crypto/x509/pkix"
-	"math/big"
 	"net/netip"
-	"net/url"
-
-	"github.com/go-ldap/ldap/v3"
 )
 
 type __A_Peer map[_Inet_ASN]*i_Peer
 type __A_Peer_Group map[_Inet_ASN]*i_Peer_Group
-type __DN_LDAP_Domain map[_DN]*i_LDAP_Domain
-type __DN_LDAP_Domain_Group map[_DN]*i_LDAP_Domain_Group
-type __DN_LDAP_Domain_User map[_DN]*i_LDAP_Domain_User
-
-// type __FQDN_PKI map[_FQDN]*_PKI
-type __FQDN_PKI_CA_Node map[_FQDN]*_PKI_CA_Node
-
-// type __FQDN_PKI_Domain map[_FQDN]*_PKI_Domain
-type __FQDN_PKI_Node map[_FQDN]*_PKI_Node
-type __GN_LDAP_Domain_Group map[_GID_Number]*i_LDAP_Domain_Group
 type __INet_UI_IP_Table map[netip.Prefix]*_INet_UI_IP_Table
 type __INet_VI_IP_Table map[_VI_ID]*_INet_VI_IP_Table
 type _SKV map[string][]string
 type __SKV map[string]map[string]string
 type __N_AB map[_Name]*i_AB
 type __N_AB_Set map[_Name]*i_AB_Set
-type __N_File_Data_Content map[_File_Name]*i_File_Data_Content
-type __N_File_Data map[_Dir_Name]*i_File_Data
 type __N_JA map[_Name]*i_JA
 type __N_Name map[_Name]_Name
 type __N_PO_PL map[_Name]*i_PO_PL
@@ -43,14 +24,11 @@ type __N_Peer_SZ map[_Name]*i_Peer_SZ
 type __N_Peer_SZ_IF map[_Name]*i_Peer_SZ_IF
 type __N_Pool map[_Name]*i_Pool
 type __N_Rule_Set map[_Name]*i_Rule_Set
-type __P_LDAP_Domain_User map[netip.Prefix]*i_LDAP_Domain_User
 type __P_Peer_RI_IF map[netip.Prefix]*i_Peer_RI_IF
 type __P_Peer_RI_IF_IP map[netip.Prefix]*i_Peer_RI_IF_IP
 type __P_Peer_RI_IF_PARP map[netip.Prefix]*i_Peer_RI_IF_PARP
 type __P_Peer_RI_RO_RT map[netip.Prefix]*i_Peer_RI_RO_RT
 type __T_Peer_NAT_Type map[_Type]*i_Peer_NAT_Type
-type __UN_LDAP_Domain_User map[_UID_Number]*i_LDAP_Domain_User
-type __U_LDAP map[*url.URL]*i_LDAP
 type __W_Route_Leak_FromTo map[_W]*i_Route_Leak_FromTo
 type __i_FW []*i_FW
 type __i_FW_FromTo []*i_FW_FromTo
@@ -70,154 +48,6 @@ type __i_VI map[_VI_ID]*i_VI
 type __i_VI_GT map[_VI_ID]*i_VI_GT
 type __i_VI_ID_Peer map[_VI_ID]__i_ID_Peer
 type __i_VI_Peer map[_VI_ID]*i_VI_Peer
-type __PKI_Node []*_PKI_Node
-type __PKI_CA_Node []*_PKI_CA_Node
-type __I_PKI_I map[*big.Int]any
-
-// file i/o
-type i_File_Data struct {
-	Flag   bool
-	Ext    _Name
-	Sorted []_File_Name
-	File   __N_File_Data_Content
-}
-type i_File_Data_Content struct {
-	Flag    bool
-	Ext     _Name
-	Content *_Content
-}
-
-// PKI
-// Cert_SN  *big.Int // use for all SN: Cert and CRL
-// CRL_SN   *big.Int
-// CA       *_PKI_CA_Node // nil for root CA or pointer to upstream CA for intermediate CA
-// P12      _P12
-// type _PKI struct {
-// 	FQDN _FQDN
-// 	CA   *_PKI_CA_Node
-// 	Node __FQDN_PKI_Domain
-// }
-// type _PKI_Domain struct {
-// 	FQDN    _FQDN
-// 	CA      *_PKI_CA_Node
-// 	CA_Node __FQDN_PKI_CA_Node
-// 	Node    __FQDN_PKI_Node
-// }
-type _PKI_CA_Node struct {
-	FQDN     _FQDN
-	CA       *_PKI_CA_Node
-	CA_Chain __Cert_Chain
-	CA_Node  __FQDN_PKI_CA_Node
-	Cert     *x509.Certificate
-	Key      *ecdsa.PrivateKey
-	CRL      *pkix.CertificateList
-	DER      *_PKI_CA_Node_DER
-	Node     __FQDN_PKI_Node
-	PEM      *_PKI_CA_Node_PEM
-}
-type _PKI_Node struct {
-	FQDN _FQDN
-	CA   *_PKI_CA_Node
-	Cert *x509.Certificate
-	Key  *ecdsa.PrivateKey
-	DER  *_PKI_Node_DER
-	P12  _P12
-	PEM  *_PKI_Node_PEM
-}
-type _PKI_CA_Node_DER struct {
-	Cert _DER
-	Key  _DER
-	CRL  _DER
-}
-type _PKI_Node_DER struct {
-	Cert _DER
-	Key  _DER
-}
-type _PKI_CA_Node_PEM struct {
-	Cert _PEM
-	Key  _PEM
-	CRL  _PEM
-}
-type _PKI_Node_PEM struct {
-	Cert _PEM
-	Key  _PEM
-}
-
-// LDAP
-type i_LDAP struct {
-	Bind_DN      _DN
-	DB_CN        string
-	DB_Filter    string
-	DC_CN        string
-	DC_Filter    string
-	Domain       __DN_LDAP_Domain
-	Group_CN     string
-	Group_Filter string
-	M_CN_G       __DN_LDAP_Domain_Group
-	M_CN_U       __DN_LDAP_Domain_User
-	Modify       *ldap.ModifyRequest
-	Modify_Regen map[_FQDN]bool
-	OLC          *i_LDAP_OLC    // todo: parse OLC from server
-	Schema       *i_LDAP_Schema // todo: parse schema from server
-	Secret       _Secret
-	URL          *url.URL
-	User_CN      string
-	User_Filter  string
-	PKI          *_PKI_CA_Node
-}
-type i_LDAP_OLC struct {
-}
-type i_LDAP_Schema struct {
-}
-type i_LDAP_Domain struct {
-	LDAP      *i_LDAP
-	DN        _DN
-	Entry     *ldap.Entry
-	FQDN      _FQDN
-	Group     __GN_LDAP_Domain_Group
-	Modify    *ldap.ModifyRequest
-	OLC       *i_LDAP_Domain_OLC
-	Raw_DC    *ldap.SearchResult
-	Raw_Group *ldap.SearchResult
-	Raw_User  *ldap.SearchResult
-	SKV       _SKV
-	User      __UN_LDAP_Domain_User
-	PKI       *_PKI_CA_Node
-}
-type i_LDAP_Domain_OLC struct {
-	DN _DN
-}
-type i_LDAP_Domain_Group struct { // gidNumber: index
-	LDAP           *i_LDAP
-	DN             _DN
-	Domain         *i_LDAP_Domain
-	Entry          *ldap.Entry
-	FQDN           _FQDN
-	GID            _GID                   // cn
-	GID_List       __GN_LDAP_Domain_Group // CAUTION >>>> GID includes GID <<<< member: index = member (gidNumber here), value is a pointer.
-	GID_Number     _GID_Number
-	Modify         *ldap.ModifyRequest
-	Owner_GID_List __GN_LDAP_Domain_Group // CAUTION >>>> GID includes GID <<<< owner: index = owner (gidNumber here), value is a pointer.
-	Owner_UID_List __UN_LDAP_Domain_User  // owner: index = owner (uidNumber here), value is a pointer.
-	SKV            _SKV
-	UID_List       __UN_LDAP_Domain_User // member: index = member (uidNumber here), value is a pointer.
-	PKI            *_PKI_Node
-}
-type i_LDAP_Domain_User struct { // uidNumber: index
-	LDAP       *i_LDAP
-	DN         _DN
-	Domain     *i_LDAP_Domain
-	Entry      *ldap.Entry
-	FQDN       _FQDN
-	GID_List   __GN_LDAP_Domain_Group // memberOf: index = memberOf (gidNumber here), value is a pointer.
-	GID_Number _GID_Number            // gidNumber
-	IPPrefix   netip.Prefix           // ipHostNumber (user's subnet)
-	Modify     *ldap.ModifyRequest
-	SKV        _SKV // sshPublicKey, userPKCS12, etc: private [service][key]value DB
-	UID        _UID // uid
-	UID_Number _UID_Number
-	PKI        __PKI_Node
-}
 
 // Peer Group
 type i_Peer_Group struct {
