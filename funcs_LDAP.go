@@ -426,6 +426,8 @@ func parse_LDAP() (status bool) {
 						SKV:            v_SKV,
 						UID_List:       nil,
 						PKI:            nil,
+						VPN_SKV:        nil,
+						VPN:            nil,
 					}
 					v_UID_List       = make(__UN_LDAP_Domain_User)
 					v_GID_List       = make(__GN_LDAP_Domain_Group) // todo
@@ -465,6 +467,8 @@ func parse_LDAP() (status bool) {
 
 				v_G.FQDN = b._DN_FQDN(v_G.DN)
 
+				v_G.parse_VPN_SKV()
+
 				v_G.UID_List = v_UID_List
 				v_G.GID_List = v_GID_List
 				v_G.Owner_UID_List = v_Owner_UID_List
@@ -475,6 +479,7 @@ func parse_LDAP() (status bool) {
 				for _, j := range d.Group[v_G.GID_Number].UID_List {
 					j.GID_List[v_G.GID_Number] = v_G
 				}
+
 				status = status || f_SKV
 			}
 			for _, f := range d.User {

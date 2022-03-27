@@ -23,6 +23,7 @@ const (
 	_re_equal      string = "="
 	_re_lower_case string = "abcdefghijklmnopqrstuvwxyz"
 	_re_point      string = "."
+	_re_space      string = " "
 	_re_symbol     string = "_" // carefully with a special symbols
 	_re_upper_case string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	_passwd               = _re_upper_case + _re_lower_case + _re_digit + _re_symbol

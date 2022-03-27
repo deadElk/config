@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"strconv"
 
 	"github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
@@ -84,6 +85,39 @@ func /*(receiver bool) */ parse_SKV() (status bool) {
 func (receiver slstrings) get_first() (outbound string) {
 	for _, b := range receiver {
 		return b
+	}
+	return
+}
+func (receiver slstrings) get_map() (outbound map[string]string) {
+	outbound = make(map[string]string)
+	for _, b := range receiver {
+		outbound[b] = ""
+	}
+	return
+}
+
+func (receiver *i_LDAP_Domain_Group) parse_VPN_SKV() (status bool) {
+	receiver.VPN_SKV = make(_SKV)
+	for _, b := range receiver.SKV[_skv_labeledURI] {
+		var (
+			c = re_string_splitters.Split(b, -1)
+			d = len(c)
+		)
+		switch {
+		case d >= 2:
+			receiver.VPN_SKV[c[0]] = func() (outbound slstrings) {
+				for e := 1; e <= d-1; e++ {
+					outbound = append(outbound, c[e])
+				}
+				return
+			}()
+		}
+	}
+	receiver.VPN = &i_LDAP_VPN{
+		outside_IPPrefix: receiver.VPN_SKV["openvpn"].get_map(),
+		ssp:              parse_interface(strconv.ParseBool(receiver.VPN_SKV["openvpn_ssp"].get_first())).(bool),
+		port:             _INet_Port(string_uint64(receiver.VPN_SKV["openvpnd_port"].get_first())),
+		firewall_v00:     receiver.VPN_SKV["firewall_v00"].get_map(),
 	}
 	return
 }

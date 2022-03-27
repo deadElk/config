@@ -17,6 +17,7 @@ var (
 	re_dots             = regexp.MustCompile(`\.+`)
 	re_equals           = regexp.MustCompile(`=+`)
 	re_commas           = regexp.MustCompile(`,+`)
+	re_spaces           = regexp.MustCompile(` +`)
 	re_slashes          = regexp.MustCompile(`/+`)
 	re_string_splitters = regexp.MustCompile(`[;, \t]+`)
 	// gt_fm      = template.FuncMap{
