@@ -515,13 +515,13 @@ func parse_LDAP() (status bool) {
 	for a, b := range i_ldap { // third pass, fill PKI with known data or generate new
 		for _, d := range b.Domain {
 
-			for _, f := range d.Group {
-				switch {
-				case len(f.GID) >= 3 && f.GID[3:] == "vpn":
-				default:
-					continue
-				}
-			}
+			// for _, f := range d.Group {
+			// 	switch {
+			// 	case len(f.GID) >= 3 && f.GID[3:] == "vpn":
+			// 	default:
+			// 		continue
+			// 	}
+			// }
 
 			for _, f := range d.User {
 				switch f.UID {
