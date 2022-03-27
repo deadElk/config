@@ -1,5 +1,9 @@
 package main
 
+import (
+	log "github.com/sirupsen/logrus"
+)
+
 func (receiver *i_Peer) link_AB(name ..._Name) {
 	for _, value := range name {
 		switch {
@@ -73,4 +77,26 @@ func (receiver __N_AB) parse_recurse_AB(inbound _Name) {
 			receiver.parse_recurse_AB(a)
 		}
 	}
+}
+
+func (receiver __A_Peer) parse_GT() (status bool) {
+	for index, value := range receiver {
+		switch {
+		case value.Reserved:
+			continue
+		}
+		for _, gt_v := range value.GT_List {
+			var (
+				content = i_file.get(_dir_GT, _File_Name(gt_v)).parse_GT(value)
+			)
+			switch {
+			case content == nil:
+				log.Warnf("peer '%v', template '%v' parser returned nil; ACTION: report.", index.String(), gt_v)
+				status = true
+				continue
+			}
+			i_file.append(_dir_Config, _File_Name(value.ASName), "\n", content)
+		}
+	}
+	return !status
 }

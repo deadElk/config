@@ -1,10 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"net/netip"
 	"sort"
-	"text/template"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -410,33 +408,4 @@ func parse_iDB_Route_Leak(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, in
 		}
 	}
 	return
-}
-
-func parse_GT() (status bool) {
-	for index, value := range i_peer {
-		switch {
-		case value.Reserved:
-			continue
-		}
-		for _, gt_v := range value.GT_List {
-			var (
-				buffer = new(bytes.Buffer)
-			)
-			switch v_GT, err := template.New(gt_v.String()).Parse(i_file.get(_dir_GT, _File_Name(gt_v)).String()); {
-			case err == nil || v_GT != nil:
-				switch err = v_GT.Execute(buffer, value); {
-				case err != nil:
-					log.Warnf("peer '%v', template '%v' execute error: '%v'; ACTION: report.", index.String(), gt_v, err)
-					status = true
-					continue
-				}
-				i_file.append(_dir_Config, _File_Name(value.ASName), "\n", buffer)
-			default:
-				log.Warnf("peer '%v', template '%v' parse error: '%v'; ACTION: report.", index.String(), gt_v, err)
-				status = true
-				continue
-			}
-		}
-	}
-	return !status
 }

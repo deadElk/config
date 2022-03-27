@@ -71,7 +71,7 @@ func main() {
 		log.Fatalf("parse_LDAP() error; ACTION: fatal.")
 	}
 	switch {
-	case !parse_GT():
+	case !i_peer.parse_GT():
 		log.Fatalf("write_file() error; ACTION: fatal.")
 	}
 	switch {

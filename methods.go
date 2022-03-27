@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"net/netip"
 	"strings"
+	"text/template"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -427,4 +428,21 @@ func (receiver __INet_UI_IP_Table) generate(inbound netip.Prefix, conn_bits _INe
 		}
 		receiver[parse_interface(curr_IP.Prefix(int(conn_mask))).(netip.Prefix)] = v_Output
 	}
+}
+func (receiver *_Content) parse_GT(inbound any) (outbound _Content) {
+	var (
+		buffer    = new(bytes.Buffer)
+		v_GT, err = template.New("receiver").Parse(receiver.String())
+	)
+	switch {
+	case err != nil || v_GT == nil:
+		log.Warnf("template parse error: '%v'; ACTION: return ''.", err)
+		return
+	}
+	switch err = v_GT.Execute(buffer, inbound); {
+	case err != nil:
+		log.Warnf("template execute error: '%v'; ACTION: report.", err)
+		return
+	}
+	return buffer.Bytes()
 }

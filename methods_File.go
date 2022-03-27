@@ -127,3 +127,6 @@ func (receiver __N_File_Data) check(dir _Dir_Name, file _File_Name) /*not_ok boo
 		}
 	}
 }
+func (receiver *_Dir_Name) a(inbound _Dir_Name) (outbound _Dir_Name) {
+	return _Dir_Name(join_string("/", receiver, inbound))
+}
