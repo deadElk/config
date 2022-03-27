@@ -75,13 +75,15 @@ type i_LDAP_Domain_Group struct { // gidNumber: index
 	UID_List       __UN_LDAP_Domain_User // member: index = member (uidNumber here), value is a pointer.
 	PKI            *_PKI_Node
 	VPN_SKV        _SKV
-	VPN            *i_LDAP_VPN
+	VPN            *i_LDAP_Domain_Group_VPN
 }
-type i_LDAP_VPN struct {
-	outside_IPPrefix map[string]string
-	ssp              bool
-	port             _INet_Port
-	firewall_v00     map[string]string
+type i_LDAP_Domain_Group_VPN struct {
+	Outside_IPPrefix map[string]string
+	SSP              bool
+	Port             _INet_Port
+	FW_v00           map[string]string
+	TLSv2            _PEM
+	TLSv2_User       map[_UID_Number][]_PEM
 }
 
 type i_LDAP_Domain_User struct { // uidNumber: index

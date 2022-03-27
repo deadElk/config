@@ -472,6 +472,9 @@ func parse_LDAP() (status bool) {
 
 				v_G.parse_VPN_SKV()
 
+				// todo: gen this keys w/o external call
+				v_G.VPN.TLSv2 = _PEM(*i_file.get(_dir_PKI_TLS, _File_Name(v_G.FQDN)))
+
 				v_G.UID_List = v_UID_List
 				v_G.GID_List = v_GID_List
 				v_G.Owner_UID_List = v_Owner_UID_List
@@ -616,21 +619,44 @@ func parse_LDAP() (status bool) {
 		for _, d := range b.Domain {
 			for _, f := range d.Group {
 				switch {
-				case f.VPN.outside_IPPrefix == nil || f.VPN.port == 0:
+				case len(f.GID) >= 3 && f.GID[3:] == "vpn" && f.VPN.Outside_IPPrefix != nil && f.VPN.Port != 0:
+				case f.VPN.Outside_IPPrefix != nil && f.VPN.Port != 0:
+				default:
 					continue
 				}
 				// todo: gen this keys w/o external call
-				switch _, flag := i_file[_dir_PKI_TLS].File[_File_Name(f.FQDN)]; {
-				case !flag || len(i_file[_dir_PKI_TLS].File[_File_Name(f.FQDN)].Content.String()) == 0:
-					i_file.put(_dir_PKI_TLS, _File_Name(f.FQDN), "", _file_openvpn.external("--genkey", "tls-crypt-v2-server"))
-				}
-			}
-			i_file.write()
-			for _, f := range d.Group {
 				switch {
-				case f.VPN.outside_IPPrefix == nil || f.VPN.port == 0:
-					continue
+				case f.VPN.TLSv2 == nil || len(f.VPN.TLSv2) == 0:
+					log.Warnf("TLSv2 server key for '%v' not found; ACTION: generate.", f.FQDN)
+					i_file.put(_dir_PKI_TLS, _File_Name(f.FQDN), "", _file_openvpn.external("--genkey", "tls-crypt-v2-server"))
+					f.VPN.TLSv2 = _PEM(*i_file.get(_dir_PKI_TLS, _File_Name(f.FQDN)))
+					i_file.write()
 				}
+				f.VPN.TLSv2_User = make(map[_UID_Number][]_PEM)
+
+				for g, h := range f.UID_List {
+					f.VPN.TLSv2_User[g] = make([]_PEM, _UIx_IPx, _UIx_IPx)
+					for i := range h.PKI {
+						switch {
+						case i <= 1 && i >= len(_re_lower_case):
+							continue
+						}
+						var (
+							tlsv2_fn = _File_Name(join_string("_", f.FQDN, h.FQDN))
+						)
+						f.VPN.TLSv2_User[g][i] = _PEM(*i_file.get(_dir_PKI_TLS, tlsv2_fn))
+						switch {
+						case f.VPN.TLSv2_User[g][i] == nil || len(f.VPN.TLSv2_User[g][i]) == 0:
+							log.Warnf("TLSv2 client key for '%v' not found; ACTION: generate.", tlsv2_fn)
+							i_file.put(_dir_PKI_TLS, tlsv2_fn, "",
+								_file_openvpn.external("--tls-crypt-v2", i_file.fn(_dir_PKI_TLS, _File_Name(f.FQDN)).String(), "--genkey", "tls-crypt-v2-client"))
+							f.VPN.TLSv2_User[g][i] = _PEM(*i_file.get(_dir_PKI_TLS, tlsv2_fn))
+						}
+
+					}
+				}
+				i_file.write()
+
 			}
 		}
 	}

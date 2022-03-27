@@ -41,6 +41,7 @@ type _PKI_CA_Node struct {
 	Cert     *x509.Certificate
 	Key      *ecdsa.PrivateKey
 	CRL      *pkix.CertificateList
+	DH       any
 	DER      *_PKI_CA_Node_DER
 	Node     __FQDN_PKI_Node
 	PEM      *_PKI_CA_Node_PEM
@@ -58,6 +59,7 @@ type _PKI_CA_Node_DER struct {
 	Cert _DER
 	Key  _DER
 	CRL  _DER
+	DH   _DER
 }
 type _PKI_Node_DER struct {
 	Cert _DER
@@ -67,6 +69,7 @@ type _PKI_CA_Node_PEM struct {
 	Cert _PEM
 	Key  _PEM
 	CRL  _PEM
+	DH   _PEM
 }
 type _PKI_Node_PEM struct {
 	Cert _PEM

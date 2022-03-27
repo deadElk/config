@@ -113,11 +113,11 @@ func (receiver *i_LDAP_Domain_Group) parse_VPN_SKV() (status bool) {
 			}()
 		}
 	}
-	receiver.VPN = &i_LDAP_VPN{
-		outside_IPPrefix: receiver.VPN_SKV["openvpn"].get_map(),
-		ssp:              parse_interface(strconv.ParseBool(receiver.VPN_SKV["openvpn_ssp"].get_first())).(bool),
-		port:             _INet_Port(string_uint64(receiver.VPN_SKV["openvpnd_port"].get_first())),
-		firewall_v00:     receiver.VPN_SKV["firewall_v00"].get_map(),
+	receiver.VPN = &i_LDAP_Domain_Group_VPN{
+		Outside_IPPrefix: receiver.VPN_SKV["openvpn"].get_map(),
+		SSP:              parse_interface(strconv.ParseBool(receiver.VPN_SKV["openvpn_ssp"].get_first())).(bool),
+		Port:             _INet_Port(string_uint64(receiver.VPN_SKV["openvpnd_port"].get_first())),
+		FW_v00:           receiver.VPN_SKV["firewall_v00"].get_map(),
 	}
 	return
 }

@@ -110,3 +110,15 @@ type _INet_UI_IP_Table struct {
 	Conn     []netip.Prefix
 	Conn_Key []_Secret
 }
+type _OVPN_GT_Server struct {
+	Port             _INet_Port
+	PPort            _PName
+	Proto            _INet_Protocol
+	ExternalIPPrefix netip.Prefix
+	ExternalIP       netip.Prefix
+	InternalIPPrefix netip.Prefix
+	InternalIP       netip.Prefix
+	_PKI_CA_Node_PEM
+	Subnet  netip.Addr
+	Netmask netip.Addr
+}

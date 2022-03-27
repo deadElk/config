@@ -268,7 +268,7 @@ func (receiver *_PKI_Node) generate(inbound *x509.Certificate) (status bool) { /
 	var (
 		err error
 	)
-	log.Infof("generating a new cert")
+	log.Infof("generating a new Cert for '%v'; ACTION: report.", inbound.Subject.CommonName)
 
 	receiver.DER = &_PKI_Node_DER{}
 

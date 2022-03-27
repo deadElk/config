@@ -153,3 +153,11 @@ func (receiver _File_Name) external(args ...string) (outbound _Content) {
 	}
 	return
 }
+func (receiver __N_File_Data) fn(dir _Dir_Name, file _File_Name) ( /*not_ok bool,*/ outbound _File_Name) {
+	receiver.check(dir, file)
+	switch _, flag := receiver[dir].File[file]; {
+	case !flag:
+		return
+	}
+	return /*!not_ok,*/ _File_Name(join_string("/", dir, join_string(".", file, receiver[dir].Ext)))
+}
