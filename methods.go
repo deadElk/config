@@ -444,5 +444,9 @@ func (receiver *_Content) parse_GT(inbound any) (outbound _Content) {
 		log.Warnf("template execute error: '%v'; ACTION: report.", err)
 		return
 	}
+	switch { // x == nil and len(x) == 0 not the same, so ....
+	case buffer.Len() == 0:
+		return _Content{}
+	}
 	return buffer.Bytes()
 }

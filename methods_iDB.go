@@ -91,7 +91,7 @@ func (receiver __A_Peer) parse_GT() (status bool) {
 			)
 			switch {
 			case content == nil:
-				log.Warnf("peer '%v', template '%v' parser returned nil; ACTION: report.", index.String(), gt_v)
+				log.Warnf("peer '%v', template '%v' parser returned nil; ACTION: ignore.", index.String(), gt_v)
 				status = true
 				continue
 			}
