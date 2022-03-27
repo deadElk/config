@@ -49,29 +49,34 @@ var (
 		_dir_Config:   {Ext: "txt", File: __N_File_Data_Content{}},
 		_dir_Data:     {Ext: "xml", File: __N_File_Data_Content{}},
 		_dir_GT:       {Ext: "tmpl", File: __N_File_Data_Content{}},
+		_dir_GT_OVPN:  {Ext: "tmpl", File: __N_File_Data_Content{}},
 		_dir_LDAP:     {Ext: "xml", File: __N_File_Data_Content{}},
 		_dir_Modify:   {Ext: "xml", File: __N_File_Data_Content{}},
+		_dir_PKI_TLS:  {Ext: "pem", File: __N_File_Data_Content{}},
 		_dir_PKI_CA:   {Ext: "der", File: __N_File_Data_Content{}},
 		_dir_PKI_Cert: {Ext: "p12", File: __N_File_Data_Content{}},
 		_dir_Portal:   {Ext: "", File: __N_File_Data_Content{}},
 		_dir_etc:      {Ext: "xml", File: __N_File_Data_Content{}},
 	}
-	i_read_list = __N_File_Data{
-		_dir_GT:       i_file[_dir_GT],
-		_dir_Modify:   i_file[_dir_Modify],
-		_dir_PKI_CA:   i_file[_dir_PKI_CA],
-		_dir_PKI_Cert: i_file[_dir_PKI_Cert],
-		_dir_etc:      i_file[_dir_etc],
-	}
-	i_write_list = __N_File_Data{
-		_dir_Config:   i_file[_dir_Config],
-		_dir_Data:     i_file[_dir_Data],
-		_dir_LDAP:     i_file[_dir_LDAP],
-		_dir_Modify:   i_file[_dir_Modify],
-		_dir_PKI_CA:   i_file[_dir_PKI_CA],
-		_dir_PKI_Cert: i_file[_dir_PKI_Cert],
-		_dir_Portal:   i_file[_dir_Portal],
-	}
+	// i_read_list = __N_File_Data{
+	// 	_dir_GT:       i_file[_dir_GT],
+	// 	_dir_GT_OVPN:  i_file[_dir_GT_OVPN],
+	// 	_dir_Modify:   i_file[_dir_Modify],
+	// 	_dir_PKI_TLS:  i_file[_dir_PKI_TLS],
+	// 	_dir_PKI_CA:   i_file[_dir_PKI_CA],
+	// 	_dir_PKI_Cert: i_file[_dir_PKI_Cert],
+	// 	_dir_etc:      i_file[_dir_etc],
+	// }
+	// i_write_list = __N_File_Data{
+	// 	_dir_Config:   i_file[_dir_Config],
+	// 	_dir_Data:     i_file[_dir_Data],
+	// 	_dir_LDAP:     i_file[_dir_LDAP],
+	// 	_dir_Modify:   i_file[_dir_Modify],
+	// 	_dir_PKI_TLS:  i_file[_dir_PKI_TLS],
+	// 	_dir_PKI_CA:   i_file[_dir_PKI_CA],
+	// 	_dir_PKI_Cert: i_file[_dir_PKI_Cert],
+	// 	_dir_Portal:   i_file[_dir_Portal],
+	// }
 	i_peer_list []_Inet_ASN
 	i_vi_ip     = make(__INet_VI_IP_Table)
 	i_ui_ip     = make(__INet_UI_IP_Table)

@@ -40,8 +40,10 @@ const (
 	_dir_Config   _Dir_Name = "tmp/CONFIG"
 	_dir_Data     _Dir_Name = "tmp/data"
 	_dir_GT       _Dir_Name = "etc/templates"
+	_dir_GT_OVPN  _Dir_Name = "etc/templates/openvpn"
 	_dir_LDAP     _Dir_Name = "tmp/LDAP"
 	_dir_Modify   _Dir_Name = "tmp/modify"
+	_dir_PKI_TLS  _Dir_Name = "tmp/PKI/TLS"
 	_dir_PKI_CA   _Dir_Name = "tmp/PKI/CA"
 	_dir_PKI_Cert _Dir_Name = "tmp/PKI/Cert"
 	_dir_Portal   _Dir_Name = "tmp/portal"
@@ -49,6 +51,7 @@ const (
 )
 const (
 	_file_host_list _File_Name = "host_list"
+	_file_openvpn   _File_Name = "./openvpn"
 )
 const (
 	_skv_etc          = ""

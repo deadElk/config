@@ -101,10 +101,13 @@ func read_ldap() (status bool) {
 				case len(_dn) == 0:
 					continue
 				}
-				switch {
-				case _dn != "dc=domain,dc=tld":
+
+				switch _dn {
+				case "dc=domain,dc=tld":
+				default:
 					continue
 				}
+
 				log.Infof("LDAP '%v' search result: '%v'.", a.String(), _dn)
 				switch _, flag := i_ldap_domain[_dn]; {
 				case flag:
@@ -608,6 +611,29 @@ func parse_LDAP() (status bool) {
 			}
 		}
 	}
+
+	for _, b := range i_ldap { // third pass, fill PKI with known data or generate new
+		for _, d := range b.Domain {
+			for _, f := range d.Group {
+				switch {
+				case f.VPN.outside_IPPrefix == nil || f.VPN.port == 0:
+					continue
+				}
+				switch _, flag := i_file[_dir_PKI_TLS].File[_File_Name(f.FQDN)]; {
+				case !flag || len(i_file[_dir_PKI_TLS].File[_File_Name(f.FQDN)].Content.String()) == 0:
+					i_file.put(_dir_PKI_TLS, _File_Name(f.FQDN), "", _file_openvpn.external("--genkey", "tls-crypt-v2-server"))
+				}
+			}
+			i_file.write()
+			for _, f := range d.Group {
+				switch {
+				case f.VPN.outside_IPPrefix == nil || f.VPN.port == 0:
+					continue
+				}
+			}
+		}
+	}
+
 	switch {
 	case status:
 		return status

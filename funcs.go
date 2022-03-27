@@ -273,6 +273,23 @@ func interface_string(delimiter string, inbound any) (outbound string) {
 			}
 		}
 		return buffer.String()
+	case []string:
+		var (
+			inbounds = len(value) - 1
+			buffer   = new(bytes.Buffer)
+		)
+		for a, b := range value {
+			switch {
+			case len(b) == 0:
+				continue
+			}
+			buffer.WriteString(b)
+			switch {
+			case a < inbounds:
+				buffer.WriteString(delimiter)
+			}
+		}
+		return buffer.String()
 
 	default:
 		log.Debugf("unsupported type '%v' of '%s'; ACTION: use fmt.Sprintf().", reflect.TypeOf(inbound), inbound)
