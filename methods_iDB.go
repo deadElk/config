@@ -85,6 +85,7 @@ func (receiver __A_Peer) parse_GT() (status bool) {
 		case value.Reserved:
 			continue
 		}
+		i_file.put(_dir_Config, _File_Name(value.ASName), "\n", "")
 		for _, gt_v := range value.GT_List {
 			var (
 				content = i_file.get(_dir_GT, _File_Name(gt_v)).parse_GT(value)

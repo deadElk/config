@@ -31,6 +31,7 @@ func parse_iDB_Vocabulary() {
 }
 
 func generate_iDB_host_list() {
+	i_file.put(_dir_Config, _file_host_list, "\n", "")
 	sort.Slice(i_peer_list, func(i, j int) bool {
 		return i_peer_list[i] < i_peer_list[j]
 	})

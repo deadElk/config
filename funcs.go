@@ -257,32 +257,40 @@ func interface_string(delimiter string, inbound any) (outbound string) {
 
 		// todo: dirty hack
 	case []_Name:
+		// var (
+		// 	inbounds = len(value) - 1
+		// 	buffer   = new(bytes.Buffer)
+		// )
+		// for a, b := range value {
+		// 	switch {
+		// 	case len(b) == 0:
+		// 		continue
+		// 	}
+		// 	buffer.WriteString(b.String())
+		// 	switch {
+		// 	case a < inbounds:
+		// 		buffer.WriteString(delimiter)
+		// 	}
+		// }
+		// return buffer.String()
 		var (
-			inbounds = len(value) - 1
+			interim = func() (outbound []string) {
+				for _, b := range value {
+					var (
+						c = interface_string(delimiter, b)
+					)
+					switch {
+					case len(c) == 0:
+						continue
+					}
+					outbound = append(outbound, c)
+				}
+				return
+			}()
+			inbounds = len(interim) - 1
 			buffer   = new(bytes.Buffer)
 		)
-		for a, b := range value {
-			switch {
-			case len(b) == 0:
-				continue
-			}
-			buffer.WriteString(b.String())
-			switch {
-			case a < inbounds:
-				buffer.WriteString(delimiter)
-			}
-		}
-		return buffer.String()
-	case []string:
-		var (
-			inbounds = len(value) - 1
-			buffer   = new(bytes.Buffer)
-		)
-		for a, b := range value {
-			switch {
-			case len(b) == 0:
-				continue
-			}
+		for a, b := range interim {
 			buffer.WriteString(b)
 			switch {
 			case a < inbounds:
@@ -364,18 +372,24 @@ func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_dir
 
 func join_string(delimiter string, inbound ...any) (outbound string) {
 	var (
-		inbounds = len(inbound) - 1
+		interim = func() (outbound []string) {
+			for _, b := range inbound {
+				var (
+					c = interface_string(delimiter, b)
+				)
+				switch {
+				case len(c) == 0:
+					continue
+				}
+				outbound = append(outbound, c)
+			}
+			return
+		}()
+		inbounds = len(interim) - 1
 		buffer   = new(bytes.Buffer)
 	)
-	for a, b := range inbound {
-		var (
-			c = interface_string(delimiter, b)
-		)
-		switch {
-		case len(c) == 0:
-			continue
-		}
-		buffer.WriteString(c)
+	for a, b := range interim {
+		buffer.WriteString(b)
 		switch {
 		case a < inbounds:
 			buffer.WriteString(delimiter)

@@ -111,14 +111,23 @@ type _INet_UI_IP_Table struct {
 	Conn_Key []_Secret
 }
 type _OVPN_GT_Server struct {
-	Port             _INet_Port
-	PPort            _PName
-	Proto            _INet_Protocol
-	ExternalIPPrefix netip.Prefix
-	ExternalIP       netip.Prefix
-	InternalIPPrefix netip.Prefix
-	InternalIP       netip.Prefix
-	_PKI_CA_Node_PEM
-	Subnet  netip.Addr
-	Netmask netip.Addr
+	Port       _INet_Port
+	PPort      _PName
+	IDPName    _PName
+	Proto      _INet_Protocol
+	ExternalIP netip.Addr
+	InternalIP netip.Addr
+	Subnet     netip.Addr
+	Netmask    netip.Addr
+}
+type _OVPN_GT_Client struct {
+	Port       _INet_Port
+	Proto      []_INet_Protocol
+	ExternalIP []netip.Addr
+	CA         _PEM
+	Cert       _PEM
+	Key        _PEM
+	TLSv2      _PEM
+	Subnet     netip.Addr
+	Netmask    netip.Addr
 }

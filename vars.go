@@ -46,17 +46,19 @@ var (
 	i_ldap        = make(__U_LDAP)
 	i_ldap_domain = make(__DN_LDAP_Domain)
 	i_file        = __N_File_Data{
-		_dir_Config:   {Ext: "txt", File: __N_File_Data_Content{}},
-		_dir_Data:     {Ext: "xml", File: __N_File_Data_Content{}},
-		_dir_GT:       {Ext: "tmpl", File: __N_File_Data_Content{}},
-		_dir_GT_OVPN:  {Ext: "tmpl", File: __N_File_Data_Content{}},
-		_dir_LDAP:     {Ext: "xml", File: __N_File_Data_Content{}},
-		_dir_Modify:   {Ext: "xml", File: __N_File_Data_Content{}},
-		_dir_PKI_TLS:  {Ext: "pem", File: __N_File_Data_Content{}},
-		_dir_PKI_CA:   {Ext: "der", File: __N_File_Data_Content{}},
-		_dir_PKI_Cert: {Ext: "p12", File: __N_File_Data_Content{}},
-		_dir_Portal:   {Ext: "", File: __N_File_Data_Content{}},
-		_dir_etc:      {Ext: "xml", File: __N_File_Data_Content{}},
+		_dir_Config:     {Ext: "txt", File: __N_File_Data_Content{}},
+		_dir_Data:       {Ext: "xml", File: __N_File_Data_Content{}},
+		_dir_GT:         {Ext: "tmpl", File: __N_File_Data_Content{}},
+		_dir_GT_OVPN:    {Ext: "tmpl", File: __N_File_Data_Content{}},
+		_dir_LDAP:       {Ext: "xml", File: __N_File_Data_Content{}},
+		_dir_Modify:     {Ext: "xml", File: __N_File_Data_Content{}},
+		_dir_PKI_TLS:    {Ext: "pem", File: __N_File_Data_Content{}},
+		_dir_PKI_CA:     {Ext: "der", File: __N_File_Data_Content{}},
+		_dir_PKI_Cert:   {Ext: "p12", File: __N_File_Data_Content{}},
+		_dir_Portal:     {Ext: "", File: __N_File_Data_Content{}},
+		_dir_Stage:      {Ext: "", File: __N_File_Data_Content{}},
+		_dir_Stage_OVPN: {Ext: "", File: __N_File_Data_Content{}},
+		_dir_etc:        {Ext: "xml", File: __N_File_Data_Content{}},
 	}
 	// i_read_list = __N_File_Data{
 	// 	_dir_GT:       i_file[_dir_GT],
@@ -77,6 +79,7 @@ var (
 	// 	_dir_PKI_Cert: i_file[_dir_PKI_Cert],
 	// 	_dir_Portal:   i_file[_dir_Portal],
 	// }
+	i_OVPN      = make(map[_FQDN]*_OVPN_GT_Server)
 	i_peer_list []_Inet_ASN
 	i_vi_ip     = make(__INet_VI_IP_Table)
 	i_ui_ip     = make(__INet_UI_IP_Table)

@@ -351,6 +351,8 @@ func parse_LDAP() (status bool) {
 			d.replace(_skv_CA, []string{i_PKI_DB.CA_Node[d.FQDN].DER.Cert.String()})
 			d.replace(_skv_CRL, []string{i_PKI_DB.CA_Node[d.FQDN].DER.CRL.String()})
 
+			i_file.write()
+
 			for _, f := range d.Raw_User.Entries {
 				var (
 					f_SKV, v_SKV = get_LDAP_SKV(f, map[string]int{b.User_CN: 1, _skv_entryDN: 1, _skv_gidNumber: 1, _skv_uidNumber: 1, _skv_SSH_PK: 0, _skv_P12: int(_UIx_IPx), _skv_labeledURI: 0, _skv_ipHostNumber: 1})
@@ -520,15 +522,6 @@ func parse_LDAP() (status bool) {
 
 	for a, b := range i_ldap { // third pass, fill PKI with known data or generate new
 		for _, d := range b.Domain {
-
-			// for _, f := range d.Group {
-			// 	switch {
-			// 	case len(f.GID) >= 3 && f.GID[3:] == "vpn":
-			// 	default:
-			// 		continue
-			// 	}
-			// }
-
 			for _, f := range d.User {
 				switch f.UID {
 				case "lom":
@@ -599,6 +592,8 @@ func parse_LDAP() (status bool) {
 					i_PKI.put(i_PKI_DB.CA_Node[d.FQDN].Node[h])
 					f.PKI[g] = i_PKI_DB.CA_Node[d.FQDN].Node[h]
 				}
+				i_file.write()
+
 				switch {
 				case changed:
 					var (
@@ -619,8 +614,7 @@ func parse_LDAP() (status bool) {
 		for _, d := range b.Domain {
 			for _, f := range d.Group {
 				switch {
-				case len(f.GID) >= 3 && f.GID[3:] == "vpn" && f.VPN.Outside_IPPrefix != nil && f.VPN.Port != 0:
-				case f.VPN.Outside_IPPrefix != nil && f.VPN.Port != 0:
+				case len(f.GID) >= 3 && f.GID[:3] == "vpn" && f.VPN.Outside_IPPrefix != nil && f.VPN.Port != 0:
 				default:
 					continue
 				}
@@ -630,15 +624,49 @@ func parse_LDAP() (status bool) {
 					log.Warnf("TLSv2 server key for '%v' not found; ACTION: generate.", f.FQDN)
 					i_file.put(_dir_PKI_TLS, _File_Name(f.FQDN), "", _file_openvpn.external("--genkey", "tls-crypt-v2-server"))
 					f.VPN.TLSv2 = _PEM(*i_file.get(_dir_PKI_TLS, _File_Name(f.FQDN)))
-					i_file.write()
 				}
 				f.VPN.TLSv2_User = make(map[_UID_Number][]_PEM)
+				i_file.write()
+
+				for y := range f.VPN.Outside_IPPrefix {
+					for _, x := range []_W{_W_tcp, _W_udp} {
+						i_OVPN[f.FQDN] = &_OVPN_GT_Server{
+							Port:       f.VPN.Port,
+							PPort:      pad(f.VPN.Port, 5),
+							IDPName:    _PName(join_string("", "ID", pad(f.VPN.Port, 5))),
+							Proto:      _INet_Protocol(x),
+							ExternalIP: parse_interface(netip.ParseAddr(y)).(netip.Addr),
+							InternalIP: parse_interface(netip.ParseAddr("10.4.94.94")).(netip.Addr),
+							Subnet:     parse_interface(netip.ParseAddr(_UIx_Addr)).(netip.Addr),
+							Netmask:    parse_interface(netip.ParseAddr("255.240.0.0")).(netip.Addr),
+						}
+						var (
+							p_pki    = _dir_Stage_OVPN.a("usr/local/etc/openvpn", _Dir_Name(i_OVPN[f.FQDN].IDPName), "pki")
+							p_server = _dir_Stage_OVPN.a("usr/local/etc/openvpn")
+							c_server = i_file.get(_dir_GT_OVPN, "server").parse_GT(i_OVPN[f.FQDN])
+						)
+						i_file.put(p_pki, "ca.crt.pem", "", d.PKI.PEM.Cert)
+						i_file.put(p_pki, "server.crt.pem", "", d.PKI.PEM.Cert)
+						i_file.put(p_pki, "server.key.pem", "", d.PKI.PEM.Key)
+						i_file.put(p_pki, "server.dh.pem", "", d.PKI.PEM.DH)
+						i_file.put(p_pki, "crl.crl.pem", "", d.PKI.PEM.CRL)
+						i_file.put(p_pki, "server.tls.key.pem", "", f.VPN.TLSv2)
+						i_file.put(p_server, _File_Name(join_string(".", join_string("_", "openvpn", i_OVPN[f.FQDN].IDPName, x), "conf")), "", c_server)
+					}
+				}
+				i_file.write()
 
 				for g, h := range f.UID_List {
+					switch h.UID {
+					case "lom":
+					default:
+						continue
+					}
+
 					f.VPN.TLSv2_User[g] = make([]_PEM, _UIx_IPx, _UIx_IPx)
 					for i := range h.PKI {
 						switch {
-						case i <= 1 && i >= len(_re_lower_case):
+						case i < 1 || i > len(_re_lower_case):
 							continue
 						}
 						var (
@@ -652,12 +680,50 @@ func parse_LDAP() (status bool) {
 								_file_openvpn.external("--tls-crypt-v2", i_file.fn(_dir_PKI_TLS, _File_Name(f.FQDN)).String(), "--genkey", "tls-crypt-v2-client"))
 							f.VPN.TLSv2_User[g][i] = _PEM(*i_file.get(_dir_PKI_TLS, tlsv2_fn))
 						}
+						i_file.write()
 
+						var (
+							c_GT = &_OVPN_GT_Client{
+								Port:  f.VPN.Port,
+								Proto: []_INet_Protocol{_INet_Protocol(_W_tcp), _INet_Protocol(_W_udp)},
+								ExternalIP: func() (outbound []netip.Addr) {
+									for y := range f.VPN.Outside_IPPrefix {
+										outbound = append(outbound, parse_interface(netip.ParseAddr(y)).(netip.Addr))
+									}
+									return
+								}(),
+								CA:      d.PKI.PEM.Cert,
+								Cert:    h.PKI[i].PEM.Cert,
+								Key:     h.PKI[i].PEM.Key,
+								TLSv2:   f.VPN.TLSv2_User[g][i],
+								Subnet:  i_ui_ip[h.IPPrefix.Masked()].Conn[i].Addr(),
+								Netmask: parse_interface(netip.ParseAddr("255.240.0.0")).(netip.Addr),
+							}
+							p_ccd            = _dir_Stage_OVPN.a("usr/local/etc/openvpn", _Dir_Name(i_OVPN[f.FQDN].IDPName), "ccd")
+							p_client_profile = _dir_Portal.a(_Dir_Name(d.FQDN), _Dir_Name(f.FQDN), _Dir_Name(h.FQDN))
+							c_ccd            = i_file.get(_dir_GT_OVPN, "client_ccd").parse_GT(c_GT)
+							c_client_profile = i_file.get(_dir_GT_OVPN, "client_profile").parse_GT(c_GT)
+						)
+						i_file.put(p_ccd, _File_Name(h.PKI[i].FQDN), "", c_ccd)
+						i_file.put(p_client_profile, _File_Name(join_string(".", h.PKI[i].FQDN, "ovpn")), "", c_client_profile)
 					}
+					i_file.write()
+
 				}
 				i_file.write()
 
 			}
+
+			var (
+				p_server_cron    = _dir_Stage_OVPN.a("usr/local/etc/openvpn")
+				p_server_Juniper = _dir_Stage_OVPN.a("usr/local/etc/openvpn")
+				c_server_cron    = i_file.get(_dir_GT_OVPN, "server_cron").parse_GT(i_OVPN)
+				c_server_Juniper = i_file.get(_dir_GT_OVPN, "server_Juniper").parse_GT(i_OVPN)
+			)
+			i_file.put(p_server_cron, "server_cron", "", c_server_cron)
+			i_file.put(p_server_Juniper, "server_Juniper", "", c_server_Juniper)
+			i_file.write()
+
 		}
 	}
 
