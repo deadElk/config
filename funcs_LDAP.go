@@ -619,6 +619,7 @@ func parse_LDAP() (status bool) {
 				case f.VPN.outside_IPPrefix == nil || f.VPN.port == 0:
 					continue
 				}
+				// todo: gen this keys w/o external call
 				switch _, flag := i_file[_dir_PKI_TLS].File[_File_Name(f.FQDN)]; {
 				case !flag || len(i_file[_dir_PKI_TLS].File[_File_Name(f.FQDN)].Content.String()) == 0:
 					i_file.put(_dir_PKI_TLS, _File_Name(f.FQDN), "", _file_openvpn.external("--genkey", "tls-crypt-v2-server"))
