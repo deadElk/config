@@ -109,7 +109,7 @@ func (receiver *cDB) parse() {
 		SP_Default_Policy:   _S_SP_Default_Policy,
 		VI_IP:               nil,
 		UI_IP:               nil,
-		Peer_List:           __A_Peer{},
+		Peer_List:           __ASN_Peer{},
 		GT_Action:           "",
 		_Attribute_List:     receiver._Attribute_List,
 	}
@@ -141,7 +141,7 @@ func (receiver cDB_JA_List) parse() {
 		}
 		i_ja[b.Name] = func() (outbound *i_JA) {
 			outbound = &i_JA{
-				Term: func() (outbound __i_JA_Term) {
+				Term: func() (outbound __JA_Term) {
 					for _, d := range b.Term {
 						outbound = append(outbound, &i_JA_Term{
 							Name:             d.Name,
@@ -169,7 +169,7 @@ func (receiver cDB_PO_PL_List) parse() {
 		}
 		i_pl[b.Name] = func() (outbound *i_PO_PL) {
 			outbound = &i_PO_PL{
-				Match: func() (outbound __i_PO_PL_Match) {
+				Match: func() (outbound __PO_PL_Match) {
 					for _, d := range b.Match {
 						switch {
 						case !d.IPPrefix.IsValid():
@@ -199,11 +199,11 @@ func (receiver cDB_PO_PS_List) parse() {
 		}
 		i_ps[b.Name] = func() (outbound *i_PO_PS) {
 			outbound = &i_PO_PS{
-				Term: func() (outbound __i_PO_PS_Term) {
+				Term: func() (outbound __PO_PS_Term) {
 					for _, d := range b.Term {
 						outbound = append(outbound, &i_PO_PS_Term{
 							Name: d.Name,
-							From: func() (outbound __i_PO_PS_From) {
+							From: func() (outbound __PO_PS_From) {
 								for _, f := range d.From {
 									outbound = append(outbound, &i_PO_PS_From{
 										RI:         f.RI,
@@ -223,7 +223,7 @@ func (receiver cDB_PO_PS_List) parse() {
 								}
 								return
 							}(),
-							Then: func() (outbound __i_PO_PS_Then) {
+							Then: func() (outbound __PO_PS_Then) {
 								for _, f := range d.Then {
 									var (
 										v_Action string
@@ -280,16 +280,16 @@ func (receiver cDB_Peer_List) parse(v_PG_ASN _Inet_ASN) {
 		}
 		var (
 			v_Peer = &i_Peer{
-				// VI:           __i_VI{},
-				// VI_Local:     __i_VI_Peer{},
-				// VI_Remote:    __i_VI_Peer{},
+				// VI:           __VI_VI{},
+				// VI_Local:     __VI_VI_Peer{},
+				// VI_Remote:    __VI_VI_Peer{},
 				Group:           i_peer_group[v_PG_ASN],
 				ASN:             b.ASN,
 				ASName:          _Name(join_string("", _Name_AS, pad_string(b.ASN, 10))),
 				PName:           pad(b.ASN, 10),
 				Router_ID:       netip.Addr{},
 				IF_2_RI:         map[_Name]_Name{},
-				VI_GT:           __i_VI_GT{},
+				VI_GT:           __VI_VI_GT{},
 				IFM:             __N_Peer_IFM{},
 				RI:              __N_Peer_RI{},
 				Hostname:        "",
@@ -367,7 +367,7 @@ func (receiver cDB_VI_List) parse() {
 			continue
 		}
 		var (
-			v_vi_peer_list = make(__i_ID_Peer)
+			v_vi_peer_list = make(__VIC_VI_Peer)
 		)
 		i_vi[b.ID] = &i_VI{
 			PName: pad(&b.ID, 5),
@@ -388,7 +388,7 @@ func (receiver cDB_VI_List) parse() {
 			GT_Action:       "",
 			_Attribute_List: b._Attribute_List,
 		}
-		i_vi_peer[b.ID] = __i_ID_Peer{}
+		i_vi_peer[b.ID] = __VIC_VI_Peer{}
 
 		for _, d := range b.Peer {
 			switch _, flag := i_peer[d.ASN]; {
@@ -499,7 +499,7 @@ func (receiver cDB_VI_List) parse() {
 				IFM:           _Name(c_VI_Action[i_vi[b.ID].Type]),
 				IFsM:          _Name(b.ID.String()),
 				Communication: _S_Comm[_comm_vi],
-				IP: __P_Peer_RI_IF_IP{
+				IP: __IPP_Peer_RI_IF_IP{
 					i_vi_peer[b.ID][_first].Inner_IPPrefix: {
 						Masked:          i_vi_peer[b.ID][_first].Inner_IPPrefix.Masked(),
 						Primary:         false,
@@ -732,8 +732,8 @@ func (receiver *cDB_Peer) parse_RI(v_Peer *i_Peer) {
 						IFM:           _Name(v_IF_IFM),
 						IFsM:          _Name(v_IF_IFsM),
 						Communication: d.Communication.parse(_S_Comm[_comm_if]),
-						IP: func() (outbound __P_Peer_RI_IF_IP) {
-							outbound = make(__P_Peer_RI_IF_IP)
+						IP: func() (outbound __IPP_Peer_RI_IF_IP) {
+							outbound = make(__IPP_Peer_RI_IF_IP)
 							for _, f := range d.IP {
 								switch {
 								case !f.DHCP:
@@ -761,8 +761,8 @@ func (receiver *cDB_Peer) parse_RI(v_Peer *i_Peer) {
 							}
 							return
 						}(),
-						PARP: func() (outbound __P_Peer_RI_IF_PARP) {
-							outbound = make(__P_Peer_RI_IF_PARP)
+						PARP: func() (outbound __IPP_Peer_RI_IF_PARP) {
+							outbound = make(__IPP_Peer_RI_IF_PARP)
 							for _, f := range d.PARP {
 								switch {
 								case !f.IP.IsValid():
@@ -790,8 +790,8 @@ func (receiver *cDB_Peer) parse_RI(v_Peer *i_Peer) {
 				}
 				return
 			}()
-			v_RT = func() (outbound __P_Peer_RI_RO_RT) {
-				outbound = make(__P_Peer_RI_RO_RT)
+			v_RT = func() (outbound __IPP_Peer_RI_RO_RT) {
+				outbound = make(__IPP_Peer_RI_RO_RT)
 				for _, d := range b.RT {
 					switch {
 					case !d.Identifier.IsValid():
@@ -1073,11 +1073,11 @@ func (receiver *cDB_Peer) parse_FW(v_Peer *i_Peer) {
 	for _, b := range receiver.FW {
 		v_Peer.FW = append(v_Peer.FW, &i_FW{
 			Name: b.Name,
-			Term: func() (outbound __i_FW_Term) {
+			Term: func() (outbound __FW_Term) {
 				for _, d := range b.Term {
 					outbound = append(outbound, &i_FW_Term{
 						Name: d.Name,
-						From: func() (outbound __i_FW_FromTo) {
+						From: func() (outbound __FW_FromTo) {
 							for _, f := range d.From {
 								outbound = append(outbound, &i_FW_FromTo{
 									PL:              f.PL,
@@ -1087,7 +1087,7 @@ func (receiver *cDB_Peer) parse_FW(v_Peer *i_Peer) {
 							}
 							return
 						}(),
-						To: func() (outbound __i_FW_FromTo) {
+						To: func() (outbound __FW_FromTo) {
 							for _, f := range d.To {
 								outbound = append(outbound, &i_FW_FromTo{
 									PL:              f.PL,
@@ -1097,7 +1097,7 @@ func (receiver *cDB_Peer) parse_FW(v_Peer *i_Peer) {
 							}
 							return
 						}(),
-						Then: func() (outbound __i_FW_Then) {
+						Then: func() (outbound __FW_Then) {
 							for _, f := range d.Then {
 								outbound = append(outbound, &i_FW_Then{
 									Action:          f.Action,
@@ -1160,7 +1160,7 @@ func (receiver *cDB_Peer) parse_Rule_Set(v_Peer *i_Peer, inbound_type _Type, inb
 	}
 	return
 }
-func (receiver *cDB_Peer) parse_Rule(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound cDB_Rule_List) (outbound __i_Rule) {
+func (receiver *cDB_Peer) parse_Rule(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound cDB_Rule_List) (outbound __Rule) {
 	for _, j := range inbound {
 		outbound = append(outbound, &i_Rule{
 			Name:            j.Name,
@@ -1188,7 +1188,7 @@ func (receiver *cDB_Peer) parse_Match_2_Name(v_Peer *i_Peer, inbound cDB_Match_L
 	}
 	return
 }
-func (receiver *cDB_Peer) parse_Then(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound cDB_Then_List) (outbound __i_Then) {
+func (receiver *cDB_Peer) parse_Then(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound cDB_Then_List) (outbound __Then) {
 	for _, j := range inbound {
 		outbound = append(outbound, &i_Then{
 			Action:      j.Action,
@@ -1209,7 +1209,7 @@ func (receiver *cDB_Peer) parse_Then(v_Peer *i_Peer, inbound_type _Type, inbound
 	}
 	return
 }
-func (receiver *cDB_Peer) parse_FromTo(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound cDB_FromTo_List) (outbound __i_FromTo) {
+func (receiver *cDB_Peer) parse_FromTo(v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, inbound cDB_FromTo_List) (outbound __FromTo) {
 	for _, j := range inbound {
 		outbound = append(outbound, &i_FromTo{
 			AB:        j.AB,

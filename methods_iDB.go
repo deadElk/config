@@ -79,7 +79,7 @@ func (receiver __N_AB) parse_recurse_AB(inbound _Name) {
 	}
 }
 
-func (receiver __A_Peer) parse_GT() (status bool) {
+func (receiver __ASN_Peer) parse_GT() (status bool) {
 	for index, value := range receiver {
 		switch {
 		case value.Reserved:

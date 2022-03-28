@@ -302,7 +302,7 @@ func (receiver *_PKI_Node) generate(inbound *x509.Certificate) (status bool) { /
 	return true
 }
 
-func (receiver __I_PKI_I) put(inbound any) (status bool) {
+func (receiver __BI_Any) put(inbound any) (status bool) {
 	switch value := (inbound).(type) {
 	case *_PKI_CA_Node:
 		switch {

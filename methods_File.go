@@ -9,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (receiver __N_File_Data) read() (status bool) {
+func (receiver __DN_File_Data) read() (status bool) {
 	for dir := range receiver {
 		receiver.check(dir, "")
 		var (
@@ -66,7 +66,7 @@ func (receiver __N_File_Data) read() (status bool) {
 	}
 	return !status
 }
-func (receiver __N_File_Data) get(dir _Dir_Name, file _File_Name) ( /*not_ok bool,*/ outbound *_Content) {
+func (receiver __DN_File_Data) get(dir _Dir_Name, file _File_Name) ( /*not_ok bool,*/ outbound *_Content) {
 	receiver.check(dir, file)
 	switch _, flag := receiver[dir].File[file]; {
 	case !flag:
@@ -74,7 +74,7 @@ func (receiver __N_File_Data) get(dir _Dir_Name, file _File_Name) ( /*not_ok boo
 	}
 	return /*!not_ok,*/ receiver[dir].File[file].Content
 }
-func (receiver __N_File_Data) put(dir _Dir_Name, file _File_Name, delimiter string, content any) /*not_ok bool*/ {
+func (receiver __DN_File_Data) put(dir _Dir_Name, file _File_Name, delimiter string, content any) /*not_ok bool*/ {
 	receiver.check(dir, file)
 	var (
 		v_Content = _Content(interface_string(delimiter, content))
@@ -83,7 +83,7 @@ func (receiver __N_File_Data) put(dir _Dir_Name, file _File_Name, delimiter stri
 	receiver[dir].File[file].Flag = true
 	// return !not_ok
 }
-func (receiver __N_File_Data) append(dir _Dir_Name, file _File_Name, delimiter string, content any) /*not_ok bool*/ {
+func (receiver __DN_File_Data) append(dir _Dir_Name, file _File_Name, delimiter string, content any) /*not_ok bool*/ {
 	receiver.check(dir, file)
 	var (
 		v_Content = _Content(join_string(delimiter, receiver[dir].File[file].Content, content))
@@ -92,7 +92,7 @@ func (receiver __N_File_Data) append(dir _Dir_Name, file _File_Name, delimiter s
 	receiver[dir].File[file].Flag = true
 	// return !not_ok
 }
-func (receiver __N_File_Data) write() (not_ok bool) {
+func (receiver __DN_File_Data) write() (not_ok bool) {
 	for a, b := range receiver {
 		switch err := os.MkdirAll(a.String(), os.ModeDir|0700); {
 		case err != nil:
@@ -119,11 +119,11 @@ func (receiver __N_File_Data) write() (not_ok bool) {
 	}
 	return !not_ok
 }
-func (receiver __N_File_Data) check(dir _Dir_Name, file _File_Name) /*not_ok bool*/ {
+func (receiver __DN_File_Data) check(dir _Dir_Name, file _File_Name) /*not_ok bool*/ {
 	switch _, flag := receiver[dir]; {
 	case !flag:
 		log.Warnf("Dir '%v' definition doesn't exist; ACTION: create.", dir)
-		receiver[dir] = &i_File_Data{Flag: true, File: __N_File_Data_Content{}}
+		receiver[dir] = &i_File_Data{Flag: true, File: __FN_File_Data_Content{}}
 	}
 	switch {
 	case len(file) != 0:
@@ -175,7 +175,7 @@ func (receiver _File_Name) external(args ...string) (outbound _Content) {
 	}
 	return
 }
-func (receiver __N_File_Data) fn(dir _Dir_Name, file _File_Name) ( /*not_ok bool,*/ outbound _File_Name) {
+func (receiver __DN_File_Data) fn(dir _Dir_Name, file _File_Name) ( /*not_ok bool,*/ outbound _File_Name) {
 	receiver.check(dir, file)
 	switch _, flag := receiver[dir].File[file]; {
 	case !flag:

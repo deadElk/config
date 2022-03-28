@@ -33,34 +33,34 @@ var (
 	// daemon's global PKI SerialNumber used for Cert and CRL
 	// i_PKI_DB         = make(__FQDN_PKI_Domain)
 	// i_PKI_SN      = big.NewInt(0) // use big.NewInt(time.Now().Unixnano())
-	i_PKI         = make(__I_PKI_I)
+	i_PKI         = make(__BI_Any)
 	i_PKI_DB      = &_PKI_CA_Node{CA_Node: __FQDN_PKI_CA_Node{}}
 	i_ab          = make(__N_AB)
 	i_ja          = make(__N_JA)
 	i_pl          = make(__N_PO_PL)
 	i_ps          = make(__N_PO_PS)
-	i_vi          = make(__i_VI)
-	i_vi_peer     = make(__i_VI_ID_Peer)
-	i_peer        = make(__A_Peer)
-	i_peer_group  = make(__A_Peer_Group)
-	i_ldap        = make(__U_LDAP)
+	i_vi          = make(__VI_VI)
+	i_vi_peer     = make(__VI__VIC_VI_Peer)
+	i_peer        = make(__ASN_Peer)
+	i_peer_group  = make(__ASN_Peer_Group)
+	i_ldap        = make(__URL_LDAP)
 	i_ldap_domain = make(__DN_LDAP_Domain)
-	i_file        = __N_File_Data{
-		_dir_Config:     {Ext: "txt", File: __N_File_Data_Content{}},
-		_dir_Data:       {Ext: "xml", File: __N_File_Data_Content{}},
-		_dir_GT:         {Ext: "tmpl", File: __N_File_Data_Content{}},
-		_dir_GT_OVPN:    {Ext: "tmpl", File: __N_File_Data_Content{}},
-		_dir_LDAP:       {Ext: "xml", File: __N_File_Data_Content{}},
-		_dir_Modify:     {Ext: "xml", File: __N_File_Data_Content{}},
-		_dir_PKI_TLS:    {Ext: "pem", File: __N_File_Data_Content{}},
-		_dir_PKI_CA:     {Ext: "der", File: __N_File_Data_Content{}},
-		_dir_PKI_Cert:   {Ext: "p12", File: __N_File_Data_Content{}},
-		_dir_Portal:     {Ext: "", File: __N_File_Data_Content{}},
-		_dir_Stage:      {Ext: "", File: __N_File_Data_Content{}},
-		_dir_Stage_OVPN: {Ext: "", File: __N_File_Data_Content{}},
-		_dir_etc:        {Ext: "xml", File: __N_File_Data_Content{}},
+	i_file        = __DN_File_Data{
+		_dir_Config:     {Ext: "txt", File: __FN_File_Data_Content{}},
+		_dir_Data:       {Ext: "xml", File: __FN_File_Data_Content{}},
+		_dir_GT:         {Ext: "tmpl", File: __FN_File_Data_Content{}},
+		_dir_GT_OVPN:    {Ext: "tmpl", File: __FN_File_Data_Content{}},
+		_dir_LDAP:       {Ext: "xml", File: __FN_File_Data_Content{}},
+		_dir_Modify:     {Ext: "xml", File: __FN_File_Data_Content{}},
+		_dir_PKI_TLS:    {Ext: "pem", File: __FN_File_Data_Content{}},
+		_dir_PKI_CA:     {Ext: "der", File: __FN_File_Data_Content{}},
+		_dir_PKI_Cert:   {Ext: "p12", File: __FN_File_Data_Content{}},
+		_dir_Portal:     {Ext: "", File: __FN_File_Data_Content{}},
+		_dir_Stage:      {Ext: "", File: __FN_File_Data_Content{}},
+		_dir_Stage_OVPN: {Ext: "", File: __FN_File_Data_Content{}},
+		_dir_etc:        {Ext: "xml", File: __FN_File_Data_Content{}},
 	}
-	// i_read_list = __N_File_Data{
+	// i_read_list = __DN_File_Data{
 	// 	_dir_GT:       i_file[_dir_GT],
 	// 	_dir_GT_OVPN:  i_file[_dir_GT_OVPN],
 	// 	_dir_Modify:   i_file[_dir_Modify],
@@ -69,7 +69,7 @@ var (
 	// 	_dir_PKI_Cert: i_file[_dir_PKI_Cert],
 	// 	_dir_etc:      i_file[_dir_etc],
 	// }
-	// i_write_list = __N_File_Data{
+	// i_write_list = __DN_File_Data{
 	// 	_dir_Config:   i_file[_dir_Config],
 	// 	_dir_Data:     i_file[_dir_Data],
 	// 	_dir_LDAP:     i_file[_dir_LDAP],

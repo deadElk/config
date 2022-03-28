@@ -137,6 +137,27 @@ func read_ldap() (status bool) {
 				}
 
 				var (
+					_host_request = ldap.NewSearchRequest(
+						_dn.String(),
+						ldap.ScopeWholeSubtree,
+						ldap.DerefAlways,
+						0,
+						0,
+						false,
+						b.User_Filter,
+						[]string{"*", "+"},
+						nil,
+					)
+					_host_result *ldap.SearchResult
+				)
+				switch _host_result, err = _ldap.Search(_host_request); {
+				case err != nil:
+					log.Fatalf("LDAP '%v': search error '%v'; ACTION: fatal.", a.String(), err)
+					status = true
+					continue
+				}
+
+				var (
 					_group_request = ldap.NewSearchRequest(
 						_dn.String(),
 						ldap.ScopeWholeSubtree,
@@ -179,12 +200,13 @@ func read_ldap() (status bool) {
 				}
 
 				i_ldap_domain[_dn] = &i_LDAP_Domain{
-					LDAP:      b,
 					DN:        _dn,
 					Group:     __GN_LDAP_Domain_Group{},
+					LDAP:      b,
 					OLC:       &i_LDAP_Domain_OLC{DN: _DN(d.DN)},
 					Raw_DC:    _dc_result,
 					Raw_Group: _group_result,
+					Raw_Host:  _host_result,
 					Raw_User:  _user_result,
 					User:      __UN_LDAP_Domain_User{},
 				}
@@ -352,6 +374,60 @@ func parse_LDAP() (status bool) {
 			d.replace(_skv_CRL, []string{i_PKI_DB.CA_Node[d.FQDN].DER.CRL.String()})
 
 			i_file.write()
+
+			for _, f := range d.Raw_Host.Entries {
+				var (
+					f_SKV, v_SKV = get_LDAP_SKV(f, map[string]int{b.User_CN: 1, _skv_entryDN: 1, _skv_gidNumber: 1, _skv_uidNumber: 1, _skv_SSH_PK: 0, _skv_P12: 1, _skv_labeledURI: 0, _skv_ipHostNumber: 0})
+				)
+				var (
+					v_H = &i_LDAP_Domain_User{
+						LDAP:       b,
+						DN:         _DN(v_SKV[_skv_entryDN].get_first()),
+						Domain:     d,
+						Entry:      f,
+						FQDN:       "",
+						GID_List:   __GN_LDAP_Domain_Group{},
+						GID_Number: _GID_Number(string_uint64(v_SKV[_skv_gidNumber].get_first())),
+						IPPrefix:   netip.Prefix{},
+						Modify:     nil,
+						SKV:        v_SKV,
+						UID:        _UID(v_SKV[b.User_CN].get_first()),
+						UID_Number: _UID_Number(string_uint64(v_SKV[_skv_uidNumber].get_first())),
+						PKI:        nil,
+					}
+				)
+				switch {
+				case v_H.UID_Number == 0:
+					log.Errorf("LDAP DB '%v' inconsistent! UID '%v': UID_Number is '%v'; ACTION: report.", a.String(), v_H.DN, v_H.GID_Number)
+					status = true
+					fallthrough
+				case v_H.GID_Number == 0:
+					log.Warnf("LDAP DB '%v' inconsistent! primary GID_Number is not defined for UID '%v'; ACTION: skip user.", a.String(), f.DN)
+					continue
+				}
+
+				switch v_IPPrefix := parse_interface(netip.ParsePrefix(v_SKV[_skv_ipHostNumber].get_first())).(netip.Prefix); { // modification candidate -> user's ip space
+				case v_IPPrefix.IsValid():
+					switch value, flag := i_ui_ip[v_IPPrefix]; {
+					case flag && value.User == nil: // ip found and free
+						log.Debugf("UID '%v', ipHostNumber '%v'.", v_H.DN, v_IPPrefix)
+						v_H.IPPrefix = v_IPPrefix
+						i_ui_ip[v_H.IPPrefix].User = v_H
+					case flag && value.User != nil: // ip found but occupied, so need ip assigment
+						log.Warnf("LDAP DB '%v' inconsistent! UID '%v', ipHostNumber '%v' occupied by '%v'; ACTION: find new.", a.String(), v_H.DN, v_IPPrefix, value.User.DN)
+					}
+				default: // ip not found, so need ip assigment
+					log.Debugf("LDAP '%v': UID '%v', ipHostNumber not defined; ACTION: find new.", a.String(), v_H.DN)
+				}
+
+				v_H.PKI = make(__PKI_Node, _UIx_IPx, _UIx_IPx)
+				v_H.FQDN = b._DN_FQDN(v_H.DN)
+
+				d.User[v_H.UID_Number] = v_H
+				b.M_CN_U[v_H.DN] = v_H
+
+				status = status || f_SKV
+			}
 
 			for _, f := range d.Raw_User.Entries {
 				var (

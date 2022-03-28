@@ -9,7 +9,7 @@ import (
 
 type __PKI_Node []*_PKI_Node
 type __PKI_CA_Node []*_PKI_CA_Node
-type __I_PKI_I map[*big.Int]any
+type __BI_Any map[*big.Int]any
 
 // type __FQDN_PKI map[_FQDN]*_PKI
 type __FQDN_PKI_CA_Node map[_FQDN]*_PKI_CA_Node

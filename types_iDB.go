@@ -4,8 +4,8 @@ import (
 	"net/netip"
 )
 
-type __A_Peer map[_Inet_ASN]*i_Peer
-type __A_Peer_Group map[_Inet_ASN]*i_Peer_Group
+type __ASN_Peer map[_Inet_ASN]*i_Peer
+type __ASN_Peer_Group map[_Inet_ASN]*i_Peer_Group
 type __INet_UI_IP_Table map[netip.Prefix]*_INet_UI_IP_Table
 type __INet_VI_IP_Table map[_VI_ID]*_INet_VI_IP_Table
 type __N_AB map[_Name]*i_AB
@@ -22,30 +22,30 @@ type __N_Peer_SZ map[_Name]*i_Peer_SZ
 type __N_Peer_SZ_IF map[_Name]*i_Peer_SZ_IF
 type __N_Pool map[_Name]*i_Pool
 type __N_Rule_Set map[_Name]*i_Rule_Set
-type __P_Peer_RI_IF map[netip.Prefix]*i_Peer_RI_IF
-type __P_Peer_RI_IF_IP map[netip.Prefix]*i_Peer_RI_IF_IP
-type __P_Peer_RI_IF_PARP map[netip.Prefix]*i_Peer_RI_IF_PARP
-type __P_Peer_RI_RO_RT map[netip.Prefix]*i_Peer_RI_RO_RT
+type __IPP_Peer_RI_IF map[netip.Prefix]*i_Peer_RI_IF
+type __IPP_Peer_RI_IF_IP map[netip.Prefix]*i_Peer_RI_IF_IP
+type __IPP_Peer_RI_IF_PARP map[netip.Prefix]*i_Peer_RI_IF_PARP
+type __IPP_Peer_RI_RO_RT map[netip.Prefix]*i_Peer_RI_RO_RT
 type __T_Peer_NAT_Type map[_Type]*i_Peer_NAT_Type
 type __W_Route_Leak_FromTo map[_W]*i_Route_Leak_FromTo
-type __i_FW []*i_FW
-type __i_FW_FromTo []*i_FW_FromTo
-type __i_FW_Term []*i_FW_Term
-type __i_FW_Then []*i_FW_Then
-type __i_FromTo []*i_FromTo
-type __i_ID_Peer map[_VI_Conn_ID]*i_VI_Peer
-type __i_JA_Term []*i_JA_Term
-type __i_PO_PL_Match []*i_PO_PL_Match
-type __i_PO_PS_From []*i_PO_PS_From
-type __i_PO_PS_Term []*i_PO_PS_Term
-type __i_PO_PS_Then []*i_PO_PS_Then
-type __i_Rule []*i_Rule
-type __i_Rule_Set []*i_Rule_Set
-type __i_Then []*i_Then
-type __i_VI map[_VI_ID]*i_VI
-type __i_VI_GT map[_VI_ID]*i_VI_GT
-type __i_VI_ID_Peer map[_VI_ID]__i_ID_Peer
-type __i_VI_Peer map[_VI_ID]*i_VI_Peer
+type __FW []*i_FW
+type __FW_FromTo []*i_FW_FromTo
+type __FW_Term []*i_FW_Term
+type __FW_Then []*i_FW_Then
+type __FromTo []*i_FromTo
+type __VIC_VI_Peer map[_VI_Conn_ID]*i_VI_Peer
+type __JA_Term []*i_JA_Term
+type __PO_PL_Match []*i_PO_PL_Match
+type __PO_PS_From []*i_PO_PS_From
+type __PO_PS_Term []*i_PO_PS_Term
+type __PO_PS_Then []*i_PO_PS_Then
+type __Rule []*i_Rule
+type __Rule_Set []*i_Rule_Set
+type __Then []*i_Then
+type __VI_VI map[_VI_ID]*i_VI
+type __VI_VI_GT map[_VI_ID]*i_VI_GT
+type __VI__VIC_VI_Peer map[_VI_ID]__VIC_VI_Peer
+type __VI_VI_Peer map[_VI_ID]*i_VI_Peer
 
 // Peer Group
 type i_Peer_Group struct {
@@ -63,23 +63,23 @@ type i_Peer_Group struct {
 	SP_Default_Policy   _W
 	VI_IP               __INet_VI_IP_Table
 	UI_IP               __INet_UI_IP_Table
-	Peer_List           __A_Peer
+	Peer_List           __ASN_Peer
 	GT_Action           string
 	_Attribute_List
 }
 
 // Peer
 type i_Peer struct {
-	// VI           __i_VI
-	// VI_Local     __i_VI_Peer
-	// VI_Remote    __i_VI_Peer
+	// VI           __VI_VI
+	// VI_Local     __VI_VI_Peer
+	// VI_Remote    __VI_VI_Peer
 	Group        *i_Peer_Group
 	ASN          _Inet_ASN
 	ASName       _Name
 	PName        _PName
 	Router_ID    netip.Addr
 	IF_2_RI      __N_Name // interface to RI mapping. interfaces within one peer must be unique.
-	VI_GT        __i_VI_GT
+	VI_GT        __VI_VI_GT
 	IFM          __N_Peer_IFM
 	RI           __N_Peer_RI
 	Hostname     _FQDN
@@ -98,7 +98,7 @@ type i_Peer struct {
 	PL           __N_PO_PL
 	PS           __N_PO_PS
 	SP           *i_Peer_SP
-	FW           __i_FW
+	FW           __FW
 	IKE_GCM      bool
 	GT_Action    string
 	_Attribute_List
@@ -106,15 +106,15 @@ type i_Peer struct {
 
 type i_FW struct {
 	Name      _Name
-	Term      __i_FW_Term
+	Term      __FW_Term
 	GT_Action string
 	_Attribute_List
 }
 type i_FW_Term struct {
 	Name      _Name
-	From      __i_FW_FromTo
-	To        __i_FW_FromTo
-	Then      __i_FW_Then
+	From      __FW_FromTo
+	To        __FW_FromTo
+	Then      __FW_Then
 	GT_Action string
 	_Attribute_List
 }
@@ -133,8 +133,8 @@ type i_FW_Then struct {
 
 type i_Peer_SP struct {
 	Option_List *_SP_Option_List
-	Exact       __i_Rule_Set
-	Global      __i_Rule
+	Exact       __Rule_Set
+	Global      __Rule
 	GT_Action   string
 }
 type i_Peer_IFM struct {
@@ -144,11 +144,11 @@ type i_Peer_IFM struct {
 }
 type i_Peer_RI struct {
 	IP_IF map[netip.Prefix]_Name // interface's IP address to interface mapping. IP addresses within one RI must be unique.
-	// IP_IF       __P_Peer_RI_IF
-	// IPPrefix_IF __P_Peer_RI_IF
-	// IPMasked_IF __P_Peer_RI_IF
+	// IP_IF       __IPP_Peer_RI_IF
+	// IPPrefix_IF __IPP_Peer_RI_IF
+	// IPMasked_IF __IPP_Peer_RI_IF
 	IF         __N_Peer_RI_IF
-	RT         __P_Peer_RI_RO_RT
+	RT         __IPP_Peer_RI_RO_RT
 	Route_Leak __W_Route_Leak_FromTo
 	Protocol   __N_Name
 	BGP        _BGP
@@ -160,8 +160,8 @@ type i_Peer_RI_IF struct {
 	IFM           _Name
 	IFsM          _Name
 	Communication _Communication
-	IP            __P_Peer_RI_IF_IP
-	PARP          __P_Peer_RI_IF_PARP
+	IP            __IPP_Peer_RI_IF_IP
+	PARP          __IPP_Peer_RI_IF_PARP
 	GT_Action     string
 	_Attribute_List
 }
@@ -304,9 +304,9 @@ type i_Pool struct {
 // Security Rules
 type i_Rule_Set struct {
 	Name      _Name
-	From      __i_FromTo
-	To        __i_FromTo
-	Rule      __i_Rule
+	From      __FromTo
+	To        __FromTo
+	Rule      __Rule
 	GT_Action string
 	_Attribute_List
 }
@@ -322,11 +322,11 @@ type i_FromTo struct {
 	_Attribute_List
 }
 type i_Rule struct {
-	Name      _Name      // SP
-	JA        []_Name    // SP, NAT
-	From      __i_FromTo // SP, NAT
-	To        __i_FromTo // SP, NAT
-	Then      __i_Then   // SP, NAT
+	Name      _Name    // SP
+	JA        []_Name  // SP, NAT
+	From      __FromTo // SP, NAT
+	To        __FromTo // SP, NAT
+	Then      __Then   // SP, NAT
 	GT_Action string
 	_Attribute_List
 }
@@ -359,7 +359,7 @@ type i_AB_Set struct {
 
 // Junos Applications (JA)
 type i_JA struct {
-	Term      __i_JA_Term
+	Term      __JA_Term
 	GT_Action string
 	_Attribute_List
 }
@@ -373,7 +373,7 @@ type i_JA_Term struct {
 
 // Policy Options
 type i_PO_PL struct {
-	Match     __i_PO_PL_Match
+	Match     __PO_PL_Match
 	GT_Action string
 	_Attribute_List
 }
@@ -383,14 +383,14 @@ type i_PO_PL_Match struct {
 	_Attribute_List
 }
 type i_PO_PS struct {
-	Term      __i_PO_PS_Term
+	Term      __PO_PS_Term
 	GT_Action string
 	_Attribute_List
 }
 type i_PO_PS_Term struct {
 	Name      _Name
-	From      __i_PO_PS_From
-	Then      __i_PO_PS_Then
+	From      __PO_PS_From
+	Then      __PO_PS_Then
 	GT_Action string
 	_Attribute_List
 }

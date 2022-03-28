@@ -107,13 +107,13 @@ func define_iDB_Vocabulary() {
 			})
 		}
 		i_ps[_Name(join_string("_", _W_aggregate, a))] = &i_PO_PS{
-			Term: __i_PO_PS_Term{
+			Term: __PO_PS_Term{
 				0: {
 					Name: "REJECT",
-					From: __i_PO_PS_From{
+					From: __PO_PS_From{
 						0: {PL: a, Mask: _Mask_longer, GT_Action: join_string(" ", _W_prefix__list__filter, a, _Mask_longer)},
 					},
-					Then: __i_PO_PS_Then{
+					Then: __PO_PS_Then{
 						0: {Action: _W_load__balance, Action_Flag: _W_per__packet, GT_Action: join_string(" ", _W_load__balance, _W_per__packet)},
 					},
 					GT_Action: join_string(" ", _W_term, "REJECT"),
@@ -129,10 +129,10 @@ func define_iDB_Vocabulary() {
 			d = _Name(join_string("_", _W_export_metric, pad_string(a, 2)))
 		)
 		i_ps[c] = &i_PO_PS{
-			Term: __i_PO_PS_Term{
+			Term: __PO_PS_Term{
 				0: {
 					Name: "ACCEPT",
-					Then: __i_PO_PS_Then{
+					Then: __PO_PS_Then{
 						0: {Action: _W_metric, Action_Flag: _W_add, Metric: b, GT_Action: join_string(" ", _W_then, _W_metric, _W_add, b)},
 						1: {Action: _W_accept, GT_Action: join_string(" ", _W_then, _W_accept)},
 					},
@@ -142,14 +142,14 @@ func define_iDB_Vocabulary() {
 			GT_Action: join_string(" ", _W_policy__options___policy__statement, c),
 		}
 		i_ps[d] = &i_PO_PS{
-			Term: __i_PO_PS_Term{
+			Term: __PO_PS_Term{
 				0: {
 					Name: "LOCAL",
-					From: __i_PO_PS_From{
+					From: __PO_PS_From{
 						0: {Protocol: _Protocol_access_internal, GT_Action: join_string(" ", _W_from, _W_protocol, _Protocol_access_internal)},
 						1: {Protocol: _Protocol_local, GT_Action: join_string(" ", _W_from, _W_protocol, _Protocol_local)},
 					},
-					Then: __i_PO_PS_Then{
+					Then: __PO_PS_Then{
 						0: {Action: _W_reject, GT_Action: join_string(" ", _W_then, _W_reject)},
 					},
 					GT_Action: join_string(" ", _W_term, "LOCAL"),
@@ -157,12 +157,12 @@ func define_iDB_Vocabulary() {
 
 				1: {
 					Name: "DIRECT",
-					From: __i_PO_PS_From{
+					From: __PO_PS_From{
 						0: {Protocol: _Protocol_direct, GT_Action: join_string(" ", _W_from, _W_protocol, _Protocol_direct)},
 						1: {Protocol: _Protocol_static, GT_Action: join_string(" ", _W_from, _W_protocol, _Protocol_static)},
 						2: {Protocol: _Protocol_aggregate, GT_Action: join_string(" ", _W_from, _W_protocol, _Protocol_aggregate)},
 					},
-					Then: __i_PO_PS_Then{
+					Then: __PO_PS_Then{
 						0: {Action: _W_metric, Metric: b, GT_Action: join_string(" ", _W_then, _W_metric, b)},
 						1: {Action: _W_next__hop, Action_Flag: _W_self, GT_Action: join_string(" ", _W_then, _W_next__hop, _W_self)},
 						2: {Action: _W_accept, GT_Action: join_string(" ", _W_then, _W_accept)},
@@ -171,10 +171,10 @@ func define_iDB_Vocabulary() {
 				},
 				2: {
 					Name: "INTERNAL",
-					From: __i_PO_PS_From{
+					From: __PO_PS_From{
 						0: {Route_Type: _Type_internal, GT_Action: join_string(" ", _W_from, _W_route__type, _Type_internal)},
 					},
-					Then: __i_PO_PS_Then{
+					Then: __PO_PS_Then{
 						0: {Action: _W_metric, Action_Flag: _W_add, Metric: b, GT_Action: join_string(" ", _W_then, _W_metric, _W_add, b+1)},
 						1: {Action: _W_next__hop, Action_Flag: _W_self, GT_Action: join_string(" ", _W_then, _W_next__hop, _W_self)},
 						2: {Action: _W_accept, GT_Action: join_string(" ", _W_then, _W_accept)},
@@ -183,10 +183,10 @@ func define_iDB_Vocabulary() {
 				},
 				3: {
 					Name: "EXTERNAL",
-					From: __i_PO_PS_From{
+					From: __PO_PS_From{
 						0: {Route_Type: _Type_external, GT_Action: join_string(" ", _W_from, _W_route__type, _Type_external)},
 					},
-					Then: __i_PO_PS_Then{
+					Then: __PO_PS_Then{
 						0: {Action: _W_metric, Action_Flag: _W_add, Metric: b, GT_Action: join_string(" ", _W_then, _W_metric, _W_add, b)},
 						1: {Action: _W_next__hop, Action_Flag: _W_self, GT_Action: join_string(" ", _W_then, _W_next__hop, _W_self)},
 						2: {Action: _W_accept, GT_Action: join_string(" ", _W_then, _W_accept)},
@@ -196,7 +196,7 @@ func define_iDB_Vocabulary() {
 
 				4: {
 					Name: "REJECT",
-					Then: __i_PO_PS_Then{
+					Then: __PO_PS_Then{
 						0: {Action: _W_reject, GT_Action: join_string(" ", _W_then, _W_reject)},
 					},
 					GT_Action: join_string(" ", _W_term, "REJECT"),
@@ -206,10 +206,10 @@ func define_iDB_Vocabulary() {
 		}
 	}
 	i_ps[_Name(_W_per__packet)] = &i_PO_PS{
-		Term: __i_PO_PS_Term{
+		Term: __PO_PS_Term{
 			0: {
 				Name: "PER_PACKET",
-				Then: __i_PO_PS_Then{
+				Then: __PO_PS_Then{
 					0: {Action: _W_load__balance, Action_Flag: _W_per__packet, GT_Action: join_string(" ", _W_load__balance, _W_per__packet)},
 				},
 				GT_Action: join_string(" ", _W_term, "PER_PACKET"),
