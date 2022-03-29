@@ -102,12 +102,6 @@ func read_ldap() {
 					continue
 				}
 
-				switch _dn {
-				case "dc=domain,dc=tld":
-				default:
-					continue
-				}
-
 				log.Infof("LDAP '%v' search result: '%v'.", a.String(), _dn)
 				switch _, flag := i_ldap_domain[_dn]; {
 				case flag:
@@ -673,10 +667,10 @@ func parse_LDAP() {
 		}
 	}
 
-	for _, b := range i_ldap { // third pass, fill PKI with known data or generate new
-		for _, d := range b.Domain {
-			for _, f := range d.User {
-				var (
+	for _, b := range i_ldap { //
+		for _, d := range b.Domain { //
+			for _, f := range d.User { //
+				var ( //
 					changed bool
 				)
 				for g := 0; g < int(_UIx_IPx); g++ {
