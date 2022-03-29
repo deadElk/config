@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"math/big"
+	"net"
 	"net/netip"
 	"sort"
 	"strconv"
@@ -670,17 +671,6 @@ func parse_LDAP() {
 
 	for _, b := range i_ldap { // third pass, fill PKI with known data or generate new
 		for _, d := range b.Domain {
-			// for _, f := range d.Host {
-			//
-			// 	// v_G.parse_VPN_SKV()
-			// 	//
-			// 	// // todo: gen this keys w/o external call
-			// 	// v_G.VPN.TLSv2 = _PEM(*i_file.get(_dir_PKI_TLS, _File_Name(v_G.FQDN)))
-			//
-			// }
-
-			// i_file.write()
-
 			for _, f := range d.User {
 				switch f.UID {
 				case "lom":
@@ -771,7 +761,13 @@ func parse_LDAP() {
 					i_OVPN[f.FQDN] = &_OVPN_GT_Server{
 						Address: f.OVPN.Address,
 						ExternalIP: func() (outbound string) {
-							outbound = "[ ]"
+							switch value, err := net.LookupIP(f.OVPN.Address.String()); {
+							case err != nil:
+								log.Errorf("Error resolving '%v'; ACTION: report.", f.OVPN.Address)
+								_fatal()
+							default:
+								outbound = interface_string("", value)
+							}
 							return
 						}(),
 						Port:       f.OVPN.Port,
