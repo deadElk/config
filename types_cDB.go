@@ -68,6 +68,8 @@ type cDB_LDAP struct {
 	DB_CN         string                `xml:"db_cn,attr"`
 	DC_Filter     string                `xml:"dc_filter,attr"`
 	DC_CN         string                `xml:"dc_cn,attr"`
+	Host_Filter   string                `xml:"host_filter,attr"`
+	Host_CN       string                `xml:"host_cn,attr"`
 	Group_Filter  string                `xml:"group_filter,attr"`
 	Group_CN      string                `xml:"group_cn,attr"`
 	User_Filter   string                `xml:"user_filter,attr"`

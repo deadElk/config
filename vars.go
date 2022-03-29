@@ -10,6 +10,8 @@ var (
 	hash_cache    sync.Map
 	hash224_cache sync.Map
 
+	_not_ok bool
+
 	re_upper_case       = regexp.MustCompile(`[A-Z]+`)
 	re_lower_case       = regexp.MustCompile(`[a-z]+`)
 	re_digits           = regexp.MustCompile(`[0-9]+`)
@@ -45,44 +47,30 @@ var (
 	i_peer_group  = make(__ASN_Peer_Group)
 	i_ldap        = make(__URL_LDAP)
 	i_ldap_domain = make(__DN_LDAP_Domain)
-	i_file        = __DN_File_Data{
-		_dir_Config:     {Ext: "txt", File: __FN_File_Data_Content{}},
-		_dir_Data:       {Ext: "xml", File: __FN_File_Data_Content{}},
-		_dir_GT:         {Ext: "tmpl", File: __FN_File_Data_Content{}},
-		_dir_GT_OVPN:    {Ext: "tmpl", File: __FN_File_Data_Content{}},
-		_dir_LDAP:       {Ext: "xml", File: __FN_File_Data_Content{}},
-		_dir_Modify:     {Ext: "xml", File: __FN_File_Data_Content{}},
-		_dir_PKI_TLS:    {Ext: "pem", File: __FN_File_Data_Content{}},
-		_dir_PKI_CA:     {Ext: "der", File: __FN_File_Data_Content{}},
-		_dir_PKI_Cert:   {Ext: "p12", File: __FN_File_Data_Content{}},
-		_dir_Portal:     {Ext: "", File: __FN_File_Data_Content{}},
-		_dir_Stage:      {Ext: "", File: __FN_File_Data_Content{}},
-		_dir_Stage_OVPN: {Ext: "", File: __FN_File_Data_Content{}},
-		_dir_etc:        {Ext: "xml", File: __FN_File_Data_Content{}},
+	i_file        = __DN_File_Dir{
+		_dir_Config:     {Ext: "txt", File: __FN_File_Data{}},
+		_dir_Data:       {Ext: "xml", File: __FN_File_Data{}},
+		_dir_GT:         {Ext: "tmpl", File: __FN_File_Data{}},
+		_dir_GT_OVPN:    {Ext: "tmpl", File: __FN_File_Data{}},
+		_dir_LDAP:       {Ext: "xml", File: __FN_File_Data{}},
+		_dir_Modify:     {Ext: "xml", File: __FN_File_Data{}},
+		_dir_PKI_TLS:    {Ext: "pem", File: __FN_File_Data{}},
+		_dir_PKI_CA:     {Ext: "der", File: __FN_File_Data{}},
+		_dir_PKI_Cert:   {Ext: "p12", File: __FN_File_Data{}},
+		_dir_Portal:     {Ext: "", File: __FN_File_Data{}},
+		_dir_Stage:      {Ext: "", File: __FN_File_Data{}},
+		_dir_Stage_OVPN: {Ext: "", File: __FN_File_Data{}},
+		_dir_etc:        {Ext: "xml", File: __FN_File_Data{}},
 	}
-	// i_read_list = __DN_File_Data{
-	// 	_dir_GT:       i_file[_dir_GT],
-	// 	_dir_GT_OVPN:  i_file[_dir_GT_OVPN],
-	// 	_dir_Modify:   i_file[_dir_Modify],
-	// 	_dir_PKI_TLS:  i_file[_dir_PKI_TLS],
-	// 	_dir_PKI_CA:   i_file[_dir_PKI_CA],
-	// 	_dir_PKI_Cert: i_file[_dir_PKI_Cert],
-	// 	_dir_etc:      i_file[_dir_etc],
-	// }
-	// i_write_list = __DN_File_Data{
-	// 	_dir_Config:   i_file[_dir_Config],
-	// 	_dir_Data:     i_file[_dir_Data],
-	// 	_dir_LDAP:     i_file[_dir_LDAP],
-	// 	_dir_Modify:   i_file[_dir_Modify],
-	// 	_dir_PKI_TLS:  i_file[_dir_PKI_TLS],
-	// 	_dir_PKI_CA:   i_file[_dir_PKI_CA],
-	// 	_dir_PKI_Cert: i_file[_dir_PKI_Cert],
-	// 	_dir_Portal:   i_file[_dir_Portal],
-	// }
+	i_file_TLS = __DN_File_Dir{
+		_dir_PKI_TLS: i_file[_dir_PKI_TLS],
+	}
+
 	i_OVPN      = make(map[_FQDN]*_OVPN_GT_Server)
 	i_peer_list []_Inet_ASN
 	i_vi_ip     = make(__INet_VI_IP_Table)
 	i_ui_ip     = make(__INet_UI_IP_Table)
+	i_host      = make(__FQDN_LDAP_Domain_Host)
 
 	c_VI_Action = map[_Type]_W{
 		_Type_gr: _W_gr0,
@@ -98,20 +86,6 @@ var (
 		_W_qualified__next__hop: _W_qualified__next__hop,
 		_W_table:                _W_next__table,
 	}
-	// _S_Dir = map[_ID]_Name{
-	// 	_dir_Config:  "tmp/CONFIG",
-	// 	_dir_Data:    "tmp/data",
-	// 	_dir_GT:      "tmp/templates",
-	// 	_dir_LDAP:    "tmp/LDAP",
-	// 	_dir_Modify:  "tmp/modify",
-	// 	_dir_PKI:     "tmp/PKI",
-	// 	_dir_PKI_Key: "tmp/PKI/Key",
-	// 	_dir_Portal:  "tmp/portal",
-	// 	_dir_etc:     "etc",
-	// }
-	// _S_File = map[_ID]_Name{
-	// 	_file_host_list: "host_list",
-	// }
 	_S_Comm = map[_ID]_Communication{
 		_comm_if: _Communication_ptmp,
 		_comm_vi: _Communication_ptp,

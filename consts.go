@@ -56,18 +56,24 @@ const (
 	_file_openvpn   _File_Name = "./openvpn"
 )
 const (
-	_skv_etc          = ""
-	_skv_CA           = "cACertificate"
-	_skv_CRL          = "certificateRevocationList"
-	_skv_P12          = "userPKCS12"
-	_skv_SSH_PK       = "sshPublicKey"
-	_skv_entryDN      = "entryDN"
-	_skv_gidNumber    = "gidNumber"
-	_skv_ipHostNumber = "ipHostNumber"
-	_skv_labeledURI   = "labeledURI"
-	_skv_member       = "member"
-	_skv_owner        = "owner"
-	_skv_uidNumber    = "uidNumber"
+	_skv_etc               = ""
+	_skv_CA                = "cACertificate"
+	_skv_CRL               = "certificateRevocationList"
+	_skv_P12               = "userPKCS12"
+	_skv_SSH_PK            = "sshPublicKey"
+	_skv_entryDN           = "entryDN"
+	_skv_gidNumber         = "gidNumber"
+	_skv_ipHostNumber      = "ipHostNumber"
+	_skv_sn                = "sn"
+	_skv_labeledURI        = "labeledURI"
+	_skv_member            = "member"
+	_skv_owner             = "owner"
+	_skv_uidNumber         = "uidNumber"
+	_lURI_openvpn          = "openvpn"
+	_lURI_openvpnd_address = "openvpnd_address"
+	_lURI_openvpnd_port    = "openvpnd_port"
+	_lURI_openvpnd_ip      = "openvpnd_ip"
+	_lURI_firewall_v00     = "firewall_v00"
 )
 const (
 	_S_Verbosity                        = log.InfoLevel
@@ -83,12 +89,15 @@ const (
 	_S_cn_config                        = string(_W_cn____config)
 	_S_cn_db                            = string(_W_olcSuffix)
 	_S_cn_dc                            = string(_W_dn)
+	_S_cn_host                          = string(_W_cn)
 	_S_cn_group                         = string(_W_cn)
 	_S_cn_user                          = string(_W_uid)
 	_S_filter_db                        = string(_W_objectClass_olcDatabaseConfig_objectClass_olcMdbConfig)
 	_S_filter_dc                        = string(_W_objectClass_dcObject)
+	_S_filter_host                      = "(&(objectClass=inetOrgPerson)(labeledURI=host))"
 	_S_filter_group                     = string(_W_objectClass_posixGroup)
 	_S_filter_user                      = string(_W_objectClass_posixAccount)
+	_S_sn                               = string(_W_sn)
 )
 const (
 	_Communication_ptmp = _Communication(_W_ptmp)
@@ -388,6 +397,7 @@ const (
 	_W_self                                                   _W = "self"
 	_W_service                                                _W = "service"
 	_W_set                                                    _W = "set"
+	_W_sn                                                     _W = "sn"
 	_W_snmp                                                   _W = "snmp"
 	_W_snmp__trap                                                = _W_snmp + "-" + _W_trap
 	_W_source                                                 _W = "source"

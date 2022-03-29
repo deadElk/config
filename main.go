@@ -45,43 +45,24 @@ func init() {
 }
 
 func main() {
-	switch {
-	case !i_file.read():
-		log.Fatalf("read_file() error; ACTION: fatal.")
-	}
+	i_file.read()
 
 	define_iDB_Vocabulary()
 	i_vi_ip.generate(_S_VI_IPPrefix, _VIx_IF_bits)
 	i_ui_ip.generate(_S_UI_IPPrefix, _UIx_IP_bits)
 
-	switch {
-	case !read_cDB():
-		log.Fatalf("read_cDB() error; ACTION: fatal.")
-	}
+	read_cDB()
 
 	parse_iDB_Vocabulary()
 	generate_iDB_host_list()
 
-	switch {
-	case !read_ldap():
-		log.Fatalf("read_ldap() error; ACTION: fatal.")
-	}
-	switch {
-	case !parse_LDAP():
-		log.Fatalf("parse_LDAP() error; ACTION: fatal.")
-	}
-	switch {
-	case !i_peer.parse_GT():
-		log.Fatalf("write_file() error; ACTION: fatal.")
-	}
-	switch {
-	case !i_file.write():
-		log.Fatalf("write_file() error; ACTION: fatal.")
-	}
-	switch {
-	case !write_ldap():
-		log.Fatalf("write_ldap() error; ACTION: fatal.")
-	}
+	read_ldap()
+	parse_LDAP()
+
+	i_peer.parse_GT()
+
+	i_file.write()
+	write_ldap()
 }
 
 func genCA() {

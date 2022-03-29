@@ -39,6 +39,15 @@ func hash224(inbound any) (outbound _hash224_ID) {
 	hash224_cache.Store(inbound, outbound)
 	return
 }
+func _check() { // don't forget to check _not_ok before write out changes
+	switch {      //
+	case _not_ok: //
+		log.Fatalf("service-wide OK status NEGATIVE ('%v'), cannot proceed; ACTION: FATAL.", _not_ok) //
+	} //
+} // don't forget to check _not_ok before write out changes
+func _fatal() { // set _not_ok flag
+	_not_ok = true //
+} // don't forget to check _not_ok before write out changes
 
 func parse_interface(inbound any, skip any) any {
 	switch value := skip.(type) {

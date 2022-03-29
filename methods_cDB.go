@@ -622,6 +622,12 @@ func (receiver cDB_LDAP_List) parse() {
 		case len(b.DC_CN) == 0:
 			b.DC_CN = _S_cn_dc
 			fallthrough
+		case len(b.Host_Filter) == 0:
+			b.Host_Filter = _S_filter_host
+			fallthrough
+		case len(b.Host_CN) == 0:
+			b.Host_CN = _S_cn_host
+			fallthrough
 		case len(b.Group_Filter) == 0:
 			b.Group_Filter = _S_filter_group
 			fallthrough
@@ -643,17 +649,14 @@ func (receiver cDB_LDAP_List) parse() {
 			Domain:       __DN_LDAP_Domain{},
 			Group_CN:     b.Group_CN,
 			Group_Filter: b.Group_Filter,
+			Host_CN:      b.Host_CN,
+			Host_Filter:  b.Host_Filter,
 			M_CN_G:       __DN_LDAP_Domain_Group{},
 			M_CN_U:       __DN_LDAP_Domain_User{},
-			Modify:       nil,
-			Modify_Regen: nil,
-			OLC:          &i_LDAP_OLC{},
-			Schema:       nil,
 			Secret:       b.Secret,
 			URL:          c,
 			User_CN:      b.User_CN,
 			User_Filter:  b.User_Filter,
-			PKI:          nil,
 		}
 	}
 }
