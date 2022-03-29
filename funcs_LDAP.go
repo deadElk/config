@@ -16,6 +16,11 @@ import (
 )
 
 func ldap_modify_Add_Attr(inbound *ldap.Entry, outbound *ldap.ModifyRequest, attrName string) {
+	switch {
+	case inbound == nil:
+		log.Warnf("LDAP DB nothing to modify '%v' '%v' '%v'; ACTION: skip.", inbound, outbound.DN, attrName)
+		return
+	}
 	var (
 		attrType = _W_objectClass.String()
 		attrVal  string
@@ -222,6 +227,8 @@ func write_ldap() {
 				_ldap *ldap.Conn
 				// _result *ldap.ModifyResult
 				do_modify = func(inbound *ldap.ModifyRequest) {
+					// log.Warnf("LDAP '%v': skip modification; ACTION: skip.", a.String())
+					// return
 					switch {
 					case inbound != nil:
 						log.Warnf("LDAP '%v': found modification for '%v'; ACTION: upload.", a.String(), inbound.DN)
@@ -251,7 +258,7 @@ func write_ldap() {
 			}
 
 			for _, d := range b.Domain {
-				do_modify(d.Modify)
+				// do_modify(d.Modify)
 				for _, f := range d.Host {
 					do_modify(f.Modify)
 				}
@@ -398,6 +405,7 @@ func parse_LDAP() {
 			d.replace(_skv_CRL, []string{d.PKI.DER.CRL.String()})
 
 			i_file.write()
+			write_ldap()
 
 			for _, f := range d.Raw_Host.Entries {
 				var (
@@ -478,7 +486,7 @@ func parse_LDAP() {
 					)
 					for _, h := range []_FQDN{v_H.FQDN, v_H.Address} {
 						changes = append(changes, d.PKI.Host_Node[h].P12.String())
-						i_file.put(_dir_PKI_Cert, _File_Name(d.PKI.Host_Node[h].Cert.SerialNumber.String()), "", d.PKI.Host_Node[h].P12)
+						i_file.put(_dir_PKI_Cert.a(_Dir_Name(d.FQDN)), _File_Name(join_string(".", v_H.PKI.FQDN, "p12")), "", v_H.PKI.P12)
 					}
 					v_H.replace(_skv_P12, changes)
 				}
@@ -511,14 +519,14 @@ func parse_LDAP() {
 				)
 				switch {
 				case v_U.UID_Number == 0:
-					log.Errorf("LDAP DB '%v' inconsistent! UID '%v': UID_Number is '%v'; ACTION: report.", a.String(), v_U.DN, v_U.GID_Number)
-					_fatal()
+					log.Warnf("LDAP DB '%v' inconsistent! UID '%v': UID_Number is '%v'; ACTION: skip user.", a.String(), v_U.DN, v_U.UID_Number)
+					// _fatal()
 					continue
 				}
 				switch {
 				case v_U.GID_Number == 0:
-					log.Warnf("LDAP DB '%v' inconsistent! primary GID_Number is not defined for UID '%v'; ACTION: skip user.", a.String(), f.DN)
-					_fatal()
+					log.Warnf("LDAP DB '%v' inconsistent! UID '%v': primary GID_Number is '%v'; ACTION: skip user.", a.String(), v_U.DN, v_U.GID_Number)
+					// _fatal()
 					continue
 				}
 
@@ -663,6 +671,8 @@ func parse_LDAP() {
 					}()
 				)
 				f.IPPrefix = v_IPPrefix
+				i_file.write()
+				write_ldap()
 			}
 		}
 	}
@@ -719,10 +729,13 @@ func parse_LDAP() {
 					for k := 0; k < int(_UIx_IPx); k++ {
 						// changes[k] = base64.StdEncoding.EncodeToString(f.PKI[k].P12)
 						changes[k] = f.PKI[k].P12.String()
-						i_file.put(_dir_PKI_Cert, _File_Name(f.PKI[k].Cert.SerialNumber.String()), "", f.PKI[k].P12)
+						// i_file.put(_dir_PKI_Cert.a(_Dir_Name(d.FQDN), _Dir_Name(f.FQDN)), _File_Name(f.PKI[k].Cert.SerialNumber.String()), "", f.PKI[k].P12)
+						i_file.put(_dir_PKI_Cert.a(_Dir_Name(d.FQDN), _Dir_Name(f.FQDN)), _File_Name(join_string(".", f.PKI[k].FQDN, "p12")), "", f.PKI[k].P12)
 					}
 					f.replace(_skv_P12, changes)
 				}
+				i_file.write()
+				write_ldap()
 			}
 		}
 	}
@@ -778,12 +791,12 @@ func parse_LDAP() {
 					i_file.put(p_pki, "ca.crt.pem", "", d.PKI.PEM.Cert)
 					i_file.put(p_pki, "server.crt.pem", "", f.OVPN.PKI.PEM.Cert)
 					i_file.put(p_pki, "server.key.pem", "", f.OVPN.PKI.PEM.Key)
-					i_file.put(p_pki, "server.dh.pem", "", f.OVPN.PKI.PEM.DH)
 					i_file.put(p_pki, "crl.crl.pem", "", d.PKI.PEM.CRL)
 					i_file.put(p_pki, "server.tls.key.pem", "", f.OVPN.TLSv2)
 					i_file.put(_dir_Stage_OVPN_ULE, f_conf, "", i_file.get(_dir_GT_OVPN, "server").parse_GT(i_OVPN[f.FQDN]))
 				}
 				i_file.write()
+				write_ldap()
 
 				for g, h := range f.UID_List {
 					f.OVPN.TLSv2_User[g] = make([]_PEM, _UIx_IPx, _UIx_IPx)
@@ -804,6 +817,7 @@ func parse_LDAP() {
 							f.OVPN.TLSv2_User[g][i] = _PEM(*i_file.get(_dir_PKI_TLS, tlsv2_fn))
 						}
 						i_file.write()
+						write_ldap()
 
 						var (
 							c_GT = &_OVPN_GT_Client{
@@ -825,10 +839,9 @@ func parse_LDAP() {
 						i_file.put(p_client_profile, _File_Name(join_string(".", h.PKI[i].FQDN, "ovpn")), "", i_file.get(_dir_GT_OVPN, "client_profile").parse_GT(c_GT))
 					}
 					i_file.write()
+					write_ldap()
 
 				}
-				i_file.write()
-
 			}
 
 			i_file.put(_dir_Stage_OVPN_ULE, "client_connect.sh", "", i_file.get(_dir_GT_OVPN, "client_connect.sh").parse_GT(i_OVPN))
@@ -837,7 +850,9 @@ func parse_LDAP() {
 			i_file.e(_dir_Stage_OVPN_ULE, "client_disconnect.sh")
 			i_file.put(_dir_Stage_OVPN_ULE, "server_cron", "", i_file.get(_dir_GT_OVPN, "server_cron").parse_GT(i_OVPN))
 			i_file.put(_dir_Stage_OVPN_ULE, "server_Juniper", "", i_file.get(_dir_GT_OVPN, "server_Juniper").parse_GT(i_OVPN))
+
 			i_file.write()
+			write_ldap()
 
 		}
 	}

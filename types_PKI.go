@@ -5,8 +5,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"math/big"
-
-	"github.com/Luzifer/go-dhparam"
 )
 
 type __PKI_Node []*_PKI_Node
@@ -44,7 +42,6 @@ type _PKI_CA_Node struct {
 	Cert      *x509.Certificate
 	Key       *ecdsa.PrivateKey
 	CRL       *pkix.CertificateList
-	DH        any
 	DER       *_PKI_CA_Node_DER
 	Host_Node __FQDN_PKI_Host_Node
 	Node      __FQDN_PKI_Node
@@ -55,7 +52,6 @@ type _PKI_Host_Node struct {
 	CA   *_PKI_CA_Node
 	Cert *x509.Certificate
 	Key  *ecdsa.PrivateKey
-	DH   *dhparam.DH
 	DER  *_PKI_Host_Node_DER
 	PEM  *_PKI_Host_Node_PEM
 	P12  _P12
@@ -77,8 +73,6 @@ type _PKI_CA_Node_DER struct {
 type _PKI_Host_Node_DER struct {
 	Cert _DER
 	Key  _DER
-	// CRL  _DER
-	DH _DER
 }
 type _PKI_Node_DER struct {
 	Cert _DER
@@ -92,8 +86,6 @@ type _PKI_CA_Node_PEM struct {
 type _PKI_Host_Node_PEM struct {
 	Cert _PEM
 	Key  _PEM
-	// CRL  _PEM
-	DH _PEM
 }
 type _PKI_Node_PEM struct {
 	Cert _PEM
