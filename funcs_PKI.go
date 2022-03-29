@@ -9,7 +9,7 @@ func generate_DH() (outbound *dhparam.DH) {
 	var (
 		err error
 	)
-	switch outbound, err = dhparam.Generate(256, 5, dhparam.GeneratorCallback(nil)); {
+	switch outbound, err = dhparam.Generate(512, 5, dhparam.GeneratorCallback(nil)); {
 	case err != nil:
 		log.Fatalf("Error generating DH - '%v'; ACTION: report.", err)
 	}
