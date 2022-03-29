@@ -266,22 +266,6 @@ func interface_string(delimiter string, inbound any) (outbound string) {
 
 		// todo: dirty hack
 	case []_Name:
-		// var (
-		// 	inbounds = len(value) - 1
-		// 	buffer   = new(bytes.Buffer)
-		// )
-		// for a, b := range value {
-		// 	switch {
-		// 	case len(b) == 0:
-		// 		continue
-		// 	}
-		// 	buffer.WriteString(b.String())
-		// 	switch {
-		// 	case a < inbounds:
-		// 		buffer.WriteString(delimiter)
-		// 	}
-		// }
-		// return buffer.String()
 		var (
 			interim = func() (outbound []string) {
 				for _, b := range value {
@@ -307,6 +291,32 @@ func interface_string(delimiter string, inbound any) (outbound string) {
 			}
 		}
 		return buffer.String()
+	// case []net.IP:
+	// 	var (
+	// 		interim = func() (outbound []string) {
+	// 			for _, b := range value {
+	// 				var (
+	// 					c = interface_string(delimiter, b.String())
+	// 				)
+	// 				switch {
+	// 				case len(c) == 0:
+	// 					continue
+	// 				}
+	// 				outbound = append(outbound, c)
+	// 			}
+	// 			return
+	// 		}()
+	// 		inbounds = len(interim) - 1
+	// 		buffer   = new(bytes.Buffer)
+	// 	)
+	// 	for a, b := range interim {
+	// 		buffer.WriteString(b)
+	// 		switch {
+	// 		case a < inbounds:
+	// 			buffer.WriteString(delimiter)
+	// 		}
+	// 	}
+	// 	return buffer.String()
 
 	default:
 		log.Debugf("unsupported type '%v' of '%s'; ACTION: use fmt.Sprintf().", reflect.TypeOf(inbound), inbound)
