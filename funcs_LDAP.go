@@ -203,7 +203,7 @@ func read_ldap() {
 					Entry:     nil,
 					FQDN:      "",
 					Group:     __GN_LDAP_Domain_Group{},
-					Host:      __FQDN_LDAP_Domain_Host{},
+					Host:      __DN_LDAP_Domain_Host{},
 					LDAP:      b,
 					Modify:    nil,
 					PKI:       nil,
@@ -311,7 +311,7 @@ func get_LDAP_SKV(inbound *ldap.Entry, list map[string]int) (outbound __S_LDAP_S
 		case a == _skv_labeledURI:
 			for e := range outbound[a].Value {
 				var (
-					lattr = re_string_splitters.Split(e, -1)
+					lattr = re_strict_splitters.Split(e, -1)
 				)
 				switch {
 				case len(lattr) < 2:
@@ -406,13 +406,12 @@ func parse_LDAP() {
 
 			for _, f := range d.Raw_Host.Entries {
 				var (
-					v_SKV  = get_LDAP_SKV(f, map[string]int{b.User_CN: 1, _skv_entryDN: 1, _skv_SSH_PK: 0, _skv_P12: 0, _skv_labeledURI: 0})
-					v_DN   = _DN(v_SKV[_skv_entryDN].get_first())
-					v_FQDN = b._DN_FQDN(_re_point, v_DN)
+					v_SKV = get_LDAP_SKV(f, map[string]int{b.Host_CN: 1, _skv_entryDN: 1, _skv_SSH_PK: 0, _skv_P12: 0, _skv_labeledURI: 0})
+					v_DN  = _DN(v_SKV[_skv_entryDN].get_first())
 				)
-				switch _, flag := i_host[v_FQDN]; {
+				switch _, flag := i_host[v_DN]; {
 				case flag:
-					log.Errorf("LDAP DB '%v' Host '%v' already defined; ACTION: report.", d.FQDN, v_FQDN)
+					log.Errorf("LDAP DB '%v' Host '%v' already defined; ACTION: report.", d.FQDN, v_DN)
 					_fatal()
 					continue
 				}
@@ -423,14 +422,13 @@ func parse_LDAP() {
 						Address:    _FQDN(v_SKV[_lURI_openvpnd_address].get_first()),
 						Domain:     d,
 						Entry:      f,
-						FQDN:       v_FQDN,
+						FQDN:       b._DN_FQDN(_re_point, v_DN),
 						IPPrefix:   parse_interface(netip.ParsePrefix(v_SKV[_lURI_openvpnd_ip].get_first())).(netip.Prefix),
 						Modify:     nil,
 						SKV:        v_SKV,
 						PKI:        nil,
 						PPort:      _PName(pad_string(string_uint64(v_SKV[_lURI_openvpnd_port].get_first()), 5)),
 						Port:       _INet_Port(string_uint64(v_SKV[_lURI_openvpnd_port].get_first())),
-						FW_v00:     v_SKV[_lURI_firewall_v00].get_all(),
 						TLSv2:      nil,
 						TLSv2_User: nil,
 						SSH_Client: v_SKV[_skv_SSH_PK].get_all(),
@@ -487,8 +485,8 @@ func parse_LDAP() {
 					v_H.replace(_skv_P12, changes)
 				}
 
-				d.Host[v_H.FQDN] = v_H
-				i_host[v_H.FQDN] = v_H
+				d.Host[v_H.DN] = v_H
+				i_host[v_H.DN] = v_H
 
 			}
 
@@ -517,9 +515,12 @@ func parse_LDAP() {
 				case v_U.UID_Number == 0:
 					log.Errorf("LDAP DB '%v' inconsistent! UID '%v': UID_Number is '%v'; ACTION: report.", a.String(), v_U.DN, v_U.GID_Number)
 					_fatal()
-					fallthrough
+					continue
+				}
+				switch {
 				case v_U.GID_Number == 0:
 					log.Warnf("LDAP DB '%v' inconsistent! primary GID_Number is not defined for UID '%v'; ACTION: skip user.", a.String(), f.DN)
+					_fatal()
 					continue
 				}
 
@@ -565,7 +566,7 @@ func parse_LDAP() {
 					v_FQDN = b._DN_FQDN(_re_point, v_DN)
 					// v_OVPNN = _FQDN(v_SKV[_lURI_openvpn].get_first())
 					// v_OVPN  *i_LDAP_Domain_Host
-					v_OVPN, _ = d.Host[_FQDN(v_SKV[_lURI_openvpn].get_first())]
+					v_OVPN, _ = i_host[_DN(v_SKV[_lURI_openvpn].get_first())]
 				)
 				// switch v_OVPN, flag := d.Host[v_OVPNN]; {
 				// case flag:
@@ -754,7 +755,11 @@ func parse_LDAP() {
 				}
 				// todo: gen this keys w/o external call
 				switch {
-				case f.OVPN.TLSv2 == nil || len(f.OVPN.TLSv2) == 0:
+				case f.OVPN.TLSv2 == nil:
+					f.OVPN.TLSv2 = _PEM(*i_file.get(_dir_PKI_TLS, _File_Name(f.FQDN)))
+				}
+				switch {
+				case len(f.OVPN.TLSv2) == 0:
 					log.Warnf("TLSv2 server key for '%v' not found; ACTION: generate.", f.FQDN)
 					i_file.put(_dir_PKI_TLS, _File_Name(f.FQDN), "", _file_openvpn.external("--genkey", "tls-crypt-v2-server"))
 					f.OVPN.TLSv2 = _PEM(*i_file.get(_dir_PKI_TLS, _File_Name(f.FQDN)))

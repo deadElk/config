@@ -609,34 +609,44 @@ func (receiver cDB_LDAP_List) parse() {
 			continue
 		case len(c.Path) == 0:
 			c.Path = _S_cn_config
-			fallthrough
+		}
+		switch {
 		case len(b.DB_Filter) == 0:
 			b.DB_Filter = _S_filter_db
-			fallthrough
+		}
+		switch {
 		case len(b.DB_CN) == 0:
 			b.DB_CN = _S_cn_db
-			fallthrough
+		}
+		switch {
 		case len(b.DC_Filter) == 0:
 			b.DC_Filter = _S_filter_dc
-			fallthrough
+		}
+		switch {
 		case len(b.DC_CN) == 0:
 			b.DC_CN = _S_cn_dc
-			fallthrough
+		}
+		switch {
 		case len(b.Host_Filter) == 0:
 			b.Host_Filter = _S_filter_host
-			fallthrough
+		}
+		switch {
 		case len(b.Host_CN) == 0:
 			b.Host_CN = _S_cn_host
-			fallthrough
+		}
+		switch {
 		case len(b.Group_Filter) == 0:
 			b.Group_Filter = _S_filter_group
-			fallthrough
+		}
+		switch {
 		case len(b.Group_CN) == 0:
 			b.Group_CN = _S_cn_group
-			fallthrough
+		}
+		switch {
 		case len(b.User_Filter) == 0:
 			b.User_Filter = _S_filter_user
-			fallthrough
+		}
+		switch {
 		case len(b.User_CN) == 0:
 			b.User_CN = _S_cn_user
 		}
@@ -847,7 +857,8 @@ func (receiver *cDB_Peer) parse_RI(v_Peer *i_Peer) {
 								switch {
 								case f.Metric > 0:
 									v_Action = join_string(" ", v_Action, _W_metric, f.Metric)
-									fallthrough
+								}
+								switch {
 								case f.Preference > 0:
 									v_Action = join_string(" ", v_Action, _W_preference, f.Preference)
 								}

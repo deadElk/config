@@ -9,13 +9,13 @@ import (
 
 type __DN_LDAP_Domain map[_DN]*i_LDAP_Domain                     //
 type __DN_LDAP_Domain_Group map[_DN]*i_LDAP_Domain_Group         //
+type __DN_LDAP_Domain_Host map[_DN]*i_LDAP_Domain_Host           //
 type __DN_LDAP_Domain_User map[_DN]*i_LDAP_Domain_User           //
 type __GN_LDAP_Domain_Group map[_GID_Number]*i_LDAP_Domain_Group //
 type __IPP_LDAP_Domain_User map[netip.Prefix]*i_LDAP_Domain_User //
+type __S_LDAP_SKV map[string]*i_LDAP_SKV                         //
 type __UN_LDAP_Domain_User map[_UID_Number]*i_LDAP_Domain_User   //
 type __URL_LDAP map[*url.URL]*i_LDAP                             //
-type __FQDN_LDAP_Domain_Host map[_FQDN]*i_LDAP_Domain_Host       //
-type __S_LDAP_SKV map[string]*i_LDAP_SKV                         //
 
 type i_LDAP struct { //
 	Bind_DN      _DN                    //
@@ -45,20 +45,20 @@ type i_LDAP_OLC struct { //
 type i_LDAP_Schema struct { //
 }
 type i_LDAP_Domain struct { //
-	DN        _DN                     //
-	Entry     *ldap.Entry             //
-	FQDN      _FQDN                   //
-	Group     __GN_LDAP_Domain_Group  //
-	Host      __FQDN_LDAP_Domain_Host //
-	LDAP      *i_LDAP                 //
-	Modify    *ldap.ModifyRequest     //
-	PKI       *_PKI_CA_Node           //
-	Raw_DC    *ldap.SearchResult      //
-	Raw_Group *ldap.SearchResult      //
-	Raw_Host  *ldap.SearchResult      //
-	Raw_User  *ldap.SearchResult      //
-	SKV       __S_LDAP_SKV            //
-	User      __UN_LDAP_Domain_User   //
+	DN        _DN                    //
+	Entry     *ldap.Entry            //
+	FQDN      _FQDN                  //
+	Group     __GN_LDAP_Domain_Group //
+	Host      __DN_LDAP_Domain_Host  //
+	LDAP      *i_LDAP                //
+	Modify    *ldap.ModifyRequest    //
+	PKI       *_PKI_CA_Node          //
+	Raw_DC    *ldap.SearchResult     //
+	Raw_Group *ldap.SearchResult     //
+	Raw_Host  *ldap.SearchResult     //
+	Raw_User  *ldap.SearchResult     //
+	SKV       __S_LDAP_SKV           //
+	User      __UN_LDAP_Domain_User  //
 	// OLC *i_LDAP_Domain_OLC            //
 }
 type i_LDAP_Domain_OLC struct { //
@@ -111,10 +111,10 @@ type i_LDAP_Domain_Host struct { //
 	PKI        *_PKI_Host_Node        //
 	PPort      _PName                 //
 	Port       _INet_Port             //
-	FW_v00     []string               //
 	TLSv2      _PEM                   //
 	TLSv2_User map[_UID_Number][]_PEM //
 	SSH_Client []string               // ssh client key
+	// FW_v00     []string               //
 }
 type i_LDAP_SKV struct { //
 	Value   map[string]bool //

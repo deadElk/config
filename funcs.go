@@ -40,7 +40,7 @@ func hash224(inbound any) (outbound _hash224_ID) {
 	return
 }
 func _check() { // don't forget to check _not_ok before write out changes
-	switch {      //
+	switch { //
 	case _not_ok: //
 		log.Fatalf("service-wide OK status NEGATIVE ('%v'), cannot proceed; ACTION: FATAL.", _not_ok) //
 	} //
@@ -357,16 +357,18 @@ func parse_Host_Inbound_Traffic(enabled ...any) (outbound _Host_Inbound_Traffic_
 
 func action_Port(peer *cDB_Peer, v_Peer *i_Peer, inbound_type _Type, inbound_direction _Type, port, port_low, port_high _INet_Port) (outbound string) {
 	switch {
-	// case port != 0:
-	// 	outbound = port.String()
 	case port_low != 0:
 		outbound = port_low.String()
-		fallthrough
-	case port_low != 0 && port_high != 0:
+	default:
+		return
+	}
+	switch {
+	case port_high != 0:
 		outbound = join_string(" ", outbound, _W_to, port_high)
 	default:
 		return
 	}
+
 	switch {
 	case inbound_type == _Type_static && inbound_direction == _Type_from:
 		outbound = join_string(" ", _W_source__port, outbound)

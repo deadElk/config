@@ -337,7 +337,7 @@ func (receiver *_Communication) parse(default_Communication _Communication) _Com
 		return *receiver
 	case len(*receiver) != 0:
 		log.Warnf("invalid interface Communication type '%v'; ACTION: use '%v'.", *receiver, default_Communication)
-		fallthrough
+		return default_Communication
 	default:
 		return default_Communication
 	}

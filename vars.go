@@ -22,6 +22,7 @@ var (
 	re_spaces           = regexp.MustCompile(` +`)
 	re_slashes          = regexp.MustCompile(`/+`)
 	re_string_splitters = regexp.MustCompile(`[;, \t]+`)
+	re_strict_splitters = regexp.MustCompile(`[; \t]+`)
 	// gt_fm      = template.FuncMap{
 	// 	"sum_uint32": sum_uint32_gt_fm,
 	// 	"sum_string": sum_string_gt_fm,
@@ -70,7 +71,7 @@ var (
 	i_peer_list []_Inet_ASN
 	i_vi_ip     = make(__INet_VI_IP_Table)
 	i_ui_ip     = make(__INet_UI_IP_Table)
-	i_host      = make(__FQDN_LDAP_Domain_Host)
+	i_host      = make(__DN_LDAP_Domain_Host)
 
 	c_VI_Action = map[_Type]_W{
 		_Type_gr: _W_gr0,

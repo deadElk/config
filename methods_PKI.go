@@ -63,14 +63,10 @@ func (receiver *_PKI_CA_Node) parse_DER(inbound *x509.Certificate) (status bool)
 	switch t.CRL, err = x509.ParseDERCRL(receiver.DER.CRL); {
 	case err != nil:
 		log.Warnf("can't parse CA CRL - '%v'; ACTION: generate a new CA Cert", err)
-		fallthrough
+		status = t.generate_CRL()
 	case t.Cert.CheckCRLSignature(t.CRL) != nil:
 		log.Warnf("CRL's signature doesn't match with CA's signature - '%v'; ACTION: generate a new CRL", err)
-		fallthrough
-	case false:
 		status = t.generate_CRL()
-		// default:
-		// 	t.DER.CRL = receiver.DER.CRL
 	}
 
 	receiver.Cert = t.Cert
@@ -265,14 +261,12 @@ func (receiver *_PKI_Node) parse_P12(inbound *x509.Certificate) (status bool) { 
 	switch key, t.Cert, ca_chain, err = pkcs12.DecodeChain(receiver.P12, pkcs12.DefaultPassword); {
 	case err != nil:
 		log.Warnf("P12 decode error '%v'; ACTION: generate a new Cert", err)
-		fallthrough
+		return receiver.generate(inbound)
 	case len(ca_chain) != len(receiver.CA.CA_Chain):
 		log.Warnf("length of Cert/CA Chain/Key doesn't match; ACTION: generate a new Cert")
-		fallthrough
+		return receiver.generate(inbound)
 	case reflect.TypeOf(key) != reflect.TypeOf(receiver.Key):
 		log.Warnf("unsupported Key type; ACTION: generate a new Cert")
-		fallthrough
-	case false:
 		return receiver.generate(inbound)
 	}
 
@@ -422,14 +416,12 @@ func (receiver *_PKI_Host_Node) parse_P12(inbound *x509.Certificate) (status boo
 	switch key, t.Cert, ca_chain, err = pkcs12.DecodeChain(receiver.P12, pkcs12.DefaultPassword); {
 	case err != nil:
 		log.Warnf("P12 decode error '%v'; ACTION: generate a new Cert", err)
-		fallthrough
+		return receiver.generate(inbound)
 	case len(ca_chain) != len(receiver.CA.CA_Chain):
 		log.Warnf("length of Cert/CA Chain/Key doesn't match; ACTION: generate a new Cert")
-		fallthrough
+		return receiver.generate(inbound)
 	case reflect.TypeOf(key) != reflect.TypeOf(receiver.Key):
 		log.Warnf("unsupported Key type; ACTION: generate a new Cert")
-		fallthrough
-	case false:
 		return receiver.generate(inbound)
 	}
 
