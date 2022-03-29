@@ -227,8 +227,6 @@ func write_ldap() {
 				_ldap *ldap.Conn
 				// _result *ldap.ModifyResult
 				do_modify = func(inbound *ldap.ModifyRequest) {
-					// log.Warnf("LDAP '%v': skip modification; ACTION: skip.", a.String())
-					// return
 					switch {
 					case inbound != nil:
 						log.Warnf("LDAP '%v': found modification for '%v'; ACTION: upload.", a.String(), inbound.DN)
@@ -259,14 +257,18 @@ func write_ldap() {
 
 			for _, d := range b.Domain {
 				// do_modify(d.Modify)
+				// d.Modify = nil
 				for _, f := range d.Host {
 					do_modify(f.Modify)
+					f.Modify = nil
 				}
 				for _, f := range d.Group {
 					do_modify(f.Modify)
+					f.Modify = nil
 				}
 				for _, f := range d.User {
 					do_modify(f.Modify)
+					f.Modify = nil
 				}
 			}
 		}()
