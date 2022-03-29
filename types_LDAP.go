@@ -69,21 +69,20 @@ type i_LDAP_Domain_Group struct { // gidNumber: index
 	Domain         *i_LDAP_Domain         //
 	Entry          *ldap.Entry            //
 	FQDN           _FQDN                  //
+	FW_v00         []string               //
 	GID            _GID                   // cn
 	GID_List       __GN_LDAP_Domain_Group // CAUTION >>>> GID includes GID <<<< member: index = member (gidNumber here), value is a pointer.
 	GID_Number     _GID_Number            //
 	LDAP           *i_LDAP                //
 	Modify         *ldap.ModifyRequest    //
+	OVPN           *i_LDAP_Domain_Host    //
 	Owner_GID_List __GN_LDAP_Domain_Group // CAUTION >>>> GID includes GID <<<< owner: index = owner (gidNumber here), value is a pointer.
 	Owner_UID_List __UN_LDAP_Domain_User  // owner: index = owner (uidNumber here), value is a pointer.
 	PKI            *_PKI_Node             //
 	SKV            __S_LDAP_SKV           //
 	UID_List       __UN_LDAP_Domain_User  // member: index = member (uidNumber here), value is a pointer.
-	FW_v00         []string               //
-	OVPN           *i_LDAP_Domain_Host    //
 }
 type i_LDAP_Domain_User struct { // uidNumber: index
-	LDAP       *i_LDAP                //
 	DN         _DN                    //
 	Domain     *i_LDAP_Domain         //
 	Entry      *ldap.Entry            //
@@ -91,29 +90,31 @@ type i_LDAP_Domain_User struct { // uidNumber: index
 	GID_List   __GN_LDAP_Domain_Group // memberOf: index = memberOf (gidNumber here), value is a pointer.
 	GID_Number _GID_Number            // gidNumber
 	IPPrefix   netip.Prefix           // ipHostNumber (user's subnet)
+	LDAP       *i_LDAP                //
 	Modify     *ldap.ModifyRequest    //
+	PKI        __PKI_Node             //
 	SKV        __S_LDAP_SKV           // sshPublicKey, userPKCS12, etc: private [service][key]value DB
 	UID        _UID                   // uid
 	UID_Number _UID_Number            //
-	PKI        __PKI_Node             //
 }
 
 type i_LDAP_Domain_Host struct { //
-	LDAP       *i_LDAP                //
-	DN         _DN                    //
 	Address    _FQDN                  //
+	DN         _DN                    //
 	Domain     *i_LDAP_Domain         //
 	Entry      *ldap.Entry            //
 	FQDN       _FQDN                  //
 	IPPrefix   netip.Prefix           //
+	LDAP       *i_LDAP                //
 	Modify     *ldap.ModifyRequest    //
-	SKV        __S_LDAP_SKV           //
 	PKI        *_PKI_Host_Node        //
+	PName      _PName                 //
 	PPort      _PName                 //
 	Port       _INet_Port             //
+	SKV        __S_LDAP_SKV           //
+	SSH_Client []string               // ssh client key
 	TLSv2      _PEM                   //
 	TLSv2_User map[_UID_Number][]_PEM //
-	SSH_Client []string               // ssh client key
 	// FW_v00     []string               //
 }
 type i_LDAP_SKV struct { //

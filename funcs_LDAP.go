@@ -418,23 +418,26 @@ func parse_LDAP() {
 				}
 				var (
 					v_H = &i_LDAP_Domain_Host{
-						LDAP:       b,
-						DN:         v_DN,
 						Address:    _FQDN(v_SKV[_lURI_openvpnd_address].get_first()),
+						DN:         v_DN,
 						Domain:     d,
 						Entry:      f,
 						FQDN:       b._DN_FQDN(_re_point, v_DN),
 						IPPrefix:   parse_interface(netip.ParsePrefix(v_SKV[_lURI_openvpnd_ip].get_first())).(netip.Prefix),
+						LDAP:       b,
 						Modify:     nil,
-						SKV:        v_SKV,
 						PKI:        nil,
-						PPort:      _PName(pad_string(string_uint64(v_SKV[_lURI_openvpnd_port].get_first()), 5)),
+						PName:      "",
+						PPort:      "",
 						Port:       _INet_Port(string_uint64(v_SKV[_lURI_openvpnd_port].get_first())),
+						SKV:        v_SKV,
+						SSH_Client: v_SKV[_skv_SSH_PK].get_all(),
 						TLSv2:      nil,
 						TLSv2_User: nil,
-						SSH_Client: v_SKV[_skv_SSH_PK].get_all(),
 					}
 				)
+				v_H.PPort = _PName(pad_string(v_H.Port, 5))
+				v_H.PName = _PName(join_string("", "ID", v_H.PPort))
 
 				for _, h := range v_H.SKV[_skv_P12].get_all() {
 					var (
@@ -575,7 +578,6 @@ func parse_LDAP() {
 				// }
 				var (
 					v_G = &i_LDAP_Domain_Group{
-						LDAP:           b,
 						DN:             v_DN,
 						Domain:         d,
 						Entry:          f,
@@ -583,12 +585,14 @@ func parse_LDAP() {
 						GID:            _GID(v_SKV[b.Group_CN].get_first()),
 						GID_List:       nil,
 						GID_Number:     _GID_Number(string_uint64(v_SKV[_skv_gidNumber].get_first())),
+						LDAP:           b,
 						Modify:         nil,
 						Owner_GID_List: nil,
 						Owner_UID_List: nil,
+						PKI:            nil,
 						SKV:            v_SKV,
 						UID_List:       nil,
-						PKI:            nil,
+						FW_v00:         nil,
 						OVPN:           v_OVPN,
 					}
 					v_UID_List       = make(__UN_LDAP_Domain_User)
@@ -771,24 +775,23 @@ func parse_LDAP() {
 							return
 						}(),
 						Port:       f.OVPN.Port,
-						IDPName:    _PName(join_string("", "ID", pad(f.OVPN.Port, 5))),
+						PName:      f.OVPN.PName,
 						Proto:      _INet_Protocol(x),
 						InternalIP: f.OVPN.IPPrefix.String(),
 						Subnet:     _UIx_Addr,
 						Netmask:    "255.240.0.0",
 					}
 					var (
-						p_pki    = _dir_Stage_OVPN.a("usr/local/etc/openvpn", _Dir_Name(i_OVPN[f.FQDN].IDPName), "pki")
-						p_server = _dir_Stage_OVPN.a("usr/local/etc/openvpn")
-						c_server = i_file.get(_dir_GT_OVPN, "server").parse_GT(i_OVPN[f.FQDN])
+						p_pki  = _dir_Stage_OVPN_ULE.a(_Dir_Name(f.OVPN.PName), "pki")
+						f_conf = _File_Name(join_string(".", join_string("_", "openvpn", f.OVPN.PName, x), "conf"))
 					)
 					i_file.put(p_pki, "ca.crt.pem", "", d.PKI.PEM.Cert)
-					i_file.put(p_pki, "server.crt.pem", "", d.PKI.Host_Node[_FQDN(join_string(".", "openvpn", d.FQDN))].PEM.Cert)
-					i_file.put(p_pki, "server.key.pem", "", d.PKI.Host_Node[_FQDN(join_string(".", "openvpn", d.FQDN))].PEM.Key)
-					i_file.put(p_pki, "server.dh.pem", "", d.PKI.Host_Node[_FQDN(join_string(".", "openvpn", d.FQDN))].PEM.DH)
+					i_file.put(p_pki, "server.crt.pem", "", f.OVPN.PKI.PEM.Cert)
+					i_file.put(p_pki, "server.key.pem", "", f.OVPN.PKI.PEM.Key)
+					i_file.put(p_pki, "server.dh.pem", "", f.OVPN.PKI.PEM.DH)
 					i_file.put(p_pki, "crl.crl.pem", "", d.PKI.PEM.CRL)
 					i_file.put(p_pki, "server.tls.key.pem", "", f.OVPN.TLSv2)
-					i_file.put(p_server, _File_Name(join_string(".", join_string("_", "openvpn", i_OVPN[f.FQDN].IDPName, x), "conf")), "", c_server)
+					i_file.put(_dir_Stage_OVPN_ULE, f_conf, "", i_file.get(_dir_GT_OVPN, "server").parse_GT(i_OVPN[f.FQDN]))
 				}
 				i_file.write()
 
@@ -821,22 +824,21 @@ func parse_LDAP() {
 						var (
 							c_GT = &_OVPN_GT_Client{
 								Address: f.OVPN.Address,
-								Port:    f.OVPN.Port,
-								Proto:   []_INet_Protocol{_INet_Protocol(_W_tcp), _INet_Protocol(_W_udp)},
 								CA:      d.PKI.PEM.Cert,
 								Cert:    h.PKI[i].PEM.Cert,
 								Key:     h.PKI[i].PEM.Key,
-								TLSv2:   f.OVPN.TLSv2_User[g][i],
-								Subnet:  i_ui_ip[h.IPPrefix.Masked()].Conn[i].Addr().String(),
 								Netmask: "255.240.0.0",
+								Port:    f.OVPN.Port,
+								Proto:   []_INet_Protocol{_INet_Protocol(_W_tcp), _INet_Protocol(_W_udp)},
+								PName:   f.OVPN.PName,
+								Subnet:  i_ui_ip[h.IPPrefix.Masked()].Conn[i].Addr().String(),
+								TLSv2:   f.OVPN.TLSv2_User[g][i],
 							}
-							p_ccd            = _dir_Stage_OVPN.a("usr/local/etc/openvpn", _Dir_Name(i_OVPN[f.FQDN].IDPName), "ccd")
+							p_ccd            = _dir_Stage_OVPN_ULE.a(_Dir_Name(i_OVPN[f.FQDN].PName), "ccd")
 							p_client_profile = _dir_Portal.a(_Dir_Name(d.FQDN), _Dir_Name(f.FQDN), _Dir_Name(h.FQDN))
-							c_ccd            = i_file.get(_dir_GT_OVPN, "client_ccd").parse_GT(c_GT)
-							c_client_profile = i_file.get(_dir_GT_OVPN, "client_profile").parse_GT(c_GT)
 						)
-						i_file.put(p_ccd, _File_Name(h.PKI[i].FQDN), "", c_ccd)
-						i_file.put(p_client_profile, _File_Name(join_string(".", h.PKI[i].FQDN, "ovpn")), "", c_client_profile)
+						i_file.put(p_ccd, _File_Name(h.PKI[i].FQDN), "", i_file.get(_dir_GT_OVPN, "client_ccd").parse_GT(c_GT))
+						i_file.put(p_client_profile, _File_Name(join_string(".", h.PKI[i].FQDN, "ovpn")), "", i_file.get(_dir_GT_OVPN, "client_profile").parse_GT(c_GT))
 					}
 					i_file.write()
 
@@ -845,14 +847,12 @@ func parse_LDAP() {
 
 			}
 
-			var (
-				p_server_cron    = _dir_Stage_OVPN.a("usr/local/etc/openvpn")
-				p_server_Juniper = _dir_Stage_OVPN.a("usr/local/etc/openvpn")
-				c_server_cron    = i_file.get(_dir_GT_OVPN, "server_cron").parse_GT(i_OVPN)
-				c_server_Juniper = i_file.get(_dir_GT_OVPN, "server_Juniper").parse_GT(i_OVPN)
-			)
-			i_file.put(p_server_cron, "server_cron", "", c_server_cron)
-			i_file.put(p_server_Juniper, "server_Juniper", "", c_server_Juniper)
+			i_file.put(_dir_Stage_OVPN_ULE, "client_connect.sh", "", i_file.get(_dir_GT_OVPN, "client_connect.sh").parse_GT(i_OVPN))
+			i_file.put(_dir_Stage_OVPN_ULE, "client_disconnect.sh", "", i_file.get(_dir_GT_OVPN, "client_disconnect.sh").parse_GT(i_OVPN))
+			i_file.e(_dir_Stage_OVPN_ULE, "client_connect.sh")
+			i_file.e(_dir_Stage_OVPN_ULE, "client_disconnect.sh")
+			i_file.put(_dir_Stage_OVPN_ULE, "server_cron", "", i_file.get(_dir_GT_OVPN, "server_cron").parse_GT(i_OVPN))
+			i_file.put(_dir_Stage_OVPN_ULE, "server_Juniper", "", i_file.get(_dir_GT_OVPN, "server_Juniper").parse_GT(i_OVPN))
 			i_file.write()
 
 		}

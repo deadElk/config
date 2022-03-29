@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"io/fs"
 	"os"
 	"os/exec"
 	"sort"
@@ -94,8 +95,15 @@ func (receiver __DN_File_Dir) append(dir _Dir_Name, file _File_Name, delimiter s
 }
 func (receiver __DN_File_Dir) write() (not_ok bool) {
 	_check()
+	var (
+		d_mode = fs.FileMode(os.ModeDir | 0700)
+		f_mode = map[bool]fs.FileMode{
+			false: 0600,
+			true:  0700,
+		}
+	)
 	for a, b := range receiver {
-		switch err := os.MkdirAll(a.String(), os.ModeDir|0700); {
+		switch err := os.MkdirAll(a.String(), d_mode); {
 		case err != nil:
 			log.Errorf("directory '%v' create error '%v'; ACTION: report.", a, err)
 			not_ok = true
@@ -110,7 +118,7 @@ func (receiver __DN_File_Dir) write() (not_ok bool) {
 			var (
 				g = join_string("/", a, join_string(".", c, b.Ext))
 			)
-			switch err := os.WriteFile(g, *d.Content, 0600); {
+			switch err := os.WriteFile(g, *d.Content, f_mode[d.Exec]); {
 			case err != nil:
 				log.Errorf("file '%v' write error '%v'; ACTION: report.", g, err)
 				not_ok = true
@@ -184,4 +192,11 @@ func (receiver __DN_File_Dir) fn(dir _Dir_Name, file _File_Name) (outbound _File
 		return
 	}
 	return _File_Name(join_string("/", dir, join_string(".", file, receiver[dir].Ext)))
+}
+func (receiver __DN_File_Dir) e(dir _Dir_Name, file _File_Name) {
+	receiver.check(dir, file)
+	receiver[dir].File[file].Exec = true
+}
+func (receiver __DN_File_Dir) l(dir _Dir_Name, file _File_Name, link _File_Name) {
+	receiver.check(dir, file)
 }

@@ -15,5 +15,6 @@ type i_File_Data struct {
 	Flag    bool
 	Ext     _Name
 	Link    _Name // ln -s Link to _Name
+	Exec    bool
 	Content *_Content
 }

@@ -112,7 +112,7 @@ type _INet_UI_IP_Table struct { //
 type _OVPN_GT_Server struct { //
 	Address    _FQDN          //
 	ExternalIP string         //
-	IDPName    _PName         //
+	PName      _PName         //
 	InternalIP string         //
 	Netmask    string         //
 	Port       _INet_Port     //
@@ -127,6 +127,7 @@ type _OVPN_GT_Client struct { //
 	Netmask string           //
 	Port    _INet_Port       //
 	Proto   []_INet_Protocol //
+	PName   _PName           //
 	Subnet  string           //
 	TLSv2   _PEM             //
 }

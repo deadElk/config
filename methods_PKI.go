@@ -106,13 +106,22 @@ func (receiver *_PKI_Node) _DER_PEM() (status bool) {
 	return true
 }
 func (receiver *_PKI_Host_Node) _DER_PEM() (status bool) {
+	var (
+		err error
+	)
 	receiver.PEM = &_PKI_Host_Node_PEM{
 		Cert: pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: receiver.DER.Cert}),
 		Key:  pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: receiver.DER.Key}),
 	}
+	switch receiver.PEM.DH, err = receiver.DH.ToPEM(); {
+	case err != nil:
+		log.Fatalf("can't convert DH to PEM for a Host; ACTION: report.")
+		_fatal()
+	}
 	switch {
 	case receiver.PEM.Cert == nil || receiver.PEM.Key == nil:
-		log.Fatalf("can't create PEM for a CA; ACTION: report.")
+		log.Fatalf("can't convert Cert to PEM for a Host; ACTION: report.")
+		_fatal()
 	}
 
 	return true
@@ -410,7 +419,7 @@ func (receiver *_PKI_Host_Node) parse_P12(inbound *x509.Certificate) (status boo
 		err      error
 		key      any
 		ca_chain __Cert_Chain
-		t        = &_PKI_Node{DER: &_PKI_Node_DER{}}
+		t        = &_PKI_Host_Node{DER: &_PKI_Host_Node_DER{}}
 	)
 
 	switch key, t.Cert, ca_chain, err = pkcs12.DecodeChain(receiver.P12, pkcs12.DefaultPassword); {
@@ -446,8 +455,7 @@ func (receiver *_PKI_Host_Node) parse_P12(inbound *x509.Certificate) (status boo
 		return receiver.generate(inbound)
 	}
 
-	// P12 valid
-	// receiver.P12 = inbound
+	receiver.DH = generate_DH()
 
 	receiver.Cert = t.Cert
 	receiver.Key = t.Key
@@ -503,6 +511,8 @@ func (receiver *_PKI_Host_Node) generate(inbound *x509.Certificate) (status bool
 	case err != nil:
 		log.Fatalf("can't encode a new P12 - %v", err)
 	}
+
+	receiver.DH = generate_DH()
 
 	receiver._DER_PEM()
 
