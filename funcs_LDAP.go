@@ -777,7 +777,7 @@ func parse_LDAP() {
 						Port:       f.OVPN.Port,
 						PName:      f.OVPN.PName,
 						Proto:      _INet_Protocol(x),
-						InternalIP: f.OVPN.IPPrefix.String(),
+						InternalIP: f.OVPN.IPPrefix.Addr().String(),
 						Subnet:     _UIx_Addr,
 						Netmask:    "255.240.0.0",
 					}
