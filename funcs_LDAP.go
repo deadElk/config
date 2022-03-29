@@ -677,7 +677,7 @@ func parse_LDAP() {
 		for _, d := range b.Domain {
 			for _, f := range d.User {
 				switch f.UID {
-				case "lom":
+				case "lom", "moroz":
 				default:
 					continue
 				}
@@ -797,7 +797,7 @@ func parse_LDAP() {
 
 				for g, h := range f.UID_List {
 					switch h.UID {
-					case "lom":
+					case "lom", "moroz":
 					default:
 						continue
 					}
