@@ -111,7 +111,7 @@ type _INet_UI_IP_Table struct { //
 }
 type _OVPN_GT_Server struct { //
 	Address    _FQDN          //
-	ExternalIP string         //
+	ExternalIP []netip.Addr   //
 	PName      _PName         //
 	InternalIP string         //
 	Netmask    string         //

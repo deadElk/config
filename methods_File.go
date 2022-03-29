@@ -131,7 +131,7 @@ func (receiver __DN_File_Dir) write() (not_ok bool) {
 func (receiver __DN_File_Dir) check(dir _Dir_Name, file _File_Name) /*not_ok bool*/ {
 	switch _, flag := receiver[dir]; {
 	case !flag:
-		log.Warnf("Dir '%v' definition doesn't exist; ACTION: create.", dir)
+		log.Debugf("Dir '%v' definition doesn't exist; ACTION: create.", dir)
 		receiver[dir] = &i_File_Dir{Flag: true, File: __FN_File_Data{}}
 	}
 	switch {

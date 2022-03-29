@@ -676,12 +676,6 @@ func parse_LDAP() {
 	for _, b := range i_ldap { // third pass, fill PKI with known data or generate new
 		for _, d := range b.Domain {
 			for _, f := range d.User {
-				switch f.UID {
-				case "lom", "moroz":
-				default:
-					continue
-				}
-
 				var (
 					changed bool
 				)
@@ -764,13 +758,15 @@ func parse_LDAP() {
 				for _, x := range []_W{_W_tcp, _W_udp} {
 					i_OVPN[f.FQDN] = &_OVPN_GT_Server{
 						Address: f.OVPN.Address,
-						ExternalIP: func() (outbound string) {
+						ExternalIP: func() (outbound []netip.Addr) {
 							switch value, err := net.LookupIP(f.OVPN.Address.String()); {
 							case err != nil:
 								log.Errorf("Error resolving '%v'; ACTION: report.", f.OVPN.Address)
 								_fatal()
 							default:
-								outbound = interface_string("", value)
+								for _, z := range value {
+									outbound = append(outbound, parse_interface(netip.ParseAddr(z.String())).(netip.Addr))
+								}
 							}
 							return
 						}(),
@@ -796,12 +792,6 @@ func parse_LDAP() {
 				i_file.write()
 
 				for g, h := range f.UID_List {
-					switch h.UID {
-					case "lom", "moroz":
-					default:
-						continue
-					}
-
 					f.OVPN.TLSv2_User[g] = make([]_PEM, _UIx_IPx, _UIx_IPx)
 					for i := range h.PKI {
 						switch {
