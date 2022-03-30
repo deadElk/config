@@ -43,23 +43,6 @@ func (receiver __DN_File_Dir) read() (status bool) {
 				status = true
 				continue
 			}
-
-			// switch content, err = os.ReadFile(ffn); {
-			// case err != nil:
-			// 	log.Warnf("file '%v' read error '%v'; ACTION: report.", ffn, err)
-			// 	status = true
-			// 	continue
-			// }
-			// switch receiver[dir].Ext {
-			// case receiver[_dir_GT].Ext:
-			// 	content.trim_space()
-			// }
-			// switch _, flag := receiver[dir].File[fn]; {
-			// case flag:
-			// 	f_fn = receiver[dir].File[fn].Flag
-			// }
-			// receiver.put(dir, fn, "", content)
-			// receiver[dir].File[fn].Flag = f_fn
 			receiver[dir].Sorted = append(receiver[dir].Sorted, fn)
 		}
 		sort.Slice(receiver[dir].Sorted, func(i, j int) bool {
@@ -71,11 +54,11 @@ func (receiver __DN_File_Dir) read() (status bool) {
 }
 func (receiver __DN_File_Dir) get(dir _Dir_Name, file _File_Name, ext _Name) ( /*not_ok bool,*/ outbound *_Content) {
 	receiver.check(dir, file, ext)
-	// switch _, flag := receiver[dir].File[file]; {
-	// case !flag:
-	// 	receiver.read_file(dir, file, ext)
-	// }
 	return /*!not_ok,*/ receiver[dir].File[file].Content
+}
+func (receiver __DN_File_Dir) list(dir _Dir_Name) (outbound []_File_Name) {
+	receiver.check(dir, "", "")
+	return receiver[dir].Sorted
 }
 func (receiver __DN_File_Dir) put(dir _Dir_Name, file _File_Name, ext _Name, delimiter string, content any) /*not_ok bool*/ {
 	receiver.check(dir, file, ext)
@@ -84,6 +67,7 @@ func (receiver __DN_File_Dir) put(dir _Dir_Name, file _File_Name, ext _Name, del
 	)
 	receiver[dir].File[file].Content = &v_Content
 	receiver[dir].File[file].Flag = true
+	receiver[dir].File[file].Ext = ext
 	// return !not_ok
 }
 func (receiver __DN_File_Dir) append(dir _Dir_Name, file _File_Name, ext _Name, delimiter string, content any) /*not_ok bool*/ {
@@ -93,6 +77,7 @@ func (receiver __DN_File_Dir) append(dir _Dir_Name, file _File_Name, ext _Name, 
 	)
 	receiver[dir].File[file].Content = &v_Content
 	receiver[dir].File[file].Flag = true
+	receiver[dir].File[file].Ext = ext
 	// return !not_ok
 }
 func (receiver __DN_File_Dir) write() (not_ok bool) {
@@ -104,25 +89,26 @@ func (receiver __DN_File_Dir) write() (not_ok bool) {
 			true:  0700,
 		}
 	)
-	for a, b := range receiver {
-		switch err := os.MkdirAll(a.String(), d_mode); {
+	for dir, b := range receiver {
+		switch err := os.MkdirAll(dir.String(), d_mode); {
 		case err != nil:
-			log.Errorf("directory '%v' create error '%v'; ACTION: report.", a, err)
+			log.Errorf("directory '%v' create error '%v'; ACTION: report.", dir, err)
 			not_ok = true
 			continue
 		}
-		for c, d := range b.File {
+		for file, d := range b.File {
 			switch {
 			case !d.Flag:
-				log.Debugf("file '%v' hasn't changed; ACTION: report.", c)
+				log.Debugf("file '%v' hasn't changed; ACTION: report.", file)
 				continue
 			}
 			var (
-				g = join_string("/", a, join_string(".", c, b.Ext))
+				v_full_fn  = file.a(_File_Name(d.Ext))
+				v_full_pfn = dir.a(_Dir_Name(v_full_fn))
 			)
-			switch err := os.WriteFile(g, *d.Content, f_mode[d.Exec]); {
+			switch err := os.WriteFile(v_full_pfn.String(), *d.Content, f_mode[d.Exec]); {
 			case err != nil:
-				log.Errorf("file '%v' write error '%v'; ACTION: report.", g, err)
+				log.Errorf("file '%v' write error '%v'; ACTION: report.", v_full_pfn, err)
 				not_ok = true
 				continue
 			}
@@ -148,6 +134,10 @@ func (receiver __DN_File_Dir) check(dir _Dir_Name, file _File_Name, ext _Name) {
 			// receiver.read_file(dir, file, ext)
 			receiver[dir].File[file] = &i_File_Data{Content: &_Content{}}
 		}
+		switch {
+		case len(receiver[dir].Ext) != 0 && len(receiver[dir].File[file].Ext) == 0:
+			receiver[dir].File[file].Ext = receiver[dir].Ext
+		}
 	}
 }
 func (receiver __DN_File_Dir) read_file(dir _Dir_Name, file _File_Name, ext _Name) (status bool) {
@@ -170,11 +160,6 @@ func (receiver __DN_File_Dir) read_file(dir _Dir_Name, file _File_Name, ext _Nam
 	}
 	receiver.put(dir, file, ext, "", content)
 	receiver[dir].File[file].Flag = v_Flag
-	// receiver[dir].Sorted = append(receiver[dir].Sorted, file)
-	//
-	// sort.Slice(receiver[dir].Sorted, func(i, j int) bool {
-	// 	return receiver[dir].Sorted[i] < receiver[dir].Sorted[j]
-	// })
 	return true
 }
 
@@ -192,6 +177,15 @@ func (receiver _File_Name) a(inbound ...any) (outbound _File_Name) {
 	var (
 		interim   = []string{receiver.String()}
 		delimiter = "."
+	)
+	for _, b := range inbound {
+		interim = append(interim, interface_string(delimiter, b))
+	}
+	return _File_Name(join_string(delimiter, interim))
+}
+func (receiver _File_Name) aa(delimiter string, inbound ...any) (outbound _File_Name) {
+	var (
+		interim = []string{receiver.String()}
 	)
 	for _, b := range inbound {
 		interim = append(interim, interface_string(delimiter, b))

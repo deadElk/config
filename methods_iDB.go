@@ -96,7 +96,7 @@ func (receiver __ASN_Peer) parse_GT() (status bool) {
 				status = true
 				continue
 			}
-			i_file.append(_dir_Config, _File_Name(value.ASName), "txt ", "\n", content)
+			i_file.append(_dir_Config, _File_Name(value.ASName), "txt", "\n", content)
 		}
 	}
 	return !status

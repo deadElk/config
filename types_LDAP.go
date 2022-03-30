@@ -78,7 +78,7 @@ type i_LDAP_Domain_Group struct { // gidNumber: index
 	OVPN           *i_LDAP_Domain_Host    //
 	Owner_GID_List __GN_LDAP_Domain_Group // CAUTION >>>> GID includes GID <<<< owner: index = owner (gidNumber here), value is a pointer.
 	Owner_UID_List __UN_LDAP_Domain_User  // owner: index = owner (uidNumber here), value is a pointer.
-	PKI            *_PKI_Node             //
+	PKI            *_PKI_P12              //
 	SKV            __S_LDAP_SKV           //
 	UID_List       __UN_LDAP_Domain_User  // member: index = member (uidNumber here), value is a pointer.
 }
@@ -92,7 +92,7 @@ type i_LDAP_Domain_User struct { // uidNumber: index
 	IPPrefix   netip.Prefix           // ipHostNumber (user's subnet)
 	LDAP       *i_LDAP                //
 	Modify     *ldap.ModifyRequest    //
-	PKI        __PKI_Node             //
+	PKI        __PKI_P12              //
 	SKV        __S_LDAP_SKV           // sshPublicKey, userPKCS12, etc: private [service][key]value DB
 	UID        _UID                   // uid
 	UID_Number _UID_Number            //
@@ -107,7 +107,7 @@ type i_LDAP_Domain_Host struct { //
 	IPPrefix   netip.Prefix                      //
 	LDAP       *i_LDAP                           //
 	Modify     *ldap.ModifyRequest               //
-	PKI        *_PKI_Host_Node                   //
+	PKI        *_PKI_P12                         //
 	PName      _PName                            //
 	PPort      _PName                            //
 	Port       _INet_Port                        //

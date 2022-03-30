@@ -33,6 +33,7 @@ var (
 	empty_ID   = _next_ID
 	next_ID    = empty_ID
 
+	i_PKI_P12 = make(__FQDN_PKI_P12)
 	// daemon's global PKI SerialNumber used for Cert and CRL
 	// i_PKI_DB         = make(__FQDN_PKI_Domain)
 	// i_PKI_SN      = big.NewInt(0) // use big.NewInt(time.Now().Unixnano())
@@ -49,22 +50,20 @@ var (
 	i_ldap        = make(__URL_LDAP)
 	i_ldap_domain = make(__DN_LDAP_Domain)
 	i_file        = __DN_File_Dir{
-		_dir_Config:     {Ext: "txt"},
-		_dir_Data:       {Ext: "xml"},
-		_dir_GT:         {Ext: "tmpl"},
-		_dir_GT_OVPN:    {Ext: "tmpl"},
-		_dir_LDAP:       {Ext: "xml"},
-		_dir_Modify:     {Ext: "xml"},
-		_dir_PKI_TLS:    {Ext: "pem", Recursive: true},
-		_dir_PKI_CA:     {Ext: "der"},
-		_dir_PKI_Cert:   {Ext: "p12"},
-		_dir_Portal:     {Ext: ""},
-		_dir_Stage:      {Ext: ""},
-		_dir_Stage_OVPN: {Ext: ""},
-		_dir_etc:        {Ext: "xml"},
-	}
-	i_file_TLS = __DN_File_Dir{
-		_dir_PKI_TLS: i_file[_dir_PKI_TLS],
+		// _dir_Config:  {Ext: "txt"},
+		_dir_GT:      {Ext: "tmpl"},
+		_dir_GT_OVPN: {Ext: "tmpl"},
+		_dir_Modify:  {Ext: "xml"},
+		_dir_PKI_CA:  {Ext: "der"},
+		_dir_PKI_TLS: {Ext: "pem", Recursive: true},
+		_dir_etc:     {Ext: "xml"},
+		// _dir_Data:           {Ext: "xml"},
+		// _dir_LDAP:           {Ext: "xml"},
+		// _dir_PKI_Cert:       {Ext: "p12"},
+		// _dir_Portal:         {Ext: ""},
+		// _dir_Stage:          {Ext: ""},
+		// _dir_Stage_OVPN:     {Ext: ""},
+		// _dir_Stage_OVPN_ULE: {Ext: ""},
 	}
 
 	i_OVPN      = make(map[_FQDN]*_OVPN_GT_Server)

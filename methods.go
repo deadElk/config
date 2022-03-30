@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"math/big"
+	"net"
 	"net/netip"
 	"strings"
 	"text/template"
@@ -449,4 +450,17 @@ func (receiver *_Content) parse_GT(inbound any) (outbound _Content) {
 		return _Content{}
 	}
 	return buffer.Bytes()
+}
+
+func (receiver *_FQDN) resolve() (outbound []netip.Addr) {
+	switch value, err := net.LookupIP(receiver.String()); {
+	case err != nil:
+		log.Errorf("Error resolving '%v'; ACTION: report.", receiver.String())
+		_fatal()
+	default:
+		for _, z := range value {
+			outbound = append(outbound, parse_interface(netip.ParseAddr(z.String())).(netip.Addr))
+		}
+	}
+	return
 }
