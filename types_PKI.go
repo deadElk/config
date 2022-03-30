@@ -45,7 +45,7 @@ type _PKI_CA_Node struct {
 	DER       *_PKI_CA_Node_DER
 	Host_Node __FQDN_PKI_Host_Node
 	Node      __FQDN_PKI_Node
-	PEM       *_PKI_CA_Node_PEM
+	// PEM       *_PKI_CA_Node_PEM
 }
 type _PKI_Host_Node struct {
 	FQDN _FQDN
@@ -53,8 +53,8 @@ type _PKI_Host_Node struct {
 	Cert *x509.Certificate
 	Key  *ecdsa.PrivateKey
 	DER  *_PKI_Host_Node_DER
-	PEM  *_PKI_Host_Node_PEM
-	P12  _P12
+	// PEM  *_PKI_Host_Node_PEM
+	P12 _P12
 }
 type _PKI_Node struct {
 	FQDN _FQDN
@@ -62,32 +62,32 @@ type _PKI_Node struct {
 	Cert *x509.Certificate
 	Key  *ecdsa.PrivateKey
 	DER  *_PKI_Node_DER
-	PEM  *_PKI_Node_PEM
-	P12  _P12
+	// PEM  *_PKI_Node_PEM
+	P12 _P12
 }
 type _PKI_CA_Node_DER struct {
-	Cert _DER
-	Key  _DER
-	CRL  _DER
+	Cert _DER_Cert
+	Key  _DER_Key
+	CRL  _DER_CRL
 }
 type _PKI_Host_Node_DER struct {
-	Cert _DER
-	Key  _DER
+	Cert _DER_Cert
+	Key  _DER_Key
 }
 type _PKI_Node_DER struct {
-	Cert _DER
-	Key  _DER
+	Cert _DER_Cert
+	Key  _DER_Key
 }
 type _PKI_CA_Node_PEM struct {
-	Cert _PEM
-	Key  _PEM
-	CRL  _PEM
+	Cert _PEM_Cert
+	Key  _PEM_Key
+	CRL  _PEM_CRL
 }
 type _PKI_Host_Node_PEM struct {
-	Cert _PEM
-	Key  _PEM
+	Cert _PEM_Cert
+	Key  _PEM_Key
 }
 type _PKI_Node_PEM struct {
-	Cert _PEM
-	Key  _PEM
+	Cert _PEM_Cert
+	Key  _PEM_Key
 }

@@ -49,19 +49,19 @@ var (
 	i_ldap        = make(__URL_LDAP)
 	i_ldap_domain = make(__DN_LDAP_Domain)
 	i_file        = __DN_File_Dir{
-		_dir_Config:     {Ext: "txt", File: __FN_File_Data{}},
-		_dir_Data:       {Ext: "xml", File: __FN_File_Data{}},
-		_dir_GT:         {Ext: "tmpl", File: __FN_File_Data{}},
-		_dir_GT_OVPN:    {Ext: "tmpl", File: __FN_File_Data{}},
-		_dir_LDAP:       {Ext: "xml", File: __FN_File_Data{}},
-		_dir_Modify:     {Ext: "xml", File: __FN_File_Data{}},
-		_dir_PKI_TLS:    {Ext: "pem", File: __FN_File_Data{}},
-		_dir_PKI_CA:     {Ext: "der", File: __FN_File_Data{}},
-		_dir_PKI_Cert:   {Ext: "p12", File: __FN_File_Data{}},
-		_dir_Portal:     {Ext: "", File: __FN_File_Data{}},
-		_dir_Stage:      {Ext: "", File: __FN_File_Data{}},
-		_dir_Stage_OVPN: {Ext: "", File: __FN_File_Data{}},
-		_dir_etc:        {Ext: "xml", File: __FN_File_Data{}},
+		_dir_Config:     {Ext: "txt"},
+		_dir_Data:       {Ext: "xml"},
+		_dir_GT:         {Ext: "tmpl"},
+		_dir_GT_OVPN:    {Ext: "tmpl"},
+		_dir_LDAP:       {Ext: "xml"},
+		_dir_Modify:     {Ext: "xml"},
+		_dir_PKI_TLS:    {Ext: "pem", Recursive: true},
+		_dir_PKI_CA:     {Ext: "der"},
+		_dir_PKI_Cert:   {Ext: "p12"},
+		_dir_Portal:     {Ext: ""},
+		_dir_Stage:      {Ext: ""},
+		_dir_Stage_OVPN: {Ext: ""},
+		_dir_etc:        {Ext: "xml"},
 	}
 	i_file_TLS = __DN_File_Dir{
 		_dir_PKI_TLS: i_file[_dir_PKI_TLS],

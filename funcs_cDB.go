@@ -14,7 +14,7 @@ func read_cDB() (status bool) {
 		var (
 			c cDB
 		)
-		switch err := xml.Unmarshal(*i_file.get(_dir_etc, b), &c); {
+		switch err := xml.Unmarshal(*i_file.get(_dir_etc, b, "xml"), &c); {
 		case err != nil:
 			log.Warnf("configuration file '%v' parse error: '%v'; ACTION: skip.", b, err)
 			status = true

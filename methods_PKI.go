@@ -76,47 +76,64 @@ func (receiver *_PKI_CA_Node) parse_DER(inbound *x509.Certificate) (status bool)
 	// receiver.DER.Key = inbound.Key
 	receiver.DER.CRL = t.DER.CRL
 
-	receiver._DER_PEM()
+	// receiver._DER_PEM()
 
 	return status
 }
-func (receiver *_PKI_CA_Node) _DER_PEM() (status bool) {
-	receiver.PEM = &_PKI_CA_Node_PEM{
-		Cert: pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: receiver.DER.Cert}),
-		Key:  pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: receiver.DER.Key}),
-		CRL:  pem.EncodeToMemory(&pem.Block{Type: "X509 CRL", Bytes: receiver.DER.CRL}),
-	}
-	switch {
-	case receiver.PEM.Cert == nil || receiver.PEM.Key == nil || receiver.PEM.CRL == nil:
-		log.Fatalf("can't create PEM for a CA; ACTION: report.")
-	}
 
-	return true
+// func (receiver *_PKI_CA_Node) _DER_PEM() (status bool) {
+// 	receiver.PEM = &_PKI_CA_Node_PEM{
+// 		Cert: pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: receiver.DER.Cert}),
+// 		Key:  pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: receiver.DER.Key}),
+// 		CRL:  pem.EncodeToMemory(&pem.Block{Type: "X509 CRL", Bytes: receiver.DER.CRL}),
+// 	}
+// 	switch {
+// 	case receiver.PEM.Cert == nil || receiver.PEM.Key == nil || receiver.PEM.CRL == nil:
+// 		log.Fatalf("can't create PEM for a CA; ACTION: report.")
+// 	}
+//
+// 	return true
+// }
+// func (receiver *_PKI_Node) _DER_PEM() (status bool) {
+// 	receiver.PEM = &_PKI_Node_PEM{
+// 		Cert: pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: receiver.DER.Cert}),
+// 		Key:  pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: receiver.DER.Key}),
+// 	}
+// 	switch {
+// 	case receiver.PEM.Cert == nil || receiver.PEM.Key == nil:
+// 		log.Fatalf("can't create PEM for a CA; ACTION: report.")
+// 	}
+//
+// 	return true
+// }
+// func (receiver *_PKI_Host_Node) _DER_PEM() (status bool) {
+// 	receiver.PEM = &_PKI_Host_Node_PEM{
+// 		Cert: pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: receiver.DER.Cert}),
+// 		Key:  pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: receiver.DER.Key}),
+// 	}
+// 	switch {
+// 	case receiver.PEM.Cert == nil || receiver.PEM.Key == nil:
+// 		log.Fatalf("can't convert Cert to PEM for a Host; ACTION: report.")
+// 		_fatal()
+// 	}
+//
+// 	return true
+// }
+
+func (receiver *_DER_Cert) _PEM() (outbound _PEM_Cert) {
+	return pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: *receiver})
 }
-func (receiver *_PKI_Node) _DER_PEM() (status bool) {
-	receiver.PEM = &_PKI_Node_PEM{
-		Cert: pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: receiver.DER.Cert}),
-		Key:  pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: receiver.DER.Key}),
-	}
-	switch {
-	case receiver.PEM.Cert == nil || receiver.PEM.Key == nil:
-		log.Fatalf("can't create PEM for a CA; ACTION: report.")
-	}
-
-	return true
+func (receiver *_DER_Key) _PEM() (outbound _PEM_Key) {
+	return pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: *receiver})
 }
-func (receiver *_PKI_Host_Node) _DER_PEM() (status bool) {
-	receiver.PEM = &_PKI_Host_Node_PEM{
-		Cert: pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: receiver.DER.Cert}),
-		Key:  pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: receiver.DER.Key}),
-	}
-	switch {
-	case receiver.PEM.Cert == nil || receiver.PEM.Key == nil:
-		log.Fatalf("can't convert Cert to PEM for a Host; ACTION: report.")
-		_fatal()
-	}
-
-	return true
+func (receiver *_DER_CRL) _PEM() (outbound _PEM_CRL) {
+	return pem.EncodeToMemory(&pem.Block{Type: "X509 CRL", Bytes: *receiver})
+}
+func (receiver *_DER_TLS_Server) _PEM() (outbound _PEM_TLS_Server) {
+	return pem.EncodeToMemory(&pem.Block{Type: "OpenVPN tls-crypt-v2 server key", Bytes: *receiver})
+}
+func (receiver *_DER_TLS_Client) _PEM() (outbound _PEM_TLS_Client) {
+	return pem.EncodeToMemory(&pem.Block{Type: "OpenVPN tls-crypt-v2 client key", Bytes: *receiver})
 }
 
 func (receiver *_PKI_CA_Node) generate(inbound *x509.Certificate) (status bool) { // generate cert for a CA Node
@@ -131,7 +148,7 @@ func (receiver *_PKI_CA_Node) generate(inbound *x509.Certificate) (status bool) 
 
 	log.Infof("generating a new CA Cert for '%v'; ACTION: report.", inbound.Subject.CommonName)
 
-	receiver.DER = &_PKI_CA_Node_DER{Cert: _DER{}, Key: _DER{}, CRL: _DER{}}
+	receiver.DER = &_PKI_CA_Node_DER{Cert: _DER_Cert{}, Key: _DER_Key{}, CRL: _DER_CRL{}}
 
 	switch receiver.Key, err = ecdsa.GenerateKey(elliptic.P521(), rand.Reader); {
 	case err != nil:
@@ -164,7 +181,7 @@ func (receiver *_PKI_CA_Node) generate(inbound *x509.Certificate) (status bool) 
 	}
 
 	receiver.generate_CRL()
-	receiver._DER_PEM()
+	// receiver._DER_PEM()
 
 	return true
 }
@@ -212,7 +229,6 @@ func (receiver *_P12) parse_Host_Node(ca *_PKI_CA_Node) /*(outbound *_PKI_Host_N
 			Cert: nil,
 			Key:  nil,
 			DER:  nil,
-			PEM:  nil,
 			P12:  *receiver,
 		}
 		// return i_PKI_DB.CA_Node[ca].Host_Node[host]
@@ -235,7 +251,6 @@ func (receiver *_P12) parse_Node(ca *_PKI_CA_Node) /*(outbound *_PKI_Node)*/ {
 			Cert: nil,
 			Key:  nil,
 			DER:  nil,
-			PEM:  nil,
 			P12:  *receiver,
 		}
 		// return i_PKI_DB.CA_Node[ca].Node[host]
@@ -308,7 +323,7 @@ func (receiver *_PKI_Node) parse_P12(inbound *x509.Certificate) (status bool) { 
 		log.Fatalf("can't marshal a new Key - %v", err)
 	}
 
-	receiver._DER_PEM()
+	// receiver._DER_PEM()
 
 	return
 }
@@ -350,7 +365,7 @@ func (receiver *_PKI_Node) generate(inbound *x509.Certificate) (status bool) { /
 		log.Fatalf("can't encode a new P12 - %v", err)
 	}
 
-	receiver._DER_PEM()
+	// receiver._DER_PEM()
 
 	return true
 }
@@ -460,7 +475,7 @@ func (receiver *_PKI_Host_Node) parse_P12(inbound *x509.Certificate) (status boo
 		log.Fatalf("can't marshal a new Key - %v", err)
 	}
 
-	receiver._DER_PEM()
+	// receiver._DER_PEM()
 
 	return
 }
@@ -502,7 +517,7 @@ func (receiver *_PKI_Host_Node) generate(inbound *x509.Certificate) (status bool
 		log.Fatalf("can't encode a new P12 - %v", err)
 	}
 
-	receiver._DER_PEM()
+	// receiver._DER_PEM()
 
 	return true
 }

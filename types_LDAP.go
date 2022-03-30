@@ -99,22 +99,22 @@ type i_LDAP_Domain_User struct { // uidNumber: index
 }
 
 type i_LDAP_Domain_Host struct { //
-	Address    _FQDN                  //
-	DN         _DN                    //
-	Domain     *i_LDAP_Domain         //
-	Entry      *ldap.Entry            //
-	FQDN       _FQDN                  //
-	IPPrefix   netip.Prefix           //
-	LDAP       *i_LDAP                //
-	Modify     *ldap.ModifyRequest    //
-	PKI        *_PKI_Host_Node        //
-	PName      _PName                 //
-	PPort      _PName                 //
-	Port       _INet_Port             //
-	SKV        __S_LDAP_SKV           //
-	SSH_Client []string               // ssh client key
-	TLSv2      _PEM                   //
-	TLSv2_User map[_UID_Number][]_PEM //
+	Address    _FQDN                             //
+	DN         _DN                               //
+	Domain     *i_LDAP_Domain                    //
+	Entry      *ldap.Entry                       //
+	FQDN       _FQDN                             //
+	IPPrefix   netip.Prefix                      //
+	LDAP       *i_LDAP                           //
+	Modify     *ldap.ModifyRequest               //
+	PKI        *_PKI_Host_Node                   //
+	PName      _PName                            //
+	PPort      _PName                            //
+	Port       _INet_Port                        //
+	SKV        __S_LDAP_SKV                      //
+	SSH_Client []string                          // ssh client key
+	TLSv2      _PEM_TLS_Server                   //
+	TLSv2_User map[_UID_Number][]_PEM_TLS_Client //
 	// FW_v00     []string               //
 }
 type i_LDAP_SKV struct { //

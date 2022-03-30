@@ -9,12 +9,22 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type _CN _Name                                                  //
-type _Cipher string                                             //
-type _Communication string                                      //
-type _Content []byte                                            //
-type _DER []byte                                                //
-type _PEM []byte                                                //
+type _CN _Name             //
+type _Cipher string        //
+type _Communication string //
+type _Content []byte       //
+// type _DER []byte                                                //
+type _DER_Cert []byte       //
+type _DER_CRL []byte        //
+type _DER_Key []byte        //
+type _DER_TLS_Server []byte //
+type _DER_TLS_Client []byte //
+// type _PEM []byte                                                //
+type _PEM_Cert []byte                                           //
+type _PEM_CRL []byte                                            //
+type _PEM_Key []byte                                            //
+type _PEM_TLS_Client []byte                                     //
+type _PEM_TLS_Server []byte                                     //
 type _DN _Name                                                  //
 type _Description string                                        //
 type _Dir_Name _Name                                            //
@@ -121,13 +131,13 @@ type _OVPN_GT_Server struct { //
 }
 type _OVPN_GT_Client struct { //
 	Address _FQDN            //
-	CA      _PEM             //
-	Cert    _PEM             //
-	Key     _PEM             //
+	CA      _PEM_Cert        //
+	Cert    _PEM_Cert        //
+	Key     _PEM_Key         //
 	Netmask string           //
 	Port    _INet_Port       //
 	Proto   []_INet_Protocol //
 	PName   _PName           //
 	Subnet  string           //
-	TLSv2   _PEM             //
+	TLSv2   _PEM_TLS_Client  //
 }
