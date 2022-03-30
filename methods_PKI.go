@@ -215,7 +215,6 @@ func (receiver *_DER_TLS_Client) _PEM() (outbound _PEM_TLS_Client) {
 // }
 
 func (receiver _P12) parse(ca *_PKI_CA_Node) (outbound *_PKI_P12) {
-	log.Warnf("P12: parsing start.")
 	switch {
 	case receiver == nil || len(receiver) == 0:
 		log.Warnf("P12: no data.")
@@ -229,13 +228,14 @@ func (receiver _P12) parse(ca *_PKI_CA_Node) (outbound *_PKI_P12) {
 		key any
 		t   = &_PKI_P12{DER: &_PKI_DER{}}
 	)
-	log.Warnf("P12: parsing 1....")
+
+	// TODO: VERY SLOW OP
 	switch key, t.Cert, _, err = pkcs12.DecodeChain(receiver, pkcs12.DefaultPassword); {
 	case err != nil:
 		log.Warnf("P12: pkcs12.DecodeChain error - %v.", err)
 		return
 	}
-	log.Warnf("P12: parsing 2....")
+
 	t.FQDN = _FQDN(t.Cert.Subject.CommonName)
 	t.Serial = t.Cert.SerialNumber
 	switch _, flag := i_PKI_P12[t.FQDN]; {
@@ -248,45 +248,32 @@ func (receiver _P12) parse(ca *_PKI_CA_Node) (outbound *_PKI_P12) {
 		log.Warnf("P12 '%v': x509.Cert.SerialNumber '%v' already defined.", t.FQDN, t.Serial)
 		return
 	}
-	log.Warnf("P12: parsing 3....")
+
 	switch {
 	case reflect.TypeOf(key) != reflect.TypeOf(&ecdsa.PrivateKey{}):
 		log.Warnf("P12 '%v': wrong key type (not ecdsa.PrivateKey).", t.FQDN)
 		return
 	}
-	log.Warnf("P12: parsing 4....")
+
 	switch t.Key = key.(*ecdsa.PrivateKey); {
 	case interface_string("", t.Cert.PublicKey) != interface_string("", t.Key.Public()): // todo: dirty hack
 		log.Warnf("P12 '%v': x509/ecdsa PublicKey not equal.", t.FQDN)
 		return
 	}
-	log.Warnf("P12: parsing 5....")
 
-	// switch string(t.Cert.RawSubjectPublicKeyInfo) == string(ca.Cert.RawSubjectPublicKeyInfo) {
-	// case true:
-	// 	log.Warnf("P12 '%v': x509.CheckSignatureFrom OK.", t.FQDN)
-	// case false:
-	// 	log.Warnf("P12 '%v': x509.CheckSignatureFrom FAIL - '%v' '%v'.", t.FQDN, t.Cert.AuthorityKeyId, ca.Cert.AuthorityKeyId)
-	// }
-	// switch interface_string("", t.Cert.PublicKey) == interface_string("", ca.Cert.PublicKey) {
-	// case true:
-	// 	log.Warnf("P12 '%v': x509.CheckSignatureFrom error - %v.", t.FQDN, false)
-	// case false:
-	// 	log.Warnf("P12 '%v': x509.CheckSignatureFrom error - %v.", t.FQDN, true)
-	// }
+	// TODO: VERY SLOW OP
 	switch err = t.Cert.CheckSignatureFrom(ca.Cert); {
 	case err != nil:
 		log.Warnf("P12 '%v': x509.CheckSignatureFrom error - %v.", t.FQDN, err)
 		return
 	}
 
-	log.Warnf("P12: parsing 6....")
 	switch t.DER.Key, err = x509.MarshalECPrivateKey(t.Key); {
 	case err != nil:
 		log.Warnf("P12 '%v': x509.MarshalECPrivateKey error - %v.", t.FQDN, err)
 		return
 	}
-	log.Warnf("P12: parsing 7....")
+
 	for _, b := range ca.CRL.TBSCertList.RevokedCertificates {
 		switch {
 		case b.SerialNumber == t.Cert.SerialNumber:
@@ -294,11 +281,11 @@ func (receiver _P12) parse(ca *_PKI_CA_Node) (outbound *_PKI_P12) {
 			return
 		}
 	}
-	log.Warnf("P12: parsing 8....")
+
 	t.DER.Cert = t.Cert.Raw
 	t.P12 = receiver
 	i_PKI.put(t)
-	log.Warnf("P12: parsing done.")
+
 	return t
 }
 
