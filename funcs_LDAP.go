@@ -731,7 +731,6 @@ func parse_LDAP() {
 					for k := 0; k < int(_UIx_IPx); k++ {
 						// changes[k] = base64.StdEncoding.EncodeToString(f.PKI[k].P12)
 						changes[k] = f.PKI[k].P12.String()
-						// i_file.put(_dir_PKI_Cert.a(_Dir_Name(d.FQDN), _Dir_Name(f.FQDN)), _File_Name(f.PKI[k].Cert.SerialNumber.String()), "", f.PKI[k].P12)
 						i_file.put(_dir_PKI_Cert.a(_Dir_Name(d.FQDN), _Dir_Name(f.FQDN)), _File_Name(join_string(".", f.PKI[k].FQDN, "p12")), "", f.PKI[k].P12)
 					}
 					f.replace(_skv_P12, changes)
@@ -751,15 +750,20 @@ func parse_LDAP() {
 					continue
 				}
 				// todo: gen this keys w/o external call
+				var (
+					p_tls = _dir_PKI_TLS.a(_Dir_Name(d.FQDN))
+					f_tls = _File_Name(f.FQDN).a(".", "pem")
+					// f_tls = _File_Name(join_string(".", f.FQDN, "pem"))
+				)
 				switch {
 				case f.OVPN.TLSv2 == nil:
-					f.OVPN.TLSv2 = _PEM(*i_file.get(_dir_PKI_TLS, _File_Name(f.FQDN)))
+					f.OVPN.TLSv2 = _PEM(*i_file.get(p_tls, f_tls))
 				}
 				switch {
 				case len(f.OVPN.TLSv2) == 0:
 					log.Warnf("TLSv2 server key for '%v' not found; ACTION: generate.", f.FQDN)
-					i_file.put(_dir_PKI_TLS, _File_Name(f.FQDN), "", _file_openvpn.external("--genkey", "tls-crypt-v2-server"))
-					f.OVPN.TLSv2 = _PEM(*i_file.get(_dir_PKI_TLS, _File_Name(f.FQDN)))
+					i_file.put(p_tls, f_tls, "", _file_openvpn.external("--genkey", "tls-crypt-v2-server"))
+					f.OVPN.TLSv2 = _PEM(*i_file.get(p_tls, f_tls))
 				}
 				f.OVPN.TLSv2_User = make(map[_UID_Number][]_PEM)
 				i_file.write()
@@ -808,15 +812,18 @@ func parse_LDAP() {
 							continue
 						}
 						var (
-							tlsv2_fn = _File_Name(join_string("_", f.FQDN, h.FQDN))
+							p_tlsc = p_tls.a(_Dir_Name(f.FQDN))
+							f_tlsc = _File_Name(h.FQDN).a(".", "pem")
+							// tlsv2_fn = _File_Name(join_string("_", f.FQDN, h.FQDN))
 						)
-						f.OVPN.TLSv2_User[g][i] = _PEM(*i_file.get(_dir_PKI_TLS, tlsv2_fn))
+						f.OVPN.TLSv2_User[g][i] = _PEM(*i_file.get(p_tlsc, f_tlsc))
 						switch {
 						case f.OVPN.TLSv2_User[g][i] == nil || len(f.OVPN.TLSv2_User[g][i]) == 0:
-							log.Warnf("TLSv2 client key for '%v' not found; ACTION: generate.", tlsv2_fn)
-							i_file.put(_dir_PKI_TLS, tlsv2_fn, "",
-								_file_openvpn.external("--tls-crypt-v2", i_file.fn(_dir_PKI_TLS, _File_Name(f.FQDN)).String(), "--genkey", "tls-crypt-v2-client"))
-							f.OVPN.TLSv2_User[g][i] = _PEM(*i_file.get(_dir_PKI_TLS, tlsv2_fn))
+							log.Warnf("TLSv2 client key for '%v' not found; ACTION: generate.", f_tlsc)
+							i_file.put(p_tlsc, f_tlsc, "",
+								_file_openvpn.external("--tls-crypt-v2", i_file.fn(p_tlsc, f_tlsc).String(),
+									"--genkey", "tls-crypt-v2-client"))
+							f.OVPN.TLSv2_User[g][i] = _PEM(*i_file.get(p_tlsc, f_tlsc))
 						}
 						i_file.write()
 						write_ldap()

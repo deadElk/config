@@ -169,6 +169,29 @@ func (receiver _Dir_Name) a(inbound ..._Dir_Name) (outbound _Dir_Name) {
 	}
 	return _Dir_Name(buffer.String())
 }
+func (receiver _File_Name) a(delimiter string, inbound ..._File_Name) (outbound _File_Name) {
+	var (
+		interim = []_File_Name{receiver}
+	)
+	interim = append(interim, inbound...)
+	var (
+		inbounds = len(interim) - 1
+		buffer   = new(bytes.Buffer)
+	)
+	for a, b := range interim {
+		switch {
+		case len(b) == 0:
+			continue
+		}
+		buffer.WriteString(b.String())
+		switch {
+		case a < inbounds:
+			buffer.WriteString(delimiter)
+		}
+	}
+	return _File_Name(buffer.String())
+}
+
 func (receiver _File_Name) external(args ...string) (outbound _Content) {
 	_check()
 	var (
