@@ -112,6 +112,7 @@ func (receiver __DN_File_Dir) write() (not_ok bool) {
 				not_ok = true
 				continue
 			}
+			d.Flag = false
 		}
 	}
 	return !not_ok
