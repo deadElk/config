@@ -556,6 +556,7 @@ func parse_LDAP() {
 					_P12(h).parse(d.PKI)
 				}
 
+				_fatal()
 				var (
 					changed bool
 				)
