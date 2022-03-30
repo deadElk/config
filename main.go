@@ -45,6 +45,9 @@ func init() {
 }
 
 func main() {
+	defer log.Infof("done")
+	log.Infof("start")
+
 	i_file.read()
 
 	define_iDB_Vocabulary()
