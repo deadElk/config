@@ -341,19 +341,19 @@ func get_LDAP_SKV(inbound *ldap.Entry, list map[string]int) (outbound __S_LDAP_S
 }
 
 func parse_LDAP() {
-	log.Infof("Parsing start: LDAP; ACTION: report.")
+	log.Debugf("Parsing start: LDAP; ACTION: report.")
 	for a, b := range i_ldap {
-		log.Infof("Parsing start: LDAP '%v'; ACTION: report.", a.String())
+		log.Debugf("Parsing start: LDAP '%v'; ACTION: report.", a.String())
 		for _, d := range b.Domain {
-			log.Infof("Parsing start: LDAP Domain '%v'; ACTION: report.", d.DN)
+			log.Debugf("Parsing start: LDAP Domain '%v'; ACTION: report.", d.DN)
 			d.FQDN = b._DN_FQDN(_re_point, d.DN)
-			log.Infof("Parsing start: LDAP Raw_DC; ACTION: report.")
+			log.Debugf("Parsing start: LDAP Raw_DC; ACTION: report.")
 			for _, f := range d.Raw_DC.Entries {
-				log.Infof("Parsing start: LDAP Raw_DC '%v'; ACTION: report.", f.DN)
+				log.Debugf("Parsing start: LDAP Raw_DC '%v'; ACTION: report.", f.DN)
 				d.SKV = get_LDAP_SKV(f, map[string]int{_skv_CA: 1, _skv_CRL: 1})
 				d.Entry = f
 			}
-			log.Infof("Parsing done: LDAP Raw_DC; ACTION: report.")
+			log.Debugf("Parsing done: LDAP Raw_DC; ACTION: report.")
 
 			switch _, flag := i_PKI_DB.CA_Node[d.FQDN]; {
 			case flag:
@@ -413,9 +413,9 @@ func parse_LDAP() {
 			i_file.write()
 			write_ldap()
 
-			log.Infof("Parsing start: LDAP Raw_Host; ACTION: report.")
+			log.Debugf("Parsing start: LDAP Raw_Host; ACTION: report.")
 			for _, f := range d.Raw_Host.Entries {
-				log.Infof("Parsing start: LDAP Raw_Host '%v'; ACTION: report.", f.DN)
+				log.Debugf("Parsing start: LDAP Raw_Host '%v'; ACTION: report.", f.DN)
 				var (
 					v_SKV = get_LDAP_SKV(f, map[string]int{b.Host_CN: 1, _skv_entryDN: 1, _skv_SSH_PK: 0, _skv_P12: 0, _skv_labeledURI: 0})
 					v_DN  = _DN(v_SKV[_skv_entryDN].get_first())
@@ -497,11 +497,11 @@ func parse_LDAP() {
 				i_host[v_H.DN] = v_H
 
 			}
-			log.Infof("Parsing done: LDAP Raw_Host; ACTION: report.")
+			log.Debugf("Parsing done: LDAP Raw_Host; ACTION: report.")
 
-			log.Infof("Parsing start: LDAP Raw_User; ACTION: report.")
+			log.Debugf("Parsing start: LDAP Raw_User; ACTION: report.")
 			for _, f := range d.Raw_User.Entries {
-				log.Infof("Parsing start: LDAP Raw_User '%v'; ACTION: report.", f.DN)
+				log.Debugf("Parsing start: LDAP Raw_User '%v'; ACTION: report.", f.DN)
 				var (
 					v_SKV = get_LDAP_SKV(f, map[string]int{b.User_CN: 1, _skv_entryDN: 1, _skv_gidNumber: 1, _skv_uidNumber: 1, _skv_SSH_PK: 0, _skv_P12: int(_UIx_IPx), _skv_labeledURI: 0, _skv_ipHostNumber: 1})
 				)
@@ -556,11 +556,10 @@ func parse_LDAP() {
 					_P12(h).parse(d.PKI)
 				}
 
-				_fatal()
 				var (
 					changed bool
 				)
-				log.Infof("Parsing start: LDAP User Conn; ACTION: report.")
+				log.Debugf("Parsing start: LDAP User Conn; ACTION: report.")
 				for g := 0; g < int(_UIx_IPx); g++ {
 					var (
 						h    = v_U.FQDN
@@ -595,7 +594,7 @@ func parse_LDAP() {
 						changed = true
 					}
 				}
-				log.Infof("Parsing done: LDAP User Conn; ACTION: report.")
+				log.Debugf("Parsing done: LDAP User Conn; ACTION: report.")
 
 				switch {
 				case changed:
@@ -614,35 +613,27 @@ func parse_LDAP() {
 				b.M_CN_U[v_U.DN] = v_U
 
 			}
-			log.Infof("Parsing done: LDAP Raw_User; ACTION: report.")
+			log.Debugf("Parsing done: LDAP Raw_User; ACTION: report.")
 		}
 	}
-	log.Infof("Parsing done: LDAP; ACTION: report.")
+	log.Debugf("Parsing done: LDAP; ACTION: report.")
 
-	log.Infof("Parsing start: LDAP; ACTION: report.")
+	log.Debugf("Parsing start: LDAP; ACTION: report.")
 	for a, b := range i_ldap {
-		log.Infof("Parsing start: LDAP '%v'; ACTION: report.", a.String())
+		log.Debugf("Parsing start: LDAP '%v'; ACTION: report.", a.String())
 
 		for _, d := range b.Domain {
-			log.Infof("Parsing start: LDAP Domain '%v'; ACTION: report.", d.DN)
+			log.Debugf("Parsing start: LDAP Domain '%v'; ACTION: report.", d.DN)
 
-			log.Infof("Parsing start: LDAP Raw_Group; ACTION: report.")
+			log.Debugf("Parsing start: LDAP Raw_Group; ACTION: report.")
 			for _, f := range d.Raw_Group.Entries {
-				log.Infof("Parsing start: LDAP Raw_Group '%v'; ACTION: report.", f.DN)
+				log.Debugf("Parsing start: LDAP Raw_Group '%v'; ACTION: report.", f.DN)
 				var (
-					v_SKV  = get_LDAP_SKV(f, map[string]int{_skv_entryDN: 1, _skv_gidNumber: 1, _skv_labeledURI: 0, _skv_member: 0, _skv_owner: 0, b.Group_CN: 1})
-					v_DN   = _DN(v_SKV[_skv_entryDN].get_first())
-					v_FQDN = b._DN_FQDN(_re_point, v_DN)
-					// v_OVPNN = _FQDN(v_SKV[_lURI_openvpn].get_first())
-					// v_OVPN  *i_LDAP_Domain_Host
+					v_SKV     = get_LDAP_SKV(f, map[string]int{_skv_entryDN: 1, _skv_gidNumber: 1, _skv_labeledURI: 0, _skv_member: 0, _skv_owner: 0, b.Group_CN: 1})
+					v_DN      = _DN(v_SKV[_skv_entryDN].get_first())
+					v_FQDN    = b._DN_FQDN(_re_point, v_DN)
 					v_OVPN, _ = i_host[_DN(v_SKV[_lURI_openvpn].get_first())]
-				)
-				// switch v_OVPN, flag := d.Host[v_OVPNN]; {
-				// case flag:
-				//
-				// }
-				var (
-					v_G = &i_LDAP_Domain_Group{
+					v_G       = &i_LDAP_Domain_Group{
 						DN:             v_DN,
 						Domain:         d,
 						Entry:          f,
@@ -709,11 +700,11 @@ func parse_LDAP() {
 				}
 
 			}
-			log.Infof("Parsing done: LDAP Raw_Group; ACTION: report.")
+			log.Debugf("Parsing done: LDAP Raw_Group; ACTION: report.")
 
-			log.Infof("Parsing start: LDAP User; ACTION: report.")
+			log.Debugf("Parsing start: LDAP User; ACTION: report.")
 			for _, f := range d.User {
-				log.Infof("Parsing start: LDAP User '%v'; ACTION: report.", f.DN)
+				log.Debugf("Parsing start: LDAP User '%v'; ACTION: report.", f.DN)
 				switch {
 				case f.GID_Number != 0 && d.Group[f.GID_Number] == nil:
 					log.Errorf("LDAP DB inconsistent! can't find primary GID_Number '%v' for UID '%v'; ACTION: report.", f.GID_Number, f.DN)
@@ -742,97 +733,21 @@ func parse_LDAP() {
 				// i_file.write()
 				// write_ldap()
 			}
-			log.Infof("Parsing done: LDAP User; ACTION: report.")
+			log.Debugf("Parsing done: LDAP User; ACTION: report.")
 		}
 	}
 
-	// log.Infof("Parsing start: LDAP; ACTION: report.")
-	// for _, b := range i_ldap { //
-	//
-	// 	log.Infof("Parsing start: LDAP Domain; ACTION: report.")
-	// 	for _, d := range b.Domain { //
-	// 		log.Infof("Parsing start: LDAP Domain '%v'; ACTION: report.", d.DN)
-	//
-	// 		log.Infof("Parsing start: LDAP User; ACTION: report.")
-	// 		for _, f := range d.User { //
-	// 			log.Infof("Parsing start: LDAP User '%v'; ACTION: report.", f.DN)
-	//
-	// 			var ( //
-	// 				changed bool
-	// 			)
-	// 			for g := 0; g < int(_UIx_IPx); g++ {
-	// 				var (
-	// 					h = f.FQDN
-	// 				)
-	// 				switch {
-	// 				case g >= 1 && g <= len(_re_lower_case):
-	// 					h = _FQDN(join_string(".", string(rune(g+96)), h))
-	// 				case g > len(_re_lower_case):
-	// 					h = _FQDN(join_string(".", "x"+pad_string(strconv.FormatInt(int64(g), 16), 2), h))
-	// 				}
-	// 				switch _, flag := i_PKI_DB.CA_Node[d.FQDN].Node[h]; {
-	// 				case !flag:
-	// 					i_PKI_DB.CA_Node[d.FQDN].Node[h] = &_PKI_Node{FQDN: h, CA: i_PKI_DB.CA_Node[d.FQDN]}
-	// 				}
-	// 				switch {
-	// 				case i_PKI_DB.CA_Node[d.FQDN].Node[h].parse_P12(&x509.Certificate{
-	// 					SerialNumber: big.NewInt(time.Now().UnixMicro()),
-	// 					Subject: pkix.Name{
-	// 						Organization: []string{d.FQDN.String()},
-	// 						CommonName:   h.String(),
-	// 						Names:        nil,
-	// 						ExtraNames:   nil,
-	// 					},
-	// 					NotBefore:   time.Now(),
-	// 					NotAfter:    time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC),
-	// 					IsCA:        false,
-	// 					ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-	// 					KeyUsage:    x509.KeyUsageDigitalSignature,
-	// 					// DNSNames:       []string{i.String()},
-	// 					EmailAddresses: []string{h.String()},
-	// 					// IPAddresses:    nil,
-	// 				}):
-	// 					changed = true
-	// 				}
-	// 				i_PKI.put(i_PKI_DB.CA_Node[d.FQDN].Node[h])
-	// 				f.PKI[g] = i_PKI_DB.CA_Node[d.FQDN].Node[h]
-	// 			}
-	//
-	// 			switch {
-	// 			case changed:
-	// 				var (
-	// 					changes = make([]string, _UIx_IPx, _UIx_IPx)
-	// 				)
-	// 				for k := 0; k < int(_UIx_IPx); k++ {
-	// 					// changes[k] = base64.StdEncoding.EncodeToString(f.PKI[k].P12)
-	// 					changes[k] = f.PKI[k].P12.String()
-	// 					i_file.put(_dir_PKI_Cert.a(d.FQDN, f.FQDN), _File_Name(f.PKI[k].FQDN), "p12", "", f.PKI[k].P12)
-	// 				}
-	// 				f.replace(_skv_P12, changes)
-	// 			}
-	//
-	// 			i_file.write()
-	// 			write_ldap()
-	// 		}
-	// 		log.Infof("Parsing done: LDAP User; ACTION: report.")
-	//
-	// 	}
-	// 	log.Infof("Parsing done: LDAP Domain; ACTION: report.")
-	//
-	// }
-	// log.Infof("Parsing done: LDAP; ACTION: report.")
-
-	log.Infof("Parsing start: LDAP; ACTION: report.")
+	log.Debugf("Parsing start: LDAP; ACTION: report.")
 	for a, b := range i_ldap { // third pass, fill PKI with known data or generate new
-		log.Infof("Parsing start: LDAP '%v'; ACTION: report.", a.String())
+		log.Debugf("Parsing start: LDAP '%v'; ACTION: report.", a.String())
 
-		log.Infof("Parsing start: LDAP Domain; ACTION: report.")
+		log.Debugf("Parsing start: LDAP Domain; ACTION: report.")
 		for _, d := range b.Domain {
-			log.Infof("Parsing start: LDAP Domain '%v'; ACTION: report.", d.DN)
+			log.Debugf("Parsing start: LDAP Domain '%v'; ACTION: report.", d.DN)
 
-			log.Infof("Parsing start: LDAP Group; ACTION: report.")
+			log.Debugf("Parsing start: LDAP Group; ACTION: report.")
 			for _, f := range d.Group {
-				log.Infof("Parsing start: LDAP Group '%v'; ACTION: report.", f.DN)
+				log.Debugf("Parsing start: LDAP Group '%v'; ACTION: report.", f.DN)
 				switch {
 				case len(f.GID) >= 3 && f.GID[:3] == "vpn" && f.OVPN != nil:
 				default:
@@ -853,7 +768,7 @@ func parse_LDAP() {
 				}
 				f.OVPN.TLSv2_User = make(map[_UID_Number][]_PEM_TLS_Client)
 
-				log.Infof("Parsing start: LDAP Proto; ACTION: report.")
+				log.Debugf("Parsing start: LDAP Proto; ACTION: report.")
 				for _, x := range []_W{_W_tcp, _W_udp} {
 					i_OVPN[f.FQDN] = &_OVPN_GT_Server{
 						Address:    f.OVPN.Address,
@@ -876,14 +791,14 @@ func parse_LDAP() {
 					i_file.put(p_pki, "server.tls.key", "pem", "", f.OVPN.TLSv2)
 					i_file.put(_dir_Stage_OVPN_ULE, f_conf, "conf", "", i_file.get(_dir_GT_OVPN, "server", "tmpl").parse_GT(i_OVPN[f.FQDN]))
 				}
-				log.Infof("Parsing done: LDAP Proto; ACTION: report.")
+				log.Debugf("Parsing done: LDAP Proto; ACTION: report.")
 
 				// i_file.write()
 				// write_ldap()
 
-				log.Infof("Parsing start: LDAP UID_List; ACTION: report.")
+				log.Debugf("Parsing start: LDAP UID_List; ACTION: report.")
 				for g, h := range f.UID_List {
-					log.Infof("Parsing start: LDAP UID_List '%v'; ACTION: report.", h.DN)
+					log.Debugf("Parsing start: LDAP UID_List '%v'; ACTION: report.", h.DN)
 					f.OVPN.TLSv2_User[g] = make([]_PEM_TLS_Client, _UIx_IPx, _UIx_IPx)
 					for i := range h.PKI {
 						switch {
@@ -932,10 +847,10 @@ func parse_LDAP() {
 					// write_ldap()
 
 				}
-				log.Infof("Parsing done: LDAP UID_List; ACTION: report.")
+				log.Debugf("Parsing done: LDAP UID_List; ACTION: report.")
 
 			}
-			log.Infof("Parsing done: LDAP Group; ACTION: report.")
+			log.Debugf("Parsing done: LDAP Group; ACTION: report.")
 
 			i_file.put(_dir_Stage_OVPN_ULE, "client_connect.sh", "", "", i_file.get(_dir_GT_OVPN, "client_connect", "tmpl").parse_GT(i_OVPN))
 			i_file.put(_dir_Stage_OVPN_ULE, "client_disconnect.sh", "", "", i_file.get(_dir_GT_OVPN, "client_disconnect", "tmpl").parse_GT(i_OVPN))
@@ -948,7 +863,7 @@ func parse_LDAP() {
 			// write_ldap()
 
 		}
-		log.Infof("Parsing done: LDAP Domain; ACTION: report.")
+		log.Debugf("Parsing done: LDAP Domain; ACTION: report.")
 	}
-	log.Infof("Parsing done: LDAP; ACTION: report.")
+	log.Debugf("Parsing done: LDAP; ACTION: report.")
 }
