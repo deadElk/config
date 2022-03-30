@@ -50,13 +50,13 @@ var (
 	i_ldap        = make(__URL_LDAP)
 	i_ldap_domain = make(__DN_LDAP_Domain)
 	i_file        = __DN_File_Dir{
-		// _dir_Config:  {Ext: "txt"},
 		_dir_GT:      {Ext: "tmpl"},
 		_dir_GT_OVPN: {Ext: "tmpl"},
-		_dir_Modify:  {Ext: "xml"},
 		_dir_PKI_CA:  {Ext: "der"},
 		_dir_PKI_TLS: {Ext: "pem", Recursive: true},
 		_dir_etc:     {Ext: "xml"},
+		// _dir_Config:         {Ext: "txt"},
+		// _dir_Modify:         {Ext: "xml"},
 		// _dir_Data:           {Ext: "xml"},
 		// _dir_LDAP:           {Ext: "xml"},
 		// _dir_PKI_Cert:       {Ext: "p12"},
