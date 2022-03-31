@@ -121,7 +121,7 @@ func (receiver __DN_File_Dir) check(dir _Dir_Name, file _File_Name, ext _Name) {
 	switch _, flag := receiver[dir]; {
 	case !flag:
 		log.Debugf("Dir '%v' definition doesn't exist; ACTION: create.", dir)
-		receiver[dir] = &i_File_Dir{Ext: ext, File: __FN_File_Data{}}
+		receiver[dir] = &i_Dir_Data{Ext: ext, File: __FN_File_Data{}}
 	}
 	switch {
 	case receiver[dir].File == nil:
@@ -218,6 +218,15 @@ func (receiver __DN_File_Dir) e(dir _Dir_Name, file _File_Name, ext _Name) {
 	receiver.check(dir, file, ext)
 	receiver[dir].File[file].Exec = true
 }
-func (receiver __DN_File_Dir) l(dir _Dir_Name, file _File_Name, ext _Name, link _File_Name) {
-	receiver.check(dir, file, ext)
+func (receiver __N_Name) l(source _Name, destination _Name) {
+	receiver[source] = destination
+}
+func (receiver __N_Name) write() {
+	for a, b := range receiver {
+		log.Warnf("Symlink from '%v' to '%v'; ACTION: create.", a, b)
+		switch err := os.Symlink(a.String(), b.String()); {
+		case err != nil:
+			log.Warnf("Symlink from '%v' to '%v' create error '%v'; ACTION: skip.", a, b, err)
+		}
+	}
 }

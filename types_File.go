@@ -1,21 +1,21 @@
 package main
 
-type __FN_File_Data map[_File_Name]*i_File_Data
-type __DN_File_Dir map[_Dir_Name]*i_File_Dir
+type __FN_File_Data map[_File_Name]*i_File_Data //
+type __DN_File_Dir map[_Dir_Name]*i_Dir_Data    //
 
 // file storage
-type i_File_Dir struct {
-	Flag      bool
-	Recursive bool
-	Ext       _Name
-	Link      _Name // ln -s Link to _Name
-	Sorted    []_File_Name
-	File      __FN_File_Data
+type i_Dir_Data struct { //
+	Flag      bool  //
+	Recursive bool  //
+	Ext       _Name //
+	// Link      *i_Dir_Data // ln -s Link _Dir_Name to _Dir_Name
+	Sorted []_File_Name   //
+	File   __FN_File_Data //
 }
-type i_File_Data struct {
-	Flag    bool
-	Ext     _Name
-	Link    _Name // ln -s Link to _Name
-	Exec    bool
-	Content *_Content
+type i_File_Data struct { //
+	Flag bool  //
+	Ext  _Name //
+	// Link    *i_File_Data // ln -s Link _File_Name to _File_Name
+	Exec    bool      //
+	Content *_Content //
 }

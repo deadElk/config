@@ -741,6 +741,17 @@ func parse_LDAP() {
 		for _, d := range b.Domain {
 			log.Debugf("Parsing start: LDAP Domain '%v'; ACTION: report.", d.DN)
 
+			// log.Debugf("Parsing start: LDAP User; ACTION: report.")
+			// for _, f := range d.User {
+			// 	log.Debugf("Parsing start: LDAP User '%v'; ACTION: report.", f.DN)
+			// 	var (
+			// 		p_client_profile = _dir_Portal.a(_Dir_Name(d.FQDN), ".user", _Dir_Name(f.FQDN))
+			// 	)
+			//
+			// 	i_file.put(p_client_profile, _File_Name(h.PKI[i].FQDN), "ovpn", "", i_file.get(_dir_GT_OVPN, "client_profile", "tmpl").parse_GT(c_GT))
+			// }
+			// log.Debugf("Parsing done: LDAP User; ACTION: report.")
+
 			log.Debugf("Parsing start: LDAP Group; ACTION: report.")
 			for _, f := range d.Group {
 				log.Debugf("Parsing start: LDAP Group '%v'; ACTION: report.", f.DN)
@@ -831,7 +842,7 @@ func parse_LDAP() {
 								TLSv2:   f.OVPN.TLSv2_User[g][i],
 							}
 							p_ccd            = _dir_Stage_OVPN_ULE.a(_Dir_Name(i_OVPN[f.FQDN].PName), "ccd")
-							p_client_profile = _dir_Portal.a(_Dir_Name(d.FQDN), _Dir_Name(f.FQDN), _Dir_Name(h.FQDN))
+							p_client_profile = _dir_Portal.a(_Dir_Name(d.FQDN), ".group", _Dir_Name(f.FQDN), _Dir_Name(h.FQDN))
 						)
 						i_file.put(p_ccd, _File_Name(h.PKI[i].FQDN), "", "", i_file.get(_dir_GT_OVPN, "client_ccd", "tmpl").parse_GT(c_GT))
 						i_file.put(p_client_profile, _File_Name(h.PKI[i].FQDN), "ovpn", "", i_file.get(_dir_GT_OVPN, "client_profile", "tmpl").parse_GT(c_GT))
@@ -844,6 +855,21 @@ func parse_LDAP() {
 
 				}
 				log.Debugf("Parsing done: LDAP UID_List; ACTION: report.")
+
+				log.Debugf("Parsing start: LDAP Owner_UID_List; ACTION: report.")
+				for _, h := range f.Owner_UID_List {
+					log.Debugf("Parsing start: LDAP Owner_UID_List '%v'; ACTION: report.", h.DN)
+					var (
+						p_source      = _Name(_Dir_Name("..").a("..", ".group", _Dir_Name(f.FQDN)))
+						p_destination = _Name(_dir_Portal.a(_Dir_Name(d.FQDN), ".owner", _Dir_Name(h.FQDN)))
+					)
+					i_file.check(_Dir_Name(p_destination), "", "")
+					i_file_link.l(p_source, p_destination)
+
+				}
+				log.Debugf("Parsing done: LDAP Owner_UID_List; ACTION: report.")
+				i_file.write()
+				i_file_link.write()
 
 			}
 			log.Debugf("Parsing done: LDAP Group; ACTION: report.")
