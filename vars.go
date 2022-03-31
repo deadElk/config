@@ -64,7 +64,7 @@ var (
 		// _dir_Portal:         {Ext: ""},
 		// _dir_Stage:          {Ext: ""},
 		// _dir_Stage_OVPN:     {Ext: ""},
-		// _dir_Stage_OVPN_ULE: {Ext: ""},
+		// _dir_Stage_OVPN_ULE_OVPN: {Ext: ""},
 	}
 
 	i_OVPN      = make(map[_FQDN]*_OVPN_GT_Server)

@@ -804,7 +804,7 @@ func parse_LDAP() {
 						Netmask:    "255.240.0.0",
 					}
 					var (
-						p_pki  = _dir_Stage_OVPN_ULE.a(_Dir_Name(f.OVPN.PName), "pki")
+						p_pki  = _dir_Stage_OVPN_ULE_OVPN.a(_Dir_Name(f.OVPN.PName), "pki")
 						f_conf = _File_Name("openvpn").aa("_", f.OVPN.PName, x)
 					)
 					i_file.put(p_pki, "ca.crt", "pem", "", d.PKI.DER.Cert._PEM())
@@ -812,7 +812,9 @@ func parse_LDAP() {
 					i_file.put(p_pki, "server.key", "pem", "", f.OVPN.PKI.DER.Key._PEM())
 					i_file.put(p_pki, "ca.crl", "pem", "", d.PKI.DER.CRL._PEM())
 					i_file.put(p_pki, "server.tls.key", "pem", "", f.OVPN.TLSv2)
-					i_file.put(_dir_Stage_OVPN_ULE, f_conf, "conf", "", i_file.get(_dir_GT_OVPN, "server", "tmpl").parse_GT(i_OVPN[f.FQDN]))
+					i_file.put(_dir_Stage_OVPN_ULE_OVPN, f_conf, "conf", "", i_file.get(_dir_GT_OVPN, "server", "tmpl").parse_GT(i_OVPN[f.FQDN]))
+					i_file_link.l("openvpn", _Link_Name(_dir_Stage_OVPN_ULE_RC_D.a(f_conf)))
+
 				}
 				log.Debugf("Parsing done: LDAP Proto; ACTION: report.")
 
@@ -854,7 +856,7 @@ func parse_LDAP() {
 								Subnet:  i_ui_ip[h.IPPrefix.Masked()].Conn[i].Addr().String(),
 								TLSv2:   f.OVPN.TLSv2_User[g][i],
 							}
-							p_ccd            = _dir_Stage_OVPN_ULE.a(_Dir_Name(i_OVPN[f.FQDN].PName), "ccd")
+							p_ccd            = _dir_Stage_OVPN_ULE_OVPN.a(_Dir_Name(i_OVPN[f.FQDN].PName), "ccd")
 							p_client_profile = _dir_Portal.a(_Dir_Name(d.FQDN), ".group", _Dir_Name(f.FQDN), _Dir_Name(h.FQDN))
 						)
 						i_file.put(p_ccd, _File_Name(h.PKI[i].FQDN), "", "", i_file.get(_dir_GT_OVPN, "client_ccd", "tmpl").parse_GT(c_GT))
@@ -881,15 +883,18 @@ func parse_LDAP() {
 			}
 			log.Debugf("Parsing done: LDAP Group; ACTION: report.")
 
-			i_file.put(_dir_Stage_OVPN_ULE, "client_connect", "sh", "", i_file.get(_dir_GT_OVPN, "client_connect", "tmpl").parse_GT(i_OVPN))
-			i_file.put(_dir_Stage_OVPN_ULE, "client_disconnect", "sh", "", i_file.get(_dir_GT_OVPN, "client_disconnect", "tmpl").parse_GT(i_OVPN))
-			i_file.e(_dir_Stage_OVPN_ULE, "client_connect", "sh")
-			i_file.e(_dir_Stage_OVPN_ULE, "client_disconnect", "sh")
-			i_file.put(_dir_Stage_OVPN_ULE, "openvpn_cron", "conf", "", i_file.get(_dir_GT_OVPN, "server_cron", "tmpl").parse_GT(i_OVPN))
-			i_file.put(_dir_Stage_OVPN_ULE, "openvpn_juniper", "conf", "", i_file.get(_dir_GT_OVPN, "server_Juniper", "tmpl").parse_GT(i_OVPN))
+			i_file.put(_dir_Stage_OVPN_ULE_OVPN, "client_connect", "sh", "", i_file.get(_dir_GT_OVPN, "client_connect", "tmpl").parse_GT(i_OVPN))
+			i_file.put(_dir_Stage_OVPN_ULE_OVPN, "client_disconnect", "sh", "", i_file.get(_dir_GT_OVPN, "client_disconnect", "tmpl").parse_GT(i_OVPN))
+			i_file.e(_dir_Stage_OVPN_ULE_OVPN, "client_connect", "sh")
+			i_file.e(_dir_Stage_OVPN_ULE_OVPN, "client_disconnect", "sh")
+			i_file.put(_dir_Stage_OVPN_ULE_OVPN, "cron", "conf", "", i_file.get(_dir_GT_OVPN, "server_cron", "tmpl").parse_GT(i_OVPN))
+			i_file.put(_dir_Stage_OVPN_ULE_OVPN, "juniper", "conf", "", i_file.get(_dir_GT_OVPN, "server_Juniper", "tmpl").parse_GT(i_OVPN))
+			i_file_link.l("../openvpn/cron.conf", _Link_Name(_dir_Stage_OVPN_ULE_Cron.a("openvpn")))
 
 		}
 		log.Debugf("Parsing done: LDAP Domain; ACTION: report.")
+
 	}
 	log.Debugf("Parsing done: LDAP; ACTION: report.")
+
 }

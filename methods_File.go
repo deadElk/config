@@ -223,21 +223,22 @@ func (receiver __LN_Link_Name) l(source _Link_Name, destination _Link_Name) {
 }
 func (receiver __LN_Link_Name) write() {
 	for a, b := range receiver {
-		log.Debugf("Symlink from '%v' to '%v'; ACTION: create.", a, b)
-		switch value, err := os.Readlink(a.String()); {
-		case err == nil && value == b.String():
-			log.Debugf("Symlink from '%v' to '%v' already exist; ACTION: skip.", a, b)
-			return
-		case err != nil:
-			log.Debugf("Symlink from '%v' to '%v' error '%v'; ACTION: skip.", a, b, err)
-			// switch err = os.Remove(a.String()); {
-			// case err != nil:
-			// 	log.Warnf("Symlink from '%v' to '%v' remove error '%v'; ACTION: skip.", a, b, err)
-			// }
-		}
-		switch err := os.Symlink(b.String(), a.String()); {
-		case err != nil:
-			log.Warnf("Symlink from '%v' to '%v' create error '%v'; ACTION: skip.", a, b, err)
-		}
+		_ = os.Symlink(b.String(), a.String())
+		// log.Infof("Symlink from '%v' to '%v'; ACTION: create.", a, b)
+		// switch value, err := os.Readlink(a.String()); {
+		// case err == nil && value == b.String():
+		// 	log.Infof("Symlink from '%v' to '%v' already exist; ACTION: skip.", a, b)
+		// 	return
+		// case err != nil:
+		// 	log.Infof("Symlink from '%v' to '%v' error '%v'; ACTION: skip.", a, b, err)
+		// 	// switch err = os.Remove(a.String()); {
+		// 	// case err != nil:
+		// 	// 	log.Warnf("Symlink from '%v' to '%v' remove error '%v'; ACTION: skip.", a, b, err)
+		// 	// }
+		// }
+		// switch err := os.Symlink(b.String(), a.String()); {
+		// case err != nil:
+		// 	log.Infof("Symlink from '%v' to '%v' create error '%v'; ACTION: skip.", a, b, err)
+		// }
 	}
 }
