@@ -403,12 +403,14 @@ func parse_LDAP() {
 				i_file.put(_dir_PKI_CA, _File_Name(d.FQDN).a("crt"), "der", "", d.PKI.DER.Cert)
 				i_file.put(_dir_PKI_CA, _File_Name(d.FQDN).a("key"), "der", "", d.PKI.DER.Key)
 				i_file.put(_dir_PKI_CA, _File_Name(d.FQDN).a("crl"), "der", "", d.PKI.DER.CRL)
+				i_file.put(_dir_PKI_Cert.a(d.FQDN), _File_Name(d.FQDN).a("crt"), "pem", "", d.PKI.DER.Cert._PEM())
 				d.replace(_skv_CA, []string{d.PKI.DER.Cert.String()})
 				d.replace(_skv_CRL, []string{d.PKI.DER.CRL.String()})
 			}
 			i_PKI.put(d.PKI)
-			d.replace(_skv_CA, []string{d.PKI.DER.Cert.String()})
-			d.replace(_skv_CRL, []string{d.PKI.DER.CRL.String()})
+			// d.replace(_skv_CA, []string{d.PKI.DER.Cert.String()})
+			// d.replace(_skv_CRL, []string{d.PKI.DER.CRL.String()})
+			i_file.put(_dir_PKI_Cert.a(d.FQDN), _File_Name(d.FQDN).a("crt"), "pem", "", d.PKI.DER.Cert._PEM())
 
 			i_file.write()
 			write_ldap()
@@ -417,7 +419,7 @@ func parse_LDAP() {
 			for _, f := range d.Raw_Host.Entries {
 				log.Debugf("Parsing start: LDAP Raw_Host '%v'; ACTION: report.", f.DN)
 				var (
-					v_SKV = get_LDAP_SKV(f, map[string]int{b.Host_CN: 1, _skv_entryDN: 1, _skv_SSH_PK: 0, _skv_P12: 0, _skv_labeledURI: 0})
+					v_SKV = get_LDAP_SKV(f, map[string]int{_skv_uid: 1, b.Host_CN: 1, _skv_entryDN: 1, _skv_SSH_PK: 0, _skv_P12: 0, _skv_labeledURI: 0})
 					v_DN  = _DN(v_SKV[_skv_entryDN].get_first())
 				)
 				switch _, flag := i_host[v_DN]; {
@@ -455,16 +457,34 @@ func parse_LDAP() {
 
 				var (
 					changed bool
+					changes []string
 				)
 				for _, h := range []_FQDN{v_H.FQDN, v_H.Address} {
 					var (
+						v_CommonName string
+						v_FQDN       _FQDN
+						v_DNSNames   []string
+					)
+					switch h {
+					case d.FQDN, "":
+						continue
+					case _FQDN(join_string(".", "_", d.FQDN)):
+						v_CommonName = join_string(".", "*", d.FQDN)
+						v_FQDN = _FQDN(v_CommonName)
+						v_DNSNames = []string{d.FQDN.String(), v_CommonName}
+					default:
+						v_CommonName = h.String()
+						v_FQDN = h
+						v_DNSNames = []string{v_CommonName}
+					}
+					var (
 						flag bool
 					)
-					d.PKI.Host_Node[h], flag = d.PKI.verify_P12(h, &x509.Certificate{
+					d.PKI.Host_Node[h], flag = d.PKI.verify_P12(v_FQDN, &x509.Certificate{
 						SerialNumber: pki_crt_sn(),
 						Subject: pkix.Name{
 							Organization: []string{d.FQDN.String()},
-							CommonName:   h.String(),
+							CommonName:   v_CommonName,
 							Names:        nil,
 							ExtraNames:   nil,
 						},
@@ -473,27 +493,24 @@ func parse_LDAP() {
 						IsCA:           false,
 						ExtKeyUsage:    []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 						KeyUsage:       x509.KeyUsageDigitalSignature,
-						DNSNames:       []string{h.String()},
+						DNSNames:       v_DNSNames,
 						EmailAddresses: []string{join_string("@", "ns", d.FQDN)},
 					})
 					changed = changed || flag
+					changes = append(changes, d.PKI.Host_Node[h].P12.String())
 
 				}
 				v_H.PKI = d.PKI.Host_Node[v_H.FQDN]
 				switch {
 				case changed:
-					var (
-						changes []string
-					)
-					for _, h := range []_FQDN{v_H.FQDN, v_H.Address} {
-						changes = append(changes, d.PKI.Host_Node[h].P12.String())
-					}
 					v_H.replace(_skv_P12, changes)
 				}
 
+				i_file.put(_dir_PKI_Cert.a(d.FQDN), _File_Name(v_H.FQDN).a("crt"), "pem", "", v_H.PKI.DER.Cert._PEM())
+				i_file.put(_dir_PKI_Cert.a(d.FQDN), _File_Name(v_H.FQDN).a("key"), "pem", "", v_H.PKI.DER.Key._PEM())
+
 				d.Host[v_H.DN] = v_H
 				i_host[v_H.DN] = v_H
-
 			}
 			log.Debugf("Parsing done: LDAP Raw_Host; ACTION: report.")
 
@@ -501,7 +518,7 @@ func parse_LDAP() {
 			for _, f := range d.Raw_User.Entries {
 				log.Debugf("Parsing start: LDAP Raw_User '%v'; ACTION: report.", f.DN)
 				var (
-					v_SKV = get_LDAP_SKV(f, map[string]int{b.User_CN: 1, _skv_entryDN: 1, _skv_gidNumber: 1, _skv_uidNumber: 1, _skv_SSH_PK: 0, _skv_P12: int(_UIx_IPx), _skv_labeledURI: 0, _skv_ipHostNumber: 1})
+					v_SKV = get_LDAP_SKV(f, map[string]int{_skv_uid: 1, b.User_CN: 1, _skv_entryDN: 1, _skv_gidNumber: 1, _skv_uidNumber: 1, _skv_SSH_PK: 0, _skv_P12: int(_UIx_IPx), _skv_labeledURI: 0, _skv_ipHostNumber: 1})
 				)
 				var (
 					v_U = &i_LDAP_Domain_User{
@@ -607,7 +624,6 @@ func parse_LDAP() {
 
 				d.User[v_U.UID_Number] = v_U
 				b.M_CN_U[v_U.DN] = v_U
-
 			}
 			log.Debugf("Parsing done: LDAP Raw_User; ACTION: report.")
 		}
@@ -860,16 +876,16 @@ func parse_LDAP() {
 				for _, h := range f.Owner_UID_List {
 					log.Debugf("Parsing start: LDAP Owner_UID_List '%v'; ACTION: report.", h.DN)
 					var (
-						p_source      = _Name(_Dir_Name("..").a("..", ".group", _Dir_Name(f.FQDN)))
-						p_destination = _Name(_dir_Portal.a(_Dir_Name(d.FQDN), ".owner", _Dir_Name(h.FQDN)))
+						p_source      = _Dir_Name("..").a("..", ".group", _Dir_Name(f.FQDN))
+						p_destination = _dir_Portal.a(_Dir_Name(d.FQDN), ".owner", _Dir_Name(h.FQDN))
 					)
-					i_file.check(_Dir_Name(p_destination), "", "")
-					i_file_link.l(p_source, p_destination)
+					i_file.check(p_destination, "", "")
+					i_file_link.l(_Link_Name(p_source), _Link_Name(p_destination.a(f.FQDN)))
 
 				}
 				log.Debugf("Parsing done: LDAP Owner_UID_List; ACTION: report.")
 				i_file.write()
-				i_file_link.write()
+				// i_file_link.write()
 
 			}
 			log.Debugf("Parsing done: LDAP Group; ACTION: report.")

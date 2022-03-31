@@ -50,6 +50,7 @@ func main() {
 	i_peer.parse_GT()
 
 	i_file.write()
+	i_file_link.write()
 	write_ldap()
 }
 

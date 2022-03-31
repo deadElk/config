@@ -9,6 +9,10 @@ import (
 
 func (receiver *i_LDAP_Domain) replace(attrName string, attrVals []string) {
 	switch {
+	case len(attrVals) == 0 || len(attrName) == 0:
+		return
+	}
+	switch {
 	case receiver.Modify == nil:
 		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
 	}
@@ -22,6 +26,10 @@ func (receiver *i_LDAP_Domain) replace(attrName string, attrVals []string) {
 }
 func (receiver *i_LDAP_Domain_User) replace(attrName string, attrVals []string) {
 	switch {
+	case len(attrVals) == 0 || len(attrName) == 0:
+		return
+	}
+	switch {
 	case receiver.Modify == nil:
 		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
 	}
@@ -30,6 +38,10 @@ func (receiver *i_LDAP_Domain_User) replace(attrName string, attrVals []string) 
 }
 func (receiver *i_LDAP_Domain_Group) replace(attrName string, attrVals []string) {
 	switch {
+	case len(attrVals) == 0 || len(attrName) == 0:
+		return
+	}
+	switch {
 	case receiver.Modify == nil:
 		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)
 	}
@@ -37,6 +49,10 @@ func (receiver *i_LDAP_Domain_Group) replace(attrName string, attrVals []string)
 	receiver.Modify.Replace(attrName, attrVals)
 }
 func (receiver *i_LDAP_Domain_Host) replace(attrName string, attrVals []string) {
+	switch {
+	case len(attrVals) == 0 || len(attrName) == 0:
+		return
+	}
 	switch {
 	case receiver.Modify == nil:
 		receiver.Modify = ldap.NewModifyRequest(receiver.DN.String(), nil)

@@ -48,6 +48,9 @@ func (receiver _Mask) String() string {
 func (receiver _Name) String() string {
 	return string(receiver)
 }
+func (receiver _Link_Name) String() string {
+	return string(receiver)
+}
 func (receiver _File_Name) String() string {
 	return string(receiver)
 }

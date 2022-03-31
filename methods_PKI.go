@@ -295,40 +295,33 @@ func (receiver *_PKI_CA_Node) verify_P12(fqdn _FQDN, inbound *x509.Certificate) 
 	case receiver == nil:
 		log.Fatalf("P12: no CA defined; ACTION: report.")
 	}
-	var (
-		err error
-	)
 	switch func() (outbound bool) {
-		var (
-			value *_PKI_P12
-			flag  bool
-		)
-		switch value, flag = i_PKI_P12[fqdn]; {
+		switch _, flag := i_PKI_P12[fqdn]; {
 		case !flag:
 			return false
 		}
-
 		// TODO: VERY VERY VERY VERY SLOW OP
-		switch err = value.Cert.CheckSignatureFrom(receiver.Cert); {
+		switch err := i_PKI_P12[fqdn].Cert.CheckSignatureFrom(receiver.Cert); {
 		case err != nil:
 			log.Warnf("P12 '%v': x509.CheckSignatureFrom error - %v.", fqdn, err)
 			return false
 		}
 		for _, b := range receiver.CRL.TBSCertList.RevokedCertificates {
 			switch {
-			case b.SerialNumber == value.Cert.SerialNumber:
+			case b.SerialNumber == i_PKI_P12[fqdn].Cert.SerialNumber:
 				log.Warnf("P12 '%v': Cert is revoked.", fqdn)
 				return false
 			}
 		}
 		return true
-	}(); {
+	}() {
 	case true:
 		return i_PKI_P12[fqdn], false
 	}
 
 	var (
-		t = &_PKI_P12{
+		err error
+		t   = &_PKI_P12{
 			CA:     receiver,
 			Cert:   nil,
 			DER:    &_PKI_DER{},
@@ -586,6 +579,16 @@ func (receiver __FQDN_PKI_P12) put(inbound *_PKI_P12) (status bool) {
 		return true
 	default:
 		log.Warnf("PKI P12 DB: nothing to do; ACTION: none.")
+	}
+	return
+}
+func (receiver __FQDN_PKI_P12) get_P12_string(fqdn ..._FQDN) (outbound []string) {
+	for _, b := range fqdn {
+		switch _, flag := receiver[b]; {
+		case !flag:
+			continue
+		}
+		outbound = append(outbound, receiver[b].P12.String())
 	}
 	return
 }

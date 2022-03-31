@@ -49,7 +49,7 @@ var (
 	i_peer_group  = make(__ASN_Peer_Group)
 	i_ldap        = make(__URL_LDAP)
 	i_ldap_domain = make(__DN_LDAP_Domain)
-	i_file_link   = make(__N_Name)
+	i_file_link   = make(__LN_Link_Name)
 	i_file        = __DN_File_Dir{
 		_dir_GT:      {Ext: "tmpl"},
 		_dir_GT_OVPN: {Ext: "tmpl"},

@@ -9,25 +9,21 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type _CN _Name             //
-type _Cipher string        //
-type _Communication string //
-type _Content []byte       //
 // type _DER []byte //
-type _DER_Cert []byte       //
-type _DER_CRL []byte        //
-type _DER_Key []byte        //
-type _DER_TLS_Server []byte //
-type _DER_TLS_Client []byte //
 // type _PEM []byte //
-type _PEM_Cert []byte                                           //
-type _PEM_CRL []byte                                            //
-type _PEM_Key []byte                                            //
-type _PEM_TLS_Client []byte                                     //
-type _PEM_TLS_Server []byte                                     //
+type _CN _Name                                                  //
+type _Cipher string                                             //
+type _Communication string                                      //
+type _Content []byte                                            //
+type _DER_CRL []byte                                            //
+type _DER_Cert []byte                                           //
+type _DER_Key []byte                                            //
+type _DER_TLS_Client []byte                                     //
+type _DER_TLS_Server []byte                                     //
 type _DN _Name                                                  //
 type _Description string                                        //
 type _Dir_Name _Name                                            //
+type _Link_Name _Name                                           //
 type _FQDN string                                               //
 type _File_Name _Name                                           //
 type _GID _Name                                                 //
@@ -44,6 +40,11 @@ type _Inet_ASN uint32                                           //
 type _Mask string                                               //
 type _Name string                                               //
 type _P12 []byte                                                //
+type _PEM_CRL []byte                                            //
+type _PEM_Cert []byte                                           //
+type _PEM_Key []byte                                            //
+type _PEM_TLS_Client []byte                                     //
+type _PEM_TLS_Server []byte                                     //
 type _PKI_SN struct{ *big.Int }                                 //
 type _PName string                                              //
 type _S string                                                  //
@@ -63,7 +64,8 @@ type _any struct{ any }                                         //
 type _hash224_ID [_hash224_Size]uint8                           // _hash224_ID here a result of sha3.Sum224().
 type _hash_ID [_hash_Size]uint8                                 // _hash_ID here a result of sha3.Sum512().
 type slstrings []string                                         //
-type _Attribute_List struct {                                   //
+
+type _Attribute_List struct { //
 	Description _Description `xml:"description,attr"` //
 	Deactivate  bool         `xml:"deactivate,attr"`  //
 	Reserved    bool         `xml:"reserved,attr"`    //

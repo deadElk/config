@@ -218,13 +218,24 @@ func (receiver __DN_File_Dir) e(dir _Dir_Name, file _File_Name, ext _Name) {
 	receiver.check(dir, file, ext)
 	receiver[dir].File[file].Exec = true
 }
-func (receiver __N_Name) l(source _Name, destination _Name) {
-	receiver[source] = destination
+func (receiver __LN_Link_Name) l(source _Link_Name, destination _Link_Name) {
+	receiver[destination] = source
 }
-func (receiver __N_Name) write() {
+func (receiver __LN_Link_Name) write() {
 	for a, b := range receiver {
-		log.Warnf("Symlink from '%v' to '%v'; ACTION: create.", a, b)
-		switch err := os.Symlink(a.String(), b.String()); {
+		log.Debugf("Symlink from '%v' to '%v'; ACTION: create.", a, b)
+		switch value, err := os.Readlink(a.String()); {
+		case err == nil && value == b.String():
+			log.Debugf("Symlink from '%v' to '%v' already exist; ACTION: skip.", a, b)
+			return
+		case err != nil:
+			log.Debugf("Symlink from '%v' to '%v' error '%v'; ACTION: skip.", a, b, err)
+			// switch err = os.Remove(a.String()); {
+			// case err != nil:
+			// 	log.Warnf("Symlink from '%v' to '%v' remove error '%v'; ACTION: skip.", a, b, err)
+			// }
+		}
+		switch err := os.Symlink(b.String(), a.String()); {
 		case err != nil:
 			log.Warnf("Symlink from '%v' to '%v' create error '%v'; ACTION: skip.", a, b, err)
 		}

@@ -2,6 +2,7 @@ package main
 
 type __FN_File_Data map[_File_Name]*i_File_Data //
 type __DN_File_Dir map[_Dir_Name]*i_Dir_Data    //
+type __LN_Link_Name map[_Link_Name]_Link_Name
 
 // file storage
 type i_Dir_Data struct { //
