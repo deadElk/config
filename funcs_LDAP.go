@@ -460,7 +460,7 @@ func parse_LDAP() {
 					var (
 						flag bool
 					)
-					switch d.PKI.Host_Node[h], flag = d.PKI.verify_P12(h, &x509.Certificate{
+					d.PKI.Host_Node[h], flag = d.PKI.verify_P12(h, &x509.Certificate{
 						SerialNumber: pki_crt_sn(),
 						Subject: pkix.Name{
 							Organization: []string{d.FQDN.String()},
@@ -475,10 +475,8 @@ func parse_LDAP() {
 						KeyUsage:       x509.KeyUsageDigitalSignature,
 						DNSNames:       []string{h.String()},
 						EmailAddresses: []string{join_string("@", "ns", d.FQDN)},
-					}); {
-					case flag:
-						changed = true
-					}
+					})
+					changed = changed || flag
 
 				}
 				v_H.PKI = d.PKI.Host_Node[v_H.FQDN]
@@ -571,7 +569,7 @@ func parse_LDAP() {
 					case g > len(_re_lower_case):
 						h = _FQDN(join_string(".", "x"+pad_string(strconv.FormatInt(int64(g), 16), 2), h))
 					}
-					switch v_U.PKI[g], flag = d.PKI.verify_P12(h, &x509.Certificate{
+					v_U.PKI[g], flag = d.PKI.verify_P12(h, &x509.Certificate{
 						SerialNumber: pki_crt_sn(),
 						Subject: pkix.Name{
 							Organization: []string{d.FQDN.String()},
@@ -589,10 +587,8 @@ func parse_LDAP() {
 						// EmailAddresses: []string{join_string("@", "ns", d.FQDN)},
 						// DNSNames:       []string{i.String()},
 						// IPAddresses:    nil,
-					}); {
-					case flag:
-						changed = true
-					}
+					})
+					changed = changed || flag
 				}
 				log.Debugf("Parsing done: LDAP User Conn; ACTION: report.")
 
