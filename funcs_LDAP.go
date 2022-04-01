@@ -341,6 +341,9 @@ func get_LDAP_SKV(inbound *ldap.Entry, list map[string]int) (outbound __S_LDAP_S
 }
 
 func parse_LDAP() {
+	i_file.check(_dir_Stage_OVPN_ULE_Cron, "", "")
+	i_file.check(_dir_Stage_OVPN_ULE_RC_D, "", "")
+
 	log.Debugf("Parsing start: LDAP; ACTION: report.")
 	for a, b := range i_ldap {
 		log.Debugf("Parsing start: LDAP '%v'; ACTION: report.", a.String())

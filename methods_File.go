@@ -227,7 +227,7 @@ func (receiver __LN_Link_Name) write() {
 		case true:
 			log.Debugf("Symlink from '%v' to '%v'; RESULT: '%v'.", a, b, os.Symlink(b.String(), a.String()))
 		case false:
-			log.Warnf("Symlink from '%v' to '%v'; RESULT: '%v'.", a, b, os.Symlink(b.String(), a.String()))
+			log.Debugf("Symlink from '%v' to '%v'; RESULT: '%v'.", a, b, os.Symlink(b.String(), a.String()))
 		}
 		// _ = os.Symlink(b.String(), a.String())
 		// log.Infof("Symlink from '%v' to '%v'; ACTION: create.", a, b)
