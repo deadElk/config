@@ -223,7 +223,13 @@ func (receiver __LN_Link_Name) l(source _Link_Name, destination _Link_Name) {
 }
 func (receiver __LN_Link_Name) write() {
 	for a, b := range receiver {
-		_ = os.Symlink(b.String(), a.String())
+		switch err := os.Symlink(b.String(), a.String()); err == nil {
+		case true:
+			log.Debugf("Symlink from '%v' to '%v'; RESULT: '%v'.", a, b, os.Symlink(b.String(), a.String()))
+		case false:
+			log.Warnf("Symlink from '%v' to '%v'; RESULT: '%v'.", a, b, os.Symlink(b.String(), a.String()))
+		}
+		// _ = os.Symlink(b.String(), a.String())
 		// log.Infof("Symlink from '%v' to '%v'; ACTION: create.", a, b)
 		// switch value, err := os.Readlink(a.String()); {
 		// case err == nil && value == b.String():
