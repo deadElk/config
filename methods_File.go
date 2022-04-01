@@ -83,10 +83,10 @@ func (receiver __DN_File_Dir) append(dir _Dir_Name, file _File_Name, ext _Name, 
 func (receiver __DN_File_Dir) write() (not_ok bool) {
 	_check()
 	var (
-		d_mode = fs.FileMode(os.ModeDir | 0700)
+		d_mode = fs.FileMode(os.ModeDir | 0755)
 		f_mode = map[bool]fs.FileMode{
-			false: 0600,
-			true:  0700,
+			false: 0644,
+			true:  0755,
 		}
 	)
 	for dir, b := range receiver {
