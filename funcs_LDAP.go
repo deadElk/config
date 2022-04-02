@@ -814,8 +814,6 @@ func parse_LDAP() {
 						f_conf = _File_Name("openvpn").aa("_", f.OVPN.PName, x)
 					)
 					i_file.put(p_pki, "ca.crt", "pem", "", d.PKI.DER.Cert._PEM())
-					// i_file.put(p_pki, "server.crt", "pem", "", f.OVPN.PKI.DER.Cert._PEM())
-					// i_file.put(p_pki, "server.key", "pem", "", f.OVPN.PKI.DER.Key._PEM())
 					i_file.put(p_pki, "server.crt", "pem", "", i_PKI_P12[i_OVPN[f.FQDN].Address].DER.Cert._PEM())
 					i_file.put(p_pki, "server.key", "pem", "", i_PKI_P12[i_OVPN[f.FQDN].Address].DER.Key._PEM())
 					i_file.put(p_pki, "ca.crl", "pem", "", d.PKI.DER.CRL._PEM())

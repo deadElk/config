@@ -86,7 +86,7 @@ func main() {
 // 	if err != nil {
 // 		panic(err)
 // 	}
-// 	body := strings.TrimSpace(string(respBodyBytes[:]))
+// 	body := _strings.TrimSpace(string(respBodyBytes[:]))
 // 	if body == "success!" {
 // 		fmt.Println(body)
 // 	} else {

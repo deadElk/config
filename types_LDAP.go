@@ -28,6 +28,7 @@ type i_LDAP struct { //
 	Group_Filter string                 //
 	Host_CN      string                 //
 	Host_Filter  string                 //
+	Admin_DN     _strings               //
 	M_CN_G       __DN_LDAP_Domain_Group //
 	M_CN_U       __DN_LDAP_Domain_User  //
 	Modify       *ldap.ModifyRequest    //

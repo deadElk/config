@@ -21,8 +21,8 @@ var (
 	re_commas           = regexp.MustCompile(`,+`)
 	re_spaces           = regexp.MustCompile(` +`)
 	re_slashes          = regexp.MustCompile(`/+`)
-	re_string_splitters = regexp.MustCompile(`[;, \t]+`)
-	re_strict_splitters = regexp.MustCompile(`[; \t]+`)
+	re_string_splitters = regexp.MustCompile(`[;, \t\n]+`)
+	re_strict_splitters = regexp.MustCompile(`[; \t\n]+`)
 	// gt_fm      = template.FuncMap{
 	// 	"sum_uint32": sum_uint32_gt_fm,
 	// 	"sum_string": sum_string_gt_fm,

@@ -661,8 +661,12 @@ func (receiver cDB_LDAP_List) parse() {
 			Group_Filter: b.Group_Filter,
 			Host_CN:      b.Host_CN,
 			Host_Filter:  b.Host_Filter,
+			Admin_DN:     split_2_strings(b.Admin_DN, re_strict_splitters),
 			M_CN_G:       __DN_LDAP_Domain_Group{},
 			M_CN_U:       __DN_LDAP_Domain_User{},
+			Modify:       nil,
+			Modify_Regen: nil,
+			PKI:          nil,
 			Secret:       b.Secret,
 			URL:          c,
 			User_CN:      b.User_CN,
@@ -740,7 +744,7 @@ func (receiver *cDB_Peer) parse_RI(v_Peer *i_Peer) {
 						v_IF_IFM  string
 						v_IF_IFsM string
 					)
-					split_2_string(&d.Name, re_dots, &v_IF_IFM, &v_IF_IFsM)
+					get_string(&d.Name, re_dots, &v_IF_IFM, &v_IF_IFsM)
 					outbound[d.Name] = &i_Peer_RI_IF{
 						IFM:           _Name(v_IF_IFM),
 						IFsM:          _Name(v_IF_IFsM),
@@ -932,7 +936,7 @@ func (receiver *cDB_Peer) parse_Version(v_Peer *i_Peer) {
 	// var (
 	// 	v_Major string
 	// )
-	// split_2_string(&receiver.Version, re_upper_case, &v_Major)
+	// get_string(&receiver.Version, re_upper_case, &v_Major)
 	// v_Peer.Major = parse_interface(strconv.ParseFloat(v_Major, 64)).(float64)
 
 	var (

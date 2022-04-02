@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"math/big"
 	"net/netip"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -449,4 +450,23 @@ func (receiver *_Content) parse_GT(inbound any) (outbound _Content) {
 		return _Content{}
 	}
 	return buffer.Bytes()
+}
+
+func (receiver *_strings) filter() (outbound _strings) {
+	var (
+		interim = make(map[string]bool)
+	)
+	for _, b := range *receiver {
+		switch _, flag := interim[b]; {
+		case !flag:
+			interim[b] = true
+		}
+	}
+	for a := range interim {
+		outbound = append(outbound, a)
+	}
+	sort.Slice(outbound, func(i, j int) bool {
+		return outbound[i] < outbound[j]
+	})
+	return
 }

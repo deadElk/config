@@ -74,6 +74,7 @@ type cDB_LDAP struct {
 	Group_CN      string                `xml:"group_cn,attr"`
 	User_Filter   string                `xml:"user_filter,attr"`
 	User_CN       string                `xml:"user_cn,attr"`
+	Admin_DN      string                `xml:"admin_dn,attr"`
 	Modify_Revoke cDB_Modify_Regen_List `xml:"Modify>Revoke"`
 	_Attribute_List
 }

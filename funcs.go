@@ -333,13 +333,19 @@ func pad_string(inbound any, length int) string {
 	}
 	return padding + interim
 }
-func split_2_string(inbound any, re *regexp.Regexp, target ...*string) {
+func get_string(inbound any, re *regexp.Regexp, target ...*string) {
 	var (
 		interim = re.Split(interface_string("", inbound), -1)
 	)
 	for a := 0; a < len(interim) && a < len(target); a++ {
 		*target[a] = interim[a]
 	}
+}
+func split_2_strings(inbound any, re *regexp.Regexp) (outbound _strings) {
+	var (
+		interim = _strings(re.Split(interface_string("", inbound), -1))
+	)
+	return interim.filter()
 }
 
 func parse_Host_Inbound_Traffic(enabled ...any) (outbound _Host_Inbound_Traffic_List) {
