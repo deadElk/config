@@ -121,7 +121,7 @@ type _OVPN_GT_Server struct { //
 	Address    _FQDN          //
 	ExternalIP []netip.Addr   //
 	PName      _PName         //
-	InternalIP string         //
+	InternalIP netip.Addr     //
 	Netmask    string         //
 	Port       _INet_Port     //
 	Proto      _INet_Protocol //
