@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/ecdsa"
 	"crypto/x509"
+	"crypto/x509/pkix"
 	"math/big"
 )
 
@@ -34,10 +35,10 @@ type _PKI_CA_Node struct {
 	Cert     *x509.Certificate  //
 	Key      *ecdsa.PrivateKey  //
 	// Key       ed25519.PrivateKey    //
-	CRL       *x509.RevocationList //
-	DER       *_PKI_CA_Node_DER    //
-	Host_Node __FQDN_PKI_P12       //
-	Node      __FQDN_PKI_P12       //
+	CRL       *pkix.CertificateList //
+	DER       *_PKI_CA_Node_DER     //
+	Host_Node __FQDN_PKI_P12        //
+	Node      __FQDN_PKI_P12        //
 	// Delivered __BI_Delivered        //
 	// Delivered_Sorted []*big.Int//
 	// PEM       *_PKI_CA_Node_PEM//

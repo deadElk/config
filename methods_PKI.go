@@ -161,7 +161,6 @@ func (receiver *_PKI_CA_Node) generate_CRL() (status bool) {
 	var (
 		err error
 	)
-	x509.CRL()
 	switch receiver.DER.CRL, err = x509.CreateRevocationList(rand.Reader, &x509.RevocationList{
 		SignatureAlgorithm: x509.ECDSAWithSHA512,
 		// SignatureAlgorithm:  x509.PureEd25519,
@@ -353,7 +352,7 @@ func (receiver *_PKI_CA_Node) verify_P12(fqdn _FQDN, inbound *x509.Certificate) 
 			log.Warnf("P12 '%v': x509.CheckSignatureFrom error - %v.", fqdn, err)
 			return false
 		}
-		for _, b := range receiver.CRL.RevokedCertificates {
+		for _, b := range receiver.CRL.TBSCertList.RevokedCertificates {
 			switch {
 			case b.SerialNumber == i_PKI_P12[fqdn].Cert.SerialNumber:
 				log.Warnf("P12 '%v': Cert is revoked.", fqdn)
