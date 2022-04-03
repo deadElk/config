@@ -7,36 +7,26 @@ import (
 	"math/big"
 )
 
-// type __PKI_Node []*_PKI_Node                        //
-type __PKI_P12 []*_PKI_P12 //
-// type __PKI_CA_Node []*_PKI_CA_Node                  //
-type __BI_Any map[*big.Int]any //
-// type __BI_Delivered map[*big.Int]*_PKI_CA_Delivered //
-type __FQDN_PKI_P12 map[_FQDN]*_PKI_P12
-
-// type __FQDN_PKI map[_FQDN]*_PKI//
-type __FQDN_PKI_CA_Node map[_FQDN]*_PKI_CA_Node //
-
-// type __FQDN_PKI_Domain map[_FQDN]*_PKI_Domain//
-type __FQDN_PKI_Node map[_FQDN]*_PKI_Node           //
+type _DER []byte                                    //
+type _P12 []byte                                    //
+type _PEM []byte                                    //
+type _PEM_CRL []byte                                //
+type _PEM_Cert []byte                               //
+type _PEM_Key []byte                                //
+type _PEM_TLS_Client []byte                         //
+type _PEM_TLS_Server []byte                         //
+type _PKI_SN struct{ *big.Int }                     //
+type __BI_Any map[*big.Int]any                      //
+type __BI_Delivered map[*big.Int]*_PKI_CA_Delivered //
+type __Cert_Chain []*x509.Certificate               //
+type __FQDN_PKI_CA_Node map[_FQDN]*_PKI_CA_Node     //
 type __FQDN_PKI_Host_Node map[_FQDN]*_PKI_Host_Node //
+type __FQDN_PKI_Node map[_FQDN]*_PKI_Node           //
+type __FQDN_PKI_P12 map[_FQDN]*_PKI_P12             //
+type __PKI_CA_Node []*_PKI_CA_Node                  //
+type __PKI_Node []*_PKI_Node                        //
+type __PKI_P12 []*_PKI_P12                          //
 
-// PKI
-// Cert_SN  *big.Int // use for all SN: Cert and CRL
-// CRL_SN   *big.Int
-// CA       *_PKI_CA_Node // nil for root CA or pointer to upstream CA for intermediate CA
-// P12      _P12
-// type _PKI struct {
-// 	FQDN _FQDN
-// 	CA   *_PKI_CA_Node
-// 	Node __FQDN_PKI_Domain
-// }
-// type _PKI_Domain struct {
-// 	FQDN    _FQDN
-// 	CA      *_PKI_CA_Node
-// 	CA_Node __FQDN_PKI_CA_Node
-// 	Node    __FQDN_PKI_Node
-// }
 type _PKI_CA_Node struct { //
 	FQDN      _FQDN                 //
 	CA        *_PKI_CA_Node         //
