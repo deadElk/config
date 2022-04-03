@@ -113,6 +113,27 @@ func read_ldap() {
 				}
 
 				var (
+					_ca_request = ldap.NewSearchRequest(
+						_dn.String(),
+						ldap.ScopeWholeSubtree,
+						ldap.DerefAlways,
+						0,
+						0,
+						false,
+						b.CA_Filer,
+						[]string{"*", "+"},
+						nil,
+					)
+					_ca_result *ldap.SearchResult
+				)
+				switch _ca_result, err = _ldap.Search(_ca_request); {
+				case err != nil:
+					log.Fatalf("LDAP '%v': search error '%v'; ACTION: fatal.", a.String(), err)
+					_fatal()
+					continue
+				}
+
+				var (
 					_dc_request = ldap.NewSearchRequest(
 						_dn.String(),
 						ldap.ScopeWholeSubtree,
@@ -206,6 +227,7 @@ func read_ldap() {
 					Modify:    nil,
 					PKI:       nil,
 					Raw_DC:    _dc_result,
+					Raw_CA:    _ca_result,
 					Raw_Group: _group_result,
 					Raw_Host:  _host_result,
 					Raw_User:  _user_result,
@@ -350,6 +372,20 @@ func parse_LDAP() {
 		for _, d := range b.Domain {
 			log.Debugf("Parsing start: LDAP Domain '%v'; ACTION: report.", d.DN)
 			d.FQDN = b._DN_FQDN(_re_point, d.DN)
+
+			log.Debugf("Parsing start: LDAP Raw_CA; ACTION: report.")
+			// var (
+			// 	v_SKV = get_LDAP_SKV(d.Raw_CA.Entries, map[string]int{_skv_CA: 1, _skv_CRL: 1})
+			// )
+			for _, f := range d.Raw_CA.Entries {
+				log.Debugf("Parsing start: LDAP Raw_CA '%v'; ACTION: report.", f.DN)
+				switch _, flag := i_PKI_Revoked[""]; {
+				case flag:
+				case !flag:
+				}
+			}
+			log.Debugf("Parsing done: LDAP Raw_CA; ACTION: report.")
+
 			log.Debugf("Parsing start: LDAP Raw_DC; ACTION: report.")
 			for _, f := range d.Raw_DC.Entries {
 				log.Debugf("Parsing start: LDAP Raw_DC '%v'; ACTION: report.", f.DN)

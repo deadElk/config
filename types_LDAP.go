@@ -56,6 +56,7 @@ type i_LDAP_Domain struct { //
 	Modify    *ldap.ModifyRequest    //
 	PKI       *_PKI_CA_Node          //
 	Raw_DC    *ldap.SearchResult     //
+	Raw_CA    *ldap.SearchResult     //
 	Raw_Group *ldap.SearchResult     //
 	Raw_Host  *ldap.SearchResult     //
 	Raw_User  *ldap.SearchResult     //
