@@ -650,6 +650,14 @@ func (receiver cDB_LDAP_List) parse() {
 		case len(b.User_CN) == 0:
 			b.User_CN = _S_cn_user
 		}
+		switch {
+		case len(b.CA_Filter) == 0:
+			b.CA_Filter = _S_filter_ca
+		}
+		switch {
+		case len(b.CA_CN) == 0:
+			b.CA_CN = _S_cn_ca
+		}
 		i_ldap[d] = &i_LDAP{
 			Bind_DN:      b.Bind_DN,
 			DB_CN:        b.DB_CN,
@@ -662,10 +670,11 @@ func (receiver cDB_LDAP_List) parse() {
 			Host_CN:      b.Host_CN,
 			Host_Filter:  b.Host_Filter,
 			Admin_DN:     split_2_strings(b.Admin_DN, re_strict_splitters),
+			CA_Filer:     b.CA_Filter,
+			CA_CN:        b.CA_CN,
 			M_CN_G:       __DN_LDAP_Domain_Group{},
 			M_CN_U:       __DN_LDAP_Domain_User{},
 			Modify:       nil,
-			Modify_Regen: nil,
 			PKI:          nil,
 			Secret:       b.Secret,
 			URL:          c,

@@ -29,10 +29,11 @@ type i_LDAP struct { //
 	Host_CN      string                 //
 	Host_Filter  string                 //
 	Admin_DN     _strings               //
+	CA_Filer     string                 //
+	CA_CN        string                 //
 	M_CN_G       __DN_LDAP_Domain_Group //
 	M_CN_U       __DN_LDAP_Domain_User  //
 	Modify       *ldap.ModifyRequest    //
-	Modify_Regen map[_FQDN]bool         //
 	PKI          *_PKI_CA_Node          //
 	Secret       _Secret                //
 	URL          *url.URL               //

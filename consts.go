@@ -95,16 +95,18 @@ const (
 	_S_Mgmt_RI_Description _Description = "MANAGEMENT-INSTANCE"
 	_S_SP_Default_Policy                = _W_permit__all
 	_S_VI_RI                            = _Name_VI
+	_S_cn_ca                            = string(_W_cn)
 	_S_cn_config                        = string(_W_cn____config)
 	_S_cn_db                            = string(_W_olcSuffix)
 	_S_cn_dc                            = string(_W_dn)
-	_S_cn_host                          = string(_W_cn)
 	_S_cn_group                         = string(_W_cn)
+	_S_cn_host                          = string(_W_cn)
 	_S_cn_user                          = string(_W_uid)
+	_S_filter_ca                        = "(&(objectClass=pkiCA)(cn=CA))"
 	_S_filter_db                        = string(_W_objectClass_olcDatabaseConfig_objectClass_olcMdbConfig)
 	_S_filter_dc                        = string(_W_objectClass_dcObject)
-	_S_filter_host                      = "(&(objectClass=inetOrgPerson)(labeledURI=host))"
 	_S_filter_group                     = string(_W_objectClass_posixGroup)
+	_S_filter_host                      = "(&(objectClass=inetOrgPerson)(labeledURI=host))"
 	_S_filter_user                      = string(_W_objectClass_posixAccount)
 	_S_sn                               = string(_W_sn)
 )

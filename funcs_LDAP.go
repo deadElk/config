@@ -384,7 +384,8 @@ func parse_LDAP() {
 			switch {
 			case d.PKI.parse_DER(&x509.Certificate{
 				SignatureAlgorithm: x509.ECDSAWithSHA512,
-				SerialNumber:       pki_crt_sn(),
+				// SignatureAlgorithm: x509.PureEd25519,
+				SerialNumber: pki_crt_sn(),
 				Subject: pkix.Name{
 					Organization: []string{d.FQDN.String()},
 					CommonName:   d.FQDN.String(),
@@ -486,7 +487,8 @@ func parse_LDAP() {
 					)
 					d.PKI.Host_Node[h], flag = d.PKI.verify_P12(v_FQDN, &x509.Certificate{
 						SignatureAlgorithm: x509.ECDSAWithSHA512,
-						SerialNumber:       pki_crt_sn(),
+						// SignatureAlgorithm: x509.PureEd25519,
+						SerialNumber: pki_crt_sn(),
 						Subject: pkix.Name{
 							Organization: []string{d.FQDN.String()},
 							CommonName:   v_CommonName,
@@ -593,7 +595,8 @@ func parse_LDAP() {
 					}
 					v_U.PKI[g], flag = d.PKI.verify_P12(h, &x509.Certificate{
 						SignatureAlgorithm: x509.ECDSAWithSHA512,
-						SerialNumber:       pki_crt_sn(),
+						// SignatureAlgorithm: x509.PureEd25519,
+						SerialNumber: pki_crt_sn(),
 						Subject: pkix.Name{
 							Organization: []string{d.FQDN.String()},
 							CommonName:   h.String(),

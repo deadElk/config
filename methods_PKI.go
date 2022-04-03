@@ -22,7 +22,8 @@ func (receiver *_PKI_CA_Node) parse_DER(inbound *x509.Certificate) (status bool)
 
 	var (
 		err error
-		t   = &_PKI_CA_Node{
+		// key any
+		t = &_PKI_CA_Node{
 			DER: &_PKI_CA_Node_DER{
 				Cert: receiver.DER.Cert,
 				Key:  receiver.DER.Key,
@@ -42,6 +43,26 @@ func (receiver *_PKI_CA_Node) parse_DER(inbound *x509.Certificate) (status bool)
 		log.Warnf("can't parse CA Key - '%v'; ACTION: generate a new CA Cert", err)
 		return receiver.generate(inbound)
 	}
+	// switch key, err = x509.ParsePKCS8PrivateKey(receiver.DER.Key); {
+	// case err != nil:
+	// 	log.Warnf("can't parse CA Key - '%v'; ACTION: generate a new CA Cert", err)
+	// 	return receiver.generate(inbound)
+	// }
+	// switch {
+	// case reflect.TypeOf(key) != reflect.TypeOf(ed25519.PrivateKey{}):
+	// 	log.Warnf("P12 '%v': wrong key type (not ecdsa.PrivateKey).", t.FQDN)
+	// 	return
+	// }
+	// switch t.Key = key.(*ecdsa.PrivateKey); {
+	// case interface_string("", t.Cert.PublicKey) != interface_string("", t.Key.Public()): // todo: dirty hack
+	// 	log.Warnf("P12 '%v': x509/ecdsa PublicKey not equal.", t.FQDN)
+	// 	return
+	// }
+	// switch t.Key = key.(ed25519.PrivateKey); {
+	// case interface_string("", t.Cert.PublicKey) != interface_string("", t.Key.Public()): // todo: dirty hack
+	// 	log.Warnf("P12 '%v': x509/ed25519 PublicKey not equal.", t.FQDN)
+	// 	return
+	// }
 
 	switch {
 	case interface_string("", t.Cert.PublicKey) != interface_string("", t.Key.Public()): // todo: dirty hack
@@ -97,8 +118,16 @@ func (receiver *_PKI_CA_Node) generate(inbound *x509.Certificate) (status bool) 
 	case err != nil:
 		log.Fatalf("can't generate a new CA Key - '%v'; ACTION: report.", err)
 	}
+	// switch _, receiver.Key, err = ed25519.GenerateKey(rand.Reader); {
+	// case err != nil:
+	// 	log.Fatalf("can't generate a new CA Key - '%v'; ACTION: report.", err)
+	// }
 
-	switch receiver.DER.Key, err = x509.MarshalECPrivateKey(receiver.Key); {
+	// switch receiver.DER.Key, err = x509.MarshalECPrivateKey(receiver.Key); {
+	// case err != nil:
+	// 	log.Fatalf("can't marshal a new CA Key - '%v'; ACTION: report.", err)
+	// }
+	switch receiver.DER.Key, err = x509.MarshalPKCS8PrivateKey(receiver.Key); {
 	case err != nil:
 		log.Fatalf("can't marshal a new CA Key - '%v'; ACTION: report.", err)
 	}
@@ -132,8 +161,10 @@ func (receiver *_PKI_CA_Node) generate_CRL() (status bool) {
 	var (
 		err error
 	)
+	x509.CRL()
 	switch receiver.DER.CRL, err = x509.CreateRevocationList(rand.Reader, &x509.RevocationList{
-		SignatureAlgorithm:  x509.ECDSAWithSHA512,
+		SignatureAlgorithm: x509.ECDSAWithSHA512,
+		// SignatureAlgorithm:  x509.PureEd25519,
 		RevokedCertificates: nil,
 		Number:              pki_crl_sn(),
 		ThisUpdate:          time.Now(),
@@ -195,6 +226,7 @@ func (receiver *_DER_Cert) _PEM() (outbound _PEM_Cert) {
 }
 func (receiver *_DER_Key) _PEM() (outbound _PEM_Key) {
 	return pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: *receiver})
+	// return pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: *receiver})
 }
 func (receiver *_DER_CRL) _PEM() (outbound _PEM_CRL) {
 	return pem.EncodeToMemory(&pem.Block{Type: "X509 CRL", Bytes: *receiver})
@@ -255,12 +287,22 @@ func (receiver _P12) parse(ca *_PKI_CA_Node) (outbound *_PKI_P12) {
 		log.Warnf("P12 '%v': wrong key type (not ecdsa.PrivateKey).", t.FQDN)
 		return
 	}
+	// switch {
+	// case reflect.TypeOf(key) != reflect.TypeOf(ed25519.PrivateKey{}):
+	// 	log.Warnf("P12 '%v': wrong key type (not ed25519.PrivateKey).", t.FQDN)
+	// 	return
+	// }
 
 	switch t.Key = key.(*ecdsa.PrivateKey); {
 	case interface_string("", t.Cert.PublicKey) != interface_string("", t.Key.Public()): // todo: dirty hack
 		log.Warnf("P12 '%v': x509/ecdsa PublicKey not equal.", t.FQDN)
 		return
 	}
+	// switch t.Key = key.(ed25519.PrivateKey); {
+	// case interface_string("", t.Cert.PublicKey) != interface_string("", t.Key.Public()): // todo: dirty hack
+	// 	log.Warnf("P12 '%v': x509/ed25519 PublicKey not equal.", t.FQDN)
+	// 	return
+	// }
 
 	// // TODO: VERY VERY VERY VERY SLOW OP
 	// switch err = t.Cert.CheckSignatureFrom(ca.Cert); {
@@ -269,9 +311,14 @@ func (receiver _P12) parse(ca *_PKI_CA_Node) (outbound *_PKI_P12) {
 	// 	return
 	// }
 
-	switch t.DER.Key, err = x509.MarshalECPrivateKey(t.Key); {
+	// switch t.DER.Key, err = x509.MarshalECPrivateKey(t.Key); {
+	// case err != nil:
+	// 	log.Warnf("P12 '%v': x509.MarshalECPrivateKey error - %v.", t.FQDN, err)
+	// 	return
+	// }
+	switch t.DER.Key, err = x509.MarshalPKCS8PrivateKey(t.Key); {
 	case err != nil:
-		log.Warnf("P12 '%v': x509.MarshalECPrivateKey error - %v.", t.FQDN, err)
+		log.Warnf("P12 '%v': x509.MarshalPKCS8PrivateKey error - %v.", t.FQDN, err)
 		return
 	}
 
@@ -306,7 +353,7 @@ func (receiver *_PKI_CA_Node) verify_P12(fqdn _FQDN, inbound *x509.Certificate) 
 			log.Warnf("P12 '%v': x509.CheckSignatureFrom error - %v.", fqdn, err)
 			return false
 		}
-		for _, b := range receiver.CRL.TBSCertList.RevokedCertificates {
+		for _, b := range receiver.CRL.RevokedCertificates {
 			switch {
 			case b.SerialNumber == i_PKI_P12[fqdn].Cert.SerialNumber:
 				log.Warnf("P12 '%v': Cert is revoked.", fqdn)
@@ -343,11 +390,19 @@ func (receiver *_PKI_CA_Node) verify_P12(fqdn _FQDN, inbound *x509.Certificate) 
 	case err != nil:
 		log.Fatalf("P12: ecdsa.GenerateKey error %v", err)
 	}
+	// switch _, t.Key, err = ed25519.GenerateKey(rand.Reader); {
+	// case err != nil:
+	// 	log.Fatalf("P12: ed25519.GenerateKey error %v", err)
+	// }
 
 	switch t.DER.Key, err = x509.MarshalECPrivateKey(t.Key); {
 	case err != nil:
 		log.Fatalf("P12: x509.MarshalECPrivateKey error %v", err)
 	}
+	// switch t.DER.Key, err = x509.MarshalPKCS8PrivateKey(t.Key); {
+	// case err != nil:
+	// 	log.Fatalf("P12: x509.MarshalPKCS8PrivateKey error %v", err)
+	// }
 
 	switch t.DER.Cert, err = x509.CreateCertificate(rand.Reader, inbound, t.CA.Cert, t.Key.Public(), t.CA.Key); {
 	case err != nil:

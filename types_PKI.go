@@ -3,7 +3,6 @@ package main
 import (
 	"crypto/ecdsa"
 	"crypto/x509"
-	"crypto/x509/pkix"
 	"math/big"
 )
 
@@ -27,86 +26,90 @@ type __PKI_CA_Node []*_PKI_CA_Node                  //
 type __PKI_Node []*_PKI_Node                        //
 type __PKI_P12 []*_PKI_P12                          //
 
-type _PKI_CA_Node struct { //
-	FQDN      _FQDN                 //
-	CA        *_PKI_CA_Node         //
-	CA_Chain  __Cert_Chain          //
-	CA_Node   __FQDN_PKI_CA_Node    //
-	Cert      *x509.Certificate     //
-	Key       *ecdsa.PrivateKey     //
-	CRL       *pkix.CertificateList //
-	DER       *_PKI_CA_Node_DER     //
-	Host_Node __FQDN_PKI_P12        //
-	Node      __FQDN_PKI_P12        //
+type _PKI_CA_Node struct {
+	FQDN     _FQDN              //
+	CA       *_PKI_CA_Node      //
+	CA_Chain __Cert_Chain       //
+	CA_Node  __FQDN_PKI_CA_Node //
+	Cert     *x509.Certificate  //
+	Key      *ecdsa.PrivateKey  //
+	// Key       ed25519.PrivateKey    //
+	CRL       *x509.RevocationList //
+	DER       *_PKI_CA_Node_DER    //
+	Host_Node __FQDN_PKI_P12       //
+	Node      __FQDN_PKI_P12       //
 	// Delivered __BI_Delivered        //
 	// Delivered_Sorted []*big.Int//
 	// PEM       *_PKI_CA_Node_PEM//
 }
-type _PKI_CA_Delivered struct { //
+type _PKI_CA_Delivered struct {
 	Verified bool //
 	Revoked  bool //
 	Status   int  //
 }
-type _PKI_Host_Node struct { //
-	FQDN _FQDN               //
-	CA   *_PKI_CA_Node       //
-	Cert *x509.Certificate   //
-	Key  *ecdsa.PrivateKey   //
-	DER  *_PKI_Host_Node_DER //
-	// PEM  *_PKI_Host_Node_PEM//
-	P12 _P12 //
-}
-type _PKI_Node struct { //
+type _PKI_Host_Node struct {
 	FQDN _FQDN             //
 	CA   *_PKI_CA_Node     //
 	Cert *x509.Certificate //
 	Key  *ecdsa.PrivateKey //
-	DER  *_PKI_Node_DER    //
-	// PEM  *_PKI_Node_PEM//
-	P12 _P12 //
+	// Key ed25519.PrivateKey  //
+	DER *_PKI_Host_Node_DER //
+	P12 _P12                //
+	// PEM *_PKI_Host_Node_PEM  //
 }
-type _PKI_CA_Node_DER struct { //
+type _PKI_Node struct {
+	FQDN _FQDN             //
+	CA   *_PKI_CA_Node     //
+	Cert *x509.Certificate //
+	Key  *ecdsa.PrivateKey //
+	// Key ed25519.PrivateKey //
+	DER *_PKI_Node_DER //
+	P12 _P12           //
+	// PEM  *_PKI_Node_PEM//
+}
+type _PKI_CA_Node_DER struct {
 	Cert _DER_Cert //
 	Key  _DER_Key  //
 	CRL  _DER_CRL  //
 }
-type _PKI_Host_Node_DER struct { //
+type _PKI_Host_Node_DER struct {
 	Cert _DER_Cert //
 	Key  _DER_Key  //
 }
-type _PKI_Node_DER struct { //
+type _PKI_Node_DER struct {
 	Cert _DER_Cert //
 	Key  _DER_Key  //
 }
-type _PKI_CA_Node_PEM struct { //
+type _PKI_CA_Node_PEM struct {
 	Cert _PEM_Cert //
 	Key  _PEM_Key  //
 	CRL  _PEM_CRL  //
 }
-type _PKI_Host_Node_PEM struct { //
+type _PKI_Host_Node_PEM struct {
 	Cert _PEM_Cert //
 	Key  _PEM_Key  //
 }
-type _PKI_Node_PEM struct { //
+type _PKI_Node_PEM struct {
 	Cert _PEM_Cert //
 	Key  _PEM_Key  //
 }
-type _PKI_P12 struct { //
-	CA     *_PKI_CA_Node     //
-	Cert   *x509.Certificate //
-	DER    *_PKI_DER         //
-	FQDN   _FQDN             //
-	Key    *ecdsa.PrivateKey //
-	P12    _P12              //
-	Serial *big.Int          //
+type _PKI_P12 struct {
+	CA   *_PKI_CA_Node     //
+	Cert *x509.Certificate //
+	DER  *_PKI_DER         //
+	FQDN _FQDN             //
+	Key  *ecdsa.PrivateKey //
+	// Key    ed25519.PrivateKey //
+	P12    _P12     //
+	Serial *big.Int //
 	// CA_Chain __Cert_Chain      //
 	// PEM      *_PKI_PEM         //
 }
-type _PKI_DER struct { //
+type _PKI_DER struct {
 	Cert _DER_Cert //
 	Key  _DER_Key  //
 }
-type _PKI_PEM struct { //
+type _PKI_PEM struct {
 	Cert _PEM_Cert //
 	Key  _PEM_Key  //
 }
