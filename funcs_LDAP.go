@@ -374,14 +374,18 @@ func parse_LDAP() {
 			d.FQDN = b._DN_FQDN(_re_point, d.DN)
 
 			log.Debugf("Parsing start: LDAP Raw_CA; ACTION: report.")
-			// var (
-			// 	v_SKV = get_LDAP_SKV(d.Raw_CA.Entries, map[string]int{_skv_CA: 1, _skv_CRL: 1})
-			// )
 			for _, f := range d.Raw_CA.Entries {
 				log.Debugf("Parsing start: LDAP Raw_CA '%v'; ACTION: report.", f.DN)
-				switch _, flag := i_PKI_Revoked[""]; {
-				case flag:
-				case !flag:
+				var (
+					v_SKV = get_LDAP_SKV(f, map[string]int{_skv_labeledURI: 0})
+				)
+				for _, h := range v_SKV["revoke"].Ordered {
+					switch _, flag := i_PKI_Revoke[_FQDN(h)]; {
+					case flag:
+						log.Debugf("LDAP DB: FQDN for revocation already defined '%v'; ACTION: skip.", h)
+					case !flag:
+						i_PKI_Revoke[_FQDN(h)] = true
+					}
 				}
 			}
 			log.Debugf("Parsing done: LDAP Raw_CA; ACTION: report.")

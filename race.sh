@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-./go run -race ./main.go
+go run -race ./main.go

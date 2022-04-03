@@ -39,7 +39,7 @@ var (
 	// i_PKI_SN      = big.NewInt(0) // use big.NewInt(time.Now().Unixnano())
 	i_PKI         = make(__BI_Any)
 	i_PKI_DB      = &_PKI_CA_Node{CA_Node: __FQDN_PKI_CA_Node{}}
-	i_PKI_Revoked = make(map[_FQDN]bool)
+	i_PKI_Revoke  = make(map[_FQDN]bool)
 	i_ab          = make(__N_AB)
 	i_ja          = make(__N_JA)
 	i_pl          = make(__N_PO_PL)
