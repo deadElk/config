@@ -1,1 +1,0 @@
-/Users/deadelk/go/go1.18/bin/go
