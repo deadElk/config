@@ -33,6 +33,18 @@ func main() {
 	defer log.Infof("done")
 	log.Infof("start")
 
+	// var (
+	// 	idata = "-----BEGIN CERTIFICATE-----\nMIICWjCCAbygAwIBAgIHBdvBJy1ZxzAKBggqhkjOPQQDBDAqMRMwEQYDVQQKEwpk\nb21haW4udGxkMRMwEQYDVQQDEwpkb21haW4udGxkMB4XDTIyMDQwMzE0NTE1NloX\nDTMwMDEwMTAwMDAwMFowLDETMBEGA1UEChMKZG9tYWluLnRsZDEVMBMGA1UEAwwM\nKi5kb21haW4udGxkMIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQBb1J4p1AtghYi\n1qyTAR0fVmwxq1He8tJgCWoGYy4RFeh7La5AzK0jRzkIjb8uSYF40a4OA/N8DaN1\nsB3kfw46uZ4AUJXpd/NNR7q69U6bJ2z4T+IZ/klYsGhZ90yUeqaxYueiXdq23nZJ\ntACDXhY76i8GptJ1f9bYoJs9FF4rGK4Kx7qjgYcwgYQwDgYDVR0PAQH/BAQDAgeA\nMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDATAfBgNVHSMEGDAWgBTUe2Uw\nTO8OsPpSQW+RH2mcmRdJ3DAyBgNVHREEKzApggpkb21haW4udGxkggwqLmRvbWFp\nbi50bGSBDW5zQGRvbWFpbi50bGQwCgYIKoZIzj0EAwQDgYsAMIGHAkIAucQJ4ja8\nQ96yt5b9jYZ+asPvm+KIxbhs+6tOxCPa0Vx+EWcY/7ZFQsGhBTtpJFx2qs8Kbbwu\noVQp0U1zfn0X7A4CQReH3NqNdJKEyQBWvX5zYcyOFdfttfV/RP8nID3PX+qQqKs7\nY4o6Gl0ewslJ1CvnYbZWayBwOchPUUTtat7a1xWK\n-----END CERTIFICATE-----\n-----BEGIN EC PRIVATE KEY-----\nMIHuAgEAMBAGByqGSM49AgEGBSuBBAAjBIHWMIHTAgEBBEIAbPKvmvD+v9hne4i2\nlVUyWfVyqyOItpzJBYN6r1pIHoRgN7b7StANGmaHJ5ek7nq6Jx6Vnd5qND3Cvj9o\nVtF12aehgYkDgYYABAFvUninUC2CFiLWrJMBHR9WbDGrUd7y0mAJagZjLhEV6Hst\nrkDMrSNHOQiNvy5JgXjRrg4D83wNo3WwHeR/Djq5ngBQlel3801Hurr1TpsnbPhP\n4hn+SViwaFn3TJR6prFi56Jd2rbedkm0AINeFjvqLwam0nV/1tigmz0UXisYrgrH\nug==\n-----END EC PRIVATE KEY-----\n"
+	// 	odata = [][]byte{}
+	// )
+	//
+	// for {
+	// 	var (
+	// 		t = pem.Decode([]byte(idata))
+	// 	)
+	//
+	// }
+
 	i_file.read()
 
 	define_iDB_Vocabulary()

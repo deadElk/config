@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"math/big"
 	"net/netip"
-	"reflect"
 	"regexp"
 	"strconv"
 
@@ -313,7 +312,7 @@ func interface_string(delimiter string, inbound any) (outbound string) {
 		return buffer.String()
 
 	default:
-		log.Debugf("unsupported type '%v' of '%s'; ACTION: use fmt.Sprintf().", reflect.TypeOf(inbound), inbound)
+		// log.Debugf("unsupported type '%v' of '%s'; ACTION: use fmt.Sprintf().", reflect.TypeOf(inbound), inbound)
 		return fmt.Sprintf("%s", value)
 	}
 }

@@ -254,14 +254,36 @@ func (receiver _P12) parse(ca *_PKI_CA_Node) (outbound *_PKI_P12) {
 		log.Warnf("P12: no CA data.")
 		return
 	}
+
+	// type contentInfo struct {
+	// 	ContentType asn1.ObjectIdentifier
+	// 	Content     asn1.RawValue `asn1:"tag:0,explicit,optional"`
+	// }
+	// type digestInfo struct {
+	// 	Algorithm pkix.AlgorithmIdentifier
+	// 	Digest    []byte
+	// }
+	// type macData struct {
+	// 	Mac        digestInfo
+	// 	MacSalt    []byte
+	// 	Iterations int `asn1:"optional,default:1"`
+	// }
+	// type pfxPdu struct {
+	// 	Version  int
+	// 	AuthSafe contentInfo
+	// 	MacData  macData `asn1:"optional"`
+	// }
+
 	var (
 		err error
 		key any
 		t   = &_PKI_P12{DER: &_PKI_DER{}}
+		// pfx = new(pfxPdu)
 	)
 
 	// TODO: VERY SLOW OP
 	// switch key, t.Cert, _, err = pkcs12.DecodeChain(receiver, pkcs12.DefaultPassword); {
+	// a, b := asn1.Unmarshal(receiver, pfx)
 	switch key, t.Cert, err = pkcs12.Decode(receiver, pkcs12.DefaultPassword); {
 	case err != nil:
 		log.Warnf("P12: pkcs12.DecodeChain error - %v.", err)
@@ -303,12 +325,12 @@ func (receiver _P12) parse(ca *_PKI_CA_Node) (outbound *_PKI_P12) {
 	// 	return
 	// }
 
-	// // TODO: VERY VERY VERY VERY SLOW OP
-	// switch err = t.Cert.CheckSignatureFrom(ca.Cert); {
-	// case err != nil:
-	// 	log.Warnf("P12 '%v': x509.CheckSignatureFrom error - %v.", t.FQDN, err)
-	// 	return
-	// }
+	// // // // TODO: VERY VERY VERY VERY SLOW OP
+	// // // // switch err = t.Cert.CheckSignatureFrom(ca.Cert); {
+	// // // // case err != nil:
+	// // // // 	log.Warnf("P12 '%v': x509.CheckSignatureFrom error - %v.", t.FQDN, err)
+	// // // // 	return
+	// // // // }
 
 	// switch t.DER.Key, err = x509.MarshalECPrivateKey(t.Key); {
 	// case err != nil:
@@ -332,6 +354,8 @@ func (receiver _P12) parse(ca *_PKI_CA_Node) (outbound *_PKI_P12) {
 	t.DER.Cert = t.Cert.Raw
 	t.P12 = receiver
 	i_PKI.put(t)
+
+	// log.Infof("%+v %+v %+v %+v %+v", pfx, a, b, t.Key, t.Cert.Raw)
 
 	return t
 }
@@ -636,16 +660,17 @@ func (receiver __FQDN_PKI_P12) put(inbound *_PKI_P12) (status bool) {
 	}
 	return
 }
-func (receiver __FQDN_PKI_P12) get_P12_string(fqdn ..._FQDN) (outbound []string) {
-	for _, b := range fqdn {
-		switch _, flag := receiver[b]; {
-		case !flag:
-			continue
-		}
-		outbound = append(outbound, receiver[b].P12.String())
-	}
-	return
-}
+
+// func (receiver __FQDN_PKI_P12) get_P12_string(fqdn ..._FQDN) (outbound []string) {
+// 	for _, b := range fqdn {
+// 		switch _, flag := receiver[b]; {
+// 		case !flag:
+// 			continue
+// 		}
+// 		outbound = append(outbound, receiver[b].P12.String())
+// 	}
+// 	return
+// }
 
 // func (receiver *_PKI_Node) store() (status bool) {
 // 	switch {
