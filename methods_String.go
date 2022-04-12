@@ -57,10 +57,6 @@ func (receiver _File_Name) String() string {
 func (receiver _Dir_Name) String() string {
 	return string(receiver)
 }
-
-// func (receiver _DER) String() string {
-// 	return string(receiver)
-// }
 func (receiver _DER_Cert) String() string {
 	return string(receiver)
 }
@@ -76,10 +72,9 @@ func (receiver _DER_TLS_Server) String() string {
 func (receiver _DER_TLS_Client) String() string {
 	return string(receiver)
 }
-
-// func (receiver _PEM) String() string {
-// 	return string(receiver)
-// }
+func (receiver _PEM_Container) String() string {
+	return string(receiver)
+}
 func (receiver _PEM_Cert) String() string {
 	return string(receiver)
 }
@@ -89,13 +84,13 @@ func (receiver _PEM_Key) String() string {
 func (receiver _PEM_CRL) String() string {
 	return string(receiver)
 }
+func (receiver _PKI_Raw) String() string {
+	return string(receiver)
+}
 func (receiver _PEM_TLS_Server) String() string {
 	return string(receiver)
 }
 func (receiver _PEM_TLS_Client) String() string {
-	return string(receiver)
-}
-func (receiver _P12) String() string {
 	return string(receiver)
 }
 func (receiver _PName) String() string {
@@ -134,3 +129,10 @@ func (receiver _INet_IPAddr) String() string {
 func (receiver _INet_URL) String() string {
 	return receiver.String()
 }
+
+// func (receiver _DER) String() string {
+// 	return string(receiver)
+// }
+// func (receiver _P12) String() string {
+// 	return string(receiver)
+// }

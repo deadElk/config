@@ -59,11 +59,12 @@ const (
 )
 const (
 	_file_host_list _File_Name = "host_list"
-	_file_openvpn   _File_Name = "./openvpn"
+	_file_openvpn   _File_Name = "openvpn"
 )
 const (
 	_lURI_firewall_v00     = "firewall_v00"
 	_lURI_openvpn          = "openvpn"
+	_lURI_revoke           = "revoke"
 	_lURI_openvpnd_address = "openvpnd_address"
 	_lURI_openvpnd_ip      = "openvpnd_ip"
 	_lURI_openvpnd_port    = "openvpnd_port"
