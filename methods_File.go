@@ -11,16 +11,16 @@ import (
 
 func (receiver __DN_File_Dir) read() (status bool) {
 	for dir := range receiver {
-		receiver.check(dir, "", "")
+		receiver.check(dir, "")
 		var (
 			direntry []os.DirEntry
 			err      error
-			ext_l    = len(receiver[dir].Ext)
+			// ext_l    = len(receiver[dir].Ext)
 		)
-		switch {
-		case ext_l > 0:
-			ext_l++
-		}
+		// switch {
+		// case ext_l > 0:
+		// 	ext_l++
+		// }
 
 		switch direntry, err = os.ReadDir(dir.String()); {
 		case err != nil:
@@ -36,9 +36,10 @@ func (receiver __DN_File_Dir) read() (status bool) {
 				continue
 			}
 			var (
-				fn = _File_Name(f.Name()[:len(f.Name())-ext_l])
+				// fn = _File_Name(f.Name()[:len(f.Name())-ext_l])
+				fn = _File_Name(f.Name())
 			)
-			switch flag := receiver.read_file(dir, fn, receiver[dir].Ext); {
+			switch flag := receiver.read_file(dir, fn); {
 			case !flag:
 				status = true
 				continue
@@ -52,32 +53,30 @@ func (receiver __DN_File_Dir) read() (status bool) {
 	}
 	return !status
 }
-func (receiver __DN_File_Dir) get(dir _Dir_Name, file _File_Name, ext _Name) ( /*not_ok bool,*/ outbound *_Content) {
-	receiver.check(dir, file, ext)
+func (receiver __DN_File_Dir) get(dir _Dir_Name, file _File_Name) ( /*not_ok bool,*/ outbound *_Content) {
+	receiver.check(dir, file)
 	return /*!not_ok,*/ receiver[dir].File[file].Content
 }
 func (receiver __DN_File_Dir) list(dir _Dir_Name) (outbound []_File_Name) {
-	receiver.check(dir, "", "")
+	receiver.check(dir, "")
 	return receiver[dir].Sorted
 }
-func (receiver __DN_File_Dir) put(dir _Dir_Name, file _File_Name, ext _Name, delimiter string, content any) /*not_ok bool*/ {
-	receiver.check(dir, file, ext)
+func (receiver __DN_File_Dir) put(dir _Dir_Name, file _File_Name, delimiter string, content any) /*not_ok bool*/ {
+	receiver.check(dir, file)
 	var (
 		v_Content = _Content(interface_string(delimiter, content))
 	)
 	receiver[dir].File[file].Content = &v_Content
 	receiver[dir].File[file].Flag = true
-	receiver[dir].File[file].Ext = ext
 	// return !not_ok
 }
-func (receiver __DN_File_Dir) append(dir _Dir_Name, file _File_Name, ext _Name, delimiter string, content any) /*not_ok bool*/ {
-	receiver.check(dir, file, ext)
+func (receiver __DN_File_Dir) append(dir _Dir_Name, file _File_Name, delimiter string, content any) /*not_ok bool*/ {
+	receiver.check(dir, file)
 	var (
 		v_Content = _Content(join_string(delimiter, receiver[dir].File[file].Content, content))
 	)
 	receiver[dir].File[file].Content = &v_Content
 	receiver[dir].File[file].Flag = true
-	receiver[dir].File[file].Ext = ext
 	// return !not_ok
 }
 func (receiver __DN_File_Dir) write() (not_ok bool) {
@@ -103,8 +102,7 @@ func (receiver __DN_File_Dir) write() (not_ok bool) {
 				continue
 			}
 			var (
-				v_full_fn  = file.a(_File_Name(d.Ext))
-				v_full_pfn = dir.a(_Dir_Name(v_full_fn))
+				v_full_pfn = dir.a(_Dir_Name(file))
 			)
 			switch err := os.WriteFile(v_full_pfn.String(), *d.Content, f_mode[d.Exec]); {
 			case err != nil:
@@ -117,11 +115,11 @@ func (receiver __DN_File_Dir) write() (not_ok bool) {
 	}
 	return !not_ok
 }
-func (receiver __DN_File_Dir) check(dir _Dir_Name, file _File_Name, ext _Name) {
+func (receiver __DN_File_Dir) check(dir _Dir_Name, file _File_Name) {
 	switch _, flag := receiver[dir]; {
 	case !flag:
 		log.Debugf("Dir '%v' definition doesn't exist; ACTION: create.", dir)
-		receiver[dir] = &i_Dir_Data{Ext: ext, File: __FN_File_Data{}}
+		receiver[dir] = &i_Dir_Data{File: __FN_File_Data{}}
 	}
 	switch {
 	case receiver[dir].File == nil:
@@ -135,18 +133,13 @@ func (receiver __DN_File_Dir) check(dir _Dir_Name, file _File_Name, ext _Name) {
 			// receiver.read_file(dir, file, ext)
 			receiver[dir].File[file] = &i_File_Data{Content: &_Content{}}
 		}
-		switch {
-		case len(receiver[dir].Ext) != 0 && len(receiver[dir].File[file].Ext) == 0:
-			receiver[dir].File[file].Ext = receiver[dir].Ext
-		}
 	}
 }
-func (receiver __DN_File_Dir) read_file(dir _Dir_Name, file _File_Name, ext _Name) (status bool) {
-	receiver.check(dir, file, ext)
+func (receiver __DN_File_Dir) read_file(dir _Dir_Name, file _File_Name) (status bool) {
+	receiver.check(dir, file)
 	var (
 		content    _Content
-		v_full_fn  = file.a(_File_Name(ext))
-		v_full_pfn = dir.a(_Dir_Name(v_full_fn))
+		v_full_pfn = dir.a(file)
 		v_Flag     = receiver[dir].File[file].Flag
 		err        error
 	)
@@ -155,11 +148,11 @@ func (receiver __DN_File_Dir) read_file(dir _Dir_Name, file _File_Name, ext _Nam
 		log.Warnf("file '%v' read error '%v'; ACTION: report.", v_full_pfn, err)
 		return
 	}
-	switch receiver[dir].Ext {
-	case "tmpl":
-		content.trim_space()
-	}
-	receiver.put(dir, file, ext, "", content)
+	// switch receiver[dir].Ext {
+	// case "tmpl":
+	// 	content.trim_space()
+	// }
+	receiver.put(dir, file, "", content)
 	receiver[dir].File[file].Flag = v_Flag
 	return true
 }
@@ -210,12 +203,12 @@ func (receiver _File_Name) external(args ...string) (outbound _Content) {
 	}
 	return
 }
-func (receiver __DN_File_Dir) fn(dir _Dir_Name, file _File_Name, ext _Name) (outbound _File_Name) {
-	receiver.check(dir, file, ext)
-	return _File_Name(dir.a(file.a(ext)))
+func (receiver __DN_File_Dir) fn(dir _Dir_Name, file _File_Name) (outbound _File_Name) {
+	receiver.check(dir, file)
+	return _File_Name(dir.a(file))
 }
-func (receiver __DN_File_Dir) e(dir _Dir_Name, file _File_Name, ext _Name) {
-	receiver.check(dir, file, ext)
+func (receiver __DN_File_Dir) e(dir _Dir_Name, file _File_Name) {
+	receiver.check(dir, file)
 	receiver[dir].File[file].Exec = true
 }
 func (receiver __LN_Link_Name) l(source _Link_Name, destination _Link_Name) {

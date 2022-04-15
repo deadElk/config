@@ -337,7 +337,7 @@ func (receiver cDB_Peer_List) parse(v_PG_ASN _Inet_ASN) {
 		// Major
 		// Manufacturer
 		// Model
-		// Serial
+		// SN
 		// Root
 		b.parse_GT_List(v_Peer)
 		b.parse_SZ(v_Peer)

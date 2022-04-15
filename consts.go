@@ -58,7 +58,7 @@ const (
 	_dir_etc _Dir_Name = "etc"
 )
 const (
-	_file_host_list _File_Name = "host_list"
+	_file_host_list _File_Name = "host_list.txt"
 	_file_openvpn   _File_Name = "openvpn"
 )
 const (

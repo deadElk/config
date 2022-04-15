@@ -33,15 +33,20 @@ var (
 	empty_ID   = _next_ID
 	next_ID    = empty_ID
 
-	i_PKI_FQDN = make(__FQDN_PKI_Container)
-	i_PKI_SN   = make(__SN_PKI_Container)
+	i_PKI = &_PKI{
+		FQDN: __FQDN_PKI_Container{},
+		SN:   __SN_PKI_Container{},
+	}
+	// i_PKI_FQDN = make(__FQDN_PKI_Container)
+	// i_PKI_SN   = make(__SN_PKI_Container)
 
 	i_PKI_P12 = make(__FQDN_PKI_Container)
 	// daemon's global PKI SerialNumber used for Cert and CRL
 	// i_PKI_DB         = make(__FQDN_PKI_Domain)
 	// i_PKI_SN      = big.NewInt(0) // use big.NewInt(time.Now().Unixnano())
-	i_PKI         = make(__BI_Any)
-	i_PKI_DB      = &_PKI_CA_Node{CA_Node: __FQDN_PKI_CA_Node{}}
+	// i_PKI         = make(__BI_Any)
+	// i_PKI_DB      = &_PKI_CA_Node{CA_Node: __FQDN_PKI_CA_Node{}}
+
 	i_PKI_Revoke  = make(map[_FQDN]bool)
 	i_ab          = make(__N_AB)
 	i_ja          = make(__N_JA)
@@ -55,11 +60,11 @@ var (
 	i_ldap_domain = make(__DN_LDAP_Domain)
 	i_file_link   = make(__LN_Link_Name)
 	i_file        = __DN_File_Dir{
-		_dir_GT:      {Ext: "tmpl"},
-		_dir_GT_OVPN: {Ext: "tmpl"},
-		_dir_PKI_CA:  {Ext: "der"},
-		_dir_PKI_TLS: {Ext: "pem", Recursive: true},
-		_dir_etc:     {Ext: "xml"},
+		_dir_GT:      {},
+		_dir_GT_OVPN: {},
+		_dir_PKI_CA:  {},
+		_dir_PKI_TLS: {Recursive: true},
+		_dir_etc:     {},
 		// _dir_Config:         {Ext: "txt"},
 		// _dir_Modify:         {Ext: "xml"},
 		// _dir_Data:           {Ext: "xml"},

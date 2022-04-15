@@ -17,7 +17,7 @@ type __S_LDAP_SKV map[string]*i_LDAP_SKV                         //
 type __UN_LDAP_Domain_User map[_UID_Number]*i_LDAP_Domain_User   //
 type __URL_LDAP map[*url.URL]*i_LDAP                             //
 
-type i_LDAP struct { //
+type i_LDAP struct {
 	Bind_DN      _DN                    //
 	DB_CN        string                 //
 	DB_Filter    string                 //
@@ -34,19 +34,20 @@ type i_LDAP struct { //
 	M_CN_G       __DN_LDAP_Domain_Group //
 	M_CN_U       __DN_LDAP_Domain_User  //
 	Modify       *ldap.ModifyRequest    //
-	PKI          *_PKI_CA_Node          //
+	PKI          *_PKI_Container        //
 	Secret       _Secret                //
 	URL          *url.URL               //
 	User_CN      string                 //
 	User_Filter  string                 //
+
 	// OLC          *i_LDAP_OLC            // todo: parse OLC from server
 	// Schema       *i_LDAP_Schema         // todo: parse schema from server
 }
-type i_LDAP_OLC struct { //
+type i_LDAP_OLC struct {
 }
-type i_LDAP_Schema struct { //
+type i_LDAP_Schema struct {
 }
-type i_LDAP_Domain struct { //
+type i_LDAP_Domain struct {
 	DN        _DN                    //
 	Entry     *ldap.Entry            //
 	FQDN      _FQDN                  //
@@ -54,7 +55,7 @@ type i_LDAP_Domain struct { //
 	Host      __DN_LDAP_Domain_Host  //
 	LDAP      *i_LDAP                //
 	Modify    *ldap.ModifyRequest    //
-	PKI       *_PKI_CA_Node          //
+	PKI       *_PKI_Container        //
 	Raw_DC    *ldap.SearchResult     //
 	Raw_CA    *ldap.SearchResult     //
 	Raw_Group *ldap.SearchResult     //
@@ -64,10 +65,10 @@ type i_LDAP_Domain struct { //
 	User      __UN_LDAP_Domain_User  //
 	// OLC *i_LDAP_Domain_OLC            //
 }
-type i_LDAP_Domain_OLC struct { //
+type i_LDAP_Domain_OLC struct {
 	DN _DN //
 }
-type i_LDAP_Domain_Group struct { // gidNumber: index
+type i_LDAP_Domain_Group struct {
 	DN             _DN                    //
 	Domain         *i_LDAP_Domain         //
 	Entry          *ldap.Entry            //
@@ -85,7 +86,7 @@ type i_LDAP_Domain_Group struct { // gidNumber: index
 	SKV            __S_LDAP_SKV           //
 	UID_List       __UN_LDAP_Domain_User  // member: index = member (uidNumber here), value is a pointer.
 }
-type i_LDAP_Domain_User struct { // uidNumber: index
+type i_LDAP_Domain_User struct {
 	DN         _DN                    //
 	Domain     *i_LDAP_Domain         //
 	Entry      *ldap.Entry            //
@@ -101,7 +102,7 @@ type i_LDAP_Domain_User struct { // uidNumber: index
 	UID_Number _UID_Number            //
 }
 
-type i_LDAP_Domain_Host struct { //
+type i_LDAP_Domain_Host struct {
 	Address    _FQDN                             //
 	DN         _DN                               //
 	Domain     *i_LDAP_Domain                    //
@@ -120,7 +121,7 @@ type i_LDAP_Domain_Host struct { //
 	TLSv2_User map[_UID_Number][]_PEM_TLS_Client //
 	// FW_v00     []string               //
 }
-type i_LDAP_SKV struct { //
+type i_LDAP_SKV struct {
 	Value   map[string]bool //
 	Ordered []string        //
 }
