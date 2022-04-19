@@ -41,7 +41,7 @@ var (
 	// i_PKI_FQDN = make(__FQDN_PKI_Container)
 	// i_PKI_SN   = make(__SN_PKI_Container)
 
-	i_PKI_P12 = make(__FQDN_PKI_Container)
+	// i_PKI_P12 = make(__FQDN_PKI_Container)
 	// daemon's global PKI SerialNumber used for Cert and CRL
 	// i_PKI_DB         = make(__FQDN_PKI_Domain)
 	// i_PKI_SN      = big.NewInt(0) // use big.NewInt(time.Now().Unixnano())

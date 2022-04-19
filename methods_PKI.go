@@ -1196,6 +1196,10 @@ func (receiver *_PKI_Container) parse_P12(inbound _PKI_Raw) (err error) {
 	switch {
 	case receiver.Key == nil:
 		receiver.Key = v_Key_any.(*ecdsa.PrivateKey)
+		switch receiver.DER.Key, err = x509.MarshalECPrivateKey(receiver.Key); {
+		case err != nil:
+			log.Fatalf("PKI '%v': x509.MarshalECPrivateKey error '%v'; ACTION: report.", receiver.FQDN, err)
+		}
 	default:
 		log.Warnf("PKI: another Key; ACTION: ignore.")
 	}
