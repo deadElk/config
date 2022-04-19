@@ -885,14 +885,154 @@ import (
 // // }
 //
 
-func (receiver *_PKI) parse_Raw(inbound ..._PKI_Raw) (outbound *_PKI_Container) {
+// func (receiver *_PKI) verify_old(ca *_PKI_Container, fqdn _FQDN, inbound *x509.Certificate) (outbound *_PKI_Container, is_new bool) {
+// 	var (
+// 		err       error
+// 		container *_PKI_Container
+// 		// container, is_new = receiver.get(fqdn)
+// 	)
+// 	// outbound, is_new = receiver.get(ca, fqdn, inbound)
+//
+// 	switch func() (ok bool) {
+// 		switch {
+// 		case interface_string("", container.Cert.PublicKey) != interface_string("", container.Key.Public()): // todo: dirty hack
+// 			log.Warnf("CA Cert's signature doesn't match with CA Key's signature - '%v'; ACTION: skip.", err)
+// 			return
+// 		}
+// 		container.CA = ca
+// 		switch {
+// 		case container.CA != nil:
+// 			// TODO: VERY VERY VERY VERY SLOW OP
+// 			switch err = container.Cert.CheckSignatureFrom(container.CA.Cert); {
+// 			case err != nil:
+// 				log.Warnf("PKI '%v': x509.CheckSignatureFrom error '%v'; ACTION: generate.", container.FQDN, err)
+// 				return
+// 			}
+// 			for _, b := range container.CA.CRL.TBSCertList.RevokedCertificates {
+// 				switch {
+// 				case b.SerialNumber == container.SN:
+// 					log.Warnf("PKI '%v': Cert is revoked; ACTION: generate.", container.FQDN)
+// 					return
+// 				}
+// 			}
+// 		}
+// 		container.DER = &_PKI_DER{
+// 			Cert: container.Cert.Raw,
+// 			Key:  nil,
+// 			CRL:  nil,
+// 		}
+// 		switch container.DER.Key, err = x509.MarshalPKCS8PrivateKey(container.Key); {
+// 		case err != nil:
+// 			log.Fatalf("PKI '%v': x509.MarshalPKCS8PrivateKey error '%v'; ACTION: report.", container.FQDN, err)
+// 		}
+//
+// 		var (
+// 			buf *bytes.Buffer
+// 		)
+// 		container.PEM = &_PKI_PEM{}
+//
+// 		buf = new(bytes.Buffer)
+// 		switch err = pem.Encode(buf, &pem.Block{Type: "CERTIFICATE", Bytes: container.DER.Cert}); {
+// 		case err != nil:
+// 			log.Fatalf("PKI '%v': pem.Encode CERTIFICATE error '%v'; ACTION: report.", container.FQDN, err)
+// 		}
+// 		container.PEM.Cert = buf.Bytes()
+//
+// 		buf = new(bytes.Buffer)
+// 		switch err = pem.Encode(buf, &pem.Block{Type: "EC PRIVATE KEY", Bytes: container.DER.Key}); {
+// 		case err != nil:
+// 			log.Fatalf("PKI '%v': pem.Encode EC PRIVATE KEY error '%v'; ACTION: report.", container.FQDN, err)
+// 		}
+// 		container.PEM.Key = buf.Bytes()
+//
+// 		switch {
+// 		case container.Cert.IsCA: // Cert is CA
+// 			switch err = container.Cert.CheckCRLSignature(container.CRL); {
+// 			case err != nil:
+// 				log.Warnf("PKI '%v': CheckCRLSignature error '%v'; ACTION: generate a new CRL.", container.FQDN, err)
+// 				is_new = true
+// 				container.renew_CRL()
+// 			}
+// 			container.revoke(container.CRL.TBSCertList.RevokedCertificates)
+// 			switch {
+// 			case container.CRL.HasExpired(time.Now()):
+// 				log.Warnf("PKI '%v': CRL HasExpired; ACTION: renew a CRL.", container.FQDN)
+// 				is_new = true
+// 				container.renew_CRL()
+// 			}
+// 			container.DER.CRL = _DER_CRL(container.CRL.TBSCertList.Raw)
+//
+// 			buf = new(bytes.Buffer)
+// 			switch err = pem.Encode(buf, &pem.Block{Type: "X509 CRL", Bytes: container.DER.CRL}); {
+// 			case err != nil:
+// 				log.Fatalf("PKI '%v': pem.Encode X509 CRL error '%v'; ACTION: report.", container.FQDN, err)
+// 			}
+// 			container.PEM.CRL = buf.Bytes()
+// 		}
+//
+// 		return true
+// 	}(); {
+// 	case true: // Cert is OK
+// 		return container, is_new
+// 	}
+//
+// 	// a new Cert is required
+//
+// 	switch {
+// 	case inbound == nil:
+// 		log.Fatalf("no Cert data; ACTION: ignore")
+// 		// return
+// 	}
+// 	log.Infof("generating a new Cert for '%v'; ACTION: report.", inbound.Subject.CommonName)
+//
+// 	container.DER = &_PKI_DER{}
+//
+// 	switch container.Key, err = ecdsa.GenerateKey(elliptic.P521(), rand.Reader); {
+// 	case err != nil:
+// 		log.Fatalf("can't generate a new Key - %v", err)
+// 	}
+//
+// 	switch container.DER.Key, err = x509.MarshalECPrivateKey(container.Key); {
+// 	case err != nil:
+// 		log.Fatalf("can't marshal a new Key - %v", err)
+// 	}
+//
+// 	switch container.DER.Cert, err = x509.CreateCertificate(rand.Reader, inbound, container.CA.Cert, container.Key.Public(), container.CA.Key); {
+// 	case err != nil:
+// 		log.Fatalf("can't create a new Cert - %v", err)
+// 	}
+//
+// 	switch container.Cert, err = x509.ParseCertificate(container.DER.Cert); {
+// 	case err != nil:
+// 		log.Fatalf("can't parse a new Cert - %v", err)
+// 	}
+//
+// 	// receiver._DER_PEM()
+//
+// 	return container, true
+// }
+
+func (receiver *_PKI) parse_Raw(inbound ..._PKI_Raw) /*(outbound *_PKI_Container)*/ {
 	switch len(inbound) {
 	case 0: // nothing
 		log.Warnf("PKI: no Raw data; ACTION: skip.")
 		return
 	}
-	outbound = new(_PKI_Container)
 	var (
+		// outbound = new(_PKI_Container)
+		outbound = &_PKI_Container{
+			SN:        nil,
+			FQDN:      "",
+			CA:        nil,
+			Raw_Chain: nil,
+			Raw_CRL:   nil,
+			Cert:      nil,
+			Key:       nil,
+			CRL:       nil,
+			DER:       &_PKI_DER{},
+			PEM:       &_PKI_PEM{},
+			Child:     __FQDN_PKI_Container{},
+		}
 		err error
 	)
 	for _, b := range inbound {
@@ -909,13 +1049,13 @@ func (receiver *_PKI) parse_Raw(inbound ..._PKI_Raw) (outbound *_PKI_Container) 
 			continue
 		}
 		log.Warnf("PKI: bad Raw data; ACTION: skip.")
-		return nil
+		// return nil
 	}
 
 	switch {
 	case outbound.Cert == nil || outbound.Key == nil:
 		log.Warnf("PKI: no Cert/Key pair; ACTION: skip.")
-		return nil
+		// return nil
 	}
 
 	outbound.FQDN = _FQDN(outbound.Cert.Subject.CommonName)
@@ -924,58 +1064,17 @@ func (receiver *_PKI) parse_Raw(inbound ..._PKI_Raw) (outbound *_PKI_Container) 
 	switch {
 	case receiver.FQDN[outbound.FQDN] != nil:
 		log.Warnf("PKI FQDN '%v': PKI Container already exist; ACTION: skip.", outbound.FQDN)
-		return nil
+		// return nil
 	case receiver.SN[outbound.SN] != nil:
 		log.Warnf("PKI FQDN '%v', SN '%v': PKI Container already exist; ACTION: skip.", outbound.FQDN, outbound.SN)
-		return nil
+		// return nil
 	}
 
 	i_PKI.FQDN[outbound.FQDN] = outbound
 	i_PKI.SN[outbound.SN] = outbound
 
-	return
+	// return
 }
-
-// func (receiver *_PKI_Container) parse_Raw(inbound _PKI_Raw) (err error) {
-// 	var (
-// 		block *pem.Block
-// 	)
-// 	for len(inbound) != 0 {
-// 		switch block, inbound = pem.Decode(inbound); {
-// 		case block == nil:
-// 			return errors.New("no PEM data")
-// 		}
-// 		switch block.Type {
-// 		case "CERTIFICATE":
-// 			switch err = receiver.parse_DER_Cert(block.Bytes); {
-// 			case err != nil:
-// 				return
-// 			}
-// 		case "EC PRIVATE KEY":
-// 			switch err = receiver.parse_DER_Key(block.Bytes); {
-// 			case err != nil:
-// 				return
-// 			}
-// 		case "X509 CRL":
-// 			switch err = receiver.parse_DER_CRL(block.Bytes); {
-// 			case err != nil:
-// 				return
-// 			}
-// 		default:
-// 			return errors.New("unknown PEM block")
-// 		}
-// 	}
-// 	return
-// }
-
-// func (receiver __FQDN_PKI_Container) is_exist(fqdn _FQDN) (ok bool) {
-// 	switch {
-// 	case i_PKI_FQDN[fqdn] != nil:
-// 		return true
-// 	}
-// 	return
-// }
-
 func (receiver *_PKI_Container) parse_PEM(inbound _PKI_Raw) (err error) {
 	var (
 		block *pem.Block
@@ -1050,6 +1149,7 @@ func (receiver *_PKI_Container) parse_DER_Key(inbound _DER_Key) (err error) {
 		switch {
 		case receiver.Key == nil:
 			receiver.Key = t.Key
+			receiver.DER.Key = inbound
 			return
 		default:
 			log.Warnf("PKI: another Key; ACTION: ignore.")
@@ -1066,6 +1166,7 @@ func (receiver *_PKI_Container) parse_DER_CRL(inbound _DER_CRL) (err error) {
 		switch {
 		case receiver.CRL == nil:
 			receiver.CRL = t.CRL
+			receiver.DER.CRL = inbound
 			return
 		default:
 			log.Warnf("PKI: another CRL; ACTION: ignore.")
@@ -1105,134 +1206,140 @@ func (receiver *_PKI_Container) parse_P12(inbound _PKI_Raw) (err error) {
 }
 
 func (receiver *_PKI) verify(ca *_PKI_Container, fqdn _FQDN, inbound *x509.Certificate) (outbound *_PKI_Container, is_new bool) {
-	var (
-		err       error
-		container = receiver.get(fqdn)
-	)
+	switch {
+	case receiver.FQDN[fqdn] == nil: // a new Cert
+		receiver.FQDN[fqdn], is_new = &_PKI_Container{
+			SN:        nil,
+			FQDN:      fqdn,
+			CA:        ca,
+			Raw_Chain: nil,
+			Raw_CRL:   nil,
+			Cert:      nil,
+			Key:       nil,
+			CRL:       nil,
+			DER:       &_PKI_DER{},
+			PEM:       &_PKI_PEM{},
+			Child:     __FQDN_PKI_Container{},
+		}, true
+		receiver.FQDN[fqdn].renew_Key()
+		receiver.FQDN[fqdn].renew_Cert(inbound)
+		receiver.FQDN[fqdn].renew_CRL()
+		is_new = true
+	default:
+		receiver.FQDN[fqdn].CA = ca
 
-	switch func() (ok bool) {
 		switch {
-		case interface_string("", container.Cert.PublicKey) != interface_string("", container.Key.Public()): // todo: dirty hack
-			log.Warnf("CA Cert's signature doesn't match with CA Key's signature - '%v'; ACTION: skip.", err)
-			return
+		case receiver.FQDN[fqdn].Key == nil:
+			log.Warnf("PKI '%v': no Key; ACTION: generate a new Key.", receiver.FQDN[fqdn].FQDN)
+			is_new = true
+			receiver.FQDN[fqdn].renew_Key()
 		}
-		container.CA = ca
+
 		switch {
-		case container.CA != nil:
-			// TODO: VERY VERY VERY VERY SLOW OP
-			switch err = container.Cert.CheckSignatureFrom(container.CA.Cert); {
-			case err != nil:
-				log.Warnf("PKI '%v': x509.CheckSignatureFrom error '%v'; ACTION: generate.", container.FQDN, err)
-				return
-			}
-			for _, b := range container.CA.CRL.TBSCertList.RevokedCertificates {
-				switch {
-				case b.SerialNumber == container.SN:
-					log.Warnf("PKI '%v': Cert is revoked; ACTION: generate.", container.FQDN)
-					return
-				}
-			}
-		}
-		container.DER = &_PKI_DER{
-			Cert: container.Cert.Raw,
-			Key:  nil,
-			CRL:  nil,
-		}
-		switch container.DER.Key, err = x509.MarshalPKCS8PrivateKey(container.Key); {
-		case err != nil:
-			log.Fatalf("PKI '%v': x509.MarshalPKCS8PrivateKey error '%v'; ACTION: report.", container.FQDN, err)
+		case receiver.FQDN[fqdn].Cert == nil || interface_string("", receiver.FQDN[fqdn].Cert.PublicKey) != interface_string("", receiver.FQDN[fqdn].Key.Public()):
+			log.Warnf("PKI '%v': no Cert or Cert.PublicKey != Key.Public; ACTION: renew Cert.", receiver.FQDN[fqdn].FQDN)
+			is_new = true
+			receiver.FQDN[fqdn].renew_Cert(inbound)
 		}
 
 		var (
-			buf *bytes.Buffer
+			err error
 		)
-		container.PEM = &_PKI_PEM{}
-
-		buf = new(bytes.Buffer)
-		switch err = pem.Encode(buf, &pem.Block{Type: "CERTIFICATE", Bytes: container.DER.Cert}); {
-		case err != nil:
-			log.Fatalf("PKI '%v': pem.Encode CERTIFICATE error '%v'; ACTION: report.", container.FQDN, err)
-		}
-		container.PEM.Cert = buf.Bytes()
-
-		buf = new(bytes.Buffer)
-		switch err = pem.Encode(buf, &pem.Block{Type: "EC PRIVATE KEY", Bytes: container.DER.Key}); {
-		case err != nil:
-			log.Fatalf("PKI '%v': pem.Encode EC PRIVATE KEY error '%v'; ACTION: report.", container.FQDN, err)
-		}
-		container.PEM.Key = buf.Bytes()
-
 		switch {
-		case container.Cert.IsCA: // Cert is CA
-			switch err = container.Cert.CheckCRLSignature(container.CRL); {
+		case receiver.FQDN[fqdn].Cert.IsCA: // Cert is CA
+			switch err = receiver.FQDN[fqdn].Cert.CheckCRLSignature(receiver.FQDN[fqdn].CRL); {
 			case err != nil:
-				log.Warnf("PKI '%v': CheckCRLSignature error '%v'; ACTION: generate a new CRL.", container.FQDN, err)
+				log.Warnf("PKI '%v': Cert.CheckCRLSignature error '%v'; ACTION: generate a new CRL.", receiver.FQDN[fqdn].FQDN, err)
 				is_new = true
-				container.renew_CRL()
+				receiver.FQDN[fqdn].renew_CRL()
 			}
-			container.append_CRL(container.CRL.TBSCertList.RevokedCertificates)
+			receiver.FQDN[fqdn].revoke(receiver.FQDN[fqdn].CRL.TBSCertList.RevokedCertificates)
 			switch {
-			case container.CRL.HasExpired(time.Now()):
-				log.Warnf("PKI '%v': CRL HasExpired; ACTION: renew a CRL.", container.FQDN)
+			case receiver.FQDN[fqdn].CRL.HasExpired(time.Now()):
+				log.Warnf("PKI '%v': CRL.HasExpired; ACTION: renew a CRL.", receiver.FQDN[fqdn].FQDN)
 				is_new = true
-				container.renew_CRL()
+				receiver.FQDN[fqdn].renew_CRL()
 			}
-			container.DER.CRL = _DER_CRL(container.CRL.TBSCertList.Raw)
 
-			buf = new(bytes.Buffer)
-			switch err = pem.Encode(buf, &pem.Block{Type: "X509 CRL", Bytes: container.DER.CRL}); {
-			case err != nil:
-				log.Fatalf("PKI '%v': pem.Encode X509 CRL error '%v'; ACTION: report.", container.FQDN, err)
-			}
-			container.PEM.CRL = buf.Bytes()
+		case !receiver.FQDN[fqdn].Cert.IsCA && receiver.FQDN[fqdn].CA == nil:
+			log.Fatalf("PKI '%v': IsCA '%v' and CA is '%v'; ACTION: report.", receiver.FQDN, receiver.FQDN[fqdn].Cert.IsCA, receiver.FQDN[fqdn].CA)
 		}
 
-		return true
-	}(); {
-	case true: // Cert is OK
-		return container, is_new
+		// receiver.FQDN[fqdn].renew_CRL()
 	}
 
-	// a new Cert is required
+	is_new = true
 
 	switch {
-	case inbound == nil:
-		log.Fatalf("no Cert data; ACTION: ignore")
-		// return
-	}
-	log.Infof("generating a new Cert for '%v'; ACTION: report.", inbound.Subject.CommonName)
-
-	container.DER = &_PKI_DER{}
-
-	switch container.Key, err = ecdsa.GenerateKey(elliptic.P521(), rand.Reader); {
-	case err != nil:
-		log.Fatalf("can't generate a new Key - %v", err)
+	case is_new:
+		receiver.FQDN[fqdn].encode()
 	}
 
-	switch container.DER.Key, err = x509.MarshalECPrivateKey(container.Key); {
-	case err != nil:
-		log.Fatalf("can't marshal a new Key - %v", err)
-	}
-
-	switch container.DER.Cert, err = x509.CreateCertificate(rand.Reader, inbound, container.CA.Cert, container.Key.Public(), container.CA.Key); {
-	case err != nil:
-		log.Fatalf("can't create a new Cert - %v", err)
-	}
-
-	switch container.Cert, err = x509.ParseCertificate(container.DER.Cert); {
-	case err != nil:
-		log.Fatalf("can't parse a new Cert - %v", err)
-	}
-
-	// receiver._DER_PEM()
-
-	return container, true
+	return receiver.FQDN[fqdn], is_new
 }
 
-func (receiver *_PKI_Container) renew_CRL() (status bool) {
+func (receiver *_PKI_Container) renew_Key() {
 	var (
 		err error
 	)
+	switch receiver.Key, err = ecdsa.GenerateKey(elliptic.P521(), rand.Reader); {
+	case err != nil:
+		log.Fatalf("PKI '%v': ecdsa.GenerateKey error '%v'; ACTION: report.", receiver.FQDN, err)
+	}
+	switch receiver.DER.Key, err = x509.MarshalECPrivateKey(receiver.Key); {
+	case err != nil:
+		log.Fatalf("PKI '%v': x509.MarshalECPrivateKey error '%v'; ACTION: report.", receiver.FQDN, err)
+	}
+}
+func (receiver *_PKI_Container) renew_Cert(inbound *x509.Certificate) {
+	var (
+		err     error
+		ca_cert = inbound
+		ca_key  = receiver.Key
+	)
+	switch {
+	case receiver.CA != nil: // not self-signed
+		ca_cert = receiver.CA.Cert
+		ca_key = receiver.CA.Key
+	}
+
+	switch receiver.DER.Cert, err = x509.CreateCertificate(rand.Reader, inbound, ca_cert, receiver.Key.Public(), ca_key); {
+	case err != nil:
+		log.Fatalf("PKI '%v': x509.CreateCertificate error '%v'; ACTION: report.", receiver.FQDN, err)
+	}
+	switch receiver.Cert, err = x509.ParseCertificate(receiver.DER.Cert); {
+	case err != nil:
+		log.Fatalf("PKI '%v': x509.ParseCertificate error '%v'; ACTION: report.", receiver.FQDN, err)
+	}
+	receiver.SN = receiver.Cert.SerialNumber
+
+	// i_PKI.FQDN[receiver.FQDN] = receiver
+	i_PKI.SN[receiver.SN] = receiver
+}
+
+func (receiver *_PKI_Container) renew_CRL() {
+	switch {
+	case !receiver.Cert.IsCA:
+		return
+	}
+	var (
+		err   error
+		dedup = make(map[_PKI_SN]pkix.RevokedCertificate)
+	)
+	for _, b := range receiver.Raw_CRL {
+		switch _, flag := dedup[b.SerialNumber]; {
+		case !flag:
+			dedup[b.SerialNumber] = b
+		}
+	}
+	receiver.Raw_CRL = []pkix.RevokedCertificate{}
+	for _, b := range dedup {
+		receiver.Raw_CRL = append(receiver.Raw_CRL, b)
+	}
+	sort.Slice(receiver.Raw_CRL, func(i, j int) bool {
+		return receiver.Raw_CRL[i].SerialNumber.Cmp(receiver.Raw_CRL[j].SerialNumber) < 0
+	})
+
 	switch receiver.DER.CRL, err = x509.CreateRevocationList(rand.Reader, &x509.RevocationList{
 		SignatureAlgorithm: x509.ECDSAWithSHA512,
 		// SignatureAlgorithm:  x509.PureEd25519,
@@ -1243,38 +1350,50 @@ func (receiver *_PKI_Container) renew_CRL() (status bool) {
 		ExtraExtensions:     nil,
 	}, receiver.Cert, receiver.Key); {
 	case err != nil:
-		log.Fatalf("can't renew CA CRL - '%v'; ACTION: report.", err)
+		log.Fatalf("PKI '%v': x509.CreateRevocationList error '%v'; ACTION: report.", receiver.FQDN, err)
 	}
 	switch receiver.CRL, err = x509.ParseDERCRL(receiver.DER.CRL); {
 	case err != nil:
-		log.Fatalf("can't renew CA CRL - '%v'; ACTION: report.", err)
+		log.Fatalf("PKI '%v': x509.ParseDERCRL error '%v'; ACTION: report.", receiver.FQDN, err)
 	}
-
-	return true
 }
-func (receiver *_PKI) get(fqdn _FQDN) (outbound *_PKI_Container) {
-	return receiver.FQDN[fqdn]
-}
-
-func (receiver *_PKI_Container) append_CRL(inbound ...[]pkix.RevokedCertificate) {
+func (receiver *_PKI_Container) encode() {
 	var (
-		sorted = make(map[_PKI_SN]pkix.RevokedCertificate)
+		err error
+		buf *bytes.Buffer
 	)
+
+	buf = new(bytes.Buffer)
+	switch err = pem.Encode(buf, &pem.Block{Type: "EC PRIVATE KEY", Bytes: receiver.DER.Key}); {
+	case err != nil:
+		log.Fatalf("PKI '%v': pem.Encode EC PRIVATE KEY error '%v'; ACTION: report.", receiver.FQDN, err)
+	}
+	receiver.PEM.Key = buf.Bytes()
+
+	buf = new(bytes.Buffer)
+	switch err = pem.Encode(buf, &pem.Block{Type: "CERTIFICATE", Bytes: receiver.Cert.Raw}); {
+	case err != nil:
+		log.Fatalf("PKI '%v': pem.Encode CERTIFICATE error '%v'; ACTION: report.", receiver.FQDN, err)
+	}
+	receiver.PEM.Cert = buf.Bytes()
+
+	switch {
+	case receiver.Cert.IsCA:
+		buf = new(bytes.Buffer)
+		switch err = pem.Encode(buf, &pem.Block{Type: "X509 CRL", Bytes: receiver.DER.CRL}); {
+		case err != nil:
+			log.Fatalf("PKI '%v': pem.Encode X509 CRL error '%v'; ACTION: report.", receiver.FQDN, err)
+		}
+		receiver.PEM.CRL = buf.Bytes()
+	}
+}
+
+func (receiver *_PKI_Container) revoke(inbound ...[]pkix.RevokedCertificate) {
 	for _, b := range inbound {
 		receiver.Raw_CRL = append(receiver.Raw_CRL, b...)
 	}
-	for _, b := range receiver.Raw_CRL {
-		switch _, flag := sorted[b.SerialNumber]; {
-		case !flag:
-			sorted[b.SerialNumber] = b
-		}
-	}
-	receiver.Raw_CRL = []pkix.RevokedCertificate{}
-	for _, b := range sorted {
-		receiver.Raw_CRL = append(receiver.Raw_CRL, b)
-	}
-	sort.Slice(receiver.Raw_CRL, func(i, j int) bool {
-		return receiver.Raw_CRL[i].SerialNumber.Cmp(receiver.Raw_CRL[j].SerialNumber) < 0
-	})
-	return
+}
+
+func (receiver *_PKI_PEM) bundle() (outbound _PEM_Bundle) {
+	return _PEM_Bundle(receiver.Cert.String() + receiver.Key.String())
 }

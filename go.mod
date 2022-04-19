@@ -5,8 +5,8 @@ go 1.18
 require (
 	github.com/go-ldap/ldap/v3 v3.4.3
 	github.com/sirupsen/logrus v1.8.1
-	golang.org/x/crypto v0.0.0-20220408190544-5352b0902921
-	software.sslmate.com/src/go-pkcs12 v0.1.0
+	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
+	software.sslmate.com/src/go-pkcs12 v0.2.0
 )
 
 require (

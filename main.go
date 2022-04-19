@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
 	// "golang.org/x/crypto/ssh"
 )
@@ -27,6 +28,7 @@ func init() {
 		CallerPrettyfier:          nil,
 	})
 	log.SetReportCaller(false)
+	ldap.DefaultTimeout = 5 * time.Second
 }
 
 func main() {

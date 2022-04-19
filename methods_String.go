@@ -72,6 +72,9 @@ func (receiver _DER_TLS_Server) String() string {
 func (receiver _DER_TLS_Client) String() string {
 	return string(receiver)
 }
+func (receiver _PEM_Bundle) String() string {
+	return string(receiver)
+}
 func (receiver _PEM_Cert) String() string {
 	return string(receiver)
 }

@@ -33,7 +33,8 @@ var (
 	empty_ID   = _next_ID
 	next_ID    = empty_ID
 
-	i_PKI = &_PKI{
+	i_PKI_Revoke = make(map[_FQDN]bool)
+	i_PKI        = &_PKI{
 		FQDN: __FQDN_PKI_Container{},
 		SN:   __SN_PKI_Container{},
 	}
@@ -47,7 +48,6 @@ var (
 	// i_PKI         = make(__BI_Any)
 	// i_PKI_DB      = &_PKI_CA_Node{CA_Node: __FQDN_PKI_CA_Node{}}
 
-	i_PKI_Revoke  = make(map[_FQDN]bool)
 	i_ab          = make(__N_AB)
 	i_ja          = make(__N_JA)
 	i_pl          = make(__N_PO_PL)

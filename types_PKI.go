@@ -7,6 +7,7 @@ import (
 	"math/big"
 )
 
+type _PEM_Bundle []byte                             //
 type _PEM_CRL []byte                                //
 type _PEM_Cert []byte                               //
 type _PEM_Key []byte                                //
@@ -37,7 +38,7 @@ type _PKI_Container struct {
 	Child     __FQDN_PKI_Container      //
 }
 type _PKI_DER struct {
-	Cert _DER_Cert //
+	Cert _DER_Cert // Cert.Raw
 	Key  _DER_Key  //
 	CRL  _DER_CRL  // case Is_CA == true
 }
