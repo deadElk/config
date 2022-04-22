@@ -210,6 +210,7 @@ const (
 	_Type_source           = _Type(_W_source)
 	_Type_st               = _Type(_W_st)
 	_Type_static           = _Type(_W_static)
+	_Type_template         = _Type(_W_template)
 	_Type_then             = _Type(_W_then)
 	_Type_to               = _Type(_W_to)
 )
@@ -258,7 +259,6 @@ const (
 	_W_dhcpv6                                                    = _W_dhcp + _W_v6
 	_W_direct                                                 _W = "direct"
 	_W_discard                                                _W = "discard"
-	_W_ou                                                     _W = "ou"
 	_W_dn                                                     _W = "dn"
 	_W_dns                                                    _W = "dns"
 	_W_dns__name                                                 = _W_dns + "-" + _W_name
@@ -345,6 +345,7 @@ const (
 	_W_or                                                     _W = "or"
 	_W_orlonger                                                  = _W_or + _W_longer
 	_W_ospf                                                   _W = "ospf"
+	_W_ou                                                     _W = "ou"
 	_W_owner                                                  _W = "owner"
 	_W_packet                                                 _W = "packet"
 	_W_per                                                    _W = "per"
@@ -428,6 +429,7 @@ const (
 	_W_static__nat                                               = _W_static + "-" + _W_nat
 	_W_table                                                  _W = "table"
 	_W_tcp                                                    _W = "tcp"
+	_W_template                                               _W = "template"
 	_W_term                                                   _W = "term"
 	_W_then                                                   _W = "then"
 	_W_to                                                     _W = "to"
