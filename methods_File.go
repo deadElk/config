@@ -148,10 +148,10 @@ func (receiver __DN_File_Dir) read_file(dir _Dir_Name, file _File_Name) (status 
 		log.Warnf("file '%v' read error '%v'; ACTION: report.", v_full_pfn, err)
 		return
 	}
-	// switch receiver[dir].Ext {
-	// case "tmpl":
-	// 	content.trim_space()
-	// }
+	switch {
+	case receiver[dir].Type == _Type_template || receiver[dir].File[file].Type == _Type_template:
+		content.trim_space()
+	}
 	receiver.put(dir, file, "", content)
 	receiver[dir].File[file].Flag = v_Flag
 	return true
