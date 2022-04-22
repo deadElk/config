@@ -60,8 +60,8 @@ var (
 	i_ldap_domain = make(__DN_LDAP_Domain)
 	i_file_link   = make(__LN_Link_Name)
 	i_file        = __DN_File_Dir{
-		_dir_GT:      {},
-		_dir_GT_OVPN: {},
+		_dir_GT:      {Type: _Type_template},
+		_dir_GT_OVPN: {Type: _Type_template},
 		_dir_PKI_CA:  {},
 		_dir_PKI_TLS: {Recursive: true},
 		_dir_etc:     {},
