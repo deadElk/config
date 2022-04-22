@@ -8,17 +8,15 @@ type _Link_Name _Name                           //
 type _File_Name _Name                           //
 
 type i_Dir_Data struct {
-	Flag      bool //
-	Recursive bool //
-	// Ext       _Name //
-	// // Link      *i_Dir_Data // ln -s Link _Dir_Name to _Dir_Name
-	Sorted []_File_Name   //
-	File   __FN_File_Data //
+	Flag      bool           //
+	Recursive bool           //
+	Type      _Type          //
+	Sorted    []_File_Name   //
+	File      __FN_File_Data //
 }
 type i_File_Data struct {
-	Flag bool //
-	// Ext  _Name //
-	// // Link    *i_File_Data // ln -s Link _File_Name to _File_Name
+	Flag    bool      //
+	Type    _Type     //
 	Exec    bool      //
 	Content *_Content //
 }
