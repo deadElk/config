@@ -279,10 +279,10 @@ func (receiver *_PKI) verify(ca *_PKI_Container, fqdn _FQDN, inbound *x509.Certi
 
 	// is_new = true
 
-	switch {
-	case is_new:
-		receiver.FQDN[fqdn].encode()
-	}
+	// switch {
+	// case is_new:
+	receiver.FQDN[fqdn].encode()
+	// }
 
 	return receiver.FQDN[fqdn], is_new
 }

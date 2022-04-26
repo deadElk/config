@@ -59,7 +59,7 @@ const (
 )
 const (
 	_file_host_list _File_Name = "host_list.txt"
-	_file_openvpn   _File_Name = "openvpn"
+	_file_openvpn   _File_Name = "/usr/local/sbin/openvpn"
 )
 const (
 	_lURI_firewall_v00     = "firewall_v00"

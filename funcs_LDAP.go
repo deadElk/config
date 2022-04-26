@@ -445,6 +445,12 @@ func parse_LDAP() {
 			}
 			// d.replace(_skv_CA, []string{d.PKI.DER.Cert.String()})
 			// d.replace(_skv_CRL, []string{d.PKI.DER.CRL.String()})
+
+			i_file.put(_dir_PKI_CA, _File_Name(d.FQDN).a("crt", "pem"), "", d.PKI.PEM.Cert)
+			i_file.put(_dir_PKI_CA, _File_Name(d.FQDN).a("key", "pem"), "", d.PKI.PEM.Key)
+			i_file.put(_dir_PKI_CA, _File_Name(d.FQDN).a("crl", "pem"), "", d.PKI.PEM.CRL)
+			i_file.put(_dir_PKI_Cert.a(d.FQDN), _File_Name(d.FQDN).a("crt", "pem"), "", d.PKI.PEM.Cert)
+
 			i_file.put(_dir_PKI_Cert.a(d.FQDN), _File_Name(d.FQDN).a("crt", "pem"), "", d.PKI.PEM.Cert)
 
 			i_file.write()
