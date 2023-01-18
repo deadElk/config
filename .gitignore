@@ -1,0 +1,12 @@
+.idea
+**/.idea
+
+.DS_Store
+**/.DS_Store
+
+._.DS_Store
+**/._.DS_Store
+
+config
+etc
+tmp
