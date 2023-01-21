@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-rm -v **/.DS_Store **/._.DS_Store
+find . -type f \( -name ".DS_Store" -o -name "._.DS_Store" \) -delete -print
 
 git add . && git commit -m "$(date)" && git push
